@@ -22,8 +22,8 @@ button{font:inherit;cursor:pointer}
   <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
     <div style="display: flex; align-items: flex-start; gap: 8px">
       <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
-        <span style="font-size: 12px; color: var(--muted)">1-й батальйон · бліндаж</span>
-        <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">186 412</span>
+        <span style="font-size: 12px; color: var(--muted)">{{bg.place}}</span>
+        <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">{{bg.bal}}</span>
       </div>
       <span style="width: 64px; height: 44px; border-radius: var(--radius-8); border: 1px solid var(--accent)"></span>
       <span style="width: 44px; height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span>
@@ -37,6 +37,7 @@ button{font:inherit;cursor:pointer}
 
   <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="ks-title" style="max-height: 90%">
     <div class="st-sheet-grab" aria-hidden="true"></div>
+    <sc-if value="{{old}}" hint-placeholder-val="{{true}}">
     <div class="st-sheet-head">
       <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg></div>
       <div class="st-sheet-title">
@@ -103,17 +104,114 @@ button{font:inherit;cursor:pointer}
         <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">До стройової</a>
       </sc-if>
     </div>
+    </sc-if>
+
+    <sc-if value="{{ev.on}}" hint-placeholder-val="{{false}}">
+    <div class="st-sheet-head">
+      <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{ev.d1}}"></path><path d="{{ev.d2}}"></path></svg></div>
+      <div class="st-sheet-title">
+        <h2 class="st-h2" id="ks-title">{{ev.title}}</h2>
+        <p class="st-sub" style="font-size: 12px">{{ev.sub}}</p>
+      </div>
+      <a class="st-iconbtn st-iconbtn--bare" href="Main.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+      <span class="st-chip" aria-label="{{ev.chipAria}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{ev.chip}}</span>
+      <span style="font-size: 13px; line-height: 1.4; color: var(--accent)">{{ev.status}}</span>
+    </div>
+
+    <sc-if value="{{ev.hasLine}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: {{ev.av}}; color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">{{ev.avInit}}</div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; color: var(--muted)">{{ev.who}}</span>
+          <div style="padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; font-size: 15px; line-height: 1.45">{{ev.line}}</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ev.sedo}}" hint-placeholder-val="{{false}}">
+      <article class="st-paper st-paper--card" aria-label="Так виглядатиме роздруківка: штамп Паперова копія електронного документа" style="gap: 8px">
+        <span class="st-doc-meta">Документ № 4 412 · СЕДО · сторінка 1 з 1</span>
+        <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 5px"><i style="height: 6px; width: 92%; background: var(--paper-line)"></i><i style="height: 6px; width: 78%; background: var(--paper-line)"></i><i style="height: 6px; width: 85%; background: var(--paper-line)"></i></div>
+        <span class="st-stamp" style="--st-rot: -4deg; --st-edge: 100deg; align-self: flex-end; white-space: normal; max-width: 210px; text-align: center; line-height: 1.3">Паперова копія електронного документа</span>
+      </article>
+    </sc-if>
+
+    <div class="st-flow" role="group" aria-label="{{ev.flowAria}}">
+      <div class="st-flow-nums"><span class="st-flow-part">Потоки <b>{{ev.fs}}</b></span><span class="st-flow-arrow"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span><span class="st-flow-part is-narrow">Погодження <b>{{ev.fp}}</b></span></div>
+      <span class="st-flow-verdict"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Вузько: <b>{{ev.unit}}</b>, {{ev.mult}} {{ev.left}}</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="st-card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 14px; font-weight: 600">Чекати</span>
+        <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">{{ev.waitText}}</span>
+      </div>
+      <div class="st-card" style="padding: 11.5px 13.5px; display: flex; flex-direction: column; gap: 4px; border: 1.5px solid {{ev.actBorder}}">
+        <div style="display: flex; align-items: baseline; gap: 8px"><span style="flex: 1; font-size: 14px; font-weight: 600">{{ev.actTitle}}</span><b style="font: 600 13px/1.3 var(--font-mono); color: {{ev.costColor}}">{{ev.cost}}</b></div>
+        <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">{{ev.actText}}</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <sc-if value="{{ev.can}}" hint-placeholder-val="{{true}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)" aria-label="{{ev.ctaAria}}">{{ev.cta}}</a>
+      </sc-if>
+      <sc-if value="{{ev.cannot}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--l" aria-disabled="true" aria-label="{{ev.ctaAria}}">{{ev.cta}}</button>
+        <span class="st-btn-note">{{ev.why}}</span>
+      </sc-if>
+      <a href="Main.dc.html" class="st-btn st-btn--neutral st-btn--m">{{ev.waitCta}}</a>
+    </div>
+    </sc-if>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["чекаємо","посильного відправлено","знайшли"],"default":"чекаємо","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["чекаємо","посильного відправлено","знайшли","Р3: Нарада затягнулась","Р5: Збій СЕДО","Р5: Збій СЕДО, бракує паперу"],"default":"чекаємо","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? 'чекаємо';
     var NB = ' ';
     var wait = st === 'чекаємо', run = st === 'посильного відправлено', done = st === 'знайшли';
     var left = run ? 'ще 3' + NB + 'хв' : 'ще 18' + NB + 'хв';
+    var E = {
+      'Р3: Нарада затягнулась': {
+        d1: 'M3 10h18M5 10v9M19 10v9', d2: 'M11 10V6a1 1 0 0 1 2 0v4M9 5h6', bg: { place: 'Командування · кабінети й наради', bal: '412 млн' }, title: 'Нарада затягнулась', sub: 'Ланка «Нарада» · рів. 34',
+        chip: '×0,25 · ще 22' + NB + 'хв', chipAria: 'Нарада в чверть сили ще 22 хвилини', status: 'Документи чекають обговорення. ×0,25, не довше 30 хв.',
+        hasLine: true, sedo: false, av: 'var(--cover-brown)', avInit: 'К', who: 'Начштабу «Кава»', line: 'Нарада йде другу годину. Дійшли до другого питання з одного.',
+        fs: '1,24 млн/хв', fp: '310 тис./хв', unit: 'Нарада', mult: '×0,25', left: 'ще 22' + NB + 'хв',
+        waitText: 'Нарада скінчиться сама за 22 хв. Безкоштовно. Ланка тим часом іде в чверть сили.',
+        actTitle: 'Передати записку на нараду', cost: '48 млн', actText: 'Нараду закриють за 3 хв. Підписи — за записку й посильного.',
+        cta: 'Передати записку', ctaAria: 'Передати записку на нараду за 48 мільйонів підписів', can: true, why: '', waitCta: 'Чекати 22' + NB + 'хв'
+      },
+      'Р5: Збій СЕДО': {
+        d1: 'M5 6h14v9H5z', d2: 'M3 18h18', bg: { place: 'Армія без паперу · бліндаж', bal: '1,84 ac' }, title: 'Збій СЕДО', sub: 'Цифрова ланка «Електронний журнал» · рів. 40',
+        chip: '×0,5 · ще 26' + NB + 'хв', chipAria: 'Електронний журнал у пів сили ще 26 хвилин', status: 'СЕДО думає. Документ відкрито, але не до кінця.',
+        hasLine: false, sedo: true, av: '', avInit: '', who: '', line: '',
+        fs: '4,2 ab/хв', fp: '1,8 ab/хв', unit: 'Електронний журнал', mult: '×0,5', left: 'ще 26' + NB + 'хв',
+        waitText: 'Збій мине сам за 26 хв. Безкоштовно. Ланка тим часом іде в пів сили.',
+        actTitle: 'Роздрукувати', cost: '5 аркушів', actText: 'Збій знято одразу. На роздруківку ставлять штамп.',
+        cta: 'Роздрукувати · 5 аркушів', ctaAria: 'Роздрукувати за 5 аркушів паперу', can: true, why: '', waitCta: 'Чекати 26' + NB + 'хв'
+      }
+    };
+    E['Р5: Збій СЕДО, бракує паперу'] = Object.assign({}, E['Р5: Збій СЕДО'], { can: false, why: 'Бракує паперу: є 3 аркуші з 5.', ctaAria: 'Роздрукувати за 5 аркушів. Бракує паперу: є 3 з 5' });
+    var e = E[st];
+    var EVK = ['d1','d2','title','sub','chipAria','chip','status','av','avInit','who','line','flowAria','fs','fp','unit','mult','left','waitText','actBorder','actTitle','costColor','cost','actText','ctaAria','cta','why','waitCta'];
+    if (e) {
+      var saved = this.props; this.props = { state: 'чекаємо' };
+      var b0 = this.renderVals(); this.props = saved;
+      var ev = Object.assign({ on: true }, e);
+      ev.cannot = !e.can;
+      ev.actBorder = e.can ? 'var(--accent)' : 'var(--border)';
+      ev.costColor = e.can ? 'var(--accent)' : 'var(--muted)';
+      ev.flowAria = 'Потоки ' + e.fs + ', погодження ' + e.fp + '. Вузько: ' + e.unit + ', ' + e.mult + ' ' + e.left;
+      var r0 = Object.assign({}, b0, { old: false, ev: ev, bg: e.bg });
+      return r0;
+    }
     return {
+      old: true, ev: (function () { var o = { on: false, hasLine: false, sedo: false, can: false, cannot: false }; EVK.forEach(function (k) { o[k] = ''; }); return o; })(), bg: { place: '1-й батальйон · бліндаж', bal: '186 412' },
       title: done ? 'Комбата знайшли' : 'Комбата шукають',
       chip: { wait: wait, run: run, done: done },
       status: done ? 'Резолюції знову йдуть.' : 'Комбат на позиціях. Резолюції ×0,25, не довше 30 хв.',

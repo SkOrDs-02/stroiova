@@ -47,6 +47,15 @@ button{font:inherit;cursor:pointer}
     </div>
   </sc-if>
 
+  <sc-if value="{{s.talk2}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px">
+      <span style="font-size: 12px; color: var(--muted)">«Археолог»</span>
+      <sc-for list="{{t.lines}}" as="ln" hint-placeholder-count="2">
+        <div style="align-self: flex-start; max-width: 310px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; font-size: 15px; line-height: 1.45">{{ln.t}}</div>
+      </sc-for>
+    </div>
+  </sc-if>
+
   <sc-if value="{{s.bonus}}" hint-placeholder-val="{{false}}">
     <article class="st-paper st-paper--card" aria-label="Архів попередника. Зараховано 4 800 підписів" style="margin-top: 10px">
       <div style="position: absolute; right: 14px; top: 16px"><span class="st-stamp st-stamp--hit" style="--st-rot: -6deg; --st-edge: 110deg">ЗАРАХОВАНО</span></div>
@@ -72,6 +81,12 @@ button{font:inherit;cursor:pointer}
       </button>
       <span style="font-size: 13px; color: var(--muted); margin-top: -6px">Завершити</span>
     </sc-if>
+    <sc-if value="{{s.talk2}}" hint-placeholder-val="{{false}}">
+      <a href="{{t.href}}" aria-label="Завершити дзвінок" style="width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text); display: flex; align-items: center; justify-content: center; padding: 0">
+        <svg class="st-ico" width="26" height="26" viewBox="0 0 24 24" style="stroke-width: 2; transform: rotate(135deg)" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"></path></svg>
+      </a>
+      <span style="font-size: 13px; color: var(--muted); margin-top: -6px">{{t.endLabel}}</span>
+    </sc-if>
     <sc-if value="{{s.bonus}}" hint-placeholder-val="{{false}}">
       <div class="st-toast" role="status" style="width: 100%; box-sizing: border-box; max-width: none">
         <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"></path></svg>
@@ -85,12 +100,25 @@ button{font:inherit;cursor:pointer}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["виклик","репліки","бонус отримано"],"default":"виклик","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["виклик","репліки","бонус отримано","Р3: Археолог","фінал"],"default":"виклик","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var self = this;
     var opts = ["виклик", "репліки", "бонус отримано"];
     var st = this.props.state ?? "виклик";
+    var T = {
+      "Р3: Археолог": { time: "00:22", href: "Main.dc.html", endLabel: "Завершити", lines: ["Пачку можна звести в одну відповідь. Паперу менше, ризику більше.", "Сумлінно на всю пачку, і зведення б’ється. «Зведення» тоді швидше."] },
+      "фінал": { time: "01:05", href: "Credits.dc.html", endLabel: "Завершити · далі титри", lines: ["Вимкнув? Я теж хотів. У мене не було погодження Наради.", "Я тепер учу діловодів. Перше заняття — де ставити кутовий штамп.", "Друге буде про те, коли його вже не ставлять. Матеріал є.", "Кота не списуй. Він на тобі висить, а це надійніше за сейф."] }
+    };
+    if (T[st]) {
+      var t = T[st];
+      return {
+        s: { dial: false, talk: false, bonus: false, talk2: true },
+        v: { top: "4px", av: "88px", status: "На зв’язку", time: t.time },
+        t: { href: t.href, endLabel: t.endLabel, lines: t.lines.map(function (x) { return { t: x }; }) },
+        next: function () {}
+      };
+    }
     var base = opts.indexOf(st);
     if (base < 0) base = 0;
     var ls = this.state || {};
@@ -102,7 +130,8 @@ class Component extends DCLogic {
       { top: "4px", av: "88px", status: "Дзвінок завершено", time: "00:41" }
     ];
     return {
-      s: { dial: step === 0, talk: step === 1, bonus: step === 2 },
+      s: { dial: step === 0, talk: step === 1, bonus: step === 2, talk2: false },
+      t: { href: "", endLabel: "", lines: [] },
       v: views[step],
       next: function () { self.setState({ src: st, step: step + 1 }); }
     };

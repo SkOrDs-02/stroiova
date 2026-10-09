@@ -227,6 +227,93 @@ button{font:inherit;cursor:pointer}
     </sc-if>
   </sc-if>
 
+
+  <sc-if value="{{s.lv}}" hint-placeholder-val="{{false}}">
+    <div style="flex: 1; min-height: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.25; letter-spacing: 0.5px">Стройова</span>
+          <span style="font-size: 12px; color: var(--muted)">{{c.place}}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span class="st-chip">{{c.chip}}</span>
+          <button class="st-iconbtn" aria-label="Меню">
+            <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 12px; color: var(--muted)">Підписи</span>
+        <span style="font-family: var(--font-display); font-weight: 500; font-size: 28px; line-height: 1.15">{{c.sig}}</span>
+        <span style="font-family: var(--font-mono); font-size: 13px; color: var(--accent)">{{c.rate}}</span>
+      </div>
+      <div class="st-flow" role="group" aria-label="Потоки {{c.fp}}, погодження {{c.fa}}. Вузько: {{c.fv}}">
+        <div class="st-flow-nums">
+          <span class="st-flow-part {{c.fpCls}}">Потоки <b>{{c.fp}}</b></span>
+          <span class="st-flow-arrow"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+          <span class="st-flow-part {{c.faCls}}">Погодження <b>{{c.fa}}</b></span>
+        </div>
+        <span class="st-flow-verdict">Вузько: <b>{{c.fv}}</b></span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 500; color: var(--muted)">{{c.section}}</span>
+        <sc-for list="{{c.units}}" as="un" hint-placeholder-count="5">
+          <sc-if value="{{un.plain}}" hint-placeholder-val="{{true}}">
+            <div class="st-card st-unit {{un.cls}}">
+              <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{un.d1}}"></path><path d="{{un.d2}}"></path></svg></div>
+              <div class="st-unit-main">
+                <div class="st-unit-head"><span class="st-unit-name">{{un.name}}</span></div>
+                <div class="st-track" aria-hidden="true"><i style="--p: {{un.p}}%"></i></div>
+                <span class="st-unit-meta"><sc-if value="{{un.narrow}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">вузько</span></sc-if><span class="st-unit-lvl">{{un.lvl}}</span> · {{un.meta}}</span>
+              </div>
+              <button class="st-buy" aria-label="Покращити: {{un.name}} за {{un.price}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{un.price}}</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{un.hl}}" hint-placeholder-val="{{false}}">
+            <div style="position: relative; z-index: 70; border-radius: var(--radius-10); outline: 2px solid var(--accent); outline-offset: 4px; box-shadow: 0 0 0 1400px var(--scrim)">
+              <div class="st-card st-unit {{un.cls}}">
+                <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{un.d1}}"></path><path d="{{un.d2}}"></path></svg></div>
+                <div class="st-unit-main">
+                  <div class="st-unit-head"><span class="st-unit-name">{{un.name}}</span></div>
+                  <div class="st-track" aria-hidden="true"><i style="--p: {{un.p}}%"></i></div>
+                  <span class="st-unit-meta"><sc-if value="{{un.narrow}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">вузько</span></sc-if><span class="st-unit-lvl">{{un.lvl}}</span> · {{un.meta}}</span>
+                </div>
+                <button class="st-buy st-buy--hire" aria-label="Найняти діловода: {{un.name}} за {{un.price}}"><small>найняти</small>{{un.price}}</button>
+              </div>
+              <div role="note" style="position: absolute; bottom: calc(100% + 18px); left: 0; right: 0; box-sizing: border-box; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--radius-10); font-size: 14px; line-height: 1.45; color: var(--text)">
+                <span aria-hidden="true" style="position: absolute; bottom: -7.5px; left: 40px; width: 12px; height: 12px; background: var(--surface); border-right: 1.5px solid var(--accent); border-bottom: 1.5px solid var(--accent); transform: rotate(45deg)"></span>
+                {{c.note}}
+              </div>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+    </div>
+
+    <nav aria-label="Розділи" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg-deep); border-top: 1px solid var(--border); padding: 6px 4px 10px">
+      <a href="Main.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--accent); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>
+        <span>Стройова</span>
+      </a>
+      <a href="TgList.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+        <span>Телеграми</span>
+      </a>
+      <a href="Digital.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
+        <span>Цифра</span>
+      </a>
+      <a href="Museum.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
+        <span>Музей</span>
+      </a>
+      <a href="Shop.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+        <span>Магазин</span>
+      </a>
+    </nav>
+  </sc-if>
+
   <sc-if value="{{s.tg}}" hint-placeholder-val="{{false}}">
     <div style="flex: 1; min-height: 0; padding: 18px 20px 24px; display: flex; flex-direction: column; gap: 14px">
       <div style="display: flex; align-items: center; gap: 10px; min-height: 44px">
@@ -273,7 +360,7 @@ button{font:inherit;cursor:pointer}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["крок 6: покращення","крок 7: найм","крок 8: вкладка Телеграми","крок 8: вибір відповіді","крок 10: буст","Р2: Казначейство"],"default":"крок 6: покращення","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["крок 6: покращення","крок 7: найм","крок 8: вкладка Телеграми","крок 8: вибір відповіді","крок 10: буст","Р2: Казначейство","Р3: Нарада","Р3: Зведення","Р4: Доповідь","Р4: Звіти про звіти"],"default":"крок 6: покращення","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? "крок 6: покращення";
@@ -285,6 +372,14 @@ class Component extends DCLogic {
       "крок 10: буст": 10,
       "Р2: Казначейство": 20
     }[st] || 6;
+    var C = this.coachLevels(st);
+    if (C) {
+      var saved = this.props; this.props = { state: 'крок 6: покращення' };
+      var b0 = this.renderVals(); this.props = saved;
+      C.m = b0.m; C.f = b0.f; C.u = b0.u;
+      for (var sk in b0.s) if (C.s[sk] === undefined) C.s[sk] = false;
+      return C;
+    }
     var r2 = k === 20;
     var hasClerk = k === 8 || k === 10 || r2;
     var sig = { 6: "1 240", 7: "3 610", 8: "4 980", 10: "8 120", 20: "48 200" }[k] || "1 240";
@@ -296,7 +391,9 @@ class Component extends DCLogic {
         : { p: "40/хв", a: "30/хв", v: "Резолюції комбата", pCls: "", aCls: "is-narrow" });
     var tgHl = k === 8;
     return {
+      c: { place: '', chip: '', sig: '', rate: '', fp: '', fa: '', fv: '', fpCls: '', faCls: '', section: '', note: '', units: [] },
       s: {
+        lv: false,
         main: k !== 81,
         tg: k === 81,
         r1: !r2,
@@ -343,6 +440,44 @@ class Component extends DCLogic {
         finPrice: r2 ? "61 тис." : "290"
       }
     };
+  }
+  coachLevels(st) {
+    var IC = {
+      rap: ['M7 3h7l5 5v13H7z', 'M14 3v5h5M10 13h6M10 17h4'],
+      akt: ['M7 3h7l5 5v13H7z', 'M14 3v5h5M10 15l2 2 4-4'],
+      dov: ['M5 4h14v16H5z', 'M8 8h8M8 12h8M8 16h4'],
+      nak: ['M3 7h11v9H3zM14 10h4l3 3v3h-7z', 'M5 18a2 2 0 1 0 4 0a2 2 0 1 0-4 0M15 18a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+      naz: ['M6 3h12v18H6z', 'M9 7h6M9 11h6M13 16.5a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+      zv: ['M4 4h16v16H4z', 'M4 9h16M4 14h16M10 9v11'],
+      zpz: ['M5 7h11v14H5z', 'M8 4h11v14M8 11h5M8 15h5'],
+      kom: ['M4 20h4L19 9l-4-4L4 16z', 'M13 7l4 4'],
+      str: ['M7 3h7l5 5v13H7z', 'M14 3v5h5'],
+      fin: ['M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM9.5 12a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0', 'M6 9v.01M18 15v.01'],
+      kaz: ['M3 9l9-5 9 5z', 'M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18'],
+      nar: ['M3 10h18M5 10v9M19 10v9', 'M11 10V6a1 1 0 0 1 2 0v4M9 5h6'],
+      dop: ['M9 21h6M12 17v4', 'M8 11h8v6H8zM12 11V7M10 5h4']
+    };
+    function u(ic, name, lvl, meta, price, p, o) {
+      o = o || {};
+      return { d1: IC[ic][0], d2: IC[ic][1], name: name, lvl: 'рів. ' + lvl, meta: meta, price: price, p: String(p), narrow: !!o.narrow, hl: !!o.hl, plain: !o.hl, cls: o.narrow ? 'is-narrow' : '' };
+    }
+    var P = {
+      'Р3: Нарада': { place: 'Командування · кабінети й наради', chip: 'Командування', sig: '0', rate: '+3 960/хв', fp: '3 960/хв', fa: '30/хв', fv: 'Нарада', fpCls: '', faCls: 'is-narrow', section: 'Погодження',
+        note: 'Нарада — нова ланка погодження. Документ чекає, поки його обговорять.',
+        units: [u('kom', 'Резолюції комбата', 1, '792/хв · вручну', '642', 4), u('str', 'Стройова частина', 1, '990/хв · вручну', '865', 4), u('fin', 'Фінслужба', 1, '1 190/хв · вручну', '1,29 тис.', 4), u('kaz', 'Казначейство', 1, '2 100/хв · вручну', '1 тис.', 4), u('nar', 'Нарада', 1, '30/хв · вручну', '600', 4, { narrow: true, hl: true })] },
+      'Р3: Зведення': { place: 'Командування · кабінети й наради', chip: 'Командування', sig: '4,82 млн', rate: '+1,24 млн/хв', fp: '1,24 млн/хв', fa: '1,31 млн/хв', fv: 'потоки', fpCls: 'is-narrow', faCls: '', section: 'Потоки',
+        note: 'Найдорожчий потік рівня. Зведена відповідь «сумлінно» дає йому ×1,5 на 2 год.',
+        units: [u('rap', 'Рапорти', 61, '+5 120/хв · Іван «Чорна паста»', '86 тис.', 40), u('akt', 'Акти на майно', 44, '+21 тис./хв · Петро «Швидкозшивач»', '412 тис.', 76), u('dov', 'Довідки', 30, '+96 тис./хв · Ганна «Вихідна»', '3,1 млн', 20), u('nak', 'Накладні', 18, '+312 тис./хв · Тарас «Діркопробивач»', '21 млн', 72), u('naz', 'Накази по частині', 9, '+540 тис./хв · Світлана «Гриф»', '64 млн', 36), u('zv', 'Зведення', 1, '+600 тис./хв · вручну', '60 млн', 4, { hl: true })] },
+      'Р4: Доповідь': { place: 'Генштаб · зал для доповідей', chip: 'Генштаб', sig: '0', rate: '+39 600/хв', fp: '39 600/хв', fa: '40/хв', fv: 'Доповідь', fpCls: '', faCls: 'is-narrow', section: 'Погодження',
+        note: 'Доповідь — нова ланка погодження. Усе — тезово, на одну сторінку.',
+        units: [u('kom', 'Резолюції комбата', 1, '7 920/хв · вручну', '3,21 тис.', 4), u('str', 'Стройова частина', 1, '9 900/хв · вручну', '4,33 тис.', 4), u('fin', 'Фінслужба', 1, '11,9 тис./хв · вручну', '6,44 тис.', 4), u('kaz', 'Казначейство', 1, '21 тис./хв · вручну', '5 тис.', 4), u('nar', 'Нарада', 1, '30 тис./хв · вручну', '7,5 тис.', 4), u('dop', 'Доповідь', 1, '40/хв · вручну', '800', 4, { narrow: true, hl: true })] },
+      'Р4: Звіти про звіти': { place: 'Генштаб · зал для доповідей', chip: 'Генштаб', sig: '96,1 млн', rate: '+18,6 млн/хв', fp: '18,6 млн/хв', fa: '21,4 млн/хв', fv: 'потоки', fpCls: 'is-narrow', faCls: '', section: 'Потоки',
+        note: 'Телеграма сповільнила потік? Звітів про нього теж стане менше.',
+        units: [u('dov', 'Довідки', 34, '+1,12 млн/хв · Ганна «Вихідна»', '41 млн', 52), u('nak', 'Накладні', 22, '+3,9 млн/хв · Тарас «Діркопробивач»', '260 млн', 28), u('naz', 'Накази по частині', 14, '+5,4 млн/хв · Світлана «Гриф»', '410 млн', 60), u('zv', 'Зведення', 8, '+6,1 млн/хв · Ірина «Підсумок»', '820 млн', 32), u('zpz', 'Звіти про звіти', 1, '15% від суми потоків · вручну', '600 млн', 4, { hl: true })] }
+    };
+    var c = P[st];
+    if (!c) return null;
+    return { c: c, s: { lv: true, main: false, tg: false }, m: {}, f: {}, u: {} };
   }
 }
 </script>

@@ -38,7 +38,7 @@ button{font:inherit;cursor:pointer}
         <div class="st-doc-res" style="align-self: flex-end; max-width: 230px; margin: 4px 14px 2px 0; text-align: right; font-size: 19px">{{d.res}}</div>
         <div style="display: flex; flex-direction: column; gap: 2px">
           <span class="st-doc-meta">{{d.boss}} · 09.10.2026, 16:40</span>
-          <h2 id="act-title" class="st-doc-title" style="margin: 0">Акт перевірки № 4</h2>
+          <h2 id="act-title" class="st-doc-title" style="margin: 0">{{x.act}}</h2>
         </div>
         <hr class="st-doc-rule">
         <sc-for list="{{d.rows}}" as="r" hint-placeholder-count="5">
@@ -103,6 +103,41 @@ button{font:inherit;cursor:pointer}
         </div>
       </sc-if>
 
+      <sc-if value="{{s.bossPass}}" hint-placeholder-val="{{false}}">
+        <div role="status" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.4">
+          <span style="display: flex; align-items: flex-start; gap: 8px"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="color: var(--accent); stroke-width: 2.4; flex: none" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg><span><b style="color: var(--accent); font-weight: 600">Пройшли.</b> Наказ про переведення підписано. Наступна цифровізація — з переходом.</span></span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{s.bossFail}}" hint-placeholder-val="{{false}}">
+        <div role="status" style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.4">
+          <span style="display: flex; align-items: flex-start; gap: 8px"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="color: var(--fail); margin-top: 1px; flex: none" aria-hidden="true"><path d="M12 4l9 16H3z"></path><path d="M12 10v4M12 17v.01"></path></svg><span><b style="color: var(--fail); font-weight: 600">Провалили.</b> Стройова <span style="font-family: var(--font-mono); font-weight: 600">×0,5</span> на 1 год.</span></span>
+          <span style="display: flex; align-items: flex-start; gap: 8px"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="color: var(--muted); flex: none" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span>Повторний приїзд через <b style="font-family: var(--font-mono); font-weight: 600">23:59:12</b>. Пункти, що вже є, комісія зарахує.</span></span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{s.exG}}" hint-placeholder-val="{{false}}">
+        <a href="JournalNew.dc.html" class="st-card" style="display: flex; gap: 12px; padding: 10px; align-items: stretch">
+          <span style="position: relative; width: 84px; height: 110px; flex-shrink: 0; border-radius: var(--radius-4); background: {{ex.bg}}; display: flex; align-items: center; justify-content: center; padding: 0 6px 0 14px; box-sizing: border-box">
+            <span aria-hidden="true" style="position: absolute; left: 6px; top: 10px; bottom: 10px; border-left: 2px dashed var(--paper-4)"></span>
+            <span style="background: var(--paper); color: var(--ink); padding: 4px 5px; border-radius: 2px; font: 400 12px/1.25 var(--font-mono); text-align: center">
+              <b style="display: block; font-weight: 600; letter-spacing: .5px; text-transform: uppercase">{{ex.head}}</b>{{ex.short}}
+            </span>
+            <span class="st-stamp st-stamp--s st-stamp--dark" style="position: absolute; right: 4px; bottom: 5px; --st-rot:-9deg;--st-edge:100deg;">Скасовано</span>
+          </span>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <span style="font: 500 12px/1.35 var(--font-mono); color: var(--accent)">{{ex.count}}</span>
+            <span style="font-size: 14px; font-weight: 500; line-height: 1.35">{{ex.title}}</span>
+            <span style="font-size: 12px; font-weight: 600; color: var(--rarity-rare)">Рідкісний</span>
+            <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">{{ex.bonus}}</span>
+          </span>
+        </a>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <a href="JournalNew.dc.html" class="st-btn st-btn--primary st-btn--l">Подивитися експонат</a>
+          <a href="Main.dc.html" class="st-btn st-btn--neutral st-btn--m">До стройової</a>
+        </div>
+      </sc-if>
+
       <sc-if value="{{s.plain}}" hint-placeholder-val="{{true}}">
         <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l">До стройової</a>
       </sc-if>
@@ -110,7 +145,7 @@ button{font:inherit;cursor:pointer}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["пройшли ×3","без зауважень + експонат","провалили, ×0,5 на 1 год","позапланова: пройшли","Р2: Комісія командування"],"default":"пройшли ×3","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["пройшли ×3","без зауважень + експонат","провалили, ×0,5 на 1 год","позапланова: пройшли","Р2: Комісія командування","підсумкова Р2: пройдено, перехід дозволено","підсумкова Р3: провалено, повтор","підсумкова Р4: неврахований об’єкт","звичайна Р3: пройшли","звичайна Р5: пройшли"],"default":"пройшли ×3","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? 'пройшли ×3';
@@ -150,17 +185,53 @@ class Component extends DCLogic {
         verdict: [r('Висновок', 'зауважень немає'), r('Підписи', '×3 на 2 год')]
       }
     };
+    var G = {
+      'підсумкова Р2: пройдено, перехід дозволено': { kind: 'bossPass', act: 'Акт перевірки № 23', d: {
+        boss: 'Комісія командування · підсумкова', signer: 'Голова комісії командування полковник Тумбочкін',
+        res: 'Рукавичка біла.',
+        rows: [r('Пил', 'не виявлено'), r('Коридор', 'доріжка посередині'), r('Накази по частині', 'підшито'), r('Казначейство', 'до копійки'), r('Пункт рівня', 'потік відкрито', false, true)],
+        verdict: [r('Висновок', 'пройшли, перехід дозволено'), r('Підписи', '×3 на 2 год')] },
+        ex: { bg: 'var(--cover-navy)', head: 'Журнал', short: 'контролю', count: 'Новий експонат · 12 з 24', title: 'Журнал контролю за станом обліку особового складу', bonus: '−10% ціни пунктів чекліста' } },
+      'підсумкова Р3: провалено, повтор': { kind: 'bossFail', act: 'Акт перевірки № 31', d: {
+        boss: 'Перевірка зі столиці · підсумкова', signer: 'Голова комісії полковник Тумбочкін',
+        res: 'Протокол без додатка «Присутні». Значить, нікого не було. Пояснювальні.',
+        rows: [r('Протоколи', 'без додатка «Присутні»', true), r('Таблички', 'рівно'), r('Графин', 'повний'), r('Чайники', 'у шафі'), r('Зведення', 'звірено'), r('Пункт рівня', 'ще ні', true)],
+        verdict: [r('Висновок', 'провалили', true), r('Стройова', '×0,5 на 1 год', false, true)] } },
+      'підсумкова Р4: неврахований об’єкт': { kind: 'bossPass', act: 'Акт перевірки № 47', d: {
+        boss: 'Аудит усього · підсумкова', signer: 'Голова комісії полковник Тумбочкін',
+        res: 'Я й забув, скільки їх було.',
+        rows: [r('Слайди', 'пронумеровано'), r('Стос', '100 см'), r('Акти', 'з № 1'), r('Пункт рівня', '46% потоків', false, true), r('Сейф', 'неврахований об’єкт, спить', false, true)],
+        verdict: [r('Висновок', 'пройшли, перехід дозволено'), r('Підписи', '×3 на 2 год')] },
+        ex: { bg: 'var(--cover-brown)', head: 'Книга', short: 'штатно-посадова', count: 'Новий експонат · 20 з 24', title: 'Книга штатно-посадового обліку особового складу', bonus: '+10% до часу служби подарунків Ліни' } },
+      'звичайна Р3: пройшли': { kind: 'pass', act: 'Акт перевірки № 26', d: {
+        boss: 'Перевірка зі столиці', signer: 'Голова комісії полковник Тумбочкін',
+        res: 'Двері 214, 214-а і 214-б перевірено. Кабінет один, зауважень нуль.',
+        rows: [r('Протоколи', 'з додатком «Присутні»'), r('Таблички', 'рівно'), r('Графин', 'повний'), r('Чайники', 'у шафі')],
+        verdict: [r('Висновок', 'зауважень немає'), r('Підписи', '×3 на 2 год')] } },
+      'звичайна Р5: пройшли': { kind: 'pass', act: 'Акт перевірки № 52', d: {
+        boss: 'Комісія з цифрової трансформації', signer: 'Голова комісії полковник Тумбочкін',
+        res: 'Рукавичка біла, ноутбук чистий. Тумбочка порожня. Незвично.',
+        rows: [r('Електронний журнал', 'роздрукувати відмовились'), r('Ноутбук', 'протерто'), r('Кегль у дашборді', '14'), r('Акт', 'підписано КЕП')],
+        verdict: [r('Висновок', 'зауважень немає'), r('Підписи', '×3 на 2 год')] } }
+    };
+    var g = G[st];
     var fail = st === 'провалили, ×0,5 на 1 год';
     var exhibit = st === 'без зауважень + експонат';
     var unpl = st === 'позапланова: пройшли';
+    var noEx = { bg: '', head: '', short: '', count: '', title: '', bonus: '' };
     return {
-      d: D[st] ?? D['пройшли ×3'],
+      d: g ? g.d : (D[st] ?? D['пройшли ×3']),
+      x: { act: g ? g.act : 'Акт перевірки № 4' },
+      ex: g && g.ex ? g.ex : noEx,
       s: {
-        pass: !fail && !unpl,
+        pass: !fail && !unpl && !(g && g.kind !== 'pass'),
         unpl: unpl,
         fail: fail,
         exhibit: exhibit,
-        plain: !exhibit
+        bossPass: !!(g && g.kind === 'bossPass'),
+        bossFail: !!(g && g.kind === 'bossFail'),
+        exG: !!(g && g.ex),
+        plain: !exhibit && !(g && g.ex)
       }
     };
   }

@@ -62,6 +62,14 @@ button{font:inherit;cursor:pointer}
         </div>
       </sc-if>
 
+      <sc-if value="{{s.pack}}" hint-placeholder-val="{{false}}">
+        <div role="status" class="st-banner st-banner--accent">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+          <span class="st-banner-txt">Зведення б’ється. «Зведення» <span class="st-num">×1,5</span> на <span class="st-num">2 год</span>.</span>
+        </div>
+        <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">Відповідь одна. Протокол до неї на три сторінки.</span>
+      </sc-if>
+
       <sc-if value="{{s.insp}}" hint-placeholder-val="{{false}}">
         <div role="alert" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 10px 12px; border-radius: var(--radius-10); background: var(--alert-bg); border: 1px solid var(--alert-line); color: var(--alert-text); font-size: 13px; line-height: 1.4">
           <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 16H3z"></path><path d="M12 10v4M12 17v.01"></path></svg>
@@ -110,7 +118,7 @@ button{font:inherit;cursor:pointer}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["сумлінно","відписка без наслідків","відписка → позапланова перевірка","шухляда","перший раз: що таке репутація"],"default":"сумлінно","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["сумлінно","відписка без наслідків","відписка → позапланова перевірка","шухляда","перший раз: що таке репутація","Р3: відповідь пачкою"],"default":"сумлінно","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? 'сумлінно';
@@ -147,7 +155,13 @@ class Component extends DCLogic {
       rows: [r('Рішення', 'сумлінно'), r('Стройова частина', '×0,5 на 1 год'), r('Репутація', '+10 · норма')],
       stamp: 'Виконано', cta: 'Зрозуміло'
     };
-    var D = { 'сумлінно': duty, 'відписка без наслідків': reply, 'відписка → позапланова перевірка': replyInsp, 'шухляда': drawer, 'перший раз: що таке репутація': first };
+    var pack = {
+      meta: 'Вх. № 5101, 5102, 5103 · Зведення № 1', title: 'Відповідь пачкою на Зведення № 1', signer: 'Начальник стройової',
+      body: 'СЛУХАЛИ: три телеграми про наради. ВИСТУПИЛИ: стройова частина. ВИРІШИЛИ: виконати всі три, виконавець — стройова, строк — до кінця доби.',
+      rows: [r('Рішення', 'зведено, сумлінно'), r('Нарада', '×0,4 на 1 год 45 хв'), r('Папір', '0 аркушів'), r('Репутація', '+7 · норма')],
+      stamp: 'Виконано', cta: 'Добре'
+    };
+    var D = { 'Р3: відповідь пачкою': pack, 'сумлінно': duty, 'відписка без наслідків': reply, 'відписка → позапланова перевірка': replyInsp, 'шухляда': drawer, 'перший раз: що таке репутація': first };
     var insp = st === 'відписка → позапланова перевірка';
     return {
       d: D[st] ?? duty,
@@ -155,6 +169,7 @@ class Component extends DCLogic {
         reply: st === 'відписка без наслідків',
         insp: insp,
         first: st === 'перший раз: що таке репутація',
+        pack: st === 'Р3: відповідь пачкою',
         plainCta: !insp
       }
     };

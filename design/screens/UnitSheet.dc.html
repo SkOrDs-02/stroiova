@@ -41,7 +41,7 @@ button{font:inherit;cursor:pointer}
       <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{u.d1}}"></path><path d="{{u.d2}}"></path></svg></div>
       <div class="st-sheet-title">
         <h2 class="st-h2" id="us-title">{{u.name}}</h2>
-        <p class="st-sub" style="font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span>{{u.sub}}</span><sc-if value="{{u.narrow}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">вузько</span></sc-if><sc-if value="{{u.preMs}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line">×2 на 25-му</span></sc-if></p>
+        <p class="st-sub" style="font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span>{{u.sub}}</span><sc-if value="{{u.narrow}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">вузько</span></sc-if><sc-if value="{{u.preMs}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line">×2 на 25-му</span></sc-if><sc-if value="{{u.dig}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line">цифрова</span></sc-if></p>
       </div>
       <a class="st-iconbtn st-iconbtn--bare" href="Main.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
     </div>
@@ -108,7 +108,7 @@ button{font:inherit;cursor:pointer}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["потік","ланка — вузьке місце","не вистачає підписів","перед віхою","діловод не найнятий","Р2: Казначейство"],"default":"потік","section":"Стан"},"qty":{"editor":"enum","options":["×1","×10","до віхи"],"default":"×1","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["потік","ланка — вузьке місце","не вистачає підписів","перед віхою","діловод не найнятий","Р2: Казначейство","Р4: Звіти про звіти (частка)","Р5: цифрова ланка"],"default":"потік","section":"Стан"},"qty":{"editor":"enum","options":["×1","×10","до віхи"],"default":"×1","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var self = this;
@@ -124,7 +124,9 @@ class Component extends DCLogic {
       dov: ['M5 4h14v16H5z', 'M8 8h8M8 12h8M8 16h4'],
       kom: ['M4 20h4L19 9l-4-4L4 16z', 'M13 7l4 4'],
       fin: ['M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM9.5 12a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0', 'M6 9v.01M18 15v.01'],
-      kaz: ['M3 9l9-5 9 5z', 'M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18']
+      kaz: ['M3 9l9-5 9 5z', 'M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18'],
+      zpz: ['M5 7h11v14H5z', 'M8 4h11v14M8 11h5M8 15h5'],
+      ejr: ['M5 6h14v9H5z', 'M3 18h18']
     };
     var P = {
       'потік': {
@@ -206,6 +208,32 @@ class Component extends DCLogic {
         }
       }
     };
+    P['Р4: Звіти про звіти (частка)'] = {
+      ic: 'zpz', name: 'Звіти про звіти', sub: 'Сьомий потік документів · рів. 4', place: 'Генштаб · зал для доповідей', bal: '96,1 млн',
+      desc: 'Власних документів немає. Звітує про всі інші. Частка від суми шести потоків росте з кожним рівнем.',
+      msLabel: 'Частка від суми потоків', msLeft: '46% · не більше 150%', ms: 31, outLabel: 'Частка · виробіток',
+      hired: true, clerkInit: 'О', clerk: 'Оксана «Додаток»', clerkRole: 'Діловод потоку',
+      clerkLine: 'Складаю звіти про звіти. До кожного є додаток.',
+      flow: { s: '18,6 млн/хв', p: '21,4 млн/хв', side: 's', verdict: 'Зараз вузько в потоках: частка звітів додає до доходу.' },
+      q: {
+        '×1': { out: '46% → 54% · 8,6 млн/хв', inc: '18,6 млн/хв → 20 млн/хв', price: '41 млн', hint: 'Наступний рівень: +7,5 п. п.' },
+        '×10': { out: '46% → 91% · 14,6 млн/хв', inc: '18,6 млн/хв → 21,4 млн/хв', price: '1,1 млрд', wait: 'ще 1 год 12 хв', hint: 'Далі вузько стануть погодження.' },
+        'до віхи': { out: '46% → 110% · 17,6 млн/хв', inc: '18,6 млн/хв → 21,4 млн/хв', price: '6,3 млрд', wait: 'ще 5 год', hint: 'Більше 150% не буває: звітувати треба й про щось.' }
+      }
+    };
+    P['Р5: цифрова ланка'] = {
+      ic: 'ejr', name: 'Електронний журнал', sub: 'Цифрова ланка · рів. 40 · колишня Стройова частина', dig: true, place: 'Армія без паперу · бліндаж', bal: '1,84 ac',
+      desc: 'Телеграми цю ланку не сповільнюють. Виробіток — як у паперової ланки, ×3.',
+      msLabel: 'До віхи ×2 на 50-му рівні', msLeft: 'ще 10 рівнів', ms: 60, outLabel: 'Пропускає ланка',
+      hired: true, clerkInit: 'О', clerk: 'Оля «Штамп»', clerkRole: 'Діловод ланки',
+      clerkLine: 'Штамп «Паперова копія електронного документа». Ставлю востаннє.',
+      flow: { s: '4,2 ab/хв', p: '3,6 ab/хв', side: 'p', verdict: 'Зараз найвужча — Фінслужба, вона ще паперова.' },
+      q: {
+        '×1': { out: '1,21 ab/хв → 1,24 ab/хв', inc: '3,6 ab/хв, без змін', price: '96 ac' },
+        '×10': { out: '1,21 ab/хв → 1,52 ab/хв', inc: '3,6 ab/хв, без змін', price: '1,7 ad', wait: 'ще 2 год' },
+        'до віхи': { out: '1,21 ab/хв → 3,02 ab/хв', inc: '3,6 ab/хв, без змін', price: '1,7 ad', wait: 'ще 2 год', hint: 'Цифрова ланка: без сповільнення.' }
+      }
+    };
     var S = P[st] || P['потік'];
     var Q = S.q[qty] || S.q['×1'];
     var ic = IC[S.ic];
@@ -214,7 +242,7 @@ class Component extends DCLogic {
     return {
       place: S.place, bal: nb(S.bal),
       u: {
-        d1: ic[0], d2: ic[1], name: S.name, sub: nb(S.sub), narrow: !!S.narrow, preMs: !!S.preMs,
+        d1: ic[0], d2: ic[1], name: S.name, sub: nb(S.sub), narrow: !!S.narrow, preMs: !!S.preMs, dig: !!S.dig,
         desc: S.desc, msLabel: S.msLabel, msLeft: S.msLeft, msNow: S.ms, msP: '--p:' + S.ms + '%',
         outLabel: S.outLabel, bal: nb(S.bal),
         hired: !!S.hired, notHired: !S.hired, clerkInit: S.clerkInit, clerk: S.clerk, clerkRole: S.clerkRole || '',

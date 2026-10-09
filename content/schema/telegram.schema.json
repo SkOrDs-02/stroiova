@@ -1,0 +1,383 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Пул телеграм «Стройової»",
+  "description": "Файл пулу телеграм: content/telegrams.json (масив) або content/tg/*.json (масив чи об'єкт з packs[] і telegrams[]). Поля — за специфікаціями 03, 011–014 і фактичними даними. Перевірка: python3 tools/gen_tg.py --check.",
+  "oneOf": [
+    {"type": "array", "items": {"$ref": "#/$defs/telegram"}},
+    {"$ref": "#/$defs/poolObject"}
+  ],
+  "$defs": {
+    "poolObject": {
+      "description": "Пул з пачками (Р3, 011 FR-30).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "telegrams"],
+      "properties": {
+        "level": {"$ref": "#/$defs/level"},
+        "schema": {"type": "string", "description": "Довідковий опис моделі для людей"},
+        "packs": {"type": "array", "items": {"$ref": "#/$defs/pack"}},
+        "telegrams": {"type": "array", "items": {"$ref": "#/$defs/telegram"}}
+      }
+    },
+
+    "pack": {
+      "description": "Пачка «Зведення № N» (011 FR-17–FR-22, FR-30). Кількість телеграм = pack.size з balance/preset-*.json — перевіряє gen_tg.py.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "level", "order", "packDetail", "telegrams"],
+      "properties": {
+        "id": {"$ref": "#/$defs/packId"},
+        "level": {"const": 3},
+        "order": {"type": "integer", "minimum": 1},
+        "packDetail": {"type": "string", "minLength": 1, "description": "Спільна реальна деталь пачки (анти-слоп, правило однієї деталі)"},
+        "telegrams": {"type": "array", "items": {"$ref": "#/$defs/telegramId"}, "uniqueItems": true},
+        "summary": {
+          "description": "Тексти зведеної відповіді за видами варіантів",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "diligent": {"$ref": "#/$defs/packSummaryReply"},
+            "formal_reply": {"$ref": "#/$defs/packSummaryReply"},
+            "drawer": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["note"],
+              "properties": {"note": {"$ref": "#/$defs/note"}}
+            }
+          }
+        },
+        "review": {"$ref": "#/$defs/review"}
+      }
+    },
+    "packSummaryReply": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reply", "result"],
+      "properties": {
+        "reply": {"type": "string", "minLength": 1},
+        "result": {"type": "string", "minLength": 1}
+      }
+    },
+
+    "telegram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "no", "level", "from", "to", "title", "body", "deadline", "choices"],
+      "properties": {
+        "id": {"$ref": "#/$defs/telegramId"},
+        "rev": {"type": "integer", "minimum": 1, "description": "Версія тексту; за замовчуванням 1"},
+        "no": {"type": "string", "minLength": 1, "description": "Номер на документі"},
+        "level": {"$ref": "#/$defs/level"},
+        "kind": {"enum": ["standard", "notice", "override", "event"], "description": "За замовчуванням standard; event — документ події поза квотою (012 FR-17)"},
+        "eventType": {"type": "string", "description": "Лише для kind = event: event_type з random_event_resolve"},
+        "docType": {"enum": ["telegram", "message"], "description": "За замовчуванням telegram; message — «Повідомлення» Казначейства"},
+        "stamp": {"enum": ["ТЕРМІНОВО", "НЕВІДКЛАДНО", "НЕГАЙНО", "СКАСОВАНО"]},
+        "kicker": {"type": "string"},
+        "from": {"$ref": "#/$defs/sender"},
+        "to": {"$ref": "#/$defs/recipient"},
+        "title": {"type": "string", "minLength": 1},
+        "body": {"type": "string", "minLength": 1},
+        "deadlineLabel": {"type": "string"},
+        "deadline": {
+          "description": "\"std\" або сходинка строків [рівень, строк, стиль][]; лише для показу",
+          "oneOf": [
+            {"const": "std"},
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "array",
+                "prefixItems": [
+                  {"type": "string"},
+                  {"type": "string"},
+                  {"enum": ["old", "now", "alert", "plain"]}
+                ],
+                "minItems": 3,
+                "maxItems": 3
+              }
+            }
+          ]
+        },
+        "appendix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["title", "rows"],
+          "properties": {
+            "title": {"type": "string"},
+            "rows": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "schedule": {"$ref": "#/$defs/schedule"},
+        "followUps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["afterHours", "id"],
+            "properties": {
+              "afterHours": {"type": "number", "exclusiveMinimum": 0},
+              "id": {"$ref": "#/$defs/telegramId"},
+              "ifChoice": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "effects": {
+          "description": "Ефекти самої телеграми (notice і сценарні)",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cancelInspRollOf": {"$ref": "#/$defs/telegramId"},
+            "journal": {"type": "string"},
+            "openScreen": {"$ref": "#/$defs/screen"}
+          }
+        },
+        "story": {"$ref": "#/$defs/story"},
+        "pack": {
+          "description": "Місце в пачці (011)",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "index"],
+          "properties": {
+            "id": {"$ref": "#/$defs/packId"},
+            "index": {"type": "integer", "minimum": 1}
+          }
+        },
+        "sign": {"enum": ["eom1", "kava", "auto"], "description": "Підпис у фіналі (013)"},
+        "choicesNote": {"type": "string"},
+        "placeholder": {"type": "boolean", "description": "Ефекти-заглушки архетипу"},
+        "review": {"$ref": "#/$defs/review"},
+        "choices": {"type": "array", "items": {"$ref": "#/$defs/choice"}}
+      },
+      "allOf": [
+        {
+          "if": {"required": ["kind"], "properties": {"kind": {"const": "notice"}}},
+          "then": {"properties": {"choices": {"maxItems": 0}}},
+          "else": {"properties": {"choices": {"minItems": 2, "maxItems": 4}}}
+        },
+        {
+          "if": {"required": ["kind"], "properties": {"kind": {"const": "event"}}},
+          "then": {"required": ["eventType"]},
+          "else": {"not": {"required": ["eventType"]}}
+        }
+      ]
+    },
+
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scripted": {"type": "boolean"},
+        "season": {"type": "string"},
+        "repeatEveryDays": {"type": "integer", "minimum": 1},
+        "fromDay": {"type": "integer", "minimum": 0},
+        "minGapDays": {"type": "integer", "minimum": 0},
+        "orderNoStart": {"type": "integer"},
+        "chanceParam": {"type": "string", "description": "Ключ конфігу економіки з імовірністю (012: brief.chance)"},
+        "minGapDaysParam": {"type": "string", "description": "Ключ конфігу економіки з інтервалом (012: brief.minGapDays)"},
+        "outsideQuota": {"type": "boolean", "description": "Не займає слот квоти телеграм"},
+        "fading": {"type": "boolean", "description": "Р5: зникає з розкладу після конвертацій (013)"},
+        "endless": {"type": "boolean", "description": "Лише в нескінченному режимі (013)"},
+        "keepInNewUntil": {"type": "string", "description": "Подія, до якої телеграма лишається в «Нових»"},
+        "requires": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "raceActive": {"enum": ["drone", "shovel", "generator"]},
+            "digitizationsMin": {"type": "integer", "minimum": 0},
+            "conversionsMin": {"type": "integer", "minimum": 0},
+            "dubMin": {"type": "integer", "minimum": 0},
+            "dubModifier": {"enum": ["two_copies", "wet_seal", "no_did"]}
+          }
+        },
+        "trigger": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {"enum": ["finale_step", "dub_start"]},
+            "step": {"$ref": "#/$defs/finaleStep"},
+            "on": {"const": "complete"},
+            "n": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+
+    "story": {
+      "description": "Сюжетний крок, який несе телеграма (014)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["arc", "beat", "order", "trigger"],
+      "properties": {
+        "arc": {"enum": ["who_writes", "archaeologist", "ptashka", "kombat_leave", "cat", "tumbochkin", "transition", "finale"]},
+        "beat": {"type": "string", "pattern": "^st_[a-z0-9_]+$"},
+        "order": {"type": "integer", "minimum": 1},
+        "trigger": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {"type": "string"},
+            "n": {"type": "integer", "minimum": 1}
+          }
+        },
+        "beatEffects": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {"journal": {"type": "integer", "minimum": 1}}
+        }
+      }
+    },
+
+    "choice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "title", "effects"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+        "kind": {"enum": ["diligent", "formal_reply", "drawer", "special"]},
+        "title": {"type": "string", "minLength": 1, "description": "Кнопка; 03: ≤ 22 знаки (gen_tg.py попереджає)"},
+        "effects": {"$ref": "#/$defs/effects"},
+        "result": {"type": "string"},
+        "note": {"$ref": "#/$defs/note"},
+        "isNew": {"type": "boolean"},
+        "requires": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {"digitalPoints": {"type": "integer", "minimum": 0}}
+        },
+        "disabledReason": {"type": "string"}
+      }
+    },
+
+    "effects": {
+      "description": "Ефекти варіанта (03 «Ключі effects», 012, 013)",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "paper": {"type": "integer", "minimum": 0},
+        "slow": {"type": "array", "items": {"$ref": "#/$defs/slow"}},
+        "rep": {"type": "integer"},
+        "durationMin": {"type": "integer", "minimum": 0},
+        "inspPct": {"type": "integer", "minimum": 0, "maximum": 100},
+        "inspExtraItem": {"type": "string"},
+        "inspRemarkPct": {"type": "integer", "minimum": 0, "maximum": 100},
+        "inspRollAfterHours": {"type": "number", "exclusiveMinimum": 0},
+        "digitalShield": {"type": "boolean"},
+        "roll": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pct", "effects", "text"],
+          "properties": {
+            "pct": {"type": "integer", "minimum": 0, "maximum": 100},
+            "effects": {"$ref": "#/$defs/effects"},
+            "text": {"type": "string"}
+          }
+        },
+        "delayed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["afterHours", "effects"],
+            "properties": {
+              "afterHours": {"type": "number", "exclusiveMinimum": 0},
+              "effects": {"$ref": "#/$defs/effects"},
+              "text": {"type": "string"}
+            }
+          }
+        },
+        "returnsAfterHours": {"type": "number", "exclusiveMinimum": 0},
+        "race": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "docHours": {"type": "number"},
+            "pauseDoc": {"type": "boolean"}
+          }
+        },
+        "fuel": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "refuelBlockedHours": {"type": "number", "minimum": 0, "maximum": 1},
+            "fillAfterHours": {"type": "number", "minimum": 0},
+            "fillTank": {"type": "boolean"}
+          }
+        },
+        "kombat": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pct", "maxMin"],
+          "properties": {
+            "pct": {"type": "integer", "minimum": 0, "maximum": 100},
+            "maxMin": {"type": "integer", "minimum": 1, "maximum": 30}
+          }
+        },
+        "clerkAway": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["target", "hours"],
+          "properties": {
+            "target": {"$ref": "#/$defs/unit"},
+            "hours": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "setFlag": {"type": "string"},
+        "ifFlag": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["flag", "effects"],
+          "properties": {
+            "flag": {"type": "string"},
+            "effects": {"$ref": "#/$defs/effects"}
+          }
+        },
+        "clearFlag": {"type": "boolean"},
+        "ifNoClerk": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["target", "effects"],
+          "properties": {
+            "target": {"$ref": "#/$defs/unit"},
+            "effects": {"$ref": "#/$defs/effects"},
+            "text": {"type": "string"}
+          }
+        },
+        "queueNext": {"type": "array", "items": {"$ref": "#/$defs/telegramId"}},
+        "curio": {"type": "string"},
+        "curioAfterFollowUp": {"type": "string"},
+        "arc": {"type": "string"},
+        "openScreen": {"$ref": "#/$defs/screen"}
+      }
+    },
+    "slow": {
+      "description": "Сповільнення одиниці; ×0 не буває (рішення 25)",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "mult", "hours"],
+      "properties": {
+        "target": {"$ref": "#/$defs/unit"},
+        "mult": {"type": "number", "minimum": 0.25, "maximum": 1},
+        "hours": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+
+    "unit": {
+      "description": "Потоки й ланки труби (03, 011, 012). Має збігатися з STAGES у tools/gen_tg.py",
+      "enum": ["raporty", "akty", "dovidky", "nakladni", "nakazy", "zvedennia", "zpz", "kombat", "stroy", "fin", "kazna", "narada", "dopovid"]
+    },
+    "sender": {
+      "description": "Відправник (03; cmd_hq — штаб командування, 011). Має збігатися з SENDERS у tools/gen_tg.py",
+      "enum": ["higher_hq", "bn_chief_of_staff", "bde_support", "fin_chief", "info_security", "treasury", "bde_chief_of_staff", "cmd_hq"]
+    },
+    "recipient": {"enum": ["bn_commander", "stroy_chief", "bde_fin"]},
+    "level": {"type": "integer", "minimum": 1, "maximum": 5},
+    "finaleStep": {"enum": ["order", "script", "last_book", "call", "credits", "quiet", "endless_offer"]},
+    "screen": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "id екрана з docs/screens.md"},
+    "telegramId": {"type": "string", "pattern": "^tg_[a-z0-9_]+$"},
+    "packId": {"type": "string", "pattern": "^pack_[0-9]{2}$"},
+    "note": {"type": "string", "maxLength": 60, "description": "Рядок ефекту під варіантом, ≤ 60 (03, docs/texts.md)"},
+    "review": {"type": "boolean", "description": "Текст чекає вичитки носієм"}
+  }
+}

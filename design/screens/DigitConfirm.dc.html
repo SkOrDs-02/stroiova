@@ -31,7 +31,7 @@ button{font:inherit;cursor:pointer}
 
   <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px">
     <div class="st-modal" role="alertdialog" aria-modal="true" aria-labelledby="dc-title" aria-describedby="dc-sub">
-      <h2 class="st-h2" id="dc-title">Оцифрувати батальйон?</h2>
+      <h2 class="st-h2" id="dc-title">{{c.title}}</h2>
       <p class="st-sub" id="dc-sub">Назад не повернути. {{c.sub}}</p>
 
       <div style="display: flex; flex-direction: column; gap: 2px">
@@ -45,8 +45,8 @@ button{font:inherit;cursor:pointer}
       <div class="st-card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
         <span style="font-size: 12px; color: var(--muted)">Обнулиться</span>
         <div style="display: flex; align-items: baseline; gap: 8px; font-size: 13px"><span style="flex: 1">Підписи</span><b style="font-family: var(--font-mono); font-weight: 600">{{c.sigs}} → 0</b></div>
-        <div style="display: flex; align-items: baseline; gap: 8px; font-size: 13px"><span style="flex: 1">Рівні 4 потоків і 3 ланок</span><b style="font-family: var(--font-mono); font-weight: 600">→ 0</b></div>
-        <div style="display: flex; align-items: baseline; gap: 8px; font-size: 13px"><span style="flex: 1">Діловоди, наймати знову</span><b style="font-family: var(--font-mono); font-weight: 600">7 → 0</b></div>
+        <div style="display: flex; align-items: baseline; gap: 8px; font-size: 13px"><span style="flex: 1">{{c.levels}}</span><b style="font-family: var(--font-mono); font-weight: 600">→ 0</b></div>
+        <div style="display: flex; align-items: baseline; gap: 8px; font-size: 13px"><span style="flex: 1">Діловоди, наймати знову</span><b style="font-family: var(--font-mono); font-weight: 600">{{c.clerks}} → 0</b></div>
       </div>
 
       <div class="st-card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; background: var(--bg)">
@@ -59,7 +59,7 @@ button{font:inherit;cursor:pointer}
       <sc-if value="{{s.lvl}}" hint-placeholder-val="{{false}}">
         <div style="padding: 10px 12px; border: 1.5px solid var(--accent); border-radius: var(--radius-10); display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.45">
           <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="color: var(--accent); margin-top: 1px" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5M10 13h6M10 17h4"></path></svg>
-          <span>Третя цифровізація на рівні. Після неї — наказ про переведення в бригаду: бліндаж лишається батальйону, бали й музей їдуть з тобою.</span>
+          <span>{{c.lvlText}}</span>
         </div>
       </sc-if>
 
@@ -72,11 +72,12 @@ button{font:inherit;cursor:pointer}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","з переходом рівня"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","з переходом рівня","з переходом: Р2→Р3","з переходом: Р3→Р4","з переходом: Р4→Р5"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? 'звичайний';
-    var lvl = st === 'з переходом рівня';
+    var lvl = st !== 'звичайний';
+    var base = { title: 'Оцифрувати батальйон?', levels: 'Рівні 4 потоків і 3 ланок', clerks: '7', lvlText: 'Третя цифровізація на рівні. Після неї — наказ про переведення в бригаду: бліндаж лишається батальйону, бали й музей їдуть з тобою.' };
     var c = {
       sub: 'Журнали підуть у музей.',
       pts: '+41', ptsWord: 'цифровий бал', mult: '×1,76 → ×2,58',
@@ -93,6 +94,14 @@ class Component extends DCLogic {
         cta: 'Оцифрувати й перейти'
       };
     }
+    var X = {
+      'з переходом: Р2→Р3': { title: 'Оцифрувати бригаду?', levels: 'Рівні 5 потоків і 4 ланок', clerks: '9', lvlText: 'Після цієї цифровізації — переведення в командування. Бали й музей їдуть з тобою.', pts: '+118', mult: '×4,90 → ×6,22', sigs: '2,41 млрд', keepPts: '486 + 118', museum: '12 з 24' },
+      'з переходом: Р3→Р4': { title: 'Оцифрувати командування?', levels: 'Рівні 6 потоків і 5 ланок', clerks: '11', lvlText: 'Після цієї цифровізації — переведення в зал доповідей. Бали й музей їдуть з тобою.', pts: '+204', mult: '×8,12 → ×10,6', sigs: '318 млрд', keepPts: '1 214 + 204', museum: '16 з 24' },
+      'з переходом: Р4→Р5': { title: 'Оцифрувати зал доповідей?', levels: 'Рівні 7 потоків і 6 ланок', clerks: '13', lvlText: 'Після цієї цифровізації — повернення в бліндаж. Бали й музей їдуть з тобою.', pts: '+330', mult: '×15,4 → ×19,6', sigs: '12,3 ab', keepPts: '2 870 + 330', museum: '20 з 24' }
+    };
+    var k;
+    for (k in base) if (c[k] === undefined) c[k] = base[k];
+    if (X[st]) for (k in X[st]) c[k] = X[st][k];
     return { s: { lvl: lvl }, c: c };
   }
 }

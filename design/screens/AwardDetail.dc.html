@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Грамота · шторка</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 12px">
+    <span style="min-height: 44px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 22px">Музей</span>
+    <div style="height: 54px; border-radius: var(--radius-12); background: var(--bg-deep); border: 1px solid var(--border)"></div>
+    <div style="height: 30px; width: 60%; border-radius: var(--radius-8); background: var(--surface-2)"></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <div style="height: 112px; border-radius: var(--radius-6); background: var(--paper-3)"></div>
+      <div style="height: 112px; border-radius: var(--radius-6); background: var(--surface); border: 1px dashed var(--border-strong)"></div>
+      <div style="height: 112px; border-radius: var(--radius-6); background: var(--surface); border: 1px dashed var(--border-strong)"></div>
+      <div style="height: 112px; border-radius: var(--radius-6); background: var(--paper-3)"></div>
+    </div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="ad-title" style="max-height: 92%">
+    <div class="st-sheet-grab" aria-hidden="true"></div>
+    <div class="st-sheet-head">
+      <div class="st-unit-plate" aria-hidden="true">
+        <sc-if value="{{s.hidden}}" hint-placeholder-val="{{false}}"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></sc-if>
+        <sc-if value="{{s.notHidden}}" hint-placeholder-val="{{true}}"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v14H6z"></path><path d="M9 7h6M9 11h4M10 17l-1 4 3-2 3 2-1-4"></path></svg></sc-if>
+      </div>
+      <div class="st-sheet-title">
+        <h2 class="st-h2" id="ad-title">{{d.head}}</h2>
+        <p class="st-sub" style="font-size: 12px">{{d.sub}}</p>
+      </div>
+      <a class="st-iconbtn st-iconbtn--bare" href="Museum.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    </div>
+
+    <sc-if value="{{s.framed}}" hint-placeholder-val="{{true}}">
+      <article class="st-paper st-paper--card" aria-label="{{d.aria}}" style="padding: 22px 22px 18px; align-items: center; text-align: center; gap: 8px; box-shadow: inset 0 0 0 8px var(--paper), inset 0 0 0 10px var(--paper-rule), inset 0 0 0 13px var(--paper), inset 0 0 0 14px var(--paper-line)">
+        <span class="st-doc-title" style="font-size: 26px; letter-spacing: 6px; margin-top: 6px">{{d.docTitle}}</span>
+        <span class="st-doc-meta">{{d.cat}}</span>
+        <span class="st-doc-body" style="font-size: 16px">«{{d.title}}»</span>
+        <p class="st-doc-body" style="font-size: 14px">{{d.text}}</p>
+        <div style="align-self: stretch; display: flex; flex-direction: column; gap: 4px; text-align: left; margin-top: 4px">
+          <span class="st-doc-meta" style="color: var(--ink)">Нагороджується: <span style="font-family: var(--font-hand); font-weight: 600; font-size: 19px; color: var(--pen)">{{d.awardee}}</span></span>
+          <span class="st-doc-meta">{{d.date}}</span>
+        </div>
+        <div style="align-self: stretch; display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 4px">
+          <div class="st-doc-sign" style="position: relative; text-align: left">
+            <svg width="96" height="30" viewBox="0 0 104 34" aria-hidden="true"><path d="M6 24c6-14 12-16 14-6s-6 12 2 2 10-14 14-2 4 10 10 0 8-10 12-2 10 4 16-2l22-4"></path></svg>
+            <span>Начальник стройової частини</span>
+            <div aria-hidden="true" style="position: absolute; right: -34px; bottom: -8px">
+              <svg class="st-seal" width="54" height="54" viewBox="0 0 64 64" style="transform: rotate(-14deg)"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle><defs><path id="arc-ad1" d="M32 32m-22.5 0a22.5 22.5 0 1 1 45 0a22.5 22.5 0 1 1-45 0"></path></defs><text font-size="6.4" letter-spacing=".5"><textPath href="#arc-ad1">СТРОЙОВА ЧАСТИНА · ВИХ. № 000 ·</textPath></text><text x="32" y="31" text-anchor="middle" font-size="6.2">ДЛЯ</text><text x="32" y="38.5" text-anchor="middle" font-size="6.2">ПАКЕТІВ</text></svg>
+            </div>
+          </div>
+        </div>
+      </article>
+    </sc-if>
+
+    <sc-if value="{{s.order}}" hint-placeholder-val="{{false}}">
+      <article class="st-paper" aria-label="{{d.aria}}" style="gap: 8px">
+        <span class="st-paper-num" aria-hidden="true">1</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; text-align: center">
+          <span class="st-doc-title" style="font-size: 17px">{{d.docTitle}}</span>
+          <span class="st-doc-meta">по стройовій частині · {{d.cat}}</span>
+        </div>
+        <hr class="st-doc-rule">
+        <span class="st-doc-body" style="font-size: 15px">«{{d.title}}»</span>
+        <p class="st-doc-body">{{d.text}}</p>
+        <span class="st-doc-meta" style="color: var(--ink)">Нагороджується: <span style="font-family: var(--font-hand); font-weight: 600; font-size: 19px; color: var(--pen)">{{d.awardee}}</span></span>
+        <span class="st-doc-meta">{{d.date}}</span>
+        <hr class="st-doc-rule">
+        <span class="st-doc-meta" style="color: var(--ink)">Згідно з оригіналом</span>
+        <div class="st-doc-foot">
+          <div class="st-doc-sign" style="position: relative">
+            <svg width="96" height="30" viewBox="0 0 104 34" aria-hidden="true"><path d="M5 25C13 8 20 28 28 14S42 9 46 21 60 28 66 12 82 19 88 17L108 13"></path></svg>
+            <span>Діловод стройової частини</span>
+            <div aria-hidden="true" style="position: absolute; right: -34px; bottom: -8px">
+              <svg class="st-seal" width="54" height="54" viewBox="0 0 64 64" style="transform: rotate(-10deg)"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle><defs><path id="arc-ad2" d="M32 32m-22.5 0a22.5 22.5 0 1 1 45 0a22.5 22.5 0 1 1-45 0"></path></defs><text font-size="6.4" letter-spacing=".5"><textPath href="#arc-ad2">СТРОЙОВА ЧАСТИНА · ВИХ. № 000 ·</textPath></text><text x="32" y="31" text-anchor="middle" font-size="6.2">ДЛЯ</text><text x="32" y="38.5" text-anchor="middle" font-size="6.2">ПАКЕТІВ</text></svg>
+            </div>
+          </div>
+        </div>
+      </article>
+    </sc-if>
+
+    <sc-if value="{{s.open}}" hint-placeholder-val="{{false}}">
+      <div class="st-card" style="padding: 14px; display: flex; flex-direction: column; gap: 10px; border-style: dashed; border-color: var(--border-strong)">
+        <span style="font-size: 12px; color: var(--muted)">{{d.typeWord}} · {{d.cat}}</span>
+        <span style="font-size: 17px; font-weight: 600; line-height: 1.35">{{d.title}}</span>
+        <span style="font-size: 14px; line-height: 1.5">{{d.hint}}</span>
+        <sc-if value="{{s.prog}}" hint-placeholder-val="{{false}}">
+          <div class="st-progress">
+            <div class="st-progress-head"><span class="st-progress-label">{{d.progLabel}}</span><span class="st-progress-val" style="color: var(--text)">{{d.prog}}</span></div>
+            <div class="st-track st-track--l" role="progressbar" aria-label="{{d.progLabel}}" aria-valuemin="0" aria-valuemax="{{d.max}}" aria-valuenow="{{d.cur}}" style="background: var(--bg)"><i style="--p: {{d.pct}}%"></i></div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.hidden}}" hint-placeholder-val="{{false}}">
+      <div class="st-card" style="padding: 18px 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; background: var(--surface-2); border-style: dashed">
+        <svg class="st-ico" width="28" height="28" viewBox="0 0 24 24" style="color: var(--muted)" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+        <span style="font-size: 16px; font-weight: 600">Для службового користування</span>
+        <span style="font-size: 14px; line-height: 1.5; color: var(--muted)">Умову оголосять після нагородження</span>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-if value="{{s.owned}}" hint-placeholder-val="{{true}}">
+        <a href="ShareCard.dc.html" class="st-btn st-btn--primary st-btn--l">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"></path><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path></svg>
+          Поділитися
+        </a>
+        <span class="st-btn-note">На картинці немає позивного й дати: рядок «Нагороджується» порожній.</span>
+      </sc-if>
+      <sc-if value="{{s.notOwned}}" hint-placeholder-val="{{false}}">
+        <a href="Museum.dc.html" class="st-btn st-btn--neutral st-btn--m">До стіни грамот</a>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["грамота","подяка","витяг з наказу","неотримана з прогресом","неотримана без прогресу","прихована"],"default":"грамота","section":"Стан"},"gender":{"editor":"enum","options":["він","вона"],"default":"він","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'грамота';
+    var she = (this.props.gender ?? 'він') === 'вона';
+    var awardee = (she ? 'стройовичка' : 'стройовик') + ' Ексель';
+    var D = {
+      'грамота': { kind: 'framed', type: 'Грамота', docTitle: 'ГРАМОТА', cat: 'Телеграми', title: 'Сто телеграм', text: 'За сто телеграм згори. Вхідний номер сотої збігся з вихідним номером першої. Збіг не досліджувати.', date: 'Оголошено 04.10.2026' },
+      'подяка': { kind: 'framed', type: 'Подяка', docTitle: 'ПОДЯКА', cat: 'Гонка з часом', title: 'Списано без штрафу', text: 'За подарунок, списаний раніше, ніж поставлений на облік. Штрафу немає. Запис у журналі курйозів є.', date: 'Оголошено 22.09.2026' },
+      'витяг з наказу': { kind: 'order', type: 'Оголошено в наказі', docTitle: 'ВИТЯГ З НАКАЗУ № 2', cat: 'Служба', title: 'Переведення в командування', text: '§ 2. Призначити в командування. Кабінет 214-б, він же 214 і 214-а. Ключ один.', date: 'Оголошено 03.10.2026' },
+      'неотримана з прогресом': { kind: 'open', type: 'Грамота', cat: 'Кіт Сейф', title: 'Кіт, сірий, 1 од.', hint: 'Кіт має перевернутися 300 разів.', cur: 64, max: 300, progLabel: 'Прогрес' },
+      'неотримана без прогресу': { kind: 'open', type: 'Оголошено в наказі', cat: 'Перевірки', title: 'Перевірка зі столиці', hint: 'Пройти «Перевірку зі столиці».' },
+      'прихована': { kind: 'hidden', cat: 'Для службового користування' }
+    };
+    var d = D[st] || D['грамота'];
+    var owned = d.kind === 'framed' || d.kind === 'order';
+    var head = owned ? d.type : (d.kind === 'hidden' ? 'Для службового користування' : d.title);
+    var sub = owned ? (d.cat + ' · ' + d.date) : (d.kind === 'hidden' ? 'Умову оголосять після нагородження' : 'Попереду');
+    return {
+      s: {
+        framed: d.kind === 'framed', order: d.kind === 'order', open: d.kind === 'open', hidden: d.kind === 'hidden', notHidden: d.kind !== 'hidden',
+        prog: !!d.max, owned: owned, notOwned: !owned
+      },
+      d: {
+        head: head, sub: sub,
+        docTitle: d.docTitle || '', cat: d.cat || '', title: d.title || '', text: d.text || '', date: d.date || '',
+        awardee: awardee, typeWord: d.type || '', hint: d.hint || '',
+        prog: d.max ? d.cur + ' з ' + d.max : '', cur: String(d.cur || 0), max: String(d.max || 0), pct: d.max ? String(Math.round(d.cur / d.max * 100)) : '0', progLabel: d.progLabel || '',
+        aria: owned ? (d.docTitle + '. «' + d.title + '». ' + d.text + ' Нагороджується: ' + awardee + '. ' + d.date) : ''
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

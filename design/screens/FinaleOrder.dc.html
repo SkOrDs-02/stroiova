@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Наказ про вимкнення розсилки</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+@keyframes fo-feed { from { transform: translateY(-34px); } to { transform: translateY(0); } }
+.fo-sheet { animation: fo-feed 1.2s var(--ease-out) both; }
+@media (prefers-reduced-motion: reduce) { .fo-sheet { animation: none; } }
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden; padding: 18px 20px 24px; gap: 14px">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+    <span style="font-family: var(--font-mono); font-size: 12px; color: var(--muted)">Армія без паперу · бліндаж</span>
+    <span style="font-family: var(--font-mono); font-size: 12px; color: var(--muted)">фінал</span>
+  </div>
+
+  <article class="st-paper" aria-label="Наказ про вимкнення розсилки. Погоджено всіма ланками. Підписи: {{progressText}}" style="gap: 10px; flex-shrink: 0">
+    <span class="st-paper-num" aria-hidden="true">1</span>
+    <sc-if value="{{s.stamped}}" hint-placeholder-val="{{false}}">
+      <div style="position: absolute; right: 16px; top: 30px; z-index: 1">
+        <span class="st-stamp st-stamp--l {{hit}}" style="--st-rot: -7deg; --st-edge: 95deg">Погоджено</span>
+      </div>
+    </sc-if>
+    <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 128px">
+      <span class="st-doc-title">Наказ</span>
+      <span class="st-doc-title" style="font-size: 15px; text-transform: none; letter-spacing: 0">Про вимкнення розсилки</span>
+      <span class="st-doc-meta">Підстава: телеграма №&nbsp;5351</span>
+    </div>
+    <hr class="st-doc-rule">
+    <div style="display: flex; flex-direction: column; gap: 0">
+      <span class="st-doc-meta">Погоджено:</span>
+      <sc-for list="{{lanes}}" as="l" hint-placeholder-count="6">
+        <div class="st-doc-row" style="font-size: 12px; line-height: 1.5"><span>{{l}}</span><i class="st-doc-dots"></i><span style="color: var(--pen); display: inline-flex; align-items: center; gap: 3px"><svg width="12" height="12" viewBox="0 0 24 24" style="fill: none; stroke: var(--pen); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>так</span></div>
+      </sc-for>
+    </div>
+    <hr class="st-doc-rule">
+    <div class="st-progress" style="gap: 6px">
+      <div class="st-progress-head" style="font-size: 13px">
+        <span>Підписи</span>
+        <b style="font-family: var(--font-mono); font-weight: 600">{{progressText}}</b>
+      </div>
+      <div class="st-track st-track--paper" role="progressbar" aria-label="Підписи" aria-valuenow="{{n}}" aria-valuemin="0" aria-valuemax="8"><i style="--p: {{pct}}%"></i></div>
+    </div>
+    <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px 10px">
+      <sc-for list="{{slots}}" as="sl" hint-placeholder-count="8">
+        <div style="height: 26px; border-bottom: 1px dotted var(--paper-rule); display: flex; align-items: flex-end">
+          <sc-if value="{{sl.a}}" hint-placeholder-val="{{false}}"><svg width="56" height="22" viewBox="0 0 56 24" style="display: block; fill: none; stroke: var(--pen); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="M2 18C8 6 12 20 17 10S26 6 28 14 36 18 40 8 48 12 54 10"></path></svg></sc-if>
+          <sc-if value="{{sl.b}}" hint-placeholder-val="{{false}}"><svg width="56" height="22" viewBox="0 0 56 24" style="display: block; fill: none; stroke: var(--pen); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="M2 16c4-10 8-10 9-3s-3 8 1 2 6-9 9-2 3 6 6 0 5-6 8-1 6 2 10-1"></path></svg></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </article>
+
+  <sc-if value="{{s.signing}}" hint-placeholder-val="{{true}}">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px">
+      <button onClick="{{sign}}" class="st-tapseal" aria-label="Підписати, зібрано {{progressText}}">
+        <svg class="st-ico" width="30" height="30" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg>
+        Підписати
+      </button>
+      <span style="font-size: 14px; line-height: 1.45; color: var(--muted); text-align: center; max-width: 300px">Скрипт приймає лише паперовий наказ. Підпиши вручну.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{s.stampOnly}}" hint-placeholder-val="{{false}}">
+    <div role="status" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 14px">
+      <span class="st-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>Дід друкує останній аркуш</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{s.printed}}" hint-placeholder-val="{{false}}">
+    <div aria-hidden="true" style="position: relative; flex-shrink: 0; height: 168px; border-radius: var(--radius-12); background: var(--bg-deep); border: 1px solid var(--border); overflow: hidden">
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background: var(--scene-l1-wood)"></div>
+      <div style="position: absolute; left: 0; right: 0; bottom: 40px; height: 4px; background: var(--scene-l1-earth)"></div>
+      <svg width="350" height="168" viewBox="0 0 350 168" style="position: absolute; left: 0; top: 0">
+        <rect x="34" y="20" width="44" height="104" style="fill: var(--surface-2)"></rect>
+        <rect x="40" y="28" width="32" height="6" style="fill: var(--border)"></rect>
+        <rect x="40" y="40" width="32" height="6" style="fill: var(--border)"></rect>
+        <rect x="40" y="52" width="32" height="6" style="fill: var(--border)"></rect>
+        <rect x="112" y="78" width="132" height="50" rx="6" style="fill: var(--scene-l1-metal)"></rect>
+        <rect x="120" y="70" width="116" height="12" rx="3" style="fill: var(--scene-l1-olive)"></rect>
+        <rect x="128" y="96" width="100" height="6" rx="2" style="fill: var(--bg-deep)"></rect>
+        <circle cx="228" cy="88" r="3.5" style="fill: var(--accent)"></circle>
+        <rect x="126" y="120" width="104" height="6" rx="2" style="fill: var(--surface-2)"></rect>
+        <g class="fo-sheet">
+          <rect x="134" y="100" width="88" height="44" style="fill: var(--paper)"></rect>
+          <path d="M144 112h56M144 120h68M144 128h40" style="stroke: var(--paper-line); stroke-width: 3; stroke-linecap: round"></path>
+          <rect x="190" y="126" width="24" height="12" rx="1" style="fill: none; stroke: var(--stamp); stroke-width: 2"></rect>
+        </g>
+        <rect x="268" y="96" width="34" height="32" rx="4" style="fill: var(--scene-l1-metal)"></rect>
+        <rect x="272" y="100" width="26" height="18" rx="2" style="fill: var(--bg)"></rect>
+      </svg>
+    </div>
+    <div role="status" style="display: flex; gap: 10px; align-items: center; font-size: 15px; line-height: 1.45">
+      <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="color: var(--accent); stroke-width: 2.2" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+      <span>Дід друкує останній аркуш</span>
+    </div>
+    <a href="FinaleScript.dc.html" class="st-btn st-btn--primary st-btn--l" style="margin-top: auto">
+      До серверної
+      <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["підпис 0 з 8","підпис 5 з 8","штамп","Дід друкує"],"default":"підпис 0 з 8","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var need = 8;
+    var st = this.props.state ?? 'підпис 0 з 8';
+    var base = st === 'підпис 5 з 8' ? 5 : (st === 'підпис 0 з 8' ? 0 : 8);
+    var ls = this.state || {};
+    var n = (ls.src === st && typeof ls.n === 'number') ? ls.n : base;
+    if (n > need) n = need;
+    var full = n >= need;
+    var printed = st === 'Дід друкує';
+    var slots = [];
+    for (var i = 0; i < need; i++) slots.push({ a: i < n && i % 2 === 0, b: i < n && i % 2 === 1 });
+    return {
+      n: n, progressText: n + ' з ' + need, pct: Math.round(n / need * 100), slots: slots,
+      lanes: ['Пакетне підписання', 'Електронний журнал', 'КЕП на первинці', 'Електронні платежі', 'Нарада скасована', 'Дашборд'],
+      hit: printed ? '' : 'st-stamp--hit',
+      s: { signing: !full, stamped: full, stampOnly: full && !printed, printed: printed },
+      sign: function () { self.setState({ src: st, n: n + 1 }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

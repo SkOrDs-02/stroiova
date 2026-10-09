@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Дублювати на папері</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+.ei-row { display: flex; align-items: baseline; gap: 8px; font-size: 13px; line-height: 1.4; }
+.ei-row span { flex: 1; min-width: 0; }
+.ei-row b { font: 600 13px/1.3 var(--font-mono); white-space: nowrap; }
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 12px">
+    <span style="font-family: var(--font-display); font-weight: 700; font-size: 22px">Телеграми</span>
+    <div style="height: 92px; border-radius: var(--radius-10); background: var(--surface); border: 1.5px solid var(--accent)"></div>
+    <div style="height: 92px; border-radius: var(--radius-10); background: var(--surface-2); border: 1px solid var(--border)"></div>
+    <div style="height: 92px; border-radius: var(--radius-10); background: var(--surface-2); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 73px; background: var(--bg-deep); border-top: 1px solid var(--border)"></div>
+  <div class="st-scrim"></div>
+
+  <div class="st-modal-wrap" style="padding: 16px 20px">
+    <section class="st-modal" role="alertdialog" aria-modal="true" aria-labelledby="ei-title" style="max-height: 100%; overflow-y: auto; gap: 12px; padding-top: 16px">
+
+      <sc-if value="{{s.first}}" hint-placeholder-val="{{true}}">
+        <article class="st-paper st-paper--card" aria-label="Телеграма № 5355. Про дублювання на папері. Невідкладно" style="gap: 6px">
+          <div style="position: absolute; right: 12px; top: 12px"><span class="st-stamp st-stamp--s" style="--st-rot: 5deg; --st-edge: 80deg">Невідкладно</span></div>
+          <div style="display: flex; flex-direction: column; gap: 1px; padding-right: 112px">
+            <span class="st-doc-title" style="font-size: 14px">Телеграма № 5355</span>
+            <span class="st-doc-meta">Про дублювання на папері</span>
+          </div>
+          <span class="st-doc-meta">Від: начальник штабу батальйону · Кому: начальник стройової частини</span>
+          <hr class="st-doc-rule">
+          <p class="st-doc-body">Нагорі хтось злякався. Наказ: усе дублювати на папері.</p>
+          <div class="st-doc-foot" style="margin-top: 0">
+            <div class="st-doc-sign"><svg width="96" height="30" viewBox="0 0 104 34" aria-hidden="true"><path d="M6 22c8-16 14-14 12-4s-4 10 4 0 8-12 12-2 6 8 10-2 10-6 14 0 8 4 14-2l22-6"></path></svg><span>Начштабу «Кава»</span></div>
+          </div>
+        </article>
+      </sc-if>
+      <sc-if value="{{s.next}}" hint-placeholder-val="{{false}}">
+        <div class="st-card" style="padding: 10px 12px; display: flex; align-items: center; gap: 10px; background: var(--bg)">
+          <span class="st-stamp st-stamp--s st-stamp--dark" style="--st-rot: -4deg; --st-edge: 100deg">Виконано</span>
+          <span style="flex: 1; min-width: 0; font-size: 13px; line-height: 1.45">Дубль 2 закрито. Наказ про наступний уже друкують.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: var(--muted)">Особистий рекорд</span><span style="font: 600 13px/1.4 var(--font-mono)">Дубль 2 · підписів за весь час: 10<sup style="font-size: 12px">31</sup></span></div>
+      </sc-if>
+
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+        <h2 id="ei-title" style="margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 26px; line-height: 1.15; color: var(--accent)">{{d.title}}</h2>
+        <span style="font: 500 12px/1.3 var(--font-mono); color: var(--muted)">Дублювати на папері</span>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: flex-start; padding: 11px 12px; border: 1.5px solid var(--accent); border-radius: var(--radius-10)">
+        <div aria-hidden="true" style="width: 44px; height: 44px; flex: none; border-radius: var(--radius-8); background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--accent)">
+          <sc-if value="{{m.copies}}" hint-placeholder-val="{{true}}">
+            <svg class="st-ico" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7V4h9l3 3v11h-3"></path><path d="M4 7h9l3 3v10H4z"></path><path d="M7 13h6M7 16h4"></path></svg>
+          </sc-if>
+          <sc-if value="{{m.wet}}" hint-placeholder-val="{{false}}">
+            <svg class="st-ico" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v4l2 3H7l2-3z"></path><path d="M5 10h14v4H5z"></path><path d="M8 18c0 1.5 1 2.5 2 2.5s2-1 2-2.5-2-3-2-3-2 1.5-2 3zM15 17.5c0 1 .7 1.7 1.5 1.7s1.5-.7 1.5-1.7-1.5-2.2-1.5-2.2-1.5 1.2-1.5 2.2z"></path></svg>
+          </sc-if>
+          <sc-if value="{{m.nodid}}" hint-placeholder-val="{{false}}">
+            <svg class="st-ico" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="9" width="16" height="9" rx="2"></rect><path d="M7 9V5h10v4M7 14h10M7 18v2h10v-2"></path><path d="M3 3l18 18"></path></svg>
+          </sc-if>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+          <span style="font-size: 12px; color: var(--muted)">Модифікатор Дубля</span>
+          <span style="font-size: 15px; font-weight: 600; line-height: 1.3">{{m.name}}</span>
+          <span style="font-size: 13px; line-height: 1.45; color: var(--text)">{{m.text}}</span>
+        </div>
+      </div>
+
+      <div class="st-card" style="padding: 10px 14px; display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 12px; color: var(--muted)">Обнулиться</span>
+        <div class="ei-row"><span>Рівень</span><b>{{d.levelFrom}} → Батальйон</b></div>
+        <div class="ei-row"><span>Підписи, рівні, діловоди</span><b>→ 0</b></div>
+        <div class="ei-row"><span>Цифрові ланки</span><b>6 → 0</b></div>
+      </div>
+      <div class="st-card" style="padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; background: var(--bg)">
+        <span style="font-size: 12px; color: var(--muted)">Залишиться</span>
+        <div class="ei-row"><span>Цифрові бали й множник</span><b>{{d.points}}</b></div>
+        <div class="ei-row"><span>Музей</span><b>24 з 24</b></div>
+        <div class="ei-row"><span>Курйози, щоденник, покупки, репутація</span><b style="font-family: var(--font-sans); font-weight: 500">усе</b></div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <button class="st-btn st-btn--primary st-btn--l" aria-label="Прийняти до виконання. Утримуй 1,2 секунди" style="position: relative; overflow: hidden; flex-direction: column; gap: 6px; padding: 8px 16px">
+          <span style="display: inline-flex; align-items: center; gap: 8px"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg>Прийняти до виконання</span>
+          <span aria-hidden="true" style="width: 100%; height: 4px; border-radius: var(--radius-2); background: var(--accent-ink); opacity: 0.25"></span>
+        </button>
+        <span class="st-btn-note">Утримуй: рівні й підписи почнуться з батальйону</span>
+        <a href="Main.dc.html" class="st-btn st-btn--neutral st-btn--m">Пізніше</a>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["перший Дубль","Дубль N+1"],"default":"перший Дубль","section":"Стан"},"modifier":{"editor":"enum","options":["У двох примірниках","Мокра печатка","Без Діда"],"default":"У двох примірниках","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'перший Дубль';
+    var mod = this.props.modifier ?? 'У двох примірниках';
+    var first = st === 'перший Дубль';
+    var M = {
+      'У двох примірниках': { name: 'У двох примірниках', text: 'Телеграми коштують удвічі більше паперу і дають удвічі більше репутації.' },
+      'Мокра печатка': { name: 'Мокра печатка', text: 'Перевірки частіше, ×3 після них триває довше.' },
+      'Без Діда': { name: 'Без Діда', text: 'Генератор дає ×1,15 замість ×1,25.' }
+    };
+    var m = M[mod] || M['У двох примірниках'];
+    m.copies = mod === 'У двох примірниках'; m.wet = mod === 'Мокра печатка'; m.nodid = mod === 'Без Діда';
+    return {
+      d: first
+        ? { title: 'Дубль 1', levelFrom: 'Армія без паперу', points: '2 914' }
+        : { title: 'Дубль 3', levelFrom: 'Армія без паперу', points: '6 380' },
+      m: m,
+      s: { first: first, next: !first }
+    };
+  }
+}
+</script>
+</body>
+</html>

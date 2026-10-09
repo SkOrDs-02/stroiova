@@ -66,6 +66,13 @@ button{font:inherit;cursor:pointer}
         </div>
       </div>
 
+      <sc-if value="{{s.series}}" hint-placeholder-val="{{false}}">
+        <div role="status" style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-radius: var(--radius-10); border: 1.5px solid var(--accent); background: var(--bg)">
+          <span style="flex: 1; min-width: 0; font-size: 13px; line-height: 1.45">{{j.seriesText}}</span>
+          <span class="st-stamp st-stamp--s st-stamp--dark" style="--st-rot: 5deg; --st-edge: 80deg; flex: none">Виконано</span>
+        </div>
+      </sc-if>
+
       <span style="font-size: 12px; line-height: 1.4; color: var(--muted); text-align: center">{{j.from}}</span>
 
       <button class="st-btn st-btn--primary st-btn--l">{{j.cta}}</button>
@@ -74,7 +81,7 @@ button{font:inherit;cursor:pointer}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","рідкісний","легендарний"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","рідкісний","легендарний","№ 9: бригада, з 24","№ 12: серію «Особовий склад» зібрано","№ 16: серію «Транспорт і склад» зібрано","№ 20: серію «Побут» зібрано","№ 24: серію «Земля» зібрано"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? "звичайний";
@@ -113,8 +120,11 @@ class Component extends DCLogic {
         cta: "Добре"
       }
     };
+    var NEW = {"№ 9: бригада, з 24": {"counter": "У музеї 9 з 24", "head": "Іменний", "name": "список для проведення вечірньої повірки", "full": "Іменний список для проведення вечірньої повірки", "bg": "var(--cover-navy)", "frame": "0", "padR": "12px", "rar": "Звичайний", "rc": "var(--rarity-common)", "flavor": "Список зачитували щовечора вголос. З понеділка в ньому нічого не змінилось. Читали все одно повністю.", "bonus": "+5% до потоку «Накази по частині»", "bonusNote": "Уже діє. Назавжди.", "cta": "Добре", "seriesText": "", "from": "Перша цифровізація в бригаді"}, "№ 12: серію «Особовий склад» зібрано": {"counter": "У музеї 12 з 24", "head": "Журнал", "name": "контролю за станом обліку особового складу", "full": "Журнал контролю за станом обліку особового складу", "bg": "var(--cover-navy)", "frame": "0", "padR": "12px", "rar": "Рідкісний", "rc": "var(--rarity-rare)", "flavor": "У журналі перевіряли, чи правильно ведуть інші журнали. Інших журналів більше немає. Перевіряти нічого.", "bonus": "−10% ціни пунктів чекліста", "bonusNote": "Уже діє. Назавжди.", "cta": "Добре", "seriesText": "Серію «Особовий склад» зібрано. +5% до всіх підписів. Уже діє.", "from": "Підсумкова перевірка бригади"}, "№ 16: серію «Транспорт і склад» зібрано": {"counter": "У музеї 16 з 24", "head": "Книга-рознарядка", "name": "на видавання запасних частин, інструменту і приладдя розсипом", "full": "Книга-рознарядка на видавання запасних частин, інструменту і приладдя розсипом", "bg": "var(--cover-olive)", "frame": "0", "padR": "12px", "rar": "Рідкісний", "rc": "var(--rarity-rare)", "flavor": "Розсипом означає поштучно. Кожен болт отримував рядок у книзі й окрему рознарядку.", "bonus": "+10% до ланки «Нарада»", "bonusNote": "Уже діє. Назавжди.", "cta": "Добре", "seriesText": "Серію «Транспорт і склад» зібрано. +5% до всіх підписів. Уже діє.", "from": "Перевірка зі столиці"}, "№ 20: серію «Побут» зібрано": {"counter": "У музеї 20 з 24", "head": "Книга", "name": "штатно-посадового обліку особового складу", "full": "Книга штатно-посадового обліку особового складу", "bg": "var(--cover-brown)", "frame": "0", "padR": "12px", "rar": "Рідкісний", "rc": "var(--rarity-rare)", "flavor": "Хто на якій посаді за штатом і хто насправді. Дві графи, які мали збігатися, тепер в одній вкладці.", "bonus": "+10% до часу служби подарунків Ліни", "bonusNote": "Уже діє. Назавжди.", "cta": "Добре", "seriesText": "Серію «Побут» зібрано. +5% до всіх підписів. Уже діє.", "from": "Аудит усього"}, "№ 24: серію «Земля» зібрано": {"counter": "У музеї 24 з 24", "head": "Журнал", "name": "обліку журналів обліку", "full": "Журнал обліку журналів обліку", "bg": "var(--cover-black)", "frame": "2px solid var(--accent)", "padR": "30px", "rar": "Легендарний", "rc": "var(--rarity-legend)", "flavor": "Сюди вписували кожен журнал, книгу й відомість. Останній запис зроблено про сам журнал. Графа «Підстава для скасування» порожня.", "bonus": "×2 до бонусів журналів № 9–23", "bonusNote": "Остання книга. Уже діє.", "cta": "Добре", "seriesText": "Серію «Земля» зібрано. +5% до всіх підписів. Уже діє.", "from": "Остання книга"}};
+    for (var k in NEW) D[k] = NEW[k];
     var j = D[st] || D["звичайний"];
-    return { j: j, s: { legend: st === "легендарний" } };
+    if (j.seriesText === undefined) j.seriesText = '';
+    return { j: j, s: { legend: j.rar === "Легендарний", series: !!j.seriesText } };
   }
 }
 </script>

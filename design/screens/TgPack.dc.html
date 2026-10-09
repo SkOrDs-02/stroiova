@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Пачка телеграм</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="flex-shrink: 0; height: 52px; margin-top: 18px; padding: 0 20px 0 12px; display: flex; align-items: center; gap: 6px">
+    <a href="TgList.dc.html" aria-label="Назад до телеграм" style="height: 44px; padding: 0 8px; border-radius: var(--radius-10); display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 15px">
+      <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      <span>Назад</span>
+    </a>
+    <h1 style="flex: 1; margin: 0; text-align: center; font-family: var(--font-display); font-weight: 500; font-size: 17px; line-height: 1.3; padding-right: 72px">Пачка</h1>
+  </div>
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 6px 20px 24px; display: flex; flex-direction: column; gap: 14px">
+
+    <div style="position: relative; display: flex; gap: 14px; align-items: stretch; padding: 12px; border-radius: var(--radius-10); background: var(--cover-navy); border: 1px solid var(--border)">
+      <div aria-hidden="true" style="position: relative; width: 74px; flex: none">
+        <svg width="74" height="92" viewBox="0 0 74 92">
+          <rect x="14" y="4" width="54" height="70" rx="2" style="fill: var(--paper-4)" transform="rotate(6 41 39)"></rect>
+          <rect x="10" y="8" width="54" height="70" rx="2" style="fill: var(--paper-3)" transform="rotate(-4 37 43)"></rect>
+          <rect x="6" y="14" width="56" height="72" rx="2" style="fill: var(--paper)"></rect>
+          <path d="M14 30h36M14 38h40M14 46h30M14 54h38M14 62h24" style="stroke: var(--paper-line); stroke-width: 3; stroke-linecap: round"></path>
+          <rect x="2" y="10" width="8" height="80" rx="2" style="fill: var(--scene-l1-wood)"></rect>
+          <path d="M6 22v6M6 72v6" style="stroke: var(--paper-2); stroke-width: 2; stroke-linecap: round"></path>
+        </svg>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+        <div style="background: var(--paper); color: var(--ink); border-radius: var(--radius-2); padding: 6px 10px; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-family: var(--font-typewriter); font-size: 15px; letter-spacing: 1px; text-transform: uppercase">Зведення № {{d.n}}</span>
+          <span class="st-doc-meta">вх. {{d.date}}, 03:00 · 3 телеграми</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+          <span style="font: 500 13px/1.3 var(--font-mono); color: var(--text)">{{d.k}} з 3 відповідей</span>
+          <sc-if value="{{s.repeat}}" hint-placeholder-val="{{false}}">
+            <span class="st-tag st-tag--muted" style="border-color: var(--border-strong); color: var(--text)">повтор</span>
+          </sc-if>
+          <sc-if value="{{s.summed}}" hint-placeholder-val="{{false}}">
+            <span class="st-stamp st-stamp--s st-stamp--dark" style="--st-rot: -4deg; --st-edge: 100deg">Виконано</span>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-for list="{{d.tgs}}" as="t" hint-placeholder-count="3">
+        <a href="TgDetail.dc.html" class="st-card st-tg" aria-label="{{t.aria}}" style="border-color: {{t.border}}; border-width: {{t.bw}}">
+          <span class="st-tg-top"><span>№ {{t.no}}</span><span style="color: var(--muted)">{{t.idx}} з 3</span><span class="st-tg-status" style="color: {{t.sc}}; font-weight: {{t.sw}}">{{t.status}}</span></span>
+          <span class="st-tg-title">{{t.title}}</span>
+          <span class="st-tg-meta">{{t.meta}}</span>
+        </a>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{s.choose}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <a href="ReputationSheet.dc.html" aria-label="Репутація: норма. Відкрити пояснення" style="display: flex; align-items: center; min-height: 44px">
+          <span class="st-chip"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16a8 8 0 0 1 16 0"></path><path d="M12 16l3-5"></path></svg>Репутація: норма</span>
+        </a>
+        <a href="ResourceSheet.dc.html" aria-label="Папір: 4 120 аркушів" style="display: flex; align-items: center; min-height: 44px">
+          <span class="st-chip"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>4 120 аркушів</span>
+        </a>
+      </div>
+
+      <section aria-labelledby="pk-sum" style="display: flex; flex-direction: column; gap: 8px">
+        <h2 id="pk-sum" style="margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 15px; line-height: 1.3">Звести в одну відповідь</h2>
+        <p class="st-sub">Одна обкладинка: менше паперу, менше репутації, більший ризик.</p>
+        <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+          <a href="TgResult.dc.html" style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; box-sizing: border-box; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-10); color: var(--text)">
+            <span style="font-size: 15px; font-weight: 500; line-height: 1.35">{{o.title}}</span>
+            <span style="display: grid; grid-template-columns: 58px minmax(0, 1fr); column-gap: 6px; row-gap: 3px; font-size: 12px; line-height: 1.4">
+              <span style="color: var(--accent); font-weight: 600">Зведено</span><span>{{o.sum}}</span>
+              <span style="color: var(--muted)">Окремо</span><span style="color: var(--muted)">{{o.sep}}</span>
+            </span>
+            <sc-if value="{{o.beats}}" hint-placeholder-val="{{false}}">
+              <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.4; color: var(--accent)">
+                <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.2" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+                Зведення б’ється. «Зведення» <span style="font-family: var(--font-mono)">×1,5</span> на 2 год.
+              </span>
+            </sc-if>
+          </a>
+        </sc-for>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{s.partial}}" hint-placeholder-val="{{false}}">
+      <div aria-disabled="true" style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px dashed var(--border-strong); border-radius: var(--radius-10); color: var(--muted)">
+        <span style="display: flex; align-items: flex-start; gap: 8px">
+          <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 500; line-height: 1.35">Звести в одну відповідь</span>
+          <span class="st-tag st-tag--muted" style="flex-shrink: 0">недоступно</span>
+        </span>
+        <span style="display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.4; color: var(--text)">
+          <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span>На № 5101 уже відповіли окремо. Після окремої відповіді зведення недоступне.</span>
+        </span>
+      </div>
+      <a href="TgDetail.dc.html" class="st-btn st-btn--primary st-btn--l">
+        Відкрити № 5102
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </a>
+    </sc-if>
+
+    <sc-if value="{{s.summed}}" hint-placeholder-val="{{false}}">
+      <article class="st-paper" aria-label="Відповідь пачкою на Зведення № 1" style="flex-shrink: 0">
+        <span class="st-paper-num" aria-hidden="true">1</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 24px">
+          <span class="st-doc-title" style="font-size: 15px">Відповідь пачкою на Зведення № 1</span>
+          <span class="st-doc-meta">На вх. № 5101, 5102, 5103 від 09.11.2026</span>
+        </div>
+        <hr class="st-doc-rule">
+        <p class="st-doc-body">СЛУХАЛИ: три телеграми про наради. ВИСТУПИЛИ: стройова частина. ВИРІШИЛИ: виконати всі три, виконавець — стройова, строк — до кінця доби.</p>
+        <div class="st-doc-foot">
+          <div class="st-doc-sign"><svg width="112" height="34" viewBox="0 0 120 36" aria-hidden="true"><path d="M4 24C12 8 20 28 28 14S42 6 46 20 60 30 68 12 84 18 90 16L116 12"></path></svg><span>Начальник стройової</span></div>
+          <span class="st-stamp" style="--st-rot: -7deg; --st-edge: 110deg">Виконано<span class="st-stamp-date">09.11.2026</span></span>
+        </div>
+      </article>
+      <div class="st-card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+        <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">Відповідь · сумлінно, зведено</span>
+        <div class="st-kv"><span>Нарада</span><b>×0,4 · ще 1 год 32 хв</b></div>
+        <div class="st-kv"><span>Зведення б’ється</span><b style="color: var(--accent)">×1,5 · ще 1 год 47 хв</b></div>
+        <div class="st-kv"><span>Репутація</span><b>+7 · норма</b></div>
+        <div class="st-kv"><span>Папір</span><b>0 аркушів</b></div>
+        <p class="st-sub" style="font-size: 13px; color: var(--text)">Відповідь одна. Протокол до неї на три сторінки.</p>
+      </div>
+      <a href="TgList.dc.html" class="st-btn st-btn--primary st-btn--l">До вхідних</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["нова","частково відповіли","зведено","повтор"],"default":"нова","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'нова';
+    var partial = st === 'частково відповіли', summed = st === 'зведено';
+    function card(no, idx, title, stamp, status, kind) {
+      var c = { no: no, idx: idx, title: title, meta: 'Від: штаб командування · строк — доба', status: status, sc: 'var(--muted)', sw: '500', border: 'var(--border)', bw: '1px' };
+      if (kind === 'new') { c.sc = 'var(--text)'; }
+      if (kind === 'done') { c.sc = 'var(--text)'; }
+      c.aria = 'Телеграма № ' + no + ', ' + idx + ' з 3 у пачці. ' + title + '. ' + status;
+      return c;
+    }
+    var T = ['Про скорочення нарад', 'Про розділ ВИСТУПИЛИ', 'Про розділ ВИРІШИЛИ'];
+    var tgs, k = 0;
+    if (partial) {
+      tgs = [card('5101', 1, T[0], '', 'відповіли · сумлінно', 'done'), card('5102', 2, T[1], '', 'без відповіді', 'new'), card('5103', 3, T[2], '', 'без відповіді', 'new')];
+      tgs[0].meta = 'Нарада ×0,5 · ще 48 хв · +5 до репутації';
+      k = 1;
+    } else if (summed) {
+      tgs = [card('5101', 1, T[0], '', 'зведено', 'done'), card('5102', 2, T[1], '', 'зведено', 'done'), card('5103', 3, T[2], '', 'зведено', 'done')];
+      tgs.forEach(function (t) { t.meta = 'Відповідь пачкою на Зведення № 1'; });
+      k = 3;
+    } else {
+      tgs = [card('5101', 1, T[0], '', 'без відповіді', 'new'), card('5102', 2, T[1], '', 'без відповіді', 'new'), card('5103', 3, T[2], '', 'без відповіді', 'new')];
+    }
+    var opts = [
+      { title: 'Виконати сумлінно', sum: 'Нарада ×0,4 на 1 год 45 хв · +7 до репутації · 0 аркушів', sep: 'Нарада ×0,5 на 1 год тричі · +15 · 1 аркуш', beats: true },
+      { title: 'Написати відписку', sum: '1 хвилина · −7 до репутації · 30% шанс перевірки', sep: '3 хвилини · −15 · шанс 15%, 20% і 15%', beats: false },
+      { title: 'Покласти в шухляду', sum: 'Три телеграми про наради лежать разом. Як на нараді.', sep: 'Нічого не станеться', beats: false }
+    ];
+    return {
+      d: { n: st === 'повтор' ? '9' : '1', date: st === 'повтор' ? '17.11.2026' : '09.11.2026', k: k, tgs: tgs },
+      opts: opts,
+      s: { choose: st === 'нова' || st === 'повтор', partial: partial, summed: summed, repeat: st === 'повтор' }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -20,11 +20,12 @@ button{font:inherit;cursor:pointer}
 <div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden; padding: 18px 20px 24px; gap: 14px">
 
   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 400 12px/1.4 var(--font-mono); color: var(--muted)">
-    <span>Бліндаж → будинок культури</span>
-    <span>рівень 2</span>
+    <span>{{v.route}}</span>
+    <span>{{v.lvl}}</span>
   </div>
 
   <div aria-hidden="true" style="height: 100px; flex: none; border-radius: var(--radius-10); background: var(--surface-2); border: 1px dashed var(--border); display: flex; align-items: flex-end; justify-content: center; overflow: hidden">
+    <sc-if value="{{sc.l2}}" hint-placeholder-val="{{true}}">
     <svg width="236" height="92" viewBox="0 0 236 92">
       <path d="M0 90 H236" style="stroke: var(--border); stroke-width: 2"></path>
       <rect x="40" y="80" width="156" height="5" style="fill: var(--scene-l2-cabinet)"></rect>
@@ -42,6 +43,64 @@ button{font:inherit;cursor:pointer}
       <rect x="10" y="58" width="22" height="32" style="fill: var(--scene-l2-shadow)"></rect>
       <rect x="204" y="52" width="24" height="38" style="fill: var(--scene-l2-shadow)"></rect>
     </svg>
+    </sc-if>
+    <sc-if value="{{sc.l3}}" hint-placeholder-val="{{false}}">
+    <svg width="300" height="92" viewBox="0 0 300 92">
+      <rect x="0" y="0" width="300" height="74" style="fill: var(--scene-l2-panel)"></rect>
+      <rect x="0" y="74" width="300" height="18" style="fill: var(--scene-l2-shadow)"></rect>
+      <path d="M0 74 H300" style="stroke: var(--scene-l2-cabinet); stroke-width: 2"></path>
+      <rect x="18" y="22" width="30" height="52" style="fill: var(--scene-l2-shadow)"></rect>
+      <rect x="25" y="12" width="16" height="6" style="fill: var(--paper)"></rect>
+      <circle cx="42" cy="50" r="2" style="fill: var(--scene-l2-cabinet)"></circle>
+      <rect x="66" y="22" width="30" height="52" style="fill: var(--scene-l2-shadow)"></rect>
+      <rect x="73" y="12" width="16" height="6" style="fill: var(--paper)"></rect>
+      <circle cx="90" cy="50" r="2" style="fill: var(--scene-l2-cabinet)"></circle>
+      <rect x="114" y="22" width="30" height="52" style="fill: var(--scene-l2-shadow)"></rect>
+      <rect x="121" y="12" width="16" height="6" style="fill: var(--paper)"></rect>
+      <circle cx="138" cy="50" r="2" style="fill: var(--scene-l2-cabinet)"></circle>
+      <rect x="168" y="56" width="120" height="6" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="176" y="62" width="5" height="20" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="274" y="62" width="5" height="20" style="fill: var(--scene-l1-wood)"></rect>
+      <path d="M222 56 V44 Q222 38 226 36 V30 H232 V36 Q236 38 236 44 V56 Z" style="fill: var(--scene-l2-whitewash); opacity: .85"></path>
+      <rect x="190" y="50" width="22" height="6" style="fill: var(--paper)"></rect>
+      <rect x="246" y="50" width="22" height="6" style="fill: var(--paper-2)"></rect>
+      <rect x="196" y="8" width="72" height="30" style="fill: var(--scene-l2-whitewash); opacity: .55"></rect>
+    </svg>
+    </sc-if>
+    <sc-if value="{{sc.l4}}" hint-placeholder-val="{{false}}">
+    <svg width="300" height="92" viewBox="0 0 300 92">
+      <rect x="0" y="0" width="300" height="92" style="fill: var(--cover-navy)"></rect>
+      <rect x="92" y="6" width="116" height="40" style="fill: var(--scene-l2-whitewash); opacity: .7"></rect>
+      <path d="M0 70 Q150 52 300 70 V92 H0 Z" style="fill: var(--scene-l2-shadow)"></path>
+      <path d="M0 80 Q150 64 300 80" style="fill: none; stroke: var(--scene-l2-panel); stroke-width: 5; stroke-dasharray: 10 4"></path>
+      <path d="M0 90 Q150 76 300 90" style="fill: none; stroke: var(--scene-l2-panel); stroke-width: 5; stroke-dasharray: 10 4"></path>
+      <rect x="134" y="52" width="32" height="26" style="fill: var(--scene-l1-wood)"></rect>
+      <path d="M150 52 V40 M150 40 L156 34" style="fill: none; stroke: var(--scene-l2-cabinet); stroke-width: 2"></path>
+      <rect x="196" y="58" width="44" height="5" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="200" y="63" width="4" height="15" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="232" y="63" width="4" height="15" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="204" y="26" width="26" height="32" style="fill: var(--paper-3)"></rect>
+      <rect x="206" y="22" width="26" height="6" style="fill: var(--paper)"></rect>
+      <path d="M204 34 H230 M204 42 H230 M204 50 H230" style="stroke: var(--paper-rule); stroke-width: 1"></path>
+    </svg>
+    </sc-if>
+    <sc-if value="{{sc.l5}}" hint-placeholder-val="{{false}}">
+    <svg width="300" height="92" viewBox="0 0 300 92">
+      <rect x="0" y="0" width="300" height="92" style="fill: var(--scene-l1-earth)"></rect>
+      <path d="M0 14 H300 M0 30 H300" style="stroke: var(--scene-l1-wood); stroke-width: 10"></path>
+      <rect x="20" y="40" width="70" height="4" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="20" y="58" width="70" height="4" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="110" y="62" width="100" height="6" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="118" y="68" width="5" height="24" style="fill: var(--scene-l1-wood)"></rect>
+      <rect x="198" y="68" width="5" height="24" style="fill: var(--scene-l1-wood)"></rect>
+      <path d="M144 62 L150 44 H178 L172 62 Z" style="fill: var(--scene-l1-metal)"></path>
+      <rect x="140" y="60" width="40" height="3" style="fill: var(--scene-l1-olive)"></rect>
+      <rect x="230" y="52" width="46" height="40" style="fill: var(--scene-l1-metal)"></rect>
+      <circle cx="253" cy="72" r="5" style="fill: none; stroke: var(--scene-l1-earth); stroke-width: 2"></circle>
+      <path d="M236 52 Q240 40 256 42 Q270 40 272 52 Z" style="fill: var(--scene-l1-olive)"></path>
+      <path d="M268 46 L272 40 L274 47" style="fill: var(--scene-l1-olive)"></path>
+    </svg>
+    </sc-if>
   </div>
 
   <div style="position: relative; padding: 2px 6px 8px 2px">
@@ -49,52 +108,84 @@ button{font:inherit;cursor:pointer}
     <article class="st-paper" aria-labelledby="lv-title" style="gap: 10px">
       <span class="st-paper-num" aria-hidden="true">1</span>
       <div style="text-align: center; display: flex; flex-direction: column; gap: 4px">
-        <h1 class="st-doc-title" id="lv-title" style="margin: 0; font-weight: 400">Наказ № 2</h1>
-        <span class="st-doc-meta">про переведення до штабу бригади</span>
+        <h1 class="st-doc-title" id="lv-title" style="margin: 0; font-weight: 400">{{v.title}}</h1>
+        <span class="st-doc-meta">{{v.meta}}</span>
       </div>
       <div style="border-top: 1px dashed var(--paper-rule)"></div>
-      <p class="st-doc-body">Батальйон оцифровано. Тебе переводять у бригаду.</p>
-      <p class="st-doc-body">Штаб у колишньому будинку культури. На дверях стройової «Гурток крою та шиття».</p>
-      <p class="st-doc-body">Нова ланка погоджень — Казначейство. Новий потік — накази по частині.</p>
+      <sc-for list="{{paras}}" as="pp" hint-placeholder-count="3">
+      <p class="st-doc-body">{{pp.t}}</p>
+      </sc-for>
       <div style="border-top: 1px dashed var(--paper-rule)"></div>
       <div style="display: flex; flex-direction: column; gap: 2px">
-        <div class="st-doc-row"><span>Потік № 5</span><i class="st-doc-dots"></i><span class="st-doc-val">Накази по частині</span></div>
-        <div class="st-doc-row"><span>Ланка № 4</span><i class="st-doc-dots"></i><span class="st-doc-val">Казначейство</span></div>
-        <div class="st-doc-row"><span>Перевірки</span><i class="st-doc-dots"></i><span class="st-doc-val">Комісія командування</span></div>
-        <div class="st-doc-row"><span>Цифрові бали</span><i class="st-doc-dots"></i><span class="st-doc-val">141, переходять</span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+        <div class="st-doc-row"><span>{{r.k}}</span><i class="st-doc-dots"></i><span class="st-doc-val">{{r.v}}</span></div>
+        </sc-for>
       </div>
       <div class="st-doc-foot">
         <div class="st-doc-sign" style="position: relative">
           <svg width="104" height="34" viewBox="0 0 104 34" aria-hidden="true"><path d="M6 24c6-14 12-16 14-6s-6 12 2 2 10-14 14-2 4 10 10 0 8-10 12-2 10 4 16-2l22-4"></path></svg>
-          <span>Командир бригади</span>
+          <span>{{v.signer}}</span>
           <div aria-hidden="true" style="position: absolute; right: -30px; bottom: -6px">
-            <svg class="st-seal" width="56" height="56" viewBox="0 0 64 64" style="transform: rotate(-16deg)"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle><defs><path id="arc-lvl2" d="M32 32m-22.5 0a22.5 22.5 0 1 1 45 0a22.5 22.5 0 1 1-45 0"></path></defs><text font-size="6.4" letter-spacing=".5"><textPath href="#arc-lvl2">ШТАБ БРИГАДИ · ВИХ. № 000 ·</textPath></text><text x="32" y="31" text-anchor="middle" font-size="6.2">ДЛЯ</text><text x="32" y="38.5" text-anchor="middle" font-size="6.2">ПАКЕТІВ</text></svg>
+            <svg class="st-seal" width="56" height="56" viewBox="0 0 64 64" style="transform: rotate(-16deg)"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle><defs><path id="arc-lvl2" d="M32 32m-22.5 0a22.5 22.5 0 1 1 45 0a22.5 22.5 0 1 1-45 0"></path></defs><text font-size="6.4" letter-spacing=".5"><textPath href="#arc-lvl2">{{v.arc}}</textPath></text><text x="32" y="31" text-anchor="middle" font-size="6.2">ДЛЯ</text><text x="32" y="38.5" text-anchor="middle" font-size="6.2">ПАКЕТІВ</text></svg>
           </div>
         </div>
-        <span class="st-stamp" style="--st-rot: 5deg; --st-edge: 80deg; margin: 0 4px 10px 0">Негайно</span>
+        <span class="st-stamp" style="--st-rot: 5deg; --st-edge: 80deg; margin: 0 4px 10px 0">{{v.stamp}}</span>
       </div>
     </article>
   </div>
 
   <div style="display: flex; gap: 10px; align-items: flex-start">
-    <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--cover-brown); color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">К</div>
+    <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: {{v.avaBg}}; color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">{{v.ava}}</div>
     <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
-      <span style="font-size: 12px; color: var(--muted)">Начштабу «Кава»</span>
-      <div style="padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; font-size: 14px; line-height: 1.45">У бригаді нарад більше. Кава та сама.</div>
+      <span style="font-size: 12px; color: var(--muted)">{{v.who}}</span>
+      <div style="padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; font-size: 14px; line-height: 1.45">{{v.line}}</div>
     </div>
   </div>
 
   <a class="st-btn st-btn--primary st-btn--l" href="Main.dc.html" style="margin-top: auto">
-    Прибути до бригади
+    {{v.cta}}
     <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
   </a>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["одне"],"default":"одне","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["одне","Р3: Командування","Р4: зал для доповідей","Р5: Армія без паперу"],"default":"одне","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? 'одне';
-    return { s: { one: st === 'одне' } };
+    var L = {
+      'одне': {
+        lv: 2, route: 'Бліндаж → будинок культури', lvl: 'рівень 2', title: 'Наказ № 2', meta: 'про переведення до штабу бригади',
+        paras: ['Батальйон оцифровано. Тебе переводять у бригаду.', 'Штаб у колишньому будинку культури. На дверях стройової «Гурток крою та шиття».', 'Нова ланка погоджень — Казначейство. Новий потік — накази по частині.'],
+        rows: [['Потік № 5', 'Накази по частині'], ['Ланка № 4', 'Казначейство'], ['Перевірки', 'Комісія командування'], ['Цифрові бали', '141, переходять']],
+        signer: 'Командир бригади', arc: 'ШТАБ БРИГАДИ · ВИХ. № 000 ·', stamp: 'Негайно', ava: 'К', avaBg: 'var(--cover-brown)', who: 'Начштабу «Кава»', line: 'У бригаді нарад більше. Кава та сама.', cta: 'Прибути до бригади'
+      },
+      'Р3: Командування': {
+        lv: 3, route: 'Будинок культури → командування', lvl: 'рівень 3', title: 'Наказ № 3', meta: 'про переведення до штабу командування',
+        paras: ['Колишній проєктний інститут. Двері 214, 214-а і 214-б ведуть в один кабінет.', 'Нова ланка погоджень — Нарада. Новий потік — зведення.'],
+        rows: [['Потік № 6', 'Зведення'], ['Ланка № 5', 'Нарада'], ['Перевірки', 'Перевірка зі столиці'], ['Цифрові бали', '486, переходять']],
+        signer: 'Начальник штабу', arc: 'ШТАБ КОМАНДУВАННЯ · ВИХ. № 000 ·', stamp: 'Терміново', ava: 'К', avaBg: 'var(--cover-brown)', who: 'Начштабу «Кава»', line: 'Я на нараді. Обговорюємо, як скоротити кількість нарад.', cta: 'Прибути до командування'
+      },
+      'Р4: зал для доповідей': {
+        lv: 4, route: 'Командування → зал для доповідей', lvl: 'рівень 4', title: 'Наказ № 4', meta: 'про переведення до зали доповідей',
+        paras: ['Амфітеатр, трибуна, мікрофон. Біля трибуни — стіл для документів «до наради».', 'Нова ланка погоджень — Доповідь. Новий потік — звіти про звіти.'],
+        rows: [['Потік № 7', 'Звіти про звіти'], ['Ланка № 6', 'Доповідь'], ['Перевірки', 'Аудит'], ['Цифрові бали', '1 214, переходять']],
+        signer: 'Референт «Тезово»', arc: 'ЗАЛ ДЛЯ ДОПОВІДЕЙ · ВИХ. № 000 ·', stamp: 'Невідкладно', ava: 'Т', avaBg: 'var(--cover-navy)', who: 'Референт «Тезово»', line: 'Прийнято до доповіді. Доповім тезово, тези роздам письмово.', cta: 'Прибути до зали доповідей'
+      },
+      'Р5: Армія без паперу': {
+        lv: 5, route: 'Зал для доповідей → бліндаж', lvl: 'рівень 5', title: 'Наказ № 5', meta: 'про повернення до бліндажа',
+        paras: ['Полиці порожні, на столі ноутбук. Кіт спить на порожньому сейфі.', 'Нових потоків і ланок немає. Шість паперових ланок по черзі стануть цифровими.'],
+        rows: [['Цифрових ланок', '0 з 6'], ['Комісія', 'з цифрової трансформації'], ['Підсумкова', 'немає'], ['Цифрові бали', '2 870, переходять']],
+        signer: 'Начальник штабу', arc: 'БЛІНДАЖ · ВИХ. № 000 · ВИХ. № 000 ·', stamp: 'Негайно', ava: 'Г', avaBg: 'var(--cover-olive)', who: 'Комбат «Граніт»', line: 'Тепер підписую пачкою, з телефона. Шукати мене вже не треба.', cta: 'Повернутися в бліндаж'
+      }
+    };
+    var v = L[st] || L['одне'];
+    return {
+      sc: { l2: v.lv === 2, l3: v.lv === 3, l4: v.lv === 4, l5: v.lv === 5 },
+      v: { route: v.route, lvl: v.lvl, title: v.title, meta: v.meta, signer: v.signer, arc: v.arc, stamp: v.stamp, ava: v.ava, avaBg: v.avaBg, who: v.who, line: v.line, cta: v.cta },
+      paras: v.paras.map(function (t) { return { t: t }; }),
+      rows: v.rows.map(function (r) { return { k: r[0], v: r[1] }; }),
+      s: { one: st === 'одне' }
+    };
   }
 }
 </script>

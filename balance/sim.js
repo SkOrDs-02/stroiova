@@ -12,9 +12,14 @@
 // v7.1 (decisions 35, 38, 41): the player without ads gets one free offline ×N a day on the longest return of the day;
 // «Звести в одну відповідь» has its own price (a stronger, longer «Нарада» slowdown) and the bot picks per pack (merge 2);
 // eventStats() counts the content moments (sessions, telegrams, pushes, inspections, races…) per level for the content budget.
+// v7.2 (spec 016, decision 44): the museum of 24 journals (museum 2). № 9–24 come from the digitizations of Р2–Р4, the final
+// inspections, the Р4 story telegram (the «Аудит усього» announcement), the conversions № 2, 4, 5 and the finale; their
+// bonuses go through the systems the model already has (stream and stage output, telegram slowdowns, checklist price,
+// the race, gift service, conversion price); series 2–5 give +museumSeriesPct % each to all income; № 24 multiplies
+// the bonuses of № 9–23. museum 1 keeps the 8 journals of 07, so older presets give the same results.
 // Pure functions, no DOM, deterministic (seeded random); the sandbox page embeds this file as is.
 var DEFAULTS = {
-  rev: '7.1',
+  rev: '7.2',
   // v6 re-tune: the events speed the ad player up by about half, so level 1 output is ×0,66 and stream prices ×1,1 (v5 in comments)
   streams: [
     { id: 'raporty', name: 'Рапорти', rate: 3.96, unlock: 0, cost: 8.8, growth: 1.12, manager: 165 }, // v5: 6, 8, clerk 90
@@ -160,13 +165,22 @@ var DEFAULTS = {
   paperPerMinPerLevel: 0.0005, // per level of Накладні
   paperGift: 20,
   paperPerTelegram: 4, // average sheets of a diligent answer on level 1
-  // museum (07): journals by the drop table; bonuses in percent, № 8 doubles them
-  museum: 1,
+  // museum (07): journals by the drop table; bonuses in percent, № 8 doubles them. 0 — off, 1 — № 1–8 (07), 2 — № 1–24 (016)
+  museum: 2,
   museumJ6DelayHours: 36, // telegram 25 after the 1st digitization, the notice the next day
   museumUnitPct: 5, // № 1 Стройова, № 4 Накладні, № 5 Рапорти
   museumStoragePct: 5, // № 2
   museumPaperPct: 10, // № 3
-  museumRacePct: 10, // № 6 every step, № 7 the Фінслужба step
+  museumRacePct: 10, // № 6 every step, № 7 the Фінслужба step; № 14 the Казначейство step
+  // v7.2, spec 016 (museum 2): museumUnitPct also gives № 9, 10, 13, 15, 17, 18, 19, 21, 22
+  // (decision 44: the start values of levels-3-5 §2.4 except the series, 5 → 1: at 5 % the finale came 5–7 % earlier)
+  museumUnitRarePct: 10, // № 16 «Нарада»
+  museumSlowCutPct: 10, // № 11: telegram slowdowns last this much less (packs too; not the events)
+  museumChecklistCutPct: 10, // № 12: checklist items (inspections and final ones) cost this much less
+  museumGiftServicePct: 10, // № 20: gift service lasts this much longer (gifts that come after the journal)
+  museumConvertCutPct: 10, // № 23: conversion price (in the first run only conversion № 6)
+  museumSeriesPct: 1, // each complete series 2–5: +% to all income, a multiplier of its own in M
+  museumLegendaryMult: 2, // № 24 multiplies the bonuses of № 9–23 (№ 8 keeps ×2 on № 1–7, 07); comes with the finale
   // the paid scenario also buys the starter pack after the first inspection result (08 FR-17, FR-19)
   starterSignatures: 50000,
   starterFuelHours: 12
@@ -295,17 +309,40 @@ function simulate(p, scenario) {
   // museum (07): journal number → time it came
   var J = {};
   function jm() { return J[8] ? 2 : 1; }
+  // v7.2 (016): journals № 9–24 and series 2–5 (museum 2); m24 collects their times and the effects for the report
+  var M24 = p.museum >= 2, SERIES = { 2: [9, 10, 11, 12], 3: [13, 14, 15, 16], 4: [17, 18, 19, 20], 5: [21, 22, 23, 24] }, seriesDone = 0;
+  if (M24) out.m24 = { series: {}, checklistSaved: 0, convertSaved: 0, kaznaCutSec: 0, giftExtraSec: 0, clerkAt: [], catAt: [], zpzHalfAt: null, zpzHalfOthersAt: null, clerksAllR3At: null };
+  function k24() { return J[24] != null ? p.museumLegendaryMult : 1; }
   function grant(n, t) {
     if (!p.museum || J[n]) return;
+    if (n > 8 && !M24) return;
     J[n] = t; out.journals[n] = t; buyVer++;
     var k = 0; for (var i = 1; i <= 7; i++) if (J[i]) k++;
     if (k === 7 && !J[8]) { J[8] = t; out.journals[8] = t; }
+    if (M24 && n > 8) for (var sN in SERIES) if (out.m24.series[sN] == null && SERIES[sN].every(function (j) { return J[j] != null; })) { out.m24.series[sN] = t; seriesDone++; }
   }
+  var U24 = { nakazy: 9, kazna: 10, akty: 13, zvedennia: 15, dovidky: 17, dopovid: 18, fin: 22 }; // museumUnitPct; № 16 «Нарада» museumUnitRarePct
   function musU(item) {
     if (!p.museum) return 1;
     var b = p.museumUnitPct / 100 * jm();
-    if ((item.id === 'stroy' && J[1]) || (item.id === 'nakladni' && J[4]) || (item.id === 'raporty' && J[5])) return 1 + b;
-    return 1;
+    if (!M24) {
+      if ((item.id === 'stroy' && J[1]) || (item.id === 'nakladni' && J[4]) || (item.id === 'raporty' && J[5])) return 1 + b;
+      return 1;
+    }
+    var x = 0, u = p.museumUnitPct / 100 * k24();
+    if ((item.id === 'stroy' && J[1]) || (item.id === 'nakladni' && J[4]) || (item.id === 'raporty' && J[5])) x += b;
+    if (U24[item.id] && J[U24[item.id]] != null) x += u;
+    if (item.id === 'narada' && J[16] != null) x += p.museumUnitRarePct / 100 * k24();
+    if (J[21] != null && nDigital && digital[item.id] != null) x += u; // № 21: every digital stage
+    return 1 + x;
+  }
+  function zMus() { return M24 && J[19] != null ? 1 + p.museumUnitPct / 100 * k24() : 1; } // № 19: «Звіти про звіти» after the share formula
+  function mSeries() { return M24 ? 1 + seriesDone * p.museumSeriesPct / 100 : 1; }
+  function cut(n, pct) { return M24 && J[n] != null ? 1 - pct / 100 * k24() : 1; } // № 11, 12, 14, 23
+  // № 11: a telegram slowdown that starts after the journal lasts less, rounded up to a minute; the «Зведення б'ється» buff is not a slowdown
+  function slEnd(ev) {
+    if (!M24 || J[11] == null || J[11] > ev.t || ev.stream) return ev.end;
+    return ev.t + Math.ceil((ev.end - ev.t) * cut(11, p.museumSlowCutPct) / 60) * 60;
   }
   // Р5: digital stages (stage id → time), kept through the digitizations of the level
   var digital = {}, nDigital = 0;
@@ -339,7 +376,7 @@ function simulate(p, scenario) {
   }
   reset();
 
-  function mult() { return boost * (1 + p.prestigeBonus * prestigeTotal); }
+  function mult() { return M24 ? boost * (1 + p.prestigeBonus * prestigeTotal) * mSeries() : boost * (1 + p.prestigeBonus * prestigeTotal); }
   function unlockedStreams() { var k = 0; for (var i = 0; i < SR.length; i++) if (st.sl[i] > 0) k = i + 1; return k; }
   // fac: optional per-stage slowdown (telegrams); sfac: per-stream factors (Р3 «Зведення б'ється»); the bot plans without them
   function flow(sl, gl, idle, fac, sfac) {
@@ -348,7 +385,7 @@ function simulate(p, scenario) {
       if (SR[i].share) { zi = i; continue; }
       if (sl[i] > 0 && (!idle || st.sm[i])) { var c0 = capU(SR[i], sl[i]); if (sfac) c0 *= sfac[i]; sum += c0; }
     }
-    if (zi >= 0 && sl[zi] > 0 && (!idle || st.sm[zi])) { var z = zShare(sl[zi]) * sum; if (sfac) z *= sfac[zi]; sum += z; }
+    if (zi >= 0 && sl[zi] > 0 && (!idle || st.sm[zi])) { var z = zShare(sl[zi]) * sum; if (M24) z *= zMus(); if (sfac) z *= sfac[zi]; sum += z; }
     var pipe = Infinity, which = -1;
     for (var j = 0; j < ST.length; j++) {
       var c = (!idle || st.gm[j]) ? capU(ST[j], gl[j]) : 0;
@@ -363,7 +400,7 @@ function simulate(p, scenario) {
   function zpzShareNow() { var i = zpzIdx(); if (i < 0) return 0; var s = zShare(st.sl[i]); return s / (1 + s); }
   function ipm(idle) { return flow(st.sl, st.gl, idle).v * mult(); }
   // «базовий дохід» (01 FR-31): no temporary multipliers, no event factors; prices and rewards «in minutes of income» use it
-  function baseInc() { return flow(st.sl, st.gl, false).v * (1 + p.prestigeBonus * prestigeTotal) * (scenario.paid ? p.paidMult : 1); }
+  function baseInc() { var b0 = flow(st.sl, st.gl, false).v * (1 + p.prestigeBonus * prestigeTotal) * (scenario.paid ? p.paidMult : 1); return M24 ? b0 * mSeries() : b0; }
   function points(life) { return Math.floor(Math.pow(life / (B.prestigeDivisor || 75000), p.prestigeExponent)); }
 
   // the final inspection of the level and the Р5 conversions: the bot saves for them before anything else
@@ -389,7 +426,7 @@ function simulate(p, scenario) {
         var sl1 = st.sl.slice(); sl1[a] = 1;
         var n1 = flow(sl1, st.gl, false).v, c1 = priceAt(SR[a], 0) + SR[a].manager;
         // a new stream behind a narrow pipe adds nothing now, but it is the gate to the next level: rank it by its own output
-        var own1 = SR[a].share ? zShare(1) * othersSum(st.sl) : capU(SR[a], 1);
+        var own1 = SR[a].share ? zShare(1) * othersSum(st.sl) * zMus() : capU(SR[a], 1);
         var gain1 = Math.max(n1 - cur, own1 * 0.25);
         opts.push({ kind: 'unlock', i: a, cost: c1, pay: c1 / gain1 });
       } else if (st.sl[a] > 0) {
@@ -426,7 +463,7 @@ function simulate(p, scenario) {
       for (var guard6 = 0; sum6 < pipeT && guard6 < 400; guard6++) {
         var bi = -1, bv = Infinity;
         for (var k = 0; k < SR.length; k++) if (sl6[k] > 0) {
-          var dv = SR[k].share ? (zShare(sl6[k] + 1) - zShare(sl6[k])) * othersSum(sl6) : capU(SR[k], sl6[k] + 1) - capU(SR[k], sl6[k]), pr = priceAt(SR[k], sl6[k]);
+          var dv = SR[k].share ? (zShare(sl6[k] + 1) - zShare(sl6[k])) * othersSum(sl6) * zMus() : capU(SR[k], sl6[k] + 1) - capU(SR[k], sl6[k]), pr = priceAt(SR[k], sl6[k]);
           if (pr / dv < bv) { bv = pr / dv; bi = k; }
         }
         if (bi < 0) break;
@@ -452,11 +489,24 @@ function simulate(p, scenario) {
     else if (o.kind === 'both') { st.sl = o.sl.slice(); st.gl = o.gl.slice(); }
     else st.gl = o.gl.slice();
     out.purchases++;
+    if (M24) track(o, t);
     if (t > lastBuy) out.waits.push({ t: t, w: t - lastBuy, level: level });
     lastBuy = t;
     buyVer++;
   }
 
+  // v7.2: counters for the awards check (016): clerks hired, «Звіти про звіти» ≥ 50%, full staff on Р3
+  function track(o, t) {
+    var m = out.m24;
+    if (o.kind === 'clerkS' || o.kind === 'clerkG' || o.kind === 'unlock') m.clerkAt.push(t);
+    var zi = zpzIdx();
+    if (zi >= 0 && st.sl[zi] > 0) {
+      var s0 = zShare(st.sl[zi]) * zMus();
+      if (m.zpzHalfAt == null && s0 / (1 + s0) >= 0.5) m.zpzHalfAt = t; // share of all streams
+      if (m.zpzHalfOthersAt == null && s0 >= 0.5) m.zpzHalfOthersAt = t; // share of the other streams (the counter note)
+    }
+    if (level === 3 && m.clerksAllR3At == null && st.sm.every(function (x, i) { return x || SR[i].share; }) && st.gm.every(function (x) { return x; })) m.clerksAllR3At = t;
+  }
   var ended = false;
   // boss items and conversions come first whenever the player can afford them. Both open (and get their price in minutes
   // of base income) once all streams of the level are open in the cycle: right after a digitization the income is too
@@ -471,13 +521,18 @@ function simulate(p, scenario) {
       if (boss.paidItems < p.boss.items && boss.arr - t <= (p.boss.saveH || 0) * H) return itemCost;
     }
     if (convOpen() && (convCost != null || unlockedStreams() === SR.length)) {
-      if (convCost == null) convCost = Math.max(50, Math.ceil(p.convert.costMin * baseInc()));
+      if (convCost == null) {
+        var cc = p.convert.costMin * baseInc();
+        if (M24 && J[23] != null) { var cc2 = cc * cut(23, p.museumConvertCutPct); out.m24.convertSaved += (cc - cc2) / Math.max(baseInc(), 1e-9); cc = cc2; }
+        convCost = Math.max(50, Math.ceil(cc));
+      }
       if (st.sig < convCost) return 0;
       st.sig -= convCost;
       var id = p.convert.order[nDigital] || ST[nDigital].id;
       digital[id] = t; nDigital++; buyVer++;
       out.conversions.push({ t: t, id: id, cost: convCost, n: nDigital });
       convCost = null;
+      if (M24) { if (nDigital === 2) grant(21, t); if (nDigital === 4) grant(22, t); if (nDigital === 5) grant(23, t); if (nDigital >= ST.length) grant(24, t); } // № 24: «Остання книга» of the finale
       if (nDigital >= ST.length) { out.finaleAt = t; ended = true; return Infinity; }
       return priorityBuys(t);
     }
@@ -549,6 +604,11 @@ function simulate(p, scenario) {
         if (nL === 1) { grant(1, t); grant(2, t); grant(3, t); firstDigT = t; }
         if (nL === 2) { grant(4, t); grant(5, t); }
       }
+      if (M24) { // 016 FR-5, FR-6: the digitization counts on the level the player leaves
+        if (level === 2 && nL <= 3) grant(8 + nL, t); // № 9, 10, 11
+        if (level === 3 && (nL === 1 || nL === 2 || nL === 4)) grant(nL === 4 ? 15 : 12 + nL, t); // № 13, 14, 15
+        if (level === 4 && (nL === 1 || nL === 3)) grant(nL === 1 ? 17 : 18, t); // № 17, 18
+      }
       // the stretch without purchases right before a digitization (waiting for points) is kept apart from purchase waits
       if (t > lastBuy) out.stalls.push({ t: t, w: t - lastBuy, level: level });
       // digital points carry over; the exit rule of the level decides the move up
@@ -591,7 +651,7 @@ function simulate(p, scenario) {
       var lim = lateCut() ? Math.ceil(evs3.length / 2) : evs3.length;
       for (var e4 = 0; e4 < lim; e4++) {
         var ev = evs3[e4];
-        if (ev.t <= t && t < ev.end) {
+        if (ev.t <= t && t < (M24 ? slEnd(ev) : ev.end)) {
           if (!fac) { fac = []; for (var j4 = 0; j4 < ST.length; j4++) fac.push(1); }
           fac[Math.floor(ev.pick * ST.length)] *= p.slowMult;
         }
@@ -660,7 +720,7 @@ function simulate(p, scenario) {
   // a tie goes to the merged one (it saves paper). Other events are left out: they hit both answers alike.
   function packLoss(evs, t0, W) {
     var cuts = [t0, t0 + W];
-    evs.forEach(function (ev) { if (ev.end > t0 && ev.end < t0 + W) cuts.push(ev.end); });
+    evs.forEach(function (ev) { var e0 = M24 ? slEnd(ev) : ev.end; if (e0 > t0 && e0 < t0 + W) cuts.push(e0); });
     cuts.sort(function (x, y) { return x - y; });
     var base = flow(st.sl, st.gl, true).v, loss = 0;
     for (var c = 0; c + 1 < cuts.length; c++) {
@@ -669,7 +729,7 @@ function simulate(p, scenario) {
       for (var j = 0; j < ST.length; j++) fac.push(1);
       for (var k = 0; k < SR.length; k++) sf.push(1);
       evs.forEach(function (ev) {
-        if (mid >= ev.end) return;
+        if (mid >= (M24 ? slEnd(ev) : ev.end)) return;
         if (ev.stream) { var si = streamIdx(ev.stream); if (si >= 0) sf[si] *= ev.m; }
         else { var jj = ev.stage ? stageIdx(ev.stage) : Math.floor(ev.pick * ST.length); if (jj >= 0) fac[jj] *= ev.m; }
       });
@@ -690,7 +750,7 @@ function simulate(p, scenario) {
     for (var i = 0; i < packEv.length; i++) {
       var ev = packEv[i];
       if (ev.t > t) break;
-      if (t >= ev.end) continue;
+      if (t >= (M24 ? slEnd(ev) : ev.end)) continue;
       if (ev.pk && ev.pk.choice !== ev.opt) continue;
       if (ev.stream) { var si = streamIdx(ev.stream); if (si >= 0) sfac[si] *= ev.m; }
       else { var j = ev.stage ? stageIdx(ev.stage) : Math.floor(ev.pick * ST.length); if (j >= 0) fac[j] *= ev.m; }
@@ -723,9 +783,12 @@ function simulate(p, scenario) {
   var randB = lcg((p.seed || 1) * 134775813 + 1);
   var bossWins = []; // ×3 windows and failure windows of final inspections
   function announceBoss(t) {
-    boss = { level: level, ann: t, arr: arrWindow(t + p.boss.warnH * H, randB), cost: Math.max(50, Math.ceil(p.boss.checklistMin * baseInc())),
+    var bc = p.boss.checklistMin * baseInc();
+    if (M24 && J[12] != null) { var bc2 = bc * cut(12, p.museumChecklistCutPct); out.m24.checklistSaved += (bc - bc2) / Math.max(baseInc(), 1e-9); bc = bc2; }
+    boss = { level: level, ann: t, arr: arrWindow(t + p.boss.warnH * H, randB), cost: Math.max(50, Math.ceil(bc)),
       paidItems: 0, adUsed: false, how: 'sig', done: false, tries: 0, mech: B.bossMech || null };
     if (out.bossAnn[level] == null) out.bossAnn[level] = t;
+    if (M24 && level === 4) grant(19, t); // the last story telegram of Р4 comes with the «Аудит усього» announcement (014, boss_announced)
     buyVer++;
   }
   function resolveBoss(tA) {
@@ -734,7 +797,7 @@ function simulate(p, scenario) {
     var pass = boss.paidItems >= p.boss.items && mechOk;
     out.bosses.push({ level: boss.level, ann: boss.ann, arr: tA, pass: pass, try: boss.tries, cost: boss.cost, paidItems: boss.paidItems, how: boss.how, zpz: boss.mech === 'zpz' ? Math.round(zpzShareNow() * 1000) / 1000 : null });
     bossWins.push({ t: tA, pass: pass });
-    if (pass) { boss.done = true; bossPassed = true; }
+    if (pass) { boss.done = true; bossPassed = true; if (M24 && boss.level >= 2 && boss.level <= 4) grant([0, 0, 12, 16, 20][boss.level], tA); }
     else { boss.arr = arrWindow(tA + p.boss.retryH * H, randB); boss.adUsed = false; }
     buyVer++;
   }
@@ -756,8 +819,10 @@ function simulate(p, scenario) {
     giftIdx++;
     var k6 = J[6] ? 1 - p.museumRacePct / 100 * jm() : 1, k7 = J[7] ? 1 - p.museumRacePct / 100 * jm() : 1;
     var steps = g.steps.slice(); if (level >= 2) steps.push(p.giftL2StepH);
-    var tot = 0; steps.forEach(function (h, i) { tot += h * H * k6 * (i === 3 ? k7 : 1); });
-    race = { type: type, start: t, actEnd: t + tot, svcEnd: t + g.serviceH * H, mult: g.mult || 1, fuel: !!g.fuel, digUsed: false, ads: 0, level: level };
+    var k14 = cut(14, p.museumRacePct), svc = g.serviceH * H;
+    var tot = 0; steps.forEach(function (h, i) { var x = h * H * k6 * (i === 3 ? k7 : 1); if (M24 && i === 4 && k14 !== 1) { out.m24.kaznaCutSec += x * (1 - k14); x *= k14; } tot += x; });
+    if (M24 && J[20] != null) { var svc2 = svc * (1 + p.museumGiftServicePct / 100 * k24()); out.m24.giftExtraSec += svc2 - svc; svc = svc2; }
+    race = { type: type, start: t, actEnd: t + tot, svcEnd: t + svc, mult: g.mult || 1, fuel: !!g.fuel, digUsed: false, ads: 0, level: level };
     races.push(race); lastGiftDay = calDay(t);
     addPaper(p.paperGift || 0);
   }
@@ -826,7 +891,7 @@ function simulate(p, scenario) {
     sedos.forEach(function (k) { add(k.t); add(k.end); });
     bossWins.forEach(function (w) { add(w.t + p.inspHours * H); add(w.t + p.inspFailHours * H); });
     if (boss && !boss.done) { add(boss.arr); add(boss.arr + p.inspHours * H); add(boss.arr + p.inspFailHours * H); }
-    if (B.packs) packEv.forEach(function (ev) { add(ev.t); add(ev.end); });
+    if (B.packs) packEv.forEach(function (ev) { add(ev.t); add(M24 ? slEnd(ev) : ev.end); });
   }
   var slowList = []; slowByDay.forEach(function (evs) { evs.forEach(function (ev, i) { slowList.push({ t: ev.t, i: i, n: evs.length }); }); });
   // discrete events in (a, b]; between sessions the state is frozen, so this also works offline
@@ -841,7 +906,10 @@ function simulate(p, scenario) {
       if (q.ann > b) break;
       if (q.cost == null) {
         if (bossBlocks(q.ann)) { q.skipped = true; q.done = true; q.cost = 0; continue; }
-        q.level = level; q.cost = Math.max(50, Math.ceil(B.inspChecklistMin * baseInc()));
+        q.level = level;
+        var qc = B.inspChecklistMin * baseInc();
+        if (M24 && J[12] != null) { var qc2 = qc * cut(12, p.museumChecklistCutPct); q.saved = (qc - qc2) / Math.max(baseInc(), 1e-9); qc = qc2; }
+        q.cost = Math.max(50, Math.ceil(qc));
       }
       if (!q.done && q.arr <= b) {
         q.done = true;
@@ -881,7 +949,7 @@ function simulate(p, scenario) {
       if (q.ann > t) break;
       if (q.done || q.paid || q.arr <= t) continue;
       if (scenario.ads) { q.paid = true; q.how = scenario.paid ? 'take' : 'ad'; } // «Усе за рекламу» / «Забрати все», once per inspection
-      else if (st.sig >= q.cost) { st.sig -= q.cost; q.paid = true; q.how = 'sig'; }
+      else if (st.sig >= q.cost) { st.sig -= q.cost; q.paid = true; q.how = 'sig'; if (q.saved) out.m24.checklistSaved += q.saved; }
     }
     if (race && t < race.actEnd) {
       if (!race.digUsed && prestigeTotal >= 1 && p.raceDigitalCutH > 0) { race.digUsed = true; race.actEnd = Math.max(t, race.actEnd - p.raceDigitalCutH * H); }
@@ -892,7 +960,7 @@ function simulate(p, scenario) {
       settleRace(t);
     }
     if (p.archiveBonusMin > 0 && playSec === p.archiveBonusAtSec) { var ab = p.archiveBonusMin * baseInc(); st.sig += ab; st.life += ab; out.archive = ab; }
-    if (p.catBonusMin > 0 && playSec >= p.catFromSec && t - lastCat >= p.catCooldownMin * 60) { var cb = p.catBonusMin * baseInc(); st.sig += cb; st.life += cb; lastCat = t; out.cats++; }
+    if (p.catBonusMin > 0 && playSec >= p.catFromSec && t - lastCat >= p.catCooldownMin * 60) { var cb = p.catBonusMin * baseInc(); st.sig += cb; st.life += cb; lastCat = t; out.cats++; if (M24) out.m24.catAt.push(t); }
   }
   var playSec = 0, lastCat = -Infinity;
   // the sessions: the daily ones plus a short visit on the push 2 h before an inspection that no session would catch
@@ -926,7 +994,7 @@ function simulate(p, scenario) {
       var cuts = [a0, a1];
       if (fuelEnd > a0 && fuelEnd < a1) cuts.push(fuelEnd);
       [slowByDay[Math.floor(a0 / day)], slowByDay[Math.floor(a0 / day) - 1]].forEach(function (evs5) {
-        if (evs5) evs5.forEach(function (ev5) { if (ev5.end > a0 && ev5.end < a1) cuts.push(ev5.end); });
+        if (evs5) evs5.forEach(function (ev5) { var e5 = M24 ? slEnd(ev5) : ev5.end; if (e5 > a0 && e5 < a1) cuts.push(e5); });
       });
       eventCuts(a0, a1, cuts);
       cuts.sort(function (x, y) { return x - y; });

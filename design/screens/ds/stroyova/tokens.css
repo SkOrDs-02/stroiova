@@ -120,4 +120,4 @@
   --font-typewriter: "TT2020 Style E", "IBM Plex Mono", monospace;
   --font-hand: Caveat, "Bad Script", cursive;
 }
-@font-face { font-family: "TT2020 Style E"; src: url("../../system/fonts/TT2020StyleE-Regular.ttf"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "TT2020 Style E"; src: url("../../../system/fonts/TT2020StyleE-Regular.ttf"); font-weight: 400; font-style: normal; font-display: swap; }

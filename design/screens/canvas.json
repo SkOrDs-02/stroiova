@@ -1,87 +1,658 @@
 {
   "v": 3,
-  "createdOnFiles": {"v": 1, "at": "2026-10-09T06:36:00Z"},
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-09T06:36:00Z"
+  },
   "title": "Стройова — екрани MVP",
-  "launch": {"view": "canvas"},
+  "launch": {
+    "view": "canvas"
+  },
   "pages": [],
   "boards": {
-    "Main.dc.html": {"x": 0, "y": 0, "w": 390, "h": 844, "title": "Стройова · головний екран", "is_interactive": true},
-    "UnitSheet.dc.html": {"x": 470, "y": 0, "w": 390, "h": 844, "title": "Потік або ланка · шторка", "is_interactive": true},
-    "UnitUnlock.dc.html": {"x": 940, "y": 0, "w": 390, "h": 844, "title": "Новий потік або ланка", "is_interactive": true},
-    "BoostsSheet.dc.html": {"x": 1410, "y": 0, "w": 390, "h": 844, "title": "Множники · шторка", "is_interactive": true},
-    "ResourceSheet.dc.html": {"x": 1880, "y": 0, "w": 390, "h": 844, "title": "Генератор і папір · шторка", "is_interactive": true},
-    "ReputationSheet.dc.html": {"x": 2350, "y": 0, "w": 390, "h": 844, "title": "Репутація · шторка", "is_interactive": true},
-    "KombatSheet.dc.html": {"x": 2820, "y": 0, "w": 390, "h": 844, "title": "Комбата шукають · шторка", "is_interactive": true},
-    "Menu.dc.html": {"x": 3290, "y": 0, "w": 390, "h": 844, "title": "Меню · шторка", "is_interactive": true},
-    "OfflineReturn.dc.html": {"x": 3760, "y": 0, "w": 390, "h": 844, "title": "Довідка про відсутність", "is_interactive": true},
-
-    "OnbTitle.dc.html": {"x": 0, "y": 1264, "w": 390, "h": 844, "title": "Онбординг 1 · титул", "is_interactive": true},
-    "OnbIntro.dc.html": {"x": 470, "y": 1264, "w": 390, "h": 844, "title": "Онбординг 2 · вступ", "is_interactive": true},
-    "OnbCallsign.dc.html": {"x": 940, "y": 1264, "w": 390, "h": 844, "title": "Онбординг 3 · позивний і стать", "is_interactive": true},
-    "OnbFirstAct.dc.html": {"x": 1410, "y": 1264, "w": 390, "h": 844, "title": "Онбординг 4 · перший акт", "is_interactive": true},
-    "Coach.dc.html": {"x": 1880, "y": 1264, "w": 390, "h": 844, "title": "Підказки першої сесії", "is_interactive": true},
-    "ClerkFirst.dc.html": {"x": 2350, "y": 1264, "w": 390, "h": 844, "title": "Перший діловод", "is_interactive": true},
-    "Call.dc.html": {"x": 2820, "y": 1264, "w": 390, "h": 844, "title": "Дзвінок «Археологу»", "is_interactive": true},
-    "AdOfferFirst.dc.html": {"x": 3290, "y": 1264, "w": 390, "h": 844, "title": "Перша пропозиція реклами", "is_interactive": true},
-    "PushPreprompt.dc.html": {"x": 3760, "y": 1264, "w": 390, "h": 844, "title": "Запит на сповіщення", "is_interactive": true},
-    "Toasts.dc.html": {"x": 4230, "y": 1264, "w": 390, "h": 1800, "title": "Тости й банери · каталог"},
-
-    "TgList.dc.html": {"x": 0, "y": 3484, "w": 390, "h": 844, "title": "Телеграми · вхідні", "is_interactive": true},
-    "TgDetail.dc.html": {"x": 470, "y": 3484, "w": 390, "h": 844, "title": "Телеграма", "is_interactive": true},
-    "TgResult.dc.html": {"x": 940, "y": 3484, "w": 390, "h": 844, "title": "Наслідок рішення", "is_interactive": true},
-    "TgFlag.dc.html": {"x": 1410, "y": 3484, "w": 390, "h": 844, "title": "Це не смішно", "is_interactive": true},
-    "NoteDetail.dc.html": {"x": 1880, "y": 3484, "w": 390, "h": 844, "title": "Записка", "is_interactive": true},
-    "InspWarning.dc.html": {"x": 2350, "y": 3484, "w": 390, "h": 844, "title": "Їде комісія", "is_interactive": true},
-    "InspPrep.dc.html": {"x": 2820, "y": 3484, "w": 390, "h": 844, "title": "Перевірка · підготовка", "is_interactive": true},
-    "InspResult.dc.html": {"x": 3290, "y": 3484, "w": 390, "h": 844, "title": "Акт перевірки", "is_interactive": true},
-
-    "GiftArrived.dc.html": {"x": 0, "y": 4748, "w": 390, "h": 844, "title": "Ліна привезла подарунок", "is_interactive": true},
-    "RaceSheet.dc.html": {"x": 470, "y": 4748, "w": 390, "h": 844, "title": "Акт у дорозі · шторка", "is_interactive": true},
-    "RaceWon.dc.html": {"x": 940, "y": 4748, "w": 390, "h": 844, "title": "Пташка в небі", "is_interactive": true},
-    "RaceLost.dc.html": {"x": 1410, "y": 4748, "w": 390, "h": 844, "title": "Списано раніше, ніж поставлено на облік", "is_interactive": true},
-    "Digital.dc.html": {"x": 1880, "y": 4748, "w": 390, "h": 844, "title": "Цифра · вкладка", "is_interactive": true},
-    "DigitConfirm.dc.html": {"x": 2350, "y": 4748, "w": 390, "h": 844, "title": "Підтвердити цифровізацію", "is_interactive": true},
-    "DigitResult.dc.html": {"x": 2820, "y": 4748, "w": 390, "h": 844, "title": "Оцифровано", "is_interactive": true},
-    "LevelUp.dc.html": {"x": 3290, "y": 4748, "w": 390, "h": 844, "title": "Переведення в бригаду", "is_interactive": true},
-
-    "Museum.dc.html": {"x": 0, "y": 6012, "w": 390, "h": 844, "title": "Музей · вкладка", "is_interactive": true},
-    "JournalDetail.dc.html": {"x": 470, "y": 6012, "w": 390, "h": 844, "title": "Експонат · шторка", "is_interactive": true},
-    "JournalNew.dc.html": {"x": 940, "y": 6012, "w": 390, "h": 844, "title": "Новий експонат", "is_interactive": true},
-    "Curios.dc.html": {"x": 1410, "y": 6012, "w": 390, "h": 844, "title": "Журнал курйозів", "is_interactive": true},
-    "CurioDetail.dc.html": {"x": 1880, "y": 6012, "w": 390, "h": 844, "title": "Запис курйозу", "is_interactive": true},
-    "ShareCard.dc.html": {"x": 2350, "y": 6012, "w": 390, "h": 844, "title": "Картинка для поширення", "is_interactive": true},
-    "Shop.dc.html": {"x": 2820, "y": 6012, "w": 390, "h": 844, "title": "Магазин · вкладка", "is_interactive": true},
-    "StarterOffer.dc.html": {"x": 3290, "y": 6012, "w": 390, "h": 844, "title": "Стартовий набір", "is_interactive": true},
-    "IapSuccess.dc.html": {"x": 3760, "y": 6012, "w": 390, "h": 844, "title": "Покупку зараховано", "is_interactive": true},
-
-    "Profile.dc.html": {"x": 0, "y": 7276, "w": 390, "h": 844, "title": "Особова справа", "is_interactive": true},
-    "Settings.dc.html": {"x": 470, "y": 7276, "w": 390, "h": 844, "title": "Налаштування", "is_interactive": true},
-    "ResetConfirm.dc.html": {"x": 940, "y": 7276, "w": 390, "h": 844, "title": "Скинути прогрес", "is_interactive": true},
-    "About.dc.html": {"x": 1410, "y": 7276, "w": 390, "h": 844, "title": "Про гру", "is_interactive": true},
-    "FundReports.dc.html": {"x": 1880, "y": 7276, "w": 390, "h": 844, "title": "Звіти про перекази", "is_interactive": true},
-    "Licenses.dc.html": {"x": 2350, "y": 7276, "w": 390, "h": 844, "title": "Ліцензії", "is_interactive": true},
-    "Boot.dc.html": {"x": 2820, "y": 7276, "w": 390, "h": 844, "title": "Сплеш і завантаження", "is_interactive": true},
-    "SaveError.dc.html": {"x": 3290, "y": 7276, "w": 390, "h": 844, "title": "Збереження пошкоджене", "is_interactive": true},
-    "ForceUpdate.dc.html": {"x": 3760, "y": 7276, "w": 390, "h": 844, "title": "Потрібне оновлення", "is_interactive": true}
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Стройова · головний екран",
+      "is_interactive": true
+    },
+    "UnitSheet.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Потік або ланка · шторка",
+      "is_interactive": true
+    },
+    "UnitUnlock.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Новий потік або ланка",
+      "is_interactive": true
+    },
+    "BoostsSheet.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Множники · шторка",
+      "is_interactive": true
+    },
+    "ResourceSheet.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Генератор і папір · шторка",
+      "is_interactive": true
+    },
+    "ReputationSheet.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Репутація · шторка",
+      "is_interactive": true
+    },
+    "KombatSheet.dc.html": {
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Комбата шукають · шторка",
+      "is_interactive": true
+    },
+    "Menu.dc.html": {
+      "x": 3290,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Меню · шторка",
+      "is_interactive": true
+    },
+    "OfflineReturn.dc.html": {
+      "x": 3760,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Довідка про відсутність",
+      "is_interactive": true
+    },
+    "OnbTitle.dc.html": {
+      "x": 0,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Онбординг 1 · титул",
+      "is_interactive": true
+    },
+    "OnbIntro.dc.html": {
+      "x": 470,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Онбординг 2 · вступ",
+      "is_interactive": true
+    },
+    "OnbCallsign.dc.html": {
+      "x": 940,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Онбординг 3 · позивний і стать",
+      "is_interactive": true
+    },
+    "OnbFirstAct.dc.html": {
+      "x": 1410,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Онбординг 4 · перший акт",
+      "is_interactive": true
+    },
+    "Coach.dc.html": {
+      "x": 1880,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Підказки першої сесії",
+      "is_interactive": true
+    },
+    "ClerkFirst.dc.html": {
+      "x": 2350,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Перший діловод",
+      "is_interactive": true
+    },
+    "Call.dc.html": {
+      "x": 2820,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Дзвінок «Археологу»",
+      "is_interactive": true
+    },
+    "AdOfferFirst.dc.html": {
+      "x": 3290,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Перша пропозиція реклами",
+      "is_interactive": true
+    },
+    "PushPreprompt.dc.html": {
+      "x": 3760,
+      "y": 1264,
+      "w": 390,
+      "h": 844,
+      "title": "Запит на сповіщення",
+      "is_interactive": true
+    },
+    "Toasts.dc.html": {
+      "x": 4230,
+      "y": 1264,
+      "w": 390,
+      "h": 2280,
+      "title": "Тости й банери · каталог"
+    },
+    "TgList.dc.html": {
+      "x": 0,
+      "y": 3484,
+      "w": 390,
+      "h": 844,
+      "title": "Телеграми · вхідні",
+      "is_interactive": true
+    },
+    "TgDetail.dc.html": {
+      "x": 470,
+      "y": 3484,
+      "w": 390,
+      "h": 844,
+      "title": "Телеграма",
+      "is_interactive": true
+    },
+    "TgResult.dc.html": {
+      "x": 940,
+      "y": 3484,
+      "w": 390,
+      "h": 844,
+      "title": "Наслідок рішення",
+      "is_interactive": true
+    },
+    "TgFlag.dc.html": {
+      "x": 1410,
+      "y": 3484,
+      "w": 390,
+      "h": 844,
+      "title": "Це не смішно",
+      "is_interactive": true
+    },
+    "NoteDetail.dc.html": {
+      "x": 1880,
+      "y": 3484,
+      "w": 390,
+      "h": 844,
+      "title": "Записка",
+      "is_interactive": true
+    },
+    "InspWarning.dc.html": {
+      "x": 2350,
+      "y": 3484,
+      "w": 390,
+      "h": 844,
+      "title": "Їде комісія",
+      "is_interactive": true
+    },
+    "InspPrep.dc.html": {
+      "x": 2820,
+      "y": 3484,
+      "w": 390,
+      "h": 844,
+      "title": "Перевірка · підготовка",
+      "is_interactive": true
+    },
+    "InspResult.dc.html": {
+      "x": 3290,
+      "y": 3484,
+      "w": 390,
+      "h": 844,
+      "title": "Акт перевірки",
+      "is_interactive": true
+    },
+    "GiftArrived.dc.html": {
+      "x": 0,
+      "y": 4748,
+      "w": 390,
+      "h": 844,
+      "title": "Ліна привезла подарунок",
+      "is_interactive": true
+    },
+    "RaceSheet.dc.html": {
+      "x": 470,
+      "y": 4748,
+      "w": 390,
+      "h": 844,
+      "title": "Акт у дорозі · шторка",
+      "is_interactive": true
+    },
+    "RaceWon.dc.html": {
+      "x": 940,
+      "y": 4748,
+      "w": 390,
+      "h": 844,
+      "title": "Пташка в небі",
+      "is_interactive": true
+    },
+    "RaceLost.dc.html": {
+      "x": 1410,
+      "y": 4748,
+      "w": 390,
+      "h": 844,
+      "title": "Списано раніше, ніж поставлено на облік",
+      "is_interactive": true
+    },
+    "Digital.dc.html": {
+      "x": 1880,
+      "y": 4748,
+      "w": 390,
+      "h": 844,
+      "title": "Цифра · вкладка",
+      "is_interactive": true
+    },
+    "DigitConfirm.dc.html": {
+      "x": 2350,
+      "y": 4748,
+      "w": 390,
+      "h": 844,
+      "title": "Підтвердити цифровізацію",
+      "is_interactive": true
+    },
+    "DigitResult.dc.html": {
+      "x": 2820,
+      "y": 4748,
+      "w": 390,
+      "h": 844,
+      "title": "Оцифровано",
+      "is_interactive": true
+    },
+    "LevelUp.dc.html": {
+      "x": 3290,
+      "y": 4748,
+      "w": 390,
+      "h": 844,
+      "title": "Переведення в бригаду",
+      "is_interactive": true
+    },
+    "Museum.dc.html": {
+      "x": 0,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Музей · вкладка",
+      "is_interactive": true
+    },
+    "JournalDetail.dc.html": {
+      "x": 470,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Експонат · шторка",
+      "is_interactive": true
+    },
+    "JournalNew.dc.html": {
+      "x": 940,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Новий експонат",
+      "is_interactive": true
+    },
+    "Curios.dc.html": {
+      "x": 1410,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Журнал курйозів",
+      "is_interactive": true
+    },
+    "CurioDetail.dc.html": {
+      "x": 1880,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Запис курйозу",
+      "is_interactive": true
+    },
+    "ShareCard.dc.html": {
+      "x": 2350,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Картинка для поширення",
+      "is_interactive": true
+    },
+    "Shop.dc.html": {
+      "x": 2820,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Магазин · вкладка",
+      "is_interactive": true
+    },
+    "StarterOffer.dc.html": {
+      "x": 3290,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Стартовий набір",
+      "is_interactive": true
+    },
+    "IapSuccess.dc.html": {
+      "x": 3760,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Покупку зараховано",
+      "is_interactive": true
+    },
+    "AwardDetail.dc.html": {
+      "x": 4230,
+      "y": 6012,
+      "w": 390,
+      "h": 844,
+      "title": "Грамота · шторка",
+      "is_interactive": true
+    },
+    "Profile.dc.html": {
+      "x": 0,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Особова справа",
+      "is_interactive": true
+    },
+    "Settings.dc.html": {
+      "x": 470,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Налаштування",
+      "is_interactive": true
+    },
+    "ResetConfirm.dc.html": {
+      "x": 940,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Скинути прогрес",
+      "is_interactive": true
+    },
+    "About.dc.html": {
+      "x": 1410,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Про гру",
+      "is_interactive": true
+    },
+    "FundReports.dc.html": {
+      "x": 1880,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Звіти про перекази",
+      "is_interactive": true
+    },
+    "Licenses.dc.html": {
+      "x": 2350,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Ліцензії",
+      "is_interactive": true
+    },
+    "Boot.dc.html": {
+      "x": 2820,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Сплеш і завантаження",
+      "is_interactive": true
+    },
+    "SaveError.dc.html": {
+      "x": 3290,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Збереження пошкоджене",
+      "is_interactive": true
+    },
+    "ForceUpdate.dc.html": {
+      "x": 3760,
+      "y": 7276,
+      "w": 390,
+      "h": 844,
+      "title": "Потрібне оновлення",
+      "is_interactive": true
+    },
+    "BossBrief.dc.html": {
+      "x": 0,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Підсумкова перевірка · оголошення",
+      "is_interactive": true
+    },
+    "TgPack.dc.html": {
+      "x": 470,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Пачка телеграм",
+      "is_interactive": true
+    },
+    "StageConvert.dc.html": {
+      "x": 940,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Конвертація ланки · шторка",
+      "is_interactive": true
+    },
+    "FinaleOrder.dc.html": {
+      "x": 1410,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Фінал 1 · наказ про вимкнення розсилки",
+      "is_interactive": true
+    },
+    "FinaleScript.dc.html": {
+      "x": 1880,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Фінал 2 · серверна",
+      "is_interactive": true
+    },
+    "LastBook.dc.html": {
+      "x": 2350,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Фінал 3 · остання книга",
+      "is_interactive": true
+    },
+    "Credits.dc.html": {
+      "x": 2820,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Фінал 5 · титри-наказ",
+      "is_interactive": true
+    },
+    "EndlessIntro.dc.html": {
+      "x": 3290,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Дублювати на папері",
+      "is_interactive": true
+    },
+    "Diary.dc.html": {
+      "x": 3760,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Щоденник стройовика",
+      "is_interactive": true
+    },
+    "ArchiveSheets.dc.html": {
+      "x": 4230,
+      "y": 8540,
+      "w": 390,
+      "h": 844,
+      "title": "Таблиці Археолога · шторка",
+      "is_interactive": true
+    }
   },
   "order": [
-    "Main.dc.html", "UnitSheet.dc.html", "UnitUnlock.dc.html", "BoostsSheet.dc.html", "ResourceSheet.dc.html", "ReputationSheet.dc.html", "KombatSheet.dc.html", "Menu.dc.html", "OfflineReturn.dc.html",
-    "OnbTitle.dc.html", "OnbIntro.dc.html", "OnbCallsign.dc.html", "OnbFirstAct.dc.html", "Coach.dc.html", "ClerkFirst.dc.html", "Call.dc.html", "AdOfferFirst.dc.html", "PushPreprompt.dc.html", "Toasts.dc.html",
-    "TgList.dc.html", "TgDetail.dc.html", "TgResult.dc.html", "TgFlag.dc.html", "NoteDetail.dc.html", "InspWarning.dc.html", "InspPrep.dc.html", "InspResult.dc.html",
-    "GiftArrived.dc.html", "RaceSheet.dc.html", "RaceWon.dc.html", "RaceLost.dc.html", "Digital.dc.html", "DigitConfirm.dc.html", "DigitResult.dc.html", "LevelUp.dc.html",
-    "Museum.dc.html", "JournalDetail.dc.html", "JournalNew.dc.html", "Curios.dc.html", "CurioDetail.dc.html", "ShareCard.dc.html", "Shop.dc.html", "StarterOffer.dc.html", "IapSuccess.dc.html",
-    "Profile.dc.html", "Settings.dc.html", "ResetConfirm.dc.html", "About.dc.html", "FundReports.dc.html", "Licenses.dc.html", "Boot.dc.html", "SaveError.dc.html", "ForceUpdate.dc.html"
+    "Main.dc.html",
+    "UnitSheet.dc.html",
+    "UnitUnlock.dc.html",
+    "BoostsSheet.dc.html",
+    "ResourceSheet.dc.html",
+    "ReputationSheet.dc.html",
+    "KombatSheet.dc.html",
+    "Menu.dc.html",
+    "OfflineReturn.dc.html",
+    "OnbTitle.dc.html",
+    "OnbIntro.dc.html",
+    "OnbCallsign.dc.html",
+    "OnbFirstAct.dc.html",
+    "Coach.dc.html",
+    "ClerkFirst.dc.html",
+    "Call.dc.html",
+    "AdOfferFirst.dc.html",
+    "PushPreprompt.dc.html",
+    "Toasts.dc.html",
+    "TgList.dc.html",
+    "TgDetail.dc.html",
+    "TgResult.dc.html",
+    "TgFlag.dc.html",
+    "NoteDetail.dc.html",
+    "InspWarning.dc.html",
+    "InspPrep.dc.html",
+    "InspResult.dc.html",
+    "GiftArrived.dc.html",
+    "RaceSheet.dc.html",
+    "RaceWon.dc.html",
+    "RaceLost.dc.html",
+    "Digital.dc.html",
+    "DigitConfirm.dc.html",
+    "DigitResult.dc.html",
+    "LevelUp.dc.html",
+    "Museum.dc.html",
+    "JournalDetail.dc.html",
+    "JournalNew.dc.html",
+    "Curios.dc.html",
+    "CurioDetail.dc.html",
+    "ShareCard.dc.html",
+    "Shop.dc.html",
+    "StarterOffer.dc.html",
+    "IapSuccess.dc.html",
+    "AwardDetail.dc.html",
+    "Profile.dc.html",
+    "Settings.dc.html",
+    "ResetConfirm.dc.html",
+    "About.dc.html",
+    "FundReports.dc.html",
+    "Licenses.dc.html",
+    "Boot.dc.html",
+    "SaveError.dc.html",
+    "ForceUpdate.dc.html",
+    "BossBrief.dc.html",
+    "TgPack.dc.html",
+    "StageConvert.dc.html",
+    "FinaleOrder.dc.html",
+    "FinaleScript.dc.html",
+    "LastBook.dc.html",
+    "Credits.dc.html",
+    "EndlessIntro.dc.html",
+    "Diary.dc.html",
+    "ArchiveSheets.dc.html"
   ],
   "notes": {
-    "row1": {"x": 0, "y": -300, "text": "Стройова: конвеєр, шторки, повернення", "kind": "title1", "maxW": 4150},
-    "row2": {"x": 0, "y": 964, "text": "Онбординг і перша сесія", "kind": "title1", "maxW": 4620},
-    "row3": {"x": 0, "y": 3184, "text": "Телеграми й перевірка", "kind": "title1", "maxW": 3680},
-    "row4": {"x": 0, "y": 4448, "text": "Гонка з часом і цифровізація", "kind": "title1", "maxW": 3680},
-    "row5": {"x": 0, "y": 5712, "text": "Музей і магазин", "kind": "title1", "maxW": 4150},
-    "row6": {"x": 0, "y": 6976, "text": "Профіль і система", "kind": "title1", "maxW": 4150},
-    "howto": {"x": 4700, "y": 0, "text": "Кожен екран має перемикач станів: відкрий Tweaks на артборді й обери «Стан». Кнопки й вкладки клікаються в режимі Play.", "w": 360, "fill": "orange"}
+    "row1": {
+      "x": 0,
+      "y": -300,
+      "text": "Стройова: конвеєр, шторки, повернення",
+      "kind": "title1",
+      "maxW": 4150
+    },
+    "row2": {
+      "x": 0,
+      "y": 964,
+      "text": "Онбординг і перша сесія",
+      "kind": "title1",
+      "maxW": 4620
+    },
+    "row3": {
+      "x": 0,
+      "y": 3184,
+      "text": "Телеграми й перевірка",
+      "kind": "title1",
+      "maxW": 3680
+    },
+    "row4": {
+      "x": 0,
+      "y": 4448,
+      "text": "Гонка з часом і цифровізація",
+      "kind": "title1",
+      "maxW": 3680
+    },
+    "row5": {
+      "x": 0,
+      "y": 5712,
+      "text": "Музей і магазин",
+      "kind": "title1",
+      "maxW": 4620
+    },
+    "row6": {
+      "x": 0,
+      "y": 6976,
+      "text": "Профіль і система",
+      "kind": "title1",
+      "maxW": 4150
+    },
+    "howto": {
+      "x": 4700,
+      "y": 0,
+      "text": "Кожен екран має перемикач станів: відкрий Tweaks на артборді й обери «Стан». Кнопки й вкладки клікаються в режимі Play.",
+      "w": 360,
+      "fill": "orange"
+    },
+    "row7": {
+      "x": 0,
+      "y": 8240,
+      "text": "Рівні 3–5, фінал і нескінченний режим",
+      "kind": "title1",
+      "maxW": 4620
+    }
   },
   "designSystems": [
-    {"title": "Стройова — дизайн-система", "namespace": "stroyova", "artifact": "https://claude.ai/artifact/GLBf39Zn3EeC9LsstwFGNU", "version": "1791499681-b9a4", "copiedAt": "2026-10-09T06:36:00Z"}
+    {
+      "title": "Стройова — дизайн-система",
+      "namespace": "stroyova",
+      "artifact": "https://claude.ai/artifact/GLBf39Zn3EeC9LsstwFGNU",
+      "version": "1791499681-b9a4",
+      "copiedAt": "2026-10-09T06:36:00Z"
+    }
   ]
 }

@@ -24,7 +24,7 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 | `docs/screens.md`, `design/screens/` | Карта екранів і 53 артборди (`.dc.html`, стани в `data-props`) |
 | `design/system/` | Дизайн-система: `tokens.json`, `README.md`, компоненти, `components/index.d.ts` (контракт пропсів), шрифт TT2020 |
 | `balance/` | Модель економіки `sim.js` (v6), пресети, пісочниця (`sandbox/build.py` → `sandbox/index.html`) |
-| `analytics/tracking-plan.yaml` | 46 подій аналітики; `docs/analytics.md` — пояснення |
+| `analytics/tracking-plan.yaml` | 60 подій аналітики; `docs/analytics.md` — пояснення |
 | `docs/art-and-sound.md`, `docs/stores.md`, `docs/playtest-and-launch.md` | Арт і звук, сторінки сторів, тестування й запуск |
 | `docs/research/` | Рев'ю й дослідження |
 
@@ -44,4 +44,5 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 
 - Пісочниця балансу: `python3 balance/sandbox/build.py` і відкрити `balance/sandbox/index.html`.
 - Телеграми: `python3 tools/gen_tg.py content/telegrams.json` (перегенерувати й перевірити JSON).
+- Перевірка контенту: `python3 tools/check_content.py` (усе) або `python3 tools/gen_tg.py --check` (пули телеграм за `content/schema/telegram.schema.json`); див. `content/README.md`.
 - Код ще не створено: перший крок — `/speckit-plan` для `specs/001-core-economy`.

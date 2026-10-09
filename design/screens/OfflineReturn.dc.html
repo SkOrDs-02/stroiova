@@ -59,6 +59,9 @@ button{font:inherit;cursor:pointer}
           <sc-if value="{{noClerk}}" hint-placeholder-val="{{false}}">
             <p class="st-doc-body" style="font-size: 13px">Стройова стояла. Без діловодів ланки працюють, лише поки ти в грі.</p>
           </sc-if>
+          <sc-if value="{{hasNote}}" hint-placeholder-val="{{false}}">
+            <p class="st-doc-body" style="font-size: 13px">Примітка: {{note}}</p>
+          </sc-if>
           <div class="st-doc-foot">
             <div class="st-doc-sign"><svg width="120" height="36" viewBox="0 0 120 36" aria-hidden="true"><path d="{{signPath}}"></path></svg><span>{{signer}}</span></div>
             <sc-if value="{{stamp}}" hint-placeholder-val="{{true}}"><span class="st-stamp" style="--st-rot: -8deg; --st-edge: 120deg">Виконано<span class="st-stamp-date">09.10.2026</span></span></sc-if>
@@ -67,7 +70,7 @@ button{font:inherit;cursor:pointer}
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 2px">
-        <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">Щоденник стройовика · 09.10</span>
+        <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">{{diaryHead}}</span>
         <span style="font-size: 14px; line-height: 1.45">{{diary}}</span>
       </div>
     </div>
@@ -95,7 +98,7 @@ button{font:inherit;cursor:pointer}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","Без реклами","ліміт 3 з 3","реклама недоступна","сховище переповнене","без діловодів","події: пройдено, введено","події: провалено, списано","Р2: Бригада"],"default":"звичайний","section":"Стан"},"gender":{"editor":"enum","options":["він","вона"],"default":"він","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","Без реклами","ліміт 3 з 3","реклама недоступна","сховище переповнене","без діловодів","події: пройдено, введено","події: провалено, списано","Р2: Бригада","Р3: пачка о 03:00","Р3: підсумкова пройдена","Р4: підсумкова провалена","Р5: рядок щоденника"],"default":"звичайний","section":"Стан"},"gender":{"editor":"enum","options":["він","вона"],"default":"він","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? 'звичайний';
@@ -153,6 +156,39 @@ class Component extends DCLogic {
         diary: 'Перший ранок у бригаді. На дверях досі «Гурток крою та шиття».'
       })
     };
+    function g(t) { return t.replace(/\{m:([^|}]*)\|f:([^}]*)\}/g, function (_, m, f) { return she ? f : m; }); }
+    var L3 = 'Командування', L4 = 'Зал для доповідей', L5 = 'Бліндаж без паперу';
+    P['Р3: пачка о 03:00'] = over({
+      place: L3, balBefore: '96,4 млн', away: '8 год 20 хв', title: 'Штаб працював без тебе',
+      docNo: '2 314', docSub: 'про роботу стройової частини штабу командування за час відсутності',
+      rows: [row('Час відсутності', '8 год 20 хв'), row('Пачка телеграм о 03:00', 'Зведення № 4'), row('Через Нараду', '1 260 протоколів'), row('Зібрано підписів', '1,92 млрд')],
+      note: 'Пачку о 03:00 прийняв черговий. Обкладинку не відкривав.',
+      x1: '1,92 млрд', x2: '3,84 млрд', diaryDay: 'День 24',
+      diary: g('Пачка прийшла о 03:00. Телефон не дзвонив, я все одно {m:прокинувся|f:прокинулася}.')
+    });
+    P['Р3: підсумкова пройдена'] = over({
+      place: L3, balBefore: '1,2 млрд', away: '5 год 2 хв', title: 'Комісія приїхала без тебе',
+      docNo: '2 371', docSub: 'про роботу стройової частини штабу командування за час відсутності',
+      rows: [row('Час відсутності', '5 год 2 хв'), row('Перевірка зі столиці', 'пройдено'), row('Наказ про переведення', 'підписано'), row('Множник за перевірку', '×3 ще 40 хв'), row('Новий експонат', '№ 16'), row('Зібрано підписів', '3,08 млрд')],
+      x1: '3,08 млрд', x2: '6,16 млрд', diaryDay: 'День 37',
+      diary: 'Комісія зі столиці привезла валізу методичок. Валізу теж перевірили.'
+    });
+    P['Р4: підсумкова провалена'] = over({
+      place: L4, balBefore: '48,6 млрд', away: '6 год 30 хв', title: 'Аудит приїхав без тебе',
+      docNo: '3 108', docSub: 'про роботу стройової частини за час відсутності',
+      rows: [row('Час відсутності', '6 год 30 хв'), row('Аудит усього', 'провалено', true), row('Стройова', '×0,5 на 1 год', true), row('Повторний приїзд', 'через 17 год 30 хв'), row('Зібрано підписів', '71,4 млрд')],
+      note: 'Куплені пункти лишаються. Комісія зарахує їх при повторному приїзді.',
+      x1: '71,4 млрд', x2: '142,8 млрд', diaryDay: 'День 56',
+      diary: 'Аудит перевіряє акти попередніх аудитів. Акти цілі. Тумбочкін здивований.'
+    });
+    P['Р5: рядок щоденника'] = over({
+      place: L5, balBefore: '1,84 ac', away: '9 год 4 хв', title: 'Бліндаж працював без тебе',
+      docNo: '4 002', docSub: 'про роботу стройової частини за час відсутності',
+      rows: [row('Час відсутності', '9 год 4 хв'), row('Цифрових ланок', '3 з 6'), row('Сповільнень у цифрових ланок', 'не було'), row('Зібрано підписів', '4,6 ac')],
+      note: 'Документи підписано КЕП. Паперового сліду немає, крім цієї довідки.',
+      x1: '4,6 ac', x2: '9,2 ac', diaryDay: 'День 62',
+      diary: 'Не знаю, де тепер ставити кутовий штамп. Його нема.'
+    });
     var S = P[st] || base;
     var kind = S.b;
     var PLAY = 'M8 5v14l11-7z', CLOCK = 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 7v5l3 2';
@@ -161,6 +197,8 @@ class Component extends DCLogic {
       docNo: S.docNo, docSub: S.docSub, rows: S.rows,
       storage: S.storage, noClerk: S.noClerk, stamp: S.stamp, signer: S.signer, signPath: S.sign,
       diary: S.diary, x1: nb(S.x1), x2: nb(S.x2),
+      hasNote: !!S.note, note: S.note || '',
+      diaryHead: 'Щоденник стройовика · ' + (S.diaryDay ? S.diaryDay + ' · ' : '') + '09.10',
       b: {
         ad: kind === 'ad', take: kind === 'take', off: kind === 'limit' || kind === 'na', hire: kind === 'hire',
         offIcon: kind === 'limit' ? CLOCK : PLAY,

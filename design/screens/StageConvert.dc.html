@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Конвертація ланки</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: flex-start; gap: 8px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 12px; color: var(--muted)">Армія без паперу · бліндаж</span>
+        <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">41,7 трлн</span>
+      </div>
+      <span style="width: 64px; height: 44px; border-radius: var(--radius-8); border: 1px solid var(--accent)"></span>
+      <span style="width: 44px; height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span>
+    </div>
+    <div style="height: 64px; border-radius: var(--radius-10); background: var(--surface-2)"></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="cv-title" style="max-height: 92%">
+    <div class="st-sheet-grab" aria-hidden="true"></div>
+    <div class="st-sheet-head">
+      <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="1.5"></rect><path d="M2 19h20M10 9l-2 2 2 2M14 9l2 2-2 2"></path></svg></div>
+      <div class="st-sheet-title">
+        <h2 class="st-h2" id="cv-title">Конвертація № {{d.k}}</h2>
+        <p class="st-sub" style="font-size: 12px">Рівень 5 · Армія без паперу</p>
+      </div>
+      <a class="st-iconbtn st-iconbtn--bare" href="Main.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div class="st-progress-head"><span class="st-progress-label">Цифрових ланок: {{d.done}} з 6</span><span style="font: 500 12px/1.3 var(--font-mono); color: var(--muted)">№ {{d.k}} з 6</span></div>
+      <div class="st-steps" role="progressbar" aria-label="Цифрових ланок" aria-valuenow="{{d.done}}" aria-valuemin="0" aria-valuemax="6">
+        <sc-for list="{{d.steps}}" as="p" hint-placeholder-count="6"><i class="{{p.c}}"></i></sc-for>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); align-items: stretch; gap: 4px">
+      <div class="st-card" style="padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; background: var(--surface-2)">
+        <span style="font-size: 12px; color: var(--muted)">Було · папір</span>
+        <div aria-hidden="true" style="height: 54px; border-radius: var(--radius-6); background: var(--bg-deep); display: flex; align-items: flex-end; justify-content: center; overflow: hidden">
+          <svg width="96" height="50" viewBox="0 0 96 50">
+            <rect x="18" y="20" width="60" height="30" style="fill: var(--scene-l1-wood)"></rect>
+            <rect x="24" y="12" width="44" height="8" rx="1" style="fill: var(--paper-3)" transform="rotate(-3 46 16)"></rect>
+            <rect x="26" y="6" width="44" height="8" rx="1" style="fill: var(--paper-2)" transform="rotate(4 48 10)"></rect>
+            <rect x="22" y="1" width="44" height="7" rx="1" style="fill: var(--paper)"></rect>
+            <rect x="60" y="24" width="14" height="6" rx="1" style="fill: var(--paper-4)"></rect>
+          </svg>
+        </div>
+        <span style="font-size: 14px; font-weight: 500; line-height: 1.3">{{d.from}}</span>
+        <span style="font: 500 12px/1.3 var(--font-mono); color: var(--muted)">{{d.rateFrom}}/хв</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">телеграми сповільнюють</span>
+      </div>
+      <div aria-hidden="true" style="display: flex; align-items: center; justify-content: center; color: var(--muted)"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></div>
+      <div class="st-card" style="position: relative; padding: 9.5px 11.5px; display: flex; flex-direction: column; gap: 6px; border: 1.5px solid var(--accent)">
+        <span style="font-size: 12px; color: var(--accent); font-weight: 600">Стане · цифра</span>
+        <div aria-hidden="true" style="height: 54px; border-radius: var(--radius-6); background: var(--bg-deep); display: flex; align-items: flex-end; justify-content: center; overflow: hidden">
+          <svg width="96" height="50" viewBox="0 0 96 50">
+            <rect x="18" y="38" width="60" height="12" style="fill: var(--scene-l1-wood)"></rect>
+            <rect x="28" y="12" width="40" height="24" rx="2" style="fill: var(--scene-l1-metal)"></rect>
+            <rect x="31" y="15" width="34" height="18" rx="1" style="fill: var(--bg)"></rect>
+            <path d="M35 20h18M35 25h24M35 30h12" style="stroke: var(--accent); stroke-width: 2; stroke-linecap: round"></path>
+            <path d="M24 36h48l4 3H20z" style="fill: var(--scene-l1-olive)"></path>
+          </svg>
+        </div>
+        <span style="font-size: 14px; font-weight: 500; line-height: 1.3">{{d.to}}</span>
+        <span style="font: 600 12px/1.3 var(--font-mono); color: var(--accent)">{{d.rateTo}}/хв · ×3</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--text)">без сповільнення</span>
+        <sc-if value="{{s.done}}" hint-placeholder-val="{{false}}">
+          <span class="st-stamp st-stamp--dark st-stamp--hit" style="position: absolute; right: 6px; top: 34px; --st-rot: -8deg; --st-edge: 95deg">Оцифровано</span>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.45">
+      <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="color: var(--accent); margin-top: 1px" aria-hidden="true"><path d="M12 3l7 3v6c0 4-3 7.5-7 9-4-1.5-7-5-7-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+      <span>Телеграми цю ланку не сповільнюють. Рівні й діловод ланки купуються як раніше.</span>
+    </div>
+
+    <sc-if value="{{s.price}}" hint-placeholder-val="{{true}}">
+      <div class="st-card" style="padding: 10px 14px; display: flex; flex-direction: column; gap: 4px">
+        <div class="st-kv" style="color: var(--text)"><span>Ціна</span><b style="font-size: 15px">{{d.price}} підписів</b></div>
+        <div class="st-kv"><span>Є зараз</span><b style="color: {{d.haveColor}}">{{d.have}}</b></div>
+        <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">120 хв базового доходу. Цифрові бали не потрібні й не витрачаються.</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.locked}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px dashed var(--border-strong); border-radius: var(--radius-10); font-size: 13px; line-height: 1.45">
+        <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="color: var(--muted); margin-top: 1px" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+        <span><b style="font-weight: 600">Замкнено до цифровізації.</b> Відкриється, коли після наступної цифровізації знову відкриєш усі 7 потоків.</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.done}}" hint-placeholder-val="{{false}}">
+      <div class="st-toast" role="status" style="box-shadow: none">
+        <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h4l3-7 4 14 3-7h2"></path></svg>
+        <span class="st-toast-txt">Шлях наказу: паперових ланок 4. Журнал замість книг — один.</span>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-if value="{{s.ready}}" hint-placeholder-val="{{true}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" aria-label="Оцифрувати ланку за 252 мільярди підписів">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
+          <span class="st-btn-stack">Оцифрувати ланку<small>252 млрд</small></span>
+        </a>
+      </sc-if>
+      <sc-if value="{{s.short}}" hint-placeholder-val="{{false}}">
+        <div class="st-btn st-btn--l st-btn--off" aria-disabled="true" role="button" aria-label="Оцифрувати ланку. Бракує 38,4 мільярда, ще 18 хвилин">
+          <span class="st-btn-stack">Оцифрувати ланку<small>ще 18 хв</small></span>
+        </div>
+        <span class="st-btn-note">Бракує 38,4 млрд підписів. Ціна тримається, поки шторка відкрита.</span>
+      </sc-if>
+      <sc-if value="{{s.locked}}" hint-placeholder-val="{{false}}">
+        <div class="st-btn st-btn--l st-btn--off" aria-disabled="true" role="button" aria-label="Оцифрувати ланку. Замкнено до цифровізації">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          Оцифрувати ланку
+        </div>
+        <a href="Digital.dc.html" class="st-btn st-btn--neutral st-btn--m">До цифровізації</a>
+      </sc-if>
+      <sc-if value="{{s.done}}" hint-placeholder-val="{{false}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l">До стройової</a>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["доступна","замкнено до цифровізації","бракує підписів","виконано"],"default":"доступна","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'доступна';
+    var locked = st === 'замкнено до цифровізації', short = st === 'бракує підписів', done = st === 'виконано';
+    function steps(n, now) { var a = []; for (var i = 1; i <= 6; i++) a.push({ c: i <= n ? 'is-on' : '' }); return a; }
+    var d = locked ? {
+      k: 3, done: 2, order: 'Фінслужба → КЕП на первинці',
+      from: 'Фінслужба', to: 'КЕП на первинці', rateFrom: '2,71 млрд', rateTo: '8,13 млрд',
+      price: '—', have: '—', haveColor: 'var(--text)'
+    } : {
+      k: 2, done: done ? 2 : 1, order: 'Стройова частина → Електронний журнал',
+      from: 'Стройова частина', to: 'Електронний журнал', rateFrom: '2,46 млрд', rateTo: '7,38 млрд',
+      price: '252 млрд', have: short ? '214 млрд' : '318 млрд', haveColor: short ? 'var(--text)' : 'var(--accent)'
+    };
+    d.steps = steps(d.done);
+    return {
+      d: d,
+      s: { ready: st === 'доступна', short: short, locked: locked, done: done, price: st === 'доступна' || short }
+    };
+  }
+}
+</script>
+</body>
+</html>

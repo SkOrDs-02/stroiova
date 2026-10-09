@@ -29,12 +29,12 @@ button{font:inherit;cursor:pointer}
 
   <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 6px 20px 16px; display: flex; flex-direction: column; gap: 12px">
 
-    <div role="timer" aria-label="До приїзду комісії 2 години 14 хвилин" style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: var(--radius-12); background: var(--alert-bg); border: 1px solid var(--alert-line); color: var(--alert-text)">
+    <div role="timer" aria-label="{{t.label}}" style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: var(--radius-12); background: var(--alert-bg); border: 1px solid var(--alert-line); color: var(--alert-text)">
       <span style="display: flex; align-items: center; gap: 6px; font-size: 12px">
         <svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
         До приїзду комісії
       </span>
-      <span style="font: 600 34px/1.1 var(--font-mono); color: var(--on-alert)">02:14:37</span>
+      <span style="font: 600 34px/1.1 var(--font-mono); color: var(--on-alert)">{{t.timer}}</span>
       <span style="font-size: 13px; line-height: 1.45"><b style="font-weight: 600">{{d.boss}}.</b> {{d.scope}}</span>
     </div>
 
@@ -68,12 +68,45 @@ button{font:inherit;cursor:pointer}
           <span class="st-check-cost">{{it.cost}}<sc-if value="{{it.short}}" hint-placeholder-val="{{false}}"><span style="display: block">бракує {{it.lack}}</span><span style="display: block; color: var(--muted)">ще {{it.eta}}</span></sc-if></span>
         </button>
       </sc-for>
+      <sc-if value="{{m.on}}" hint-placeholder-val="{{false}}">
+        <div role="group" aria-label="{{m.aria}}" style="display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: var(--radius-10); background: var(--bg); border: 1.5px dashed {{m.line}}">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <span class="st-check-box" style="border-color: {{m.box}}; background: {{m.boxBg}}">
+              <sc-if value="{{m.ok}}" hint-placeholder-val="{{false}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></sc-if>
+            </span>
+            <span class="st-check-txt"><span class="st-check-title">{{m.title}}</span><span class="st-check-meta">{{m.meta}}</span></span>
+          </div>
+          <span style="align-self: flex-start" class="st-tag st-tag--muted">Пункт рівня · за рекламу не закривається</span>
+          <sc-if value="{{m.share}}" hint-placeholder-val="{{false}}">
+            <div class="st-progress">
+              <div class="st-progress-head"><span class="st-progress-label">Частка «Звітів про звіти»</span><span class="st-progress-val" style="color: var(--text)">Зараз 34% · потрібно 40%</span></div>
+              <div style="position: relative">
+                <div class="st-track st-track--l" role="progressbar" aria-label="Частка Звітів про звіти, поріг 40 відсотків" aria-valuemin="0" aria-valuemax="100" aria-valuenow="34" style="background: var(--surface-2)"><i style="--p: 34%"></i></div>
+                <i aria-hidden="true" style="position: absolute; left: 40%; top: -3px; bottom: -3px; width: 2px; background: var(--text)"></i>
+              </div>
+            </div>
+          </sc-if>
+          <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 1.4; font-weight: 500; color: {{m.stc}}">
+            <sc-if value="{{m.ok}}" hint-placeholder-val="{{false}}"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></sc-if>
+            <sc-if value="{{m.no}}" hint-placeholder-val="{{true}}"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></sc-if>
+            {{m.status}}
+          </span>
+        </div>
+      </sc-if>
     </div>
 
+    <sc-if value="{{t.old}}" hint-placeholder-val="{{true}}">
     <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.4">
       <div style="display: flex; gap: 8px; align-items: baseline"><b style="color: var(--accent); font-weight: 600">Пройшли</b><span style="color: var(--muted)"><span style="font-family: var(--font-mono)">×3</span> до підписів на 2 год</span></div>
       <div style="display: flex; gap: 8px; align-items: baseline"><b style="color: var(--fail); font-weight: 600">Провалили</b><span style="color: var(--muted)">Стройова частина <span style="font-family: var(--font-mono)">×0,5</span> на 1 год</span></div>
     </div>
+    </sc-if>
+    <sc-if value="{{t.gen}}" hint-placeholder-val="{{false}}">
+    <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.4">
+      <div style="display: flex; gap: 8px; align-items: baseline"><b style="color: var(--accent); font-weight: 600">Пройшли</b><span style="color: var(--muted)">{{t.pass}}</span></div>
+      <div style="display: flex; gap: 8px; align-items: baseline"><b style="color: var(--fail); font-weight: 600">Провалили</b><span style="color: var(--muted)">{{t.fail}}</span></div>
+    </div>
+    </sc-if>
   </div>
 
   <div style="flex-shrink: 0; padding: 12px 20px 20px; border-top: 1px solid var(--border); background: var(--bg); display: flex; flex-direction: column; gap: 8px">
@@ -90,6 +123,19 @@ button{font:inherit;cursor:pointer}
         Усе за рекламу
       </button>
       <span class="st-btn-note">Реклама 30 секунд · 1 раз на перевірку</span>
+    </sc-if>
+    <sc-if value="{{v.adBoss}}" hint-placeholder-val="{{false}}">
+      <button class="st-btn st-btn--primary st-btn--l" onClick="{{v.doAll}}" aria-label="Усе за рекламу: виконати 5 базових пунктів, ролик 30 секунд">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+        Усе за рекламу
+      </button>
+      <span class="st-btn-note">Реклама 30 секунд · лише 5 базових пунктів</span>
+    </sc-if>
+    <sc-if value="{{v.mechWait}}" hint-placeholder-val="{{false}}">
+      <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius-10); border: 1.5px dashed var(--border-strong); font-size: 14px; line-height: 1.4">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="color: var(--muted)" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <span>Базові пункти виконано. {{m.status}}</span>
+      </div>
     </sc-if>
     <sc-if value="{{v.adNoAds}}" hint-placeholder-val="{{false}}">
       <button class="st-btn st-btn--primary st-btn--l" onClick="{{v.doAll}}" aria-label="Забрати все: виконати весь чекліст без реклами">
@@ -115,7 +161,7 @@ button{font:inherit;cursor:pointer}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["частково","0%","100%","не вистачає підписів","реклама використана","реклама недоступна","Без реклами: Забрати","Р2: Комісія командування"],"default":"частково","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["частково","0%","100%","не вистачає підписів","реклама використана","реклама недоступна","Без реклами: Забрати","Р2: Комісія командування","підсумкова Р2: пункт рівня виконано","підсумкова Р3: пункт рівня ще ні","підсумкова Р4: частка наживо","звичайна Р3","звичайна Р4","звичайна Р5"],"default":"частково","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var self = this;
@@ -146,6 +192,44 @@ class Component extends DCLogic {
       'Без реклами: Забрати': { d: r1d, list: R1, done: { kerb: true, stove: true }, ad: 'noads' },
       'Р2: Комісія командування': { d: { boss: 'Комісія командування · полковник Тумбочкін', scope: 'Міряє коридор рулеткою, пил — білою рукавичкою. Бойову підготовку не перевіряє.', balance: '9,6 млн', rate: '+184 тис./хв', readyLine: 'Пилу немає. Рукавичка лишилась білою.' }, list: R2, done: { dust: true, sign: true }, ad: 'ready' }
     };
+    var BP = '×3 на 2 год і наказ про переведення';
+    var BF = 'Стройова ×0,5 на 1 год. Куплене лишається, повтор через добу.';
+    var RP = '×3 до підписів на 2 год', RF = 'Стройова частина ×0,5 на 1 год';
+    var BSC = 'Готуватися можна кілька разів. Куплене лишається.';
+    var R3 = [
+      { id: 'minutes', title: 'Підшити протоколи нарад', meta: 'Кожен з додатком «Присутні»', cost: '18,4 млн' },
+      { id: 'doors', title: 'Вирівняти таблички на дверях', meta: 'За рівнем очей комісії', cost: '9,6 млн' },
+      { id: 'carafe', title: 'Наповнити графин на столі наради', meta: 'Воду не пити', cost: '4,2 млн' },
+      { id: 'kettles', title: 'Прибрати чайники з кабінетів', meta: 'У шафу, не під стіл', cost: '12,8 млн' }
+    ];
+    var R4 = [
+      { id: 'slides', title: 'Пронумерувати слайди', meta: 'У правому верхньому куті, олівцем', cost: '1,24 млрд' },
+      { id: 'meter', title: 'Вирівняти стос до одного метра', meta: 'Лінійкою Наталі', cost: '860 млн' },
+      { id: 'prep', title: 'Звіт про підготовку до аудиту', meta: 'У двох примірниках', cost: '2,05 млрд' },
+      { id: 'brief', title: 'Доповідь тезово', meta: 'Одна сторінка, кегль чотирнадцятий', cost: '1,6 млрд' }
+    ];
+    var R5 = [
+      { id: 'print', title: 'Роздрукувати електронний журнал для огляду', meta: 'І відмовитись', cost: '96 млрд' },
+      { id: 'glove', title: 'Протерти ноутбук білою рукавичкою', meta: 'А де папір?', cost: '54 млрд' },
+      { id: 'font5', title: 'Перевірити кегль у дашборді', meta: 'Чотирнадцятий, як на папері', cost: '71 млрд' },
+      { id: 'kep', title: 'Підписати акт перевірки КЕП', meta: 'Тумбочкін просить ще й ручкою', cost: '128 млрд' }
+    ];
+    var G = {
+      'підсумкова Р2: пункт рівня виконано': { d: { boss: 'Комісія командування · підсумкова', scope: BSC, balance: '41,6 млн', rate: '+184 тис./хв', readyLine: 'Пилу немає. Рукавичка лишилась білою.' }, timer: '21:14:08', label: 'До приїзду комісії 21 година 14 хвилин', boss: true,
+        list: [R2[0], R2[1], R2[2], R2[4], { id: 'kopiyka', title: 'Звірити залишок із Казначейством', meta: 'До копійки', cost: '14,2 млн' }], done: { dust: true, tape: true, kopiyka: true },
+        mech: { ok: true, title: 'Накази по частині працюють', meta: 'Потік відкрито в цьому циклі', status: 'Виконано на цю мить' } },
+      'підсумкова Р3: пункт рівня ще ні': { d: { boss: 'Перевірка зі столиці · підсумкова', scope: BSC, balance: '2,1 млрд', rate: '+3,2 млн/хв', readyLine: 'Графин повний, протоколи підшиті.' }, timer: '06:41:30', label: 'До приїзду комісії 6 годин 41 хвилина', boss: true,
+        list: R3.concat([{ id: 'sum', title: 'Звірити зведення зі зведенням про зведення', meta: '', cost: '22,5 млн' }]), done: { minutes: true, doors: true, carafe: true, kettles: true, sum: true },
+        mech: { ok: false, title: 'Зведення б’ється', meta: 'Останню пачку закрито сумлінно', status: 'Ще ні: закрийте Зведення № 6 сумлінно' } },
+      'підсумкова Р4: частка наживо': { d: { boss: 'Аудит усього · підсумкова', scope: BSC, balance: '5,8 млрд', rate: '+41 млн/хв', readyLine: 'Слайди пронумеровано, стос рівний.' }, timer: '18:40:12', label: 'До приїзду комісії 18 годин 40 хвилин', boss: true,
+        list: R4.concat([{ id: 'acts', title: 'Пред’явити акти всіх попередніх перевірок', meta: '47 актів, з № 1', cost: '3,1 млрд' }]), done: { slides: true, brief: true },
+        mech: { ok: false, share: true, title: 'Звіти про звіти', meta: 'Не менше 40% суми потоків на мить приїзду', status: 'Ще ні: підніміть Звіти про звіти до 40%' } },
+      'звичайна Р3': { d: { boss: 'Перевірка зі столиці · полковник Тумбочкін', scope: 'Перевіряє протоколи, таблички, графин і чайники. Бойову підготовку не перевіряє.', balance: '64 млн', rate: '+3,2 млн/хв', readyLine: 'Графин повний, протоколи підшиті.' }, list: R3, done: { carafe: true } },
+      'звичайна Р4': { d: { boss: 'Аудит · полковник Тумбочкін', scope: 'Перевіряє слайди, стос, звіти й доповідь. Бойову підготовку не перевіряє.', balance: '3,9 млрд', rate: '+41 млн/хв', readyLine: 'Слайди пронумеровано, стос рівний.' }, timer: '02:41:05', label: 'До приїзду комісії 2 години 41 хвилина', list: R4, done: { slides: true, meter: true } },
+      'звичайна Р5': { d: { boss: 'Комісія з цифрової трансформації · полковник Тумбочкін', scope: 'Перевіряє ноутбук, дашборд і КЕП. Бойову підготовку не перевіряє.', balance: '212 млрд', rate: '+1,9 млрд/хв', readyLine: 'Рукавичка біла, ноутбук чистий.' }, timer: '02:08:44', label: 'До приїзду комісії 2 години 8 хвилин', list: R5, done: { glove: true }, fail: 'Стройова частина ×0,5 на 1 год, навіть цифрова' }
+    };
+    var g = G[st];
+    if (g) { g.ad = 'ready'; S[st] = g; }
     var cfg = S[st] ?? S['частково'];
     var allOv = (this.state && this.state.ov) || {};
     var done = allOv[st] || cfg.done;
@@ -175,17 +259,34 @@ class Component extends DCLogic {
         }
       };
     });
-    var count = items.filter(function (i) { return i.done; }).length;
-    var pct = Math.round(count / items.length * 100);
+    var mc = cfg.mech;
+    var count = items.filter(function (i) { return i.done; }).length + (mc && mc.ok ? 1 : 0);
+    var pct = Math.round(count / (items.length + (mc ? 1 : 0)) * 100);
     var ready = pct === 100;
     return {
       d: cfg.d,
+      t: {
+        timer: cfg.timer || '02:14:37', label: cfg.label || 'До приїзду комісії 2 години 14 хвилин',
+        old: !g, gen: !!g,
+        pass: g && g.boss ? BP : RP, fail: g && g.boss ? BF : ((g && g.fail) || RF)
+      },
+      m: {
+        on: !!mc, ok: !!(mc && mc.ok), no: !!(mc && !mc.ok), share: !!(mc && mc.share),
+        title: mc ? mc.title : '', meta: mc ? mc.meta : '', status: mc ? mc.status : '',
+        aria: mc ? 'Пункт рівня: ' + mc.title + '. ' + mc.status : '',
+        line: mc && mc.ok ? 'var(--accent)' : 'var(--border-strong)',
+        box: mc && mc.ok ? 'var(--accent)' : 'var(--border-strong)',
+        boxBg: mc && mc.ok ? 'var(--accent)' : 'transparent',
+        stc: mc && mc.ok ? 'var(--accent)' : 'var(--text)'
+      },
       v: {
         items: items,
         pct: pct,
         pctText: ready ? '100% · готово' : pct + '%',
         ready: ready,
-        adReady: !ready && cfg.ad === 'ready',
+        adReady: !ready && cfg.ad === 'ready' && !cfg.boss,
+        adBoss: !ready && !!cfg.boss && items.some(function (i) { return !i.done; }),
+        mechWait: !ready && !!cfg.boss && !items.some(function (i) { return !i.done; }),
         adNoAds: !ready && cfg.ad === 'noads',
         adUsed: !ready && cfg.ad === 'used',
         adNa: !ready && cfg.ad === 'na',

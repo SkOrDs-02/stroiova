@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Серверна</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+@keyframes fs-spin { to { transform: rotate(360deg); } }
+@keyframes fs-cursor { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.fs-fan.is-on { animation: fs-spin 0.9s linear infinite; transform-origin: 306px 196px; }
+.fs-cursor { animation: fs-cursor 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .fs-fan.is-on, .fs-cursor { animation: none; } }
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden; padding: 18px 20px 24px; gap: 14px">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 20px">
+    <span style="font-family: var(--font-mono); font-size: 12px; color: var(--muted)">{{d.place}}</span>
+    <span style="font-family: var(--font-mono); font-size: 12px; color: var(--muted)">{{d.corner}}</span>
+  </div>
+
+  <div style="position: relative; flex-shrink: 0; width: 350px; height: 300px; border-radius: var(--radius-12); overflow: hidden; background: var(--scene-l2-shadow); border: 1px solid var(--border)">
+    <svg aria-hidden="true" width="350" height="300" viewBox="0 0 350 300" style="position: absolute; inset: 0">
+      <rect x="0" y="0" width="350" height="252" style="fill: var(--scene-l2-shadow)"></rect>
+      <rect x="0" y="252" width="350" height="48" style="fill: var(--bg-deep)"></rect>
+      <path d="M300 0v40q0 10-10 10h-6" style="fill: none; stroke: var(--scene-l2-cabinet); stroke-width: 4"></path>
+      <path d="M322 0v150" style="fill: none; stroke: var(--scene-l2-panel); stroke-width: 6"></path>
+      <rect x="6" y="246" width="338" height="10" style="fill: var(--scene-l2-cabinet)"></rect>
+      <rect x="18" y="256" width="8" height="44" style="fill: var(--scene-l2-panel)"></rect>
+      <rect x="324" y="256" width="8" height="44" style="fill: var(--scene-l2-panel)"></rect>
+      <rect x="96" y="234" width="80" height="12" rx="3" style="fill: var(--paper-4)"></rect>
+      <rect x="10" y="10" width="254" height="226" rx="12" style="fill: var(--paper-3)"></rect>
+      <rect x="17" y="17" width="240" height="212" rx="8" style="fill: var(--paper-2)"></rect>
+      <rect x="23" y="22" width="228" height="172" rx="10" style="fill: var(--bg-deep)"></rect>
+      <rect x="67" y="203" width="140" height="18" rx="2" style="fill: var(--paper)"></rect>
+      <circle cx="236" cy="212" r="4" style="fill: {{d.led}}"></circle>
+      <rect x="272" y="120" width="68" height="126" rx="4" style="fill: var(--paper-3)"></rect>
+      <rect x="279" y="130" width="54" height="8" rx="1" style="fill: var(--paper-4)"></rect>
+      <rect x="279" y="144" width="54" height="8" rx="1" style="fill: var(--paper-4)"></rect>
+      <circle cx="306" cy="196" r="22" style="fill: var(--paper-4)"></circle>
+      <circle cx="306" cy="196" r="18" style="fill: var(--scene-l2-panel)"></circle>
+      <g class="fs-fan {{d.fan}}">
+        <path d="M306 196l-4-15q4-3 8 0z M306 196l15-4q3 4 0 8z M306 196l4 15q-4 3-8 0z M306 196l-15 4q-3-4 0-8z" style="fill: var(--scene-l2-cabinet)"></path>
+        <circle cx="306" cy="196" r="3" style="fill: var(--paper-4)"></circle>
+      </g>
+      <circle cx="330" cy="232" r="3" style="fill: {{d.led}}"></circle>
+    </svg>
+
+    <div style="position: absolute; left: 31px; top: 30px; width: 212px; height: 156px; overflow: hidden; font: 400 12px/14px var(--font-mono); color: var(--accent); word-break: break-word">
+      <sc-if value="{{s.found}}" hint-placeholder-val="{{true}}">
+        <div aria-label="Скрипт розсилки на екрані">
+          <sc-for list="{{script}}" as="ln" hint-placeholder-count="9"><div style="white-space: pre-wrap">{{ln}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{s.ask}}" hint-placeholder-val="{{false}}">
+        <div style="height: 156px; display: flex; flex-direction: column; justify-content: center; gap: 6px; font-size: 14px; line-height: 18px">
+          <div style="color: var(--muted); font-size: 12px; line-height: 14px">ПЕРЕЙТИ :ЦИКЛ</div>
+          <div>ВИМКНУТИ РОЗСИЛКУ? (Y/N)<span class="fs-cursor" aria-hidden="true">_</span></div>
+        </div>
+      </sc-if>
+    </div>
+    <div style="position: absolute; left: 67px; top: 203px; width: 140px; height: 18px; display: flex; align-items: center; justify-content: center; font: 600 12px/1 var(--font-mono); color: var(--ink); letter-spacing: 0.5px">НЕ ВИМИКАТИ. 1998</div>
+  </div>
+
+  <sc-if value="{{s.found}}" hint-placeholder-val="{{true}}">
+    <div style="display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)">
+      <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="color: var(--muted); margin-top: 2px" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+      <span style="font-size: 14px; line-height: 1.45">Вимкнути можна лише письмовим наказом, погодженим усіма ланками.</span>
+    </div>
+    <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="margin-top: auto">
+      <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      Повернутися
+    </a>
+  </sc-if>
+
+  <sc-if value="{{s.ask}}" hint-placeholder-val="{{false}}">
+    <p style="margin: 0; font-size: 15px; line-height: 1.5">Наказ про вимкнення розсилки отримано в паперовій формі. Погоджено всіма ланками.</p>
+    <div role="group" aria-label="ВИМКНУТИ РОЗСИЛКУ? (Y/N)" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: auto">
+      <a href="LastBook.dc.html" class="st-btn st-btn--primary st-btn--l" aria-label="Y, вимкнути розсилку" style="font: 600 22px/1 var(--font-mono)">Y</a>
+      <a href="Main.dc.html" class="st-btn st-btn--secondary st-btn--l" aria-label="N, не вимикати. Розсилка працює, запит повториться за 4 години" style="font: 600 22px/1 var(--font-mono)">N</a>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: -6px; font-size: 12px; line-height: 1.4; color: var(--muted); text-align: center">
+      <span>Вимкнути розсилку</span>
+      <span>Розсилка працює. Запит повториться за 4 год</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{s.off}}" hint-placeholder-val="{{false}}">
+    <article class="st-paper st-paper--card" aria-label="Телеграма № 5353. Про припинення розсилки" style="gap: 8px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span class="st-doc-title" style="font-size: 15px">Телеграма № 5353</span>
+        <span class="st-doc-meta">Про припинення розсилки</span>
+      </div>
+      <hr class="st-doc-rule">
+      <p class="st-doc-body">Розсилку припинено на підставі наказу. Вихідну нумерацію закрито. Ця телеграма остання. Номер першої не зберігся.</p>
+      <span class="st-doc-meta" style="align-self: flex-end">Оператор ЕОМ № 1</span>
+    </article>
+    <a href="LastBook.dc.html" class="st-btn st-btn--primary st-btn--l" style="margin-top: auto">
+      До музею
+      <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["знайдено (Р4)","вимкнути","вимкнено"],"default":"знайдено (Р4)","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'знайдено (Р4)';
+    var found = st === 'знайдено (Р4)', ask = st === 'вимкнути', off = st === 'вимкнено';
+    return {
+      script: ['REM РОЗСИЛКА. 1998', 'REM ЩОБ ТЕЛЕГРАМИ НЕ ГУБИЛИСЬ', ':ЦИКЛ', 'ЧЕКАТИ 03:00', 'ДЛЯ КОЖНОГО В \\ВХІДНІ', '  ПІДПИС «ОПЕРАТОР ЕОМ № 1»', '  ІНДЕКС +1, РІК 98', '  НАДІСЛАТИ ВСІМ', 'ПЕРЕЙТИ :ЦИКЛ'],
+      d: {
+        place: 'Серверна під залом для доповідей',
+        corner: found ? 'рівень 4' : 'фінал',
+        led: off ? 'var(--scene-l2-panel)' : 'var(--accent)',
+        fan: off ? '' : 'is-on'
+      },
+      s: { found: found, ask: ask, off: off }
+    };
+  }
+}
+</script>
+</body>
+</html>

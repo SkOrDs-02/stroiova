@@ -2,9 +2,11 @@
 # Пара до вкладки «Аналітика» дизайн-документа. Лежить у репо гри; джерело правди для типізованої обгортки track().
 # Типи: string, integer, number, boolean, object, array<string>, date.
 # Великі суми підписів передаємо як log10 (number, 2 знаки): 186400 → 5.27.
+# Версія 3: злито доповнення специфікацій 011–014 і 016. Нові події мають поле spec; нові властивості й значення enum
+# позначені номером специфікації (spec або «(011)» в описі).
 # Тривалості — цілі секунди з суфіксом _sec; булеві — з префіксом is_/has_.
 
-version: 2
+version: 3
 plan: stroyova-analytics
 updated: "2026-10-09"
 destination: posthog_eu_cloud
@@ -54,12 +56,15 @@ global_properties:
   - {name: economy_config_source, type: string, required: true, enum: [bundled, remote, cached], example: remote, description: "Звідки взято конфіг"}
   - {name: content_version, type: string, required: true, example: "content-2026.10.08", description: "Версія JSON-пакета телеграм, документів і журналів (expo-updates)"}
   - {name: save_schema_version, type: integer, required: true, example: 3, description: "Версія схеми збереження в MMKV"}
-  - {name: analytics_plan_version, type: integer, required: true, example: 2, description: "Версія цього плану"}
+  - {name: analytics_plan_version, type: integer, required: true, example: 3, description: "Версія цього плану"}
   - {name: game_session_id, type: string, required: true, example: "9b2f6c1e-7d3a-4c1b-9a51-2f0f3e8d4a10", description: "Наш ідентифікатор сесії (див. session_start); не плутати з $session_id PostHog"}
   - {name: session_number, type: integer, required: true, example: 14, description: "Порядковий номер сесії з моменту встановлення"}
   - {name: playtime_sec, type: integer, required: true, example: 2730, description: "Сумарний час у грі на передньому плані з моменту встановлення"}
   - {name: days_since_install, type: integer, required: true, example: 2, description: "Календарні дні від встановлення за локальним часом пристрою"}
-  - {name: level_id, type: string, required: true, enum: [batalion, bryhada], example: batalion, description: "Поточний рівень гри"}
+  - {name: level_id, type: string, required: true, enum: [batalion, bryhada, komanduvannia, henshtab, bez_paperu], example: batalion, description: "Поточний рівень гри; komanduvannia, henshtab, bez_paperu — 011, 012, 013"}
+  - {name: dub_number, type: integer, required: true, example: 0, spec: "013", description: "Номер Дубля нескінченного режиму; 0 до першого Дубля (013 FR-30)"}
+  - {name: is_finale_done, type: boolean, required: true, example: false, spec: "013", description: "Гравець натиснув Y на finale-script (013 FR-18)"}
+  - {name: awards_owned, type: integer, required: true, example: 14, spec: "016", description: "Скільки грамот гравець має на мить події (016 FR-25). Потрібна, щоб бачити, чи збігаються грамоти з утриманням"}
   - {name: digitization_count, type: integer, required: true, example: 1, description: "Скільки цифровізацій уже зроблено"}
   - {name: has_no_ads, type: boolean, required: true, example: false, description: "Куплено «Без реклами»"}
   - {name: is_payer, type: boolean, required: true, example: false, description: "Була хоча б одна успішна покупка"}
@@ -112,12 +117,14 @@ events:
       - {name: purchases_count, type: integer, required: true, example: 9, description: "Дії покупки рівнів за сесію (з усіх пристроїв, не лише вибірки)"}
       - {name: levels_bought, type: integer, required: true, example: 27}
       - {name: clerks_hired_count, type: integer, required: true, example: 0}
-      - {name: bottleneck_id, type: string, required: true, enum: [streams, kombat, stroy, fin, kazna], example: kombat, description: "Що обмежує дохід на кінець сесії: сума потоків чи конкретна ланка труби"}
+      - {name: bottleneck_id, type: string, required: true, enum: [streams, kombat, stroy, fin, kazna, narada, dopovid], example: kombat, description: "Що обмежує дохід на кінець сесії: сума потоків чи конкретна ланка труби; narada, dopovid — 011, 012"}
       - {name: next_purchase_eta_sec, type: integer, required: true, example: 5400, description: "Скільки чекати до найближчої покупки, що піднімає дохід, при поточному доході"}
       - {name: digital_points_available, type: integer, required: true, example: 0, description: "Скільки балів дасть цифровізація просто зараз"}
-      - {name: levels, type: object, required: true, example: {raporty: 31, akty: 12, dovidky: 0, nakladni: 0, kombat: 24, stroy: 18, fin: 9}, description: "Рівні всіх потоків і ланок; на «Бригаді» додаються nakazy і kazna. У HogQL читаємо як properties.levels.raporty"}
+      - {name: levels, type: object, required: true, example: {raporty: 31, akty: 12, dovidky: 0, nakladni: 0, kombat: 24, stroy: 18, fin: 9}, description: "Рівні всіх потоків і ланок; на «Бригаді» додаються nakazy і kazna, на Р3 — zvedennia, narada (011), на Р4–Р5 — zpz, dopovid (012). У HogQL читаємо як properties.levels.raporty"}
       - {name: paper_empty_sec, type: integer, required: true, example: 0, description: "Скільки секунд сесії паперу було 0 (конвеєр від паперу не залежить)"}
       - {name: fuel_bonus_sec, type: integer, required: true, example: 236, description: "Скільки секунд сесії діяв бонус пального ×1,25 (бак > 20%)"}
+      - {name: zpz_share_pct, type: number, required: false, example: 18.2, spec: "012", description: "Лише Р4–Р5: частка «Звітів про звіти» на кінець сесії"}
+      - {name: stack_cm, type: integer, required: false, example: 64, spec: "012", description: "Лише Р4: висота стосу на кінець сесії, до 999"}
 
   - name: force_update_show
     category: lifecycle
@@ -155,8 +162,8 @@ events:
     answers: "Темп відкриття потоків у кожному циклі проти пісочниці; коли стає доступна цифровізація."
     sampling: all
     properties:
-      - {name: stream_id, type: string, required: true, enum: [raporty, akty, dovidky, nakladni, nakazy], example: akty, description: "nakazy — «Накази по частині», п'ятий потік рівня «Бригада»"}
-      - {name: unlock_index, type: integer, required: true, example: 2, description: "Порядковий номер потоку в циклі: 2–4 на «Батальйоні», 2–5 на «Бригаді»"}
+      - {name: stream_id, type: string, required: true, enum: [raporty, akty, dovidky, nakladni, nakazy, zvedennia, zpz], example: akty, description: "nakazy — «Накази по частині», п'ятий потік рівня «Бригада»; zvedennia — 011, zpz — 012"}
+      - {name: unlock_index, type: integer, required: true, example: 2, description: "Порядковий номер потоку в циклі: 2–4 на «Батальйоні», 2–5 на «Бригаді», 2–6 на Р3, 2–7 на Р4–Р5"}
       - {name: cost_log10, type: number, required: true, example: 2.48}
       - {name: sec_since_cycle_start, type: integer, required: true, example: 260, description: "Від початку гри або останньої цифровізації"}
       - {name: is_all_streams_open, type: boolean, required: true, example: false, description: "true на останньому потоці рівня (4-му або 5-му): цифровізація стала доступною"}
@@ -169,7 +176,7 @@ events:
     sampling: econ_detail
     properties:
       - {name: target_type, type: string, required: true, enum: [stream, stage], example: stage}
-      - {name: target_id, type: string, required: true, enum: [raporty, akty, dovidky, nakladni, nakazy, kombat, stroy, fin, kazna], example: kombat}
+      - {name: target_id, type: string, required: true, enum: [raporty, akty, dovidky, nakladni, nakazy, zvedennia, zpz, kombat, stroy, fin, kazna, narada, dopovid], example: kombat, description: "zvedennia, narada — 011; zpz, dopovid — 012"}
       - {name: level_from, type: integer, required: true, example: 18}
       - {name: level_to, type: integer, required: true, example: 25}
       - {name: levels_bought, type: integer, required: true, example: 7}
@@ -187,7 +194,7 @@ events:
     sampling: all
     properties:
       - {name: target_type, type: string, required: true, enum: [stream, stage], example: stream}
-      - {name: target_id, type: string, required: true, enum: [raporty, akty, dovidky, nakladni, nakazy, kombat, stroy, fin, kazna], example: raporty}
+      - {name: target_id, type: string, required: true, enum: [raporty, akty, dovidky, nakladni, nakazy, zvedennia, zpz, kombat, stroy, fin, kazna, narada, dopovid], example: raporty, description: "zvedennia, narada — 011; zpz, dopovid — 012"}
       - {name: cost_log10, type: number, required: true, example: 1.9}
       - {name: is_first_clerk, type: boolean, required: true, example: true, description: "Перший діловод за все встановлення"}
       - {name: clerks_count_after, type: integer, required: true, example: 1}
@@ -201,7 +208,7 @@ events:
     sampling: all
     properties:
       - {name: target_type, type: string, required: true, enum: [stream, stage], example: stream}
-      - {name: target_id, type: string, required: true, enum: [raporty, akty, dovidky, nakladni, nakazy, kombat, stroy, fin, kazna], example: raporty}
+      - {name: target_id, type: string, required: true, enum: [raporty, akty, dovidky, nakladni, nakazy, zvedennia, zpz, kombat, stroy, fin, kazna, narada, dopovid], example: raporty, description: "zvedennia, narada — 011; zpz, dopovid — 012"}
       - {name: level, type: integer, required: true, example: 25}
       - {name: rate_multiplier, type: integer, required: true, example: 2, description: "2^(level/25)"}
       - {name: sec_since_cycle_start, type: integer, required: true, example: 1430}
@@ -249,7 +256,7 @@ events:
       - {name: telegram_id, type: string, required: true, example: "tg_0001_sergeants", description: "id з JSON контенту"}
       - {name: is_first_telegram, type: boolean, required: true, example: false}
       - {name: delivery, type: string, required: true, enum: [live, while_away], example: while_away}
-      - {name: is_scripted, type: boolean, required: true, example: false, description: "Сценарна (онбординг, сюжетна арка)"}
+      - {name: is_scripted, type: boolean, required: true, example: false, description: "Сценарна (онбординг, сюжетна арка); true також для сюжетних телеграм 014 і сценарних телеграм фіналу 108–113 (013)"}
       - {name: is_repeat, type: boolean, required: true, example: false, description: "Повтор архівної телеграми, коли нових немає: найдавніша відповідь, кожна не частіше ніж раз на 7 діб"}
       - {name: inbox_unread_after, type: integer, required: true, example: 3}
 
@@ -274,7 +281,7 @@ events:
       - {name: telegram_id, type: string, required: true, example: "tg_0001_sergeants"}
       - {name: choice_id, type: string, required: true, example: "diligent", description: "id варіанта з контенту, зокрема особливі (assign_numbers_marker тощо)"}
       - {name: choice_kind, type: string, required: true, enum: [diligent, formal_reply, drawer, special], example: diligent}
-      - {name: slowdown_target_id, type: string, required: false, enum: [raporty, akty, dovidky, nakladni, nakazy, kombat, stroy, fin, kazna], example: stroy, description: "Потік або ланка, яку сповільнює вибір (№ 18, 19, 29 сповільнюють потоки); немає, якщо ефекту немає"}
+      - {name: slowdown_target_id, type: string, required: false, enum: [raporty, akty, dovidky, nakladni, nakazy, zvedennia, zpz, kombat, stroy, fin, kazna, narada, dopovid], example: stroy, description: "Потік або ланка, яку сповільнює вибір (№ 18, 19, 29 сповільнюють потоки); немає, якщо ефекту немає. zvedennia, narada — 011; zpz, dopovid — 012"}
       - {name: slowdown_mult, type: number, required: true, example: 0.5, description: "Множник швидкості одиниці на час ефекту: 0,5 для «сумлінно», 0,25 для «Стоїть» (№ 26, 28), 1 = без ефекту"}
       - {name: slowdown_sec, type: integer, required: true, example: 3600, description: "Тривалість ефекту; для «сумлінно» 3600 (1 год)"}
       - {name: reputation_delta, type: integer, required: true, example: 5}
@@ -282,6 +289,8 @@ events:
       - {name: inspection_chance_pct, type: number, required: true, example: 0}
       - {name: paper_spent, type: integer, required: true, example: 2}
       - {name: sec_since_open, type: integer, required: true, example: 14}
+      - {name: pack_id, type: string, required: false, example: "pack_03", spec: "011", description: "Лише для телеграм пачки Р3"}
+      - {name: is_pack_summary, type: boolean, required: false, example: true, spec: "011", description: "Відповідь дано зведенням «Звести в одну відповідь»; ефекти в цій події — частка телеграми, сума — у telegram_pack_resolve"}
 
   - name: telegram_flag
     category: telegrams
@@ -302,8 +311,8 @@ events:
     answers: "Головний органічний канал: які записи й куди поширюють."
     sampling: all
     properties:
-      - {name: entry_type, type: string, required: true, enum: [telegram, gift_written_off, journal], example: telegram}
-      - {name: entry_id, type: string, required: true, example: "tg_0006_shovels", description: "telegram_id, race_id або journal_id"}
+      - {name: entry_type, type: string, required: true, enum: [telegram, gift_written_off, journal, pack, stack_meter, finale_card, personal_record, ptashka, award], example: telegram, description: "pack — 011; stack_meter — 012; finale_card, personal_record — 013; ptashka — 014; award — 016 (entry_id = award_id, поширення з award-detail)"}
+      - {name: entry_id, type: string, required: true, example: "tg_0006_shovels", description: "telegram_id, race_id, journal_id або award_id"}
       - {name: gift_type, type: string, required: false, enum: [drone, shovel, generator], example: drone, description: "Лише для gift_written_off"}
       - {name: share_result, type: string, required: true, enum: [shared, dismissed], example: shared, description: "Android завжди повертає shared"}
       - {name: activity_type, type: string, required: false, example: "ph.telegra.Telegraph.Share", description: "Лише iOS: куди поширили"}
@@ -318,11 +327,13 @@ events:
     properties:
       - {name: inspection_id, type: string, required: true, example: "insp_0004"}
       - {name: inspection_number, type: integer, required: true, example: 4}
-      - {name: boss_id, type: string, required: true, enum: [brigade_commission, command_commission], example: brigade_commission}
+      - {name: boss_id, type: string, required: true, enum: [brigade_commission, command_commission, capital_commission, total_audit, digital_commission], example: brigade_commission, description: "capital_commission, total_audit, digital_commission — 011, 012, 013"}
       - {name: trigger, type: string, required: true, enum: [scheduled, unscheduled], example: scheduled}
       - {name: warning_sec, type: integer, required: true, example: 8040}
       - {name: reputation, type: integer, required: true, example: 55}
       - {name: items_total, type: integer, required: true, example: 5}
+      - {name: inspection_kind, type: string, required: true, enum: [regular, final], example: final, spec: "011", description: "final — підсумкова перевірка рівня (011 FR-2)"}
+      - {name: attempt_number, type: integer, required: false, example: 2, spec: "011", description: "Лише для final: номер спроби з 1"}
 
   - name: inspection_item_complete
     category: inspections
@@ -332,8 +343,8 @@ events:
     sampling: all
     properties:
       - {name: inspection_id, type: string, required: true, example: "insp_0004"}
-      - {name: item_id, type: string, required: true, enum: [paint_borders, lockers_cleanup, stove_open, font_check, journals_stitch, sergeants_count, dust_glove, corridor_tape, sign_rehang, orders_stitch, where_journal], example: paint_borders, description: "Таблиця «Пункти чекліста» специфікації 04: 6 пунктів Р1 (sergeants_count — з телеграми № 1), 5 пунктів Р2 (where_journal — з № 29)"}
-      - {name: method, type: string, required: true, enum: [signatures, ad, no_ads_pass], example: signatures}
+      - {name: item_id, type: string, required: true, enum: [paint_borders, lockers_cleanup, stove_open, font_check, journals_stitch, sergeants_count, dust_glove, corridor_tape, sign_rehang, orders_stitch, where_journal, kazna_kopiyka, nakazy_open, minutes_stitch, door_plates, carafe_full, kettles_hide, summary_check, summary_beats, slides_number, stack_meter, report_prep, brief_onepage, audit_acts, zpz_level, print_ejournal, laptop_glove, dashboard_font, act_kep], example: paint_borders, description: "Таблиця «Пункти чекліста» специфікації 04: 6 пунктів Р1 (sergeants_count — з телеграми № 1), 5 пунктів Р2 (where_journal — з № 29); пункти від kazna_kopiyka — 011, 012, 013"}
+      - {name: method, type: string, required: true, enum: [signatures, ad, no_ads_pass, condition], example: signatures, description: "condition (011) — пункт механіки підсумкової, перевірений на мить приїзду; шлеться разом з inspection_finish"}
       - {name: cost_log10, type: number, required: false, example: 3.08, description: "Немає для ad і no_ads_pass"}
       - {name: sec_to_deadline, type: integer, required: true, example: 5100}
 
@@ -351,6 +362,11 @@ events:
       - {name: is_completed_via_ad, type: boolean, required: true, example: false}
       - {name: is_resolved_offline, type: boolean, required: true, example: true}
       - {name: sec_from_start, type: integer, required: true, example: 8040}
+      - {name: inspection_kind, type: string, required: true, enum: [regular, final], example: final, spec: "011"}
+      - {name: is_mechanic_item_done, type: boolean, required: false, example: true, spec: "011", description: "Лише для final: пункт механіки рівня виконано на мить приїзду"}
+      - {name: is_level_exit_unlocked, type: boolean, required: false, example: true, spec: "011", description: "Лише для final: levelExitAllowed став true"}
+      - {name: zpz_share_pct, type: number, required: false, example: 42.5, spec: "012", description: "Лише Р4: частка «Звітів про звіти» від суми інших потоків на мить приїзду"}
+      - {name: is_without_remarks, type: boolean, required: true, example: true, spec: "016", description: "Пройдено без зауважень (04 FR-18). Потрібно для лічильників insp_clean і insp_clean_streak"}
 
   # ---------------- Гонка з часом ----------------
   - name: race_start
@@ -391,6 +407,7 @@ events:
       - {name: speedups_count, type: integer, required: true, example: 1}
       - {name: is_ad_used, type: boolean, required: true, example: true}
       - {name: is_resolved_offline, type: boolean, required: true, example: false}
+      - {name: gift_type, type: string, required: true, enum: [drone, shovel, generator], example: drone, spec: "016", description: "Дублює race_start, щоб умову грамоти aw_race_all_gifts і звіти не треба було з'єднувати за race_id"}
 
   # ---------------- Події й репутація ----------------
   - name: random_event_resolve
@@ -400,8 +417,8 @@ events:
     answers: "Як часто трапляються події, що обирають і скільки сповільнення вони дають."
     sampling: all
     properties:
-      - {name: event_type, type: string, required: true, enum: [kombat_missing, order_cancels_order], example: kombat_missing, description: "Переїзд додамо після MVP. «Слабкого струму» немає: пальне — бонус, а не штраф"}
-      - {name: choice, type: string, required: true, enum: [wait, send_runner, redo_documents, cite_digital, expired], example: send_runner}
+      - {name: event_type, type: string, required: true, enum: [kombat_missing, order_cancels_order, meeting_overrun, brief_onepage, sedo_failure], example: kombat_missing, description: "Переїзд додамо після MVP. «Слабкого струму» немає: пальне — бонус, а не штраф. meeting_overrun, brief_onepage, sedo_failure — 011, 012, 013"}
+      - {name: choice, type: string, required: true, enum: [wait, send_runner, redo_documents, cite_digital, expired, send_note, rewrite, formal_reply, print], example: send_runner, description: "send_note, rewrite, formal_reply, print — 011–013"}
       - {name: sec_to_resolve, type: integer, required: true, example: 35}
       - {name: slowdown_sec, type: integer, required: true, example: 600, description: "Скільки тривало сповільнення від події (для kombat_missing ≤ 1800)"}
 
@@ -459,19 +476,22 @@ events:
       - {name: sec_since_install, type: integer, required: true, example: 259200}
       - {name: journals_cancelled, type: integer, required: true, example: 3}
       - {name: is_from_hint, type: boolean, required: true, example: true}
+      - {name: digital_stages_count, type: integer, required: false, example: 2, spec: "013", description: "Лише Р5: скільки ланок уже цифрові"}
+      - {name: cycle_sec_previous, type: integer, required: false, example: 172800, spec: "013", description: "Лише Р5: тривалість попереднього циклу Р5 для порівняння (013 FR-11)"}
 
   - name: level_advance
     category: digitization
     description: "Гравця переведено на новий рівень."
-    trigger: "Третя цифровізація на рівні «Батальйон» завершена: відкрито «Бригаду» і показано її екран. Цифрові бали переходять."
+    trigger: "Третя цифровізація на рівні «Батальйон» завершена: відкрито «Бригаду» і показано її екран. Цифрові бали переходять. На Р2–Р4 — перехід на наступний рівень за специфікаціями 011–013."
     answers: "Коли гравці доходять до «Бригади» (пісочниця: 7–8 день) і чи вистачає контенту."
     sampling: all
     properties:
-      - {name: from_level_id, type: string, required: true, enum: [batalion], example: batalion}
-      - {name: to_level_id, type: string, required: true, enum: [bryhada], example: bryhada}
+      - {name: from_level_id, type: string, required: true, enum: [batalion, bryhada, komanduvannia, henshtab], example: batalion, description: "bryhada, komanduvannia, henshtab — 011, 012, 013"}
+      - {name: to_level_id, type: string, required: true, enum: [bryhada, komanduvannia, henshtab, bez_paperu], example: bryhada, description: "komanduvannia, henshtab, bez_paperu — 011, 012, 013"}
       - {name: digitization_count, type: integer, required: true, example: 3}
       - {name: points_total, type: integer, required: true, example: 141}
       - {name: sec_since_install, type: integer, required: true, example: 648000}
+      - {name: final_attempts, type: integer, required: false, example: 1, spec: "011", description: "Скільки спроб підсумкової знадобилось на рівні, з якого вийшли"}
 
   # ---------------- Музей ----------------
   - name: museum_journal_unlock
@@ -483,9 +503,12 @@ events:
     properties:
       - {name: journal_id, type: string, required: true, example: "soap_log"}
       - {name: rarity, type: string, required: true, enum: [common, rare, legendary], example: common}
-      - {name: source, type: string, required: true, enum: [digitization, telegram, inspection, random_event], example: digitization}
+      - {name: source, type: string, required: true, enum: [digitization, telegram, inspection, random_event, final_inspection, conversion, story, finale], example: digitization, description: "final_inspection, conversion, story, finale — 011–014; 016 використовує їх для № 12, 16, 19, 20, 21–24, digitization — і для цифровізацій на Р2–Р4 (№ 9–11, 13–15, 17–18)"}
       - {name: journals_owned_after, type: integer, required: true, example: 3}
-      - {name: is_series_complete, type: boolean, required: true, example: false}
+      - {name: is_series_complete, type: boolean, required: true, example: false, description: "Цей журнал завершив свою серію (№ 8 — серія 1, № 12 — серія 2 тощо; 016)"}
+      - {name: series_id, type: string, required: true, enum: [battalion_property, personnel, transport_storage, household, land], example: personnel, spec: "016", description: "Серія журналу (016, таблиця серій)"}
+      - {name: series_owned_after, type: integer, required: true, example: 4, spec: "016", description: "Скільки журналів серії зібрано після цього"}
+      - {name: series_complete_count, type: integer, required: true, example: 2, spec: "016", description: "Скільки серій повністю зібрано після цього (1–5)"}
 
   - name: museum_open
     category: museum
@@ -494,9 +517,10 @@ events:
     answers: "Чи цікавить колекція гравців."
     sampling: all
     properties:
-      - {name: source, type: string, required: true, enum: [tab, unlock_toast], example: tab}
+      - {name: source, type: string, required: true, enum: [tab, unlock_toast, award_toast, profile], example: tab, description: "award_toast (016) — тап «Переглянути» на тості грамоти відкриває музей на сегменті «Грамоти»; profile (016) — рядок «Грамоти» в особовій справі"}
       - {name: journals_owned, type: integer, required: true, example: 3}
       - {name: journals_unseen, type: integer, required: true, example: 1}
+      - {name: segment, type: string, required: true, enum: [journals, curios, awards], example: journals, spec: "016", description: "Сегмент, з яким відкрито музей"}
 
   # ---------------- Бусти ----------------
   - name: boost_activate
@@ -687,7 +711,7 @@ events:
     answers: "Які налаштування чіпають; скільки вимикають звук, вібрацію, категорії сповіщень і аналітику; скільки скидають прогрес."
     sampling: all
     properties:
-      - {name: setting_name, type: string, required: true, enum: [sound, haptics, notif_storage, notif_telegrams, notif_inspections, notif_gifts, notif_boosts, analytics, ads_privacy_options, progress_reset], example: haptics}
+      - {name: setting_name, type: string, required: true, enum: [sound, haptics, notif_storage, notif_telegrams, notif_inspections, notif_gifts, notif_boosts, analytics, ads_privacy_options, progress_reset, platform_awards], example: haptics, description: "platform_awards (016) — перемикач «Game Center» / «Google Play Ігри», new_value = on | off"}
       - {name: new_value, type: string, required: true, example: "off"}
 
   - name: app_error_log
@@ -697,13 +721,211 @@ events:
     answers: "Скільки гравців втрачають прогрес і де ламаються SDK, у розрізі версій."
     sampling: all
     properties:
-      - {name: source, type: string, required: true, enum: [save_load, save_write, save_migration, economy_config, admob, ump, revenuecat, notifications, expo_updates, share_render], example: save_load, description: "share_render — не вдалося відмалювати картинку для «Поділитися» (07)"}
+      - {name: source, type: string, required: true, enum: [save_load, save_write, save_migration, economy_config, admob, ump, revenuecat, notifications, expo_updates, share_render, platform_awards], example: save_load, description: "share_render — не вдалося відмалювати картинку для «Поділитися» (07); platform_awards (016) — помилка входу або звіту в Game Center / Play Games, крім скасування входу гравцем"}
       - {name: error_code, type: string, required: true, example: "parse_error"}
       - {name: is_recovered, type: boolean, required: true, example: true}
       - {name: recovery, type: string, required: true, enum: [backup_slot, defaults, retry, none], example: backup_slot}
       - {name: message_short, type: string, required: false, example: "Unexpected token at 1043", description: "До 120 символів, без позивного й інших даних гравця"}
       - {name: save_schema_from, type: integer, required: false, example: 2, description: "Для save_migration"}
       - {name: save_schema_to, type: integer, required: false, example: 3, description: "Для save_migration"}
+
+  # ---------------- Пачки телеграм (011) ----------------
+  - name: telegram_pack_receive
+    category: telegrams
+    spec: "011 FR-17, FR-18"
+    description: "Пачка з трьох телеграм лягла у вхідні."
+    trigger: "Настала 03:00 за часом пристрою на Р3; якщо гравця не було — при поверненні. Окремо від неї надсилаються три telegram_receive."
+    answers: "Чи доходить одна пачка на добу і скільки пачок пропущено через ліміт «Нових»."
+    sampling: all
+    properties:
+      - {name: pack_id, type: string, required: true, example: "pack_03"}
+      - {name: pack_number, type: integer, required: true, example: 3, description: "Номер «Зведення № N» у грі"}
+      - {name: is_repeat, type: boolean, required: true, example: false}
+      - {name: delivery, type: string, required: true, enum: [live, while_away], example: while_away}
+
+  - name: telegram_pack_resolve
+    category: telegrams
+    spec: "011 FR-19–FR-22"
+    description: "Усі три телеграми пачки мають відповідь."
+    trigger: "Остання з трьох відповідей застосована (зведена або окрема)."
+    answers: "Чи справжній вибір між зведенням і окремими відповідями; скільки паперу й репутації він коштує."
+    sampling: all
+    properties:
+      - {name: pack_id, type: string, required: true, example: "pack_03"}
+      - {name: mode, type: string, required: true, enum: [summary, separate, mixed], example: summary}
+      - {name: choice_kind, type: string, required: false, enum: [diligent, formal_reply, drawer], example: diligent, description: "Лише для summary"}
+      - {name: paper_spent, type: integer, required: true, example: 4}
+      - {name: reputation_delta, type: integer, required: true, example: 10}
+      - {name: inspection_chance_pct, type: number, required: true, example: 0}
+      - {name: is_beats, type: boolean, required: true, example: true, description: "Пачка закрита «сумлінно» (для пункту summary_beats)"}
+      - {name: sec_since_received, type: integer, required: true, example: 21600}
+
+  # ---------------- Стос «Звітів про звіти» (012) ----------------
+  - name: stack_meter_reach
+    category: economy
+    spec: "012 FR-15"
+    description: "Стос «Звітів про звіти» вперше в циклі досяг 100 см."
+    trigger: "Висота стосу перетнула 100 см; раз на цикл цифровізації. Запис «Метр звітів» створено в Журналі курйозів."
+    answers: "Чи досягають метра в типовій сесії і чи поширюють цей запис."
+    sampling: all
+    properties:
+      - {name: zpz_share_pct, type: number, required: true, example: 35.0}
+      - {name: zpz_level, type: integer, required: true, example: 24}
+      - {name: sec_since_session_start, type: integer, required: true, example: 180}
+      - {name: offline_share_pct, type: number, required: true, example: 80.0, description: "Яку частку висоти дав офлайн на початку сесії"}
+
+  # ---------------- Р5, фінал і Дублі (013) ----------------
+  - name: stage_convert
+    category: digitization
+    spec: "013 FR-4–FR-8"
+    description: "Паперову ланку перетворено на цифрову."
+    trigger: "Підтверджено «Оцифрувати ланку» в stage-convert, підписи списано, стан збережено."
+    answers: "Темп конвертацій на Р5 і чи не стала ціна стіною."
+    sampling: all
+    properties:
+      - {name: stage_id, type: string, required: true, enum: [kombat, stroy, fin, kazna, narada, dopovid], example: kombat}
+      - {name: convert_index, type: integer, required: true, example: 1, description: "1–6 у порядку convert.order"}
+      - {name: cost_log10, type: number, required: true, example: 14.2}
+      - {name: digitizations_on_level, type: integer, required: true, example: 0}
+      - {name: sec_since_level_start, type: integer, required: true, example: 5400}
+      - {name: sec_since_available, type: integer, required: true, example: 3600, description: "Від моменту, коли конвертація стала доступною"}
+
+  - name: finale_step_complete
+    category: story
+    spec: "013 FR-15–FR-23"
+    description: "Завершено крок фінальної послідовності."
+    trigger: "Крок стан-машини фіналу збережено як завершений."
+    answers: "Скільки гравців проходять фінал до кінця і де зупиняються (зокрема N на Y/N)."
+    sampling: all
+    properties:
+      - {name: step_id, type: string, required: true, enum: [order, script, last_book, call, credits, quiet, endless_offer], example: script}
+      - {name: step_index, type: integer, required: true, example: 2}
+      - {name: sec_since_finale_start, type: integer, required: true, example: 240}
+      - {name: is_resumed, type: boolean, required: true, example: false, description: "Крок продовжено після перезапуску або з банера"}
+      - {name: declined_count, type: integer, required: false, example: 1, description: "Лише script: скільки разів натиснуто N"}
+
+  - name: dub_start
+    category: endless
+    spec: "013 FR-23–FR-27"
+    description: "Почався Дубль нескінченного режиму."
+    trigger: "Утримано «Прийняти до виконання» в endless-intro, стан скинуто й збережено."
+    answers: "Скільки гравців ідуть у нескінченний режим, як швидко і з яким модифікатором."
+    sampling: all
+    properties:
+      - {name: dub_number, type: integer, required: true, example: 1}
+      - {name: modifier_id, type: string, required: true, enum: [two_copies, wet_seal, no_did], example: two_copies}
+      - {name: points_total, type: integer, required: true, example: 1840}
+      - {name: sec_since_finale, type: integer, required: true, example: 640000, description: "Від Y на finale-script"}
+      - {name: sec_since_offer, type: integer, required: true, example: 3600, description: "Від показу пропозиції Дубля"}
+
+  - name: personal_record_update
+    category: endless
+    spec: "013 FR-29"
+    description: "Оновлено локальний особистий рекорд."
+    trigger: "Новий найвищий Дубль або новий максимум log10 підписів за весь час (не частіше разу на сесію для lifetime_signatures)."
+    answers: "Чи мотивує рекорд без лідерборду; база для рішення про 020."
+    sampling: all
+    properties:
+      - {name: record_type, type: string, required: true, enum: [dub, lifetime_signatures], example: dub}
+      - {name: value, type: number, required: true, example: 3}
+      - {name: previous_value, type: number, required: true, example: 2}
+
+  # ---------------- Сюжет (014) ----------------
+  - name: story_beat_deliver
+    category: story
+    spec: "014 FR-2–FR-10, FR-30"
+    description: "Сюжетний крок показано гравцеві."
+    trigger: "Рушій сюжету віддав крок із черги, і носій (записка, тост, дзвінок, сцена, телеграма тощо) став видимим."
+    answers: "Чи доходять арки, скільки кроків наздоганяють і як довго вони чекають у черзі."
+    sampling: all
+    properties:
+      - {name: beat_id, type: string, required: true, example: "st_who_writes_05"}
+      - {name: arc, type: string, required: true, enum: [who_writes, archaeologist, ptashka, kombat_leave, cat, tumbochkin, transition, finale], example: who_writes}
+      - {name: carrier, type: string, required: true, enum: [telegram, note, call, event_toast, curio, scene, archive_sheet, share_card, insp_act_line, credits_line, character_state], example: note}
+      - {name: beat_order, type: integer, required: true, example: 5}
+      - {name: delay_sec, type: integer, required: true, example: 21600, description: "Від готовності кроку до показу"}
+      - {name: is_catch_up, type: boolean, required: true, example: false}
+      - {name: is_while_away, type: boolean, required: true, example: true}
+
+  - name: archive_sheet_unlock
+    category: story
+    spec: "014 FR-16, FR-17"
+    description: "Отримано аркуш «Таблиць Археолога»."
+    trigger: "Аркуш додано в колекцію."
+    answers: "Як швидко збирається колекція і з яких джерел."
+    sampling: all
+    properties:
+      - {name: sheet_id, type: string, required: true, example: "ar_04"}
+      - {name: sheet_number, type: integer, required: true, example: 4}
+      - {name: source, type: string, required: true, enum: [gift, move, boss, conversion, catch_up], example: gift}
+      - {name: sheets_owned_after, type: integer, required: true, example: 4}
+
+  - name: archive_open
+    category: story
+    spec: "014 FR-18"
+    description: "Відкрито «Таблиці Археолога»."
+    trigger: "Показано шторку archive-sheets."
+    answers: "Чи читають аркуші, а не лише збирають."
+    sampling: all
+    properties:
+      - {name: source, type: string, required: true, enum: [museum, call, toast], example: museum}
+      - {name: sheets_owned, type: integer, required: true, example: 4}
+
+  - name: diary_open
+    category: story
+    spec: "014 FR-25"
+    description: "Відкрито «Щоденник стройовика»."
+    trigger: "Показано екран diary."
+    answers: "Чи цікавить щоденник окремо від рядка на довідці."
+    sampling: all
+    properties:
+      - {name: lines_owned, type: integer, required: true, example: 23}
+      - {name: lines_unseen, type: integer, required: true, example: 2}
+
+  # ---------------- Грамоти (016) ----------------
+  - name: award_unlock
+    category: awards
+    spec: "016 FR-17–FR-24, FR-34"
+    description: "Гравець отримав грамоту, подяку або оголошення в наказі."
+    trigger: "Умова грамоти з content/awards.json виконалась, грамоту записано в збереження. Одна подія на грамоту. Грамоти, видані «заднім числом» після оновлення контенту, шлються при завантаженні з is_retroactive = true."
+    answers: "Чи тримається темп «одна грамота на 1–2 дні» (оцінка estDayAds проти фактичного дня), які категорії не відкривають і які приховані знаходять."
+    sampling: all
+    properties:
+      - {name: award_id, type: string, required: true, example: "aw_tg_50", description: "id з content/awards.json"}
+      - {name: award_category, type: string, required: true, enum: [progress, telegrams, inspections, race, museum, curios, cat, clerks, hidden], example: telegrams}
+      - {name: award_type, type: string, required: true, enum: [gramota, podyaka, nakaz], example: podyaka}
+      - {name: is_hidden, type: boolean, required: true, example: false, description: "Прихована (пасхалка або спойлер)"}
+      - {name: awards_owned_after, type: integer, required: true, example: 15}
+      - {name: is_retroactive, type: boolean, required: true, example: false, description: "Видано при завантаженні після оновлення контенту, умову виконано раніше"}
+      - {name: is_resolved_offline, type: boolean, required: true, example: false, description: "Умову виконано подією, що сталася без гравця (перевірка, гонка), видано при поверненні"}
+      - {name: is_mirrored, type: boolean, required: true, example: true, description: "Грамота має дзеркало в Game Center / Play Games"}
+      - {name: sec_since_install, type: integer, required: true, example: 1382400}
+
+  - name: awards_wall_open
+    category: awards
+    spec: "016 FR-25–FR-29"
+    description: "Відкрито стіну грамот (сегмент «Грамоти» музею)."
+    trigger: "Показано сегмент «Грамоти»: перемикачем сегментів, з тосту грамоти або з особової справи. Не частіше разу на 60 с для того самого джерела."
+    answers: "Чи дивляться на грамоти взагалі, чи працює тост як вхід."
+    sampling: all
+    properties:
+      - {name: source, type: string, required: true, enum: [segment, award_toast, profile], example: award_toast}
+      - {name: awards_owned, type: integer, required: true, example: 15}
+      - {name: awards_unseen, type: integer, required: true, example: 1, description: "Отримані, але ще не показані на стіні"}
+
+  - name: award_platform_sync
+    category: awards
+    spec: "016 FR-38–FR-44"
+    description: "Результат синхронізації грамот із Game Center (iOS) або Google Play Ігри (Android)."
+    trigger: "Закінчилась спроба входу або звіту в платформу: на старті після онбордингу, при новій грамоті з дзеркалом, при ввімкненні перемикача. Не частіше разу на сесію з тим самим result, крім першого входу."
+    answers: "Скільки гравців мають дзеркало, скільки відмовляються від входу і скільки звітів зависає в черзі."
+    sampling: all
+    properties:
+      - {name: platform, type: string, required: true, enum: [game_center, play_games], example: game_center}
+      - {name: result, type: string, required: true, enum: [synced, not_signed_in, sign_in_cancelled, disabled, error], example: synced, description: "disabled — перемикач вимкнено; error — деталі в app_error_log з source = platform_awards"}
+      - {name: reported_count, type: integer, required: true, example: 2, description: "Скільки грамот звітовано в цій спробі"}
+      - {name: pending_count, type: integer, required: true, example: 0, description: "Скільки лишилось у черзі після спроби"}
+      - {name: is_first_sign_in, type: boolean, required: true, example: false}
 
 user_properties:
   - {name: install_date, type: date, set: set_once, example: "2026-11-20", description: "Дата першого запуску"}
@@ -716,7 +938,7 @@ user_properties:
   - {name: protagonist_gender, type: string, set: set, enum: [m, f], example: f, description: "Форма протагоніста з кроку позивного (він / вона). Не персональні дані гравця"}
   - {name: is_onboarding_complete, type: boolean, set: set, example: true, description: "Пройдено крок 10 онбордингу"}
   - {name: onboarding_last_step_index, type: integer, set: set, example: 10, description: "Останній завершений крок онбордингу, 1–11"}
-  - {name: current_level_id, type: string, set: set, enum: [batalion, bryhada], example: batalion, description: "Поточний рівень гри"}
+  - {name: current_level_id, type: string, set: set, enum: [batalion, bryhada, komanduvannia, henshtab, bez_paperu], example: batalion, description: "Поточний рівень гри; значення як у глобальній level_id (011–013)"}
   - {name: digitization_count, type: integer, set: set, example: 2, description: "Скільки цифровізацій зроблено"}
   - {name: digital_points_total, type: integer, set: set, example: 79, description: "Усі цифрові бали"}
   - {name: prestige_multiplier, type: number, set: set, example: 2.58, description: "1 + 0,02 × усі бали"}

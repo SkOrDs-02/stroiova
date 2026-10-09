@@ -67,6 +67,9 @@ button{font:inherit;cursor:pointer}
         <sc-if value="{{s.r1}}" hint-placeholder-val="{{true}}">
           <div class="st-steps" role="progressbar" aria-label="Цифровізацій на рівні" aria-valuemin="0" aria-valuemax="3" aria-valuenow="{{v.done}}" style="width: 64px; flex: none"><i class="{{v.seg1}}"></i><i class="{{v.seg2}}"></i><i class="{{v.seg3}}"></i></div>
         </sc-if>
+        <sc-if value="{{s.gen}}" hint-placeholder-val="{{false}}">
+          <div class="st-steps" role="progressbar" aria-label="{{stp.aria}}" aria-valuemin="0" aria-valuemax="{{stp.max}}" aria-valuenow="{{stp.now}}" style="width: {{stp.w}}; flex: none"><sc-for list="{{stp.segs}}" as="g" hint-placeholder-count="4"><i class="{{g.c}}"></i></sc-for></div>
+        </sc-if>
       </div>
 
       <sc-if value="{{s.r1}}" hint-placeholder-val="{{true}}">
@@ -125,6 +128,19 @@ button{font:inherit;cursor:pointer}
             <span style="min-height: 32px; font-size: 12px; line-height: 1.3; color: var(--muted)">Без паперу</span>
             <span style="font-size: 12px; line-height: 1.3; color: var(--muted)">пізніше</span>
           </li>
+        </ol>
+      </sc-if>
+      <sc-if value="{{s.gen}}" hint-placeholder-val="{{false}}">
+        <ol aria-label="{{tr.aria}}" style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
+          <sc-for list="{{tr.items}}" as="t" hint-placeholder-count="5">
+          <li aria-current="{{t.cur}}" style="display: flex; flex-direction: column; gap: 5px; min-width: 0">
+            <sc-if value="{{t.solid}}" hint-placeholder-val="{{true}}"><i style="height: 4px; border-radius: 2px; background: {{t.bar}}"></i></sc-if>
+            <sc-if value="{{t.dash}}" hint-placeholder-val="{{false}}"><i style="height: 0; border-top: 2px dashed var(--border); margin-top: 1px; margin-bottom: 1px"></i></sc-if>
+            <span style="min-height: 32px; font-size: 12px; line-height: 1.3; font-weight: {{t.fw}}; color: {{t.nc}}">{{t.name}}</span>
+            <sc-if value="{{t.done}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 1.3; color: var(--muted)">пройдено</span></sc-if>
+            <sc-if value="{{t.plain}}" hint-placeholder-val="{{true}}"><span style="font-size: 12px; line-height: 1.3; color: {{t.sc}}">{{t.sub}}</span></sc-if>
+          </li>
+          </sc-for>
         </ol>
       </sc-if>
     </div>
@@ -214,6 +230,66 @@ button{font:inherit;cursor:pointer}
       </section>
     </sc-if>
 
+    <sc-if value="{{s.boss}}" hint-placeholder-val="{{false}}">
+      <a href="InspPrep.dc.html" class="st-card" aria-label="{{nw.bossAria}}" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; color: var(--text)">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="color: var(--accent)" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+          <span class="st-h4" style="flex: 1">{{nw.bossTitle}}</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--accent)">Готуватися<svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+        </div>
+        <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">{{nw.bossLine}} <b style="font-family: var(--font-mono); font-weight: 600; color: var(--text)">{{nw.bossTimer}}</b></span>
+        <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">{{nw.bossNote}}</span>
+      </a>
+    </sc-if>
+
+    <sc-if value="{{s.exit}}" hint-placeholder-val="{{false}}">
+      <section aria-labelledby="dg-exit" style="padding: 12px 14px; border: 1.5px solid var(--accent); border-radius: var(--radius-10); display: flex; flex-direction: column; gap: 8px">
+        <h2 class="st-h4" id="dg-exit" style="color: var(--accent); display: flex; align-items: center; gap: 6px"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Перехід дозволено</h2>
+        <span style="font-size: 13px; line-height: 1.45">{{nw.exitLine}}</span>
+        <div style="display: flex; flex-direction: column; gap: 5px; font-size: 13px; line-height: 1.4">
+          <sc-for list="{{nw.exitRows}}" as="r" hint-placeholder-count="4">
+          <div style="display: flex; gap: 8px; align-items: baseline"><span style="color: var(--muted); min-width: 98px">{{r.k}}</span><span>{{r.v}}</span></div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{s.conv}}" hint-placeholder-val="{{false}}">
+      <section aria-labelledby="dg-conv" class="st-card" style="padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 2px">
+        <h2 class="st-h4" id="dg-conv" style="margin-bottom: 4px">Цифрові ланки</h2>
+        <sc-for list="{{nw.conv}}" as="c" hint-placeholder-count="6">
+          <sc-if value="{{c.done}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; align-items: center; gap: 8px; min-height: 28px; font-size: 13px"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.4; color: var(--accent)" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg><span style="flex: 1">{{c.name}}</span><span style="color: var(--muted)">цифрова</span></div>
+          </sc-if>
+          <sc-if value="{{c.open}}" hint-placeholder-val="{{false}}">
+            <a href="StageConvert.dc.html" style="display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; color: var(--text)"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="color: var(--accent)" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg><span style="flex: 1">{{c.name}}</span><span style="display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--accent)">доступна<svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+          </sc-if>
+          <sc-if value="{{c.lock}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; align-items: center; gap: 8px; min-height: 28px; font-size: 13px"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="color: var(--muted)" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span style="flex: 1; color: var(--muted)">{{c.name}}</span><span style="font-size: 12px; color: var(--muted)">{{c.when}}</span></div>
+          </sc-if>
+        </sc-for>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{s.recd}}" hint-placeholder-val="{{false}}">
+      <section aria-labelledby="dg-rec" class="st-card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <h2 class="st-h4" id="dg-rec" style="flex: 1">Особистий рекорд</h2>
+          <a href="ShareCard.dc.html" class="st-btn st-btn--secondary st-btn--s" style="min-height: 44px">Поділитися</a>
+        </div>
+        <span style="font: 500 14px/1.4 var(--font-mono)">Дубль 3 · підписів за весь час: 10<sup>14,2</sup></span>
+        <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">Рекорд локальний: зберігається лише на цьому телефоні.</span>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{s.jrNone}}" hint-placeholder-val="{{false}}">
+      <article class="st-paper st-paper--card" aria-label="Журнали рівня" style="gap: 6px">
+        <span class="st-doc-meta">Скасовано назавжди · підуть у музей</span>
+        <span style="font: 400 13px/1.45 var(--font-mono); color: var(--ink)">{{nw.noneLine}}</span>
+        <span class="st-doc-meta">{{nw.museum}}</span>
+      </article>
+    </sc-if>
+
     <sc-if value="{{s.resetCard}}" hint-placeholder-val="{{true}}">
       <div class="st-card" style="padding: 12px 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
         <div style="display: flex; flex-direction: column; gap: 5px; font-size: 13px; line-height: 1.35">
@@ -251,6 +327,12 @@ button{font:inherit;cursor:pointer}
         <span class="st-btn-stack">Оцифрувати батальйон<small>і перейти в бригаду</small></span>
       </a>
     </sc-if>
+    <sc-if value="{{s.ctaStack}}" hint-placeholder-val="{{false}}">
+      <a class="st-btn st-btn--primary st-btn--l" href="DigitConfirm.dc.html">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
+        <span class="st-btn-stack">{{v.cta}}<small>{{v.ctaSub}}</small></span>
+      </a>
+    </sc-if>
     <span class="st-btn-note">{{v.note}}</span>
   </div>
 
@@ -279,7 +361,7 @@ button{font:inherit;cursor:pointer}
   </nav>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["замкнено","мало балів","доступно","рекомендовано","перший раз","остання на рівні","Р2: Бригада"],"default":"доступно","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["замкнено","мало балів","доступно","рекомендовано","перший раз","остання на рівні","Р2: Бригада","Р2: 2 з 4","Р2: підсумкова оголошена","Р2: перехід дозволено","Р3: 3 з 6","Р4: перехід дозволено","Р5: цифрових ланок 2 з 6","нескінченний: рекорд"],"default":"доступно","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? 'доступно';
@@ -309,7 +391,7 @@ class Component extends DCLogic {
       pts: '+41', ptsWord: 'цифровий бал', mult: '×1,76 → ×2,58',
       journals: secondJournals,
       sigs: '1 248 360 підписів',
-      cta: 'Оцифрувати батальйон',
+      cta: 'Оцифрувати батальйон', ctaSub: '',
       note: 'Після трьох цифровізацій — переведення в бригаду.'
     };
     if (locked || few || first) {
@@ -339,16 +421,70 @@ class Component extends DCLogic {
       v.note = 'Наступний рівень відкриється пізніше. Бали збережуться.';
     }
 
+    var LV = ['Батальйон', 'Бригада', 'Коман\u00ADдування', 'Генштаб', 'Без паперу'];
+    function track(cur, exitOk, endless) {
+      var items = LV.map(function (n, i) {
+        var past = i < cur, now = i === cur, next = i === cur + 1;
+        var sub = now ? 'зараз' : (next ? (cur === 0 ? 'після 2-ї' : (exitOk ? 'з наступною' : 'після підсумкової')) : 'пізніше');
+        if (endless && cur === 0 && next) sub = 'після 2-ї';
+        return {
+          name: n, cur: now ? 'step' : 'false',
+          solid: past || now || next, dash: !(past || now || next),
+          bar: (past || now) ? 'var(--accent)' : 'var(--border-strong)',
+          fw: now ? '600' : '400', nc: now ? 'var(--accent)' : (past || next ? 'var(--text)' : 'var(--muted)'),
+          done: past, plain: !past, sub: sub, sc: now ? 'var(--accent)' : 'var(--muted)'
+        };
+      });
+      var aria = 'Рівні: ' + LV.map(function (n, i) { return n.replace('\u00AD', '') + ' ' + (items[i].done ? 'пройдено' : items[i].sub); }).join('; ');
+      return { items: items, aria: aria };
+    }
+    function steps(n, max, label) {
+      var segs = []; for (var i = 0; i < max; i++) segs.push({ c: i < n ? 'is-on' : '' });
+      return { segs: segs, max: String(max), now: String(n), aria: label, w: (max * 16 + (max - 1) * 4) + 'px' };
+    }
+    var NW = {
+      'Р2: 2 з 4': { lv: 1, n: 2, max: 4, sub: 'Перевести бригаду на цифровий облік. Папір зникне, а з ним і прогрес.', pts: '+72', ptsWord: 'цифрові бали', mult: '×3,82 → ×5,26', sigs: '41,2 млн підписів', cta: 'Оцифрувати бригаду', note: 'Після 4-ї цифровізації — підсумкова перевірка.', journals: [{ name: 'Добова відомість', rot: '-4deg' }] },
+      'Р2: підсумкова оголошена': { lv: 1, n: 4, max: 4, boss: true, sub: 'Перевести бригаду на цифровий облік. Папір зникне, а з ним і прогрес.', pts: '+64', ptsWord: 'цифрові бали', mult: '×5,26 → ×6,54', sigs: '38,7 млн підписів', cta: 'Оцифрувати бригаду', note: 'Перехід — лише після підсумкової. Ця цифровізація лічильник не зсуне.', none: 'Цього разу нічого. Свої журнали бригада вже здала.', museum: 'Музей: 11 з 24',
+        bossTitle: 'Комісія командування. Підсумкова.', bossLine: 'Приїзд через', bossTimer: '21:14:08', bossNote: 'Пройдете — наказ про переведення і ×3 на 2 год.' },
+      'Р2: перехід дозволено': { lv: 1, n: 4, max: 4, exit: true, exitOk: true, sub: 'Перевести бригаду на цифровий облік. Папір зникне, а з ним і прогрес.', pts: '+118', ptsWord: 'цифрових балів', mult: '×4,90 → ×6,22', sigs: '2,41 млрд підписів', cta: 'Оцифрувати бригаду', ctaSub: 'і перейти в командування', note: 'Перехід дозволено. Наступна цифровізація переведе в командування.',
+        exitLine: 'Наступна цифровізація переведе в командування.', exitRows: [['Штаб', 'колишній проєктний інститут'], ['Новий потік', 'Зведення'], ['Нова ланка', 'Нарада'], ['Цифрові бали', 'переходять з тобою']], none: 'Журналів цього разу не скасовують.', museum: 'Музей: 12 з 24' },
+      'Р3: 3 з 6': { lv: 2, n: 3, max: 6, sub: 'Перевести командування на цифровий облік. Папір зникне, а з ним і прогрес.', pts: '+96', ptsWord: 'цифрових балів', mult: '×6,22 → ×8,14', sigs: '84,6 млрд підписів', cta: 'Оцифрувати командування', note: 'Після 6-ї цифровізації — підсумкова перевірка.', journals: [{ name: 'Книга зведеного обліку запасних частин, інструменту і приладдя', rot: '5deg' }] },
+      'Р4: перехід дозволено': { lv: 3, n: 6, max: 6, exit: true, exitOk: true, sub: 'Перевести зал доповідей на цифровий облік. Папір зникне, а з ним і прогрес.', pts: '+330', ptsWord: 'цифрових балів', mult: '×15,4 → ×19,6', sigs: '12,3 ab підписів', cta: 'Оцифрувати зал доповідей', ctaSub: 'і повернутися в бліндаж', note: 'Перехід дозволено. Наступна цифровізація переведе в бліндаж.',
+        exitLine: 'Наступна цифровізація переведе в «Армію без паперу».', exitRows: [['Штаб', 'бліндаж, де все почалось'], ['Новий потік', 'немає'], ['Ланки', 'стануть цифровими, по одній'], ['Цифрові бали', 'переходять з тобою']], none: 'Журналів цього разу не скасовують.', museum: 'Музей: 20 з 24' },
+      'Р5: цифрових ланок 2 з 6': { lv: 4, n: 2, max: 6, r5: true, counterLabel: 'Цифрових ланок:', sub: 'Перевести бліндаж на цифровий облік ще раз. Цифрові ланки лишаються.', pts: '+212', ptsWord: 'цифрових балів', mult: '×19,6 → ×22,4', sigs: '1,84 ac підписів', cta: 'Оцифрувати бліндаж', note: 'Цифрові ланки переживають цифровізацію. Після неї відкриється наступна.',
+        conv: [['Пакетне підписання', 'done'], ['Електронний журнал', 'done'], ['КЕП на первинці', 'open'], ['Електронні платежі', 'lock', 'після 3-ї цифровізації'], ['Нарада скасована', 'lock', 'після 4-ї'], ['Дашборд', 'lock', 'після 5-ї']] },
+      'нескінченний: рекорд': { lv: 0, n: 1, max: 2, endless: true, sub: 'Дубль 3. Перевести батальйон на цифровий облік ще раз.', pts: '+1 840', ptsWord: 'цифрових балів', mult: '×31,2 → ×35,0', sigs: '4,02 ad підписів', cta: 'Оцифрувати батальйон', note: 'Після двох цифровізацій — переведення в бригаду.', none: 'Цього разу нічого. Журнали вже в музеї.', museum: 'Музей: 24 з 24' }
+    };
+    var N = NW[st];
+    var stp = steps(0, 1, ''), tr = { items: [], aria: '' }, nw = { conv: [], exitRows: [], bossTitle: '', bossLine: '', bossTimer: '', bossNote: '', bossAria: '', exitLine: '', noneLine: '', museum: '' };
+    if (N) {
+      v.sub = N.sub; v.counterLabel = N.counterLabel || 'Цифровізацій на рівні:';
+      v.counter = N.n + ' з ' + N.max; v.pts = N.pts; v.ptsWord = N.ptsWord; v.mult = N.mult;
+      v.sigs = N.sigs; v.cta = N.cta; v.ctaSub = N.ctaSub || ''; v.note = N.note;
+      v.journals = N.journals || [];
+      stp = steps(N.n, N.max, N.r5 ? 'Цифрових ланок' : 'Цифровізацій на рівні');
+      tr = track(N.lv, !!N.exitOk, !!N.endless);
+      nw = {
+        bossTitle: N.bossTitle || '', bossLine: N.bossLine || '', bossTimer: N.bossTimer || '', bossNote: N.bossNote || '',
+        bossAria: (N.bossTitle || '') + ' ' + (N.bossLine || '') + ' ' + (N.bossTimer || '') + '. Готуватися',
+        exitLine: N.exitLine || '', exitRows: (N.exitRows || []).map(function (r) { return { k: r[0], v: r[1] }; }),
+        conv: (N.conv || []).map(function (c) { return { name: c[0], done: c[1] === 'done', open: c[1] === 'open', lock: c[1] === 'lock', when: c[2] || '' }; }),
+        noneLine: N.none || '', museum: N.museum || ''
+      };
+    }
     return {
       s: {
-        locked: locked, resetCard: !locked && !first, few: few, rec: rec, first: first, notFirst: !first,
-        last: last, r1: !r2, r2: r2,
-        ok: avail || rec || first || last || r2,
-        jr: few || avail || rec || first,
+        locked: locked, resetCard: !locked && !first && !(N && (N.boss || N.exit || N.r5 || N.endless)), few: few, rec: rec, first: first, notFirst: !first,
+        last: last, r1: !r2 && !N, r2: r2, gen: !!N,
+        ok: avail || rec || first || last || r2 || !!N,
+        jr: few || avail || rec || first || !!(N && N.journals),
+        jrNone: !!(N && N.none && !N.exit),
+        boss: !!(N && N.boss), exit: !!(N && N.exit), conv: !!(N && N.r5), recd: !!(N && N.endless),
         ctaOff: locked || few,
-        ctaPlain: avail || rec || first || r2
+        ctaPlain: avail || rec || first || r2 || !!(N && !N.ctaSub),
+        ctaStack: !!(N && N.ctaSub)
       },
-      v: v
+      v: v, stp: stp, tr: tr, nw: nw
     };
   }
 }

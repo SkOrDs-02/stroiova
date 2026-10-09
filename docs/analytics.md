@@ -1,6 +1,6 @@
 # Аналітика
 
-Аналітика «Стройової» — 46 подій у PostHog EU Cloud. Краші йдуть у Sentry, реклама за винагороду в AdMob, покупки в RevenueCat. Акаунтів і персональних даних у грі немає, прогрес лежить на пристрої.
+Аналітика «Стройової» — 60 подій у PostHog EU Cloud. Краші йдуть у Sentry, реклама за винагороду в AdMob, покупки в RevenueCat. Акаунтів і персональних даних у грі немає, прогрес лежить на пристрої.
 
 Приватність за замовчуванням (рішення 18, Журнал рішень):
 
@@ -10,7 +10,7 @@
 
 Першим міряємо онбординг (ціль ≥ 80% до кроку 10), утримання D1 і D7 та темп економіки проти пісочниці: час до першого діловода й першої цифровізації.
 
-Машинна версія плану — `tracking-plan.yaml`, ті самі події з типами й enum. Файл житиме в репозиторії гри, з нього генерується обгортка `track()`. План покриває MVP: «Батальйон» і «Бригаду».
+Машинна версія плану — `tracking-plan.yaml`, ті самі події з типами й enum. Файл житиме в репозиторії гри, з нього генерується обгортка `track()`. План покриває повний реліз: рівні 1–5, фінал, нескінченний режим, сюжет і грамоти (специфікації 001–014 і 016).
 
 ## Принципи
 
@@ -68,9 +68,11 @@
 
 ## Події
 
-Події згруповані за частинами гри, номери наскрізні, 1–46. `?` позначає необов'язкову властивість. Повні enum і описи — у `tracking-plan.yaml`.
+Події згруповані за частинами гри, номери наскрізні, 1–60. Події 47–60 додано версією 3, у YAML вони мають поле `spec`. `?` позначає необов'язкову властивість. Повні enum і описи — у `tracking-plan.yaml`.
 
 Правки плану 9.10 (версія 2): нова подія `force_update_show`; скидання прогресу — `setting_change` з `progress_reset`, показ `starter-offer` — `shop_view` з `source` = starter\_offer, відновлення з копії — `app_error_log` з `recovery` = backup\_slot. `is_clock_skew_detected` переїхав у `session_start`, `digital_points_spent` прибрано. Enum доповнено за специфікаціями 02–10: 10 значень `push_type`, усі пункти чекліста в `item_id`, `slowdown_target_id` з потоками, лопати й генератор у `boost_type`, `gift_written_off` і `journal` у `curio_entry_share`, `reason` і `has_comment` у `telegram_flag`, `notif_*` у `setting_name`, `entry_point` для `income_boost`. Прибрано `shtamp`, `buy_mode` = max, метод гонки `clerk`, `archive_bonus`, `music`, `number_format`, джерело репутації `inspection`.
+
+Правки плану 9.10 (версія 3): злито доповнення специфікацій 011–014 і 016, окремих файлів доповнень більше немає. 14 нових подій (47–60), глобальні `dub_number`, `is_finale_done`, `awards_owned`; `level_id` і `current_level_id` — п'ять рівнів. Enum доповнено: потоки `zvedennia`, `zpz` і ланки `narada`, `dopovid` у `stream_unlock`, `upgrade_purchase`, `clerk_hire`, `milestone_reach`, `session_end.bottleneck_id`, `slowdown_target_id`; нові комісії `boss_id`, пункти чекліста Р3–Р5 і `method` = condition; події `meeting_overrun`, `brief_onepage`, `sedo_failure` з виборами `send_note`, `rewrite`, `formal_reply`, `print`; переходи рівнів у `level_advance`; джерела журналів `final_inspection`, `conversion`, `story`, `finale`; `curio_entry_share.entry_type` — pack, stack\_meter, finale\_card, personal\_record, ptashka, award; `museum_open.source` — award\_toast, profile; `platform_awards` у `setting_name` і `app_error_log.source`. Нові властивості наявних подій: `inspection_kind`, `attempt_number`, `is_mechanic_item_done`, `is_level_exit_unlocked`, `zpz_share_pct`, `is_without_remarks`, `pack_id`, `is_pack_summary`, `final_attempts`, `stack_cm`, `digital_stages_count`, `cycle_sec_previous`, `series_id`, `series_owned_after`, `series_complete_count`, `segment`, `gift_type` у `race_finish`. `is_series_complete` тепер означає «цей журнал завершив свою серію».
 
 ### Глобальні властивості (на кожній події)
 
@@ -80,12 +82,15 @@
 | `economy_config_source` | str | remote | Звідки взято конфіг. Значення: bundled, remote, cached |
 | `content_version` | str | content-2026.10.08 | Версія JSON-пакета телеграм, документів і журналів (expo-updates) |
 | `save_schema_version` | int | 3 | Версія схеми збереження в MMKV |
-| `analytics_plan_version` | int | 1 | Версія цього плану |
+| `analytics_plan_version` | int | 3 | Версія цього плану |
 | `game_session_id` | str | 9b2f6c1e-7d3a-4c1b-9a51-2f0f3e8d4a10 | Наш ідентифікатор сесії (див. session\_start); не плутати з $session\_id PostHog |
 | `session_number` | int | 14 | Порядковий номер сесії з моменту встановлення |
 | `playtime_sec` | int | 2730 | Сумарний час у грі на передньому плані з моменту встановлення |
 | `days_since_install` | int | 2 | Календарні дні від встановлення за локальним часом пристрою |
-| `level_id` | str | batalion | Поточний рівень гри. Значення: batalion, bryhada |
+| `level_id` | str | batalion | Поточний рівень гри. Значення: batalion, bryhada, komanduvannia, henshtab, bez\_paperu |
+| `dub_number` | int | 0 | Номер Дубля нескінченного режиму; 0 до першого Дубля (013) |
+| `is_finale_done` | bool | false | Гравець натиснув Y на finale-script (013) |
+| `awards_owned` | int | 14 | Скільки грамот гравець має на мить події (016) |
 | `digitization_count` | int | 1 | Скільки цифровізацій уже зроблено |
 | `has_no_ads` | bool | false | Куплено «Без реклами» |
 | `is_payer` | bool | false | Була хоча б одна успішна покупка |
@@ -117,7 +122,7 @@
 | --- | --- | --- | --- | --- |
 | 1 | `app_first_open` | Старт застосунку, коли в MMKV немає install\_id. Генеруємо install\_id, викликаємо identify(install\_id) з $set\_once, потім шлемо подію. Раз на встановлення. | `device_region`: str (UA); `device_locale`: str (uk-UA); `is_reinstall?`: bool (false) | Скільки встановлень і з якою версією економіки; точка відліку для когорт, утримання й усіх «часів до». |
 | 2 | `session_start` | Холодний старт або повернення з фону після 120 с і більше. Генеруємо новий game\_session\_id і збільшуємо session\_number. Повернення раніше ніж за 120 с продовжує поточну сесію і цієї події не шле. | `is_cold_start`: bool (false); `sec_since_last_session?`: int (11520); `local_hour`: int (21); `entry_point`: str (icon); `is_clock_skew_detected`: bool (false) | Скільки сесій на день і в які години; основа DAU та утримання. |
-| 3 | `session_end` | AppState переходить у background. Шлемо одразу й викликаємо flush(). Якщо гравець повернувся раніше ніж за 120 с, сесія триває, а наступний session\_end прийде з тим самим game\_session\_id і накопиченими значеннями. У звітах беремо останній (максимальний) запис на game\_session\_id. | `duration_sec`: int (236); `segment_count`: int (1); `taps_count`: int (58); `cat_taps_count`: int (1); `tap_signatures_share_pct`: num (12.5); `signatures_earned_log10`: num (5.27); `signatures_balance_log10`: num (4.91); `income_per_min_log10`: num (2.61); `idle_income_per_min_log10`: num (2.3); `purchases_count`: int (9); `levels_bought`: int (27); `clerks_hired_count`: int (0); `bottleneck_id`: str (kombat); `next_purchase_eta_sec`: int (5400); `digital_points_available`: int (0); `levels`: obj ({raporty: 31, akty: 12, …}); `paper_empty_sec`: int (0); `fuel_bonus_sec`: int (236) | Тривалість сесії проти пісочниці (4 хв), скільки тапають, де вузьке місце, скільки до наступної покупки, стан економіки на кінець сесії. |
+| 3 | `session_end` | AppState переходить у background. Шлемо одразу й викликаємо flush(). Якщо гравець повернувся раніше ніж за 120 с, сесія триває, а наступний session\_end прийде з тим самим game\_session\_id і накопиченими значеннями. У звітах беремо останній (максимальний) запис на game\_session\_id. | `duration_sec`: int (236); `segment_count`: int (1); `taps_count`: int (58); `cat_taps_count`: int (1); `tap_signatures_share_pct`: num (12.5); `signatures_earned_log10`: num (5.27); `signatures_balance_log10`: num (4.91); `income_per_min_log10`: num (2.61); `idle_income_per_min_log10`: num (2.3); `purchases_count`: int (9); `levels_bought`: int (27); `clerks_hired_count`: int (0); `bottleneck_id`: str (kombat); `next_purchase_eta_sec`: int (5400); `digital_points_available`: int (0); `levels`: obj ({raporty: 31, akty: 12, …}); `paper_empty_sec`: int (0); `fuel_bonus_sec`: int (236); `zpz_share_pct?`: num (18.2); `stack_cm?`: int (64) | Тривалість сесії проти пісочниці (4 хв), скільки тапають, де вузьке місце, скільки до наступної покупки, стан економіки на кінець сесії. |
 | 4 | `force_update_show` | boot показав force-update: встановлена версія нижча за мінімальну з CDN або з кешу, чи збереження новіше за застосунок. Раз на запуск. | `reason`: str (min\_version); `installed_version`: str (1.0.3); `required_version`: str (1.1.0); `is_from_cache`: bool (false) | Скільки гравців застрягли на старій версії і чи доходять вони до стору. |
 
 ### Онбординг (1)
@@ -148,7 +153,7 @@
 | --- | --- | --- | --- | --- |
 | 12 | `telegram_receive` | Телеграма додана у вхідні за розкладом. Ті, що «прийшли» за відсутності гравця, додаються при поверненні: одна подія на кожну. | `telegram_id`: str (tg\_0001\_sergeants); `is_first_telegram`: bool (false); `delivery`: str (while\_away); `is_scripted`: bool (false); `is_repeat`: bool (false); `inbox_unread_after`: int (3) | Чи тримаємо частоту 2–4 на день і першу телеграму на 5–8 хв. |
 | 13 | `telegram_open` | Відкрито екран телеграми. | `telegram_id`: str (tg\_0001\_sergeants); `sec_since_received`: int (3900); `source`: str (inbox) | Скільки телеграми лежать непрочитаними і звідки їх відкривають. |
-| 14 | `telegram_choice_submit` | Тап по варіанту реакції, рішення застосовано. «Виконати сумлінно» не зупиняє одиницю, а сповільнює: ×0,5 на 1 год. Фактора ×0 немає. | `telegram_id`: str (tg\_0001\_sergeants); `choice_id`: str (diligent); `choice_kind`: str (diligent); `slowdown_target_id?`: str (stroy); `slowdown_mult`: num (0.5); `slowdown_sec`: int (3600); `reputation_delta`: int (5); `reputation_after`: int (65); `inspection_chance_pct`: num (0); `paper_spent`: int (2); `sec_since_open`: int (14) | Розподіл виборів по кожній телеграмі: чи вибір справжній, чи всі тиснуть одне й те саме; скільки доходу коштує «сумлінно». |
+| 14 | `telegram_choice_submit` | Тап по варіанту реакції, рішення застосовано. «Виконати сумлінно» не зупиняє одиницю, а сповільнює: ×0,5 на 1 год. Фактора ×0 немає. | `telegram_id`: str (tg\_0001\_sergeants); `choice_id`: str (diligent); `choice_kind`: str (diligent); `slowdown_target_id?`: str (stroy); `slowdown_mult`: num (0.5); `slowdown_sec`: int (3600); `reputation_delta`: int (5); `reputation_after`: int (65); `inspection_chance_pct`: num (0); `paper_spent`: int (2); `sec_since_open`: int (14); `pack_id?`: str (pack\_03); `is_pack_summary?`: bool (true) | Розподіл виборів по кожній телеграмі: чи вибір справжній, чи всі тиснуть одне й те саме; скільки доходу коштує «сумлінно». |
 | 15 | `telegram_flag` | Тап по кнопці «це не смішно» біля телеграми. | `telegram_id`: str (tg\_0008\_morale); `is_after_choice`: bool (true); `reason`: str (none); `has_comment`: bool (false) | Які телеграми ображають або не смішать, щоб швидко замінити їх оновленням контенту. |
 | 16 | `curio_entry_share` | Повернувся результат системного меню «Поділитися». | `entry_type`: str (telegram); `entry_id`: str (tg\_0006\_shovels); `gift_type?`: str (drone); `share_result`: str (shared); `activity_type?`: str (ph.telegra.Telegraph.Share) | Головний органічний канал: які записи й куди поширюють. |
 
@@ -156,9 +161,9 @@
 
 | # | Подія | Коли спрацьовує | Властивості (тип, приклад) | Питання |
 | --- | --- | --- | --- | --- |
-| 17 | `inspection_start` | Згенеровано попередження про комісію (за 2–3 год до приїзду), за розкладом або позапланово після відписки. | `inspection_id`: str (insp\_0004); `inspection_number`: int (4); `boss_id`: str (brigade\_commission); `trigger`: str (scheduled); `warning_sec`: int (8040); `reputation`: int (55); `items_total`: int (5) | Чи трапляється перша перевірка наприкінці першого дня і скільки позапланових дає відписка. Позапланова ×3 не дає, лише ризик провалу. |
+| 17 | `inspection_start` | Згенеровано попередження про комісію (за 2–3 год до приїзду), за розкладом або позапланово після відписки. | `inspection_id`: str (insp\_0004); `inspection_number`: int (4); `boss_id`: str (brigade\_commission); `trigger`: str (scheduled); `warning_sec`: int (8040); `reputation`: int (55); `items_total`: int (5); `inspection_kind`: str (final); `attempt_number?`: int (2) | Чи трапляється перша перевірка наприкінці першого дня і скільки позапланових дає відписка. Позапланова ×3 не дає, лише ризик провалу. |
 | 18 | `inspection_item_complete` | Пункт чекліста позначено виконаним: за підписи або весь чекліст за рекламу чи «Забрати» (тоді подія на кожен пункт з method = ad або no\_ads\_pass). | `inspection_id`: str (insp\_0004); `item_id`: str (paint\_borders); `method`: str (signatures); `cost_log10?`: num (3.08); `sec_to_deadline`: int (5100) | Які пункти виконують, які пропускають через ціну. |
-| 19 | `inspection_finish` | Таймер перевірки дійшов до нуля. Якщо це сталося без гравця, подія шлеться при поверненні з is\_resolved\_offline = true. | `inspection_id`: str (insp\_0004); `result`: str (passed); `items_done`: int (5); `items_total`: int (5); `is_completed_via_ad`: bool (false); `is_resolved_offline`: bool (true); `sec_from_start`: int (8040) | Частка пройдених перевірок, чи по кишені чекліст без реклами. |
+| 19 | `inspection_finish` | Таймер перевірки дійшов до нуля. Якщо це сталося без гравця, подія шлеться при поверненні з is\_resolved\_offline = true. | `inspection_id`: str (insp\_0004); `result`: str (passed); `items_done`: int (5); `items_total`: int (5); `is_completed_via_ad`: bool (false); `is_resolved_offline`: bool (true); `sec_from_start`: int (8040); `inspection_kind`: str (final); `is_mechanic_item_done?`: bool (true); `is_level_exit_unlocked?`: bool (true); `zpz_share_pct?`: num (42.5); `is_without_remarks`: bool (true) | Частка пройдених перевірок, чи по кишені чекліст без реклами. |
 
 ### Гонка з часом (3)
 
@@ -166,7 +171,7 @@
 | --- | --- | --- | --- | --- |
 | 20 | `race_start` | Волонтерка Ліна привезла подарунок, запущено обидва таймери: документ на конвеєрі й ресурс на фронті. | `race_id`: str (race\_0017); `gift_type`: str (drone); `doc_sec_required`: int (27000); `resource_sec_left`: int (32400); `is_winnable_without_speedup`: bool (false) | Скільки гонок можна виграти без прискорень і чи не задовгі документи. |
 | 21 | `race_speedup_apply` | Застосовано прискорення: «Послатися на цифру» (−2 год, раз за гонку, при P\_total ≥ 1, бали не списуються), реклама або «Забрати» з «Без реклами» (після ad\_reward\_grant). Прискорення діловодом — поза MVP. | `race_id`: str (race\_0017); `method`: str (ad); `sec_saved`: int (9360); `speedups_count_after`: int (1) | Чим прискорюють гонку і чи потрібна для неї реклама. |
-| 22 | `race_finish` | Документ пройшов конвеєр або ресурс скінчився раніше. Якщо без гравця, подія шлеться при поверненні. | `race_id`: str (race\_0017); `result`: str (success); `margin_sec`: int (43200); `speedups_count`: int (1); `is_ad_used`: bool (true); `is_resolved_offline`: bool (false) | Частка виграних гонок і запас часу. |
+| 22 | `race_finish` | Документ пройшов конвеєр або ресурс скінчився раніше. Якщо без гравця, подія шлеться при поверненні. | `race_id`: str (race\_0017); `result`: str (success); `margin_sec`: int (43200); `speedups_count`: int (1); `is_ad_used`: bool (true); `is_resolved_offline`: bool (false); `gift_type`: str (drone) | Частка виграних гонок і запас часу. |
 
 ### Події й репутація (2)
 
@@ -181,15 +186,15 @@
 | --- | --- | --- | --- | --- |
 | 25 | `digitization_hint_show` | Відкриті всі потоки, балів не менше мінімуму (30 для кожної цифровізації), а наступна покупка далі ніж за 4 год. Не частіше разу на сесію. | `next_purchase_eta_sec`: int (16200); `points_available`: int (38); `points_total`: int (0); `is_first_digitization`: bool (true); `sec_since_cycle_start`: int (201600) | Чи впираються гравці в стіну перед престижем і чи працює підказка. |
 | 26 | `digitization_screen_open` | Показано екран «Цифровізація» з кнопкою «Оцифрувати батальйон». | `source`: str (hint); `points_available`: int (38); `is_eligible`: bool (true); `multiplier_after`: num (1.76) | Скільки гравців дивляться на престиж і не наважуються. |
-| 27 | `digitization_complete` | Гравець підтвердив цифровізацію, прогрес обнулено, бали нараховано. | `digitization_number`: int (1); `points_gained`: int (38); `points_total`: int (38); `prestige_multiplier`: num (1.76); `lifetime_signatures_log10`: num (7.76); `sec_since_cycle_start`: int (259200); `sec_since_install`: int (259200); `journals_cancelled`: int (3); `is_from_hint`: bool (true) | День першої цифровізації (ціль 3–5) і бали за цикл проти пісочниці. |
-| 28 | `level_advance` | Третя цифровізація на рівні «Батальйон» завершена: відкрито «Бригаду» і показано її екран. Цифрові бали переходять. | `from_level_id`: str (batalion); `to_level_id`: str (bryhada); `digitization_count`: int (3); `points_total`: int (141); `sec_since_install`: int (648000) | Коли гравці доходять до «Бригади» (пісочниця: 7–8 день) і чи вистачає контенту. |
+| 27 | `digitization_complete` | Гравець підтвердив цифровізацію, прогрес обнулено, бали нараховано. | `digitization_number`: int (1); `points_gained`: int (38); `points_total`: int (38); `prestige_multiplier`: num (1.76); `lifetime_signatures_log10`: num (7.76); `sec_since_cycle_start`: int (259200); `sec_since_install`: int (259200); `journals_cancelled`: int (3); `is_from_hint`: bool (true); `digital_stages_count?`: int (2); `cycle_sec_previous?`: int (172800) | День першої цифровізації (ціль 3–5) і бали за цикл проти пісочниці. |
+| 28 | `level_advance` | Третя цифровізація на рівні «Батальйон» завершена: відкрито «Бригаду» і показано її екран. Цифрові бали переходять. | `from_level_id`: str (batalion); `to_level_id`: str (bryhada); `digitization_count`: int (3); `points_total`: int (141); `sec_since_install`: int (648000); `final_attempts?`: int (1) | Коли гравці доходять до «Бригади» (пісочниця: 7–8 день) і чи вистачає контенту. |
 
 ### Музей (2)
 
 | # | Подія | Коли спрацьовує | Властивості (тип, приклад) | Питання |
 | --- | --- | --- | --- | --- |
-| 29 | `museum_journal_unlock` | Журнал отримано (цифровізація, телеграма, перевірка без зауважень або подія). | `journal_id`: str (soap\_log); `rarity`: str (common); `source`: str (digitization); `journals_owned_after`: int (3); `is_series_complete`: bool (false) | Як швидко збирається колекція і звідки йдуть журнали. |
-| 30 | `museum_open` | Показано екран музею. | `source`: str (tab); `journals_owned`: int (3); `journals_unseen`: int (1) | Чи цікавить колекція гравців. |
+| 29 | `museum_journal_unlock` | Журнал отримано (цифровізація, телеграма, перевірка без зауважень або подія). | `journal_id`: str (soap\_log); `rarity`: str (common); `source`: str (digitization); `journals_owned_after`: int (3); `is_series_complete`: bool (false); `series_id`: str (personnel); `series_owned_after`: int (4); `series_complete_count`: int (2) | Як швидко збирається колекція і звідки йдуть журнали. |
+| 30 | `museum_open` | Показано екран музею. | `source`: str (tab); `journals_owned`: int (3); `journals_unseen`: int (1); `segment`: str (journals) | Чи цікавить колекція гравців. |
 
 ### Бусти (1)
 
@@ -238,6 +243,40 @@
 | 45 | `setting_change` | Гравець змінив перемикач у налаштуваннях або підписав скидання прогресу (progress\_reset, new\_value = done, до стирання; digitization\_count і playtime\_sec — з глобальних властивостей). Для analytics = off шлемо подію, робимо flush(), потім optOut(). | `setting_name`: str (haptics); `new_value`: str (off) | Які налаштування чіпають; скільки вимикають звук, вібрацію, категорії сповіщень і аналітику; скільки скидають прогрес. |
 | 46 | `app_error_log` | Збій завантаження, запису чи міграції збереження, некоректний конфіг економіки, помилка SDK реклами, згоди, покупок, пушів, оновлень або рендеру картинки. Відновлення з копії на save-error — source = save\_load, recovery = backup\_slot. Деталі й стек — у Sentry, сюди лише код. | `source`: str (save\_load); `error_code`: str (parse\_error); `is_recovered`: bool (true); `recovery`: str (backup\_slot); `message_short?`: str (Unexpected token at 1043); `save_schema_from?`: int (2); `save_schema_to?`: int (3) | Скільки гравців втрачають прогрес і де ламаються SDK, у розрізі версій. |
 
+### Пачки телеграм, стос (011, 012) (3)
+
+| # | Подія | Коли спрацьовує | Властивості (тип, приклад) | Питання |
+| --- | --- | --- | --- | --- |
+| 47 | `telegram_pack_receive` | Настала 03:00 за часом пристрою на Р3; якщо гравця не було — при поверненні. Окремо від неї надсилаються три telegram\_receive. | `pack_id`: str (pack\_03); `pack_number`: int (3); `is_repeat`: bool (false); `delivery`: str (while\_away) | Чи доходить одна пачка на добу і скільки пачок пропущено через ліміт «Нових». |
+| 48 | `telegram_pack_resolve` | Остання з трьох відповідей застосована (зведена або окрема). | `pack_id`: str (pack\_03); `mode`: str (summary); `choice_kind?`: str (diligent); `paper_spent`: int (4); `reputation_delta`: int (10); `inspection_chance_pct`: num (0); `is_beats`: bool (true); `sec_since_received`: int (21600) | Чи справжній вибір між зведенням і окремими відповідями; скільки паперу й репутації він коштує. |
+| 49 | `stack_meter_reach` | Висота стосу перетнула 100 см; раз на цикл цифровізації. Запис «Метр звітів» створено в Журналі курйозів. | `zpz_share_pct`: num (35.0); `zpz_level`: int (24); `sec_since_session_start`: int (180); `offline_share_pct`: num (80.0) | Чи досягають метра в типовій сесії і чи поширюють цей запис. |
+
+### Р5, фінал і Дублі (013) (4)
+
+| # | Подія | Коли спрацьовує | Властивості (тип, приклад) | Питання |
+| --- | --- | --- | --- | --- |
+| 50 | `stage_convert` | Підтверджено «Оцифрувати ланку» в stage-convert, підписи списано, стан збережено. | `stage_id`: str (kombat); `convert_index`: int (1); `cost_log10`: num (14.2); `digitizations_on_level`: int (0); `sec_since_level_start`: int (5400); `sec_since_available`: int (3600) | Темп конвертацій на Р5 і чи не стала ціна стіною. |
+| 51 | `finale_step_complete` | Крок стан-машини фіналу збережено як завершений. | `step_id`: str (script); `step_index`: int (2); `sec_since_finale_start`: int (240); `is_resumed`: bool (false); `declined_count?`: int (1) | Скільки гравців проходять фінал до кінця і де зупиняються (зокрема N на Y/N). |
+| 52 | `dub_start` | Утримано «Прийняти до виконання» в endless-intro, стан скинуто й збережено. | `dub_number`: int (1); `modifier_id`: str (two\_copies); `points_total`: int (1840); `sec_since_finale`: int (640000); `sec_since_offer`: int (3600) | Скільки гравців ідуть у нескінченний режим, як швидко і з яким модифікатором. |
+| 53 | `personal_record_update` | Новий найвищий Дубль або новий максимум log10 підписів за весь час (не частіше разу на сесію для lifetime\_signatures). | `record_type`: str (dub); `value`: num (3); `previous_value`: num (2) | Чи мотивує рекорд без лідерборду; база для рішення про 020. |
+
+### Сюжет (014) (4)
+
+| # | Подія | Коли спрацьовує | Властивості (тип, приклад) | Питання |
+| --- | --- | --- | --- | --- |
+| 54 | `story_beat_deliver` | Рушій сюжету віддав крок із черги, і носій (записка, тост, дзвінок, сцена, телеграма тощо) став видимим. | `beat_id`: str (st\_who\_writes\_05); `arc`: str (who\_writes); `carrier`: str (note); `beat_order`: int (5); `delay_sec`: int (21600); `is_catch_up`: bool (false); `is_while_away`: bool (true) | Чи доходять арки, скільки кроків наздоганяють і як довго вони чекають у черзі. |
+| 55 | `archive_sheet_unlock` | Аркуш додано в колекцію. | `sheet_id`: str (ar\_04); `sheet_number`: int (4); `source`: str (gift); `sheets_owned_after`: int (4) | Як швидко збирається колекція і з яких джерел. |
+| 56 | `archive_open` | Показано шторку archive-sheets. | `source`: str (museum); `sheets_owned`: int (4) | Чи читають аркуші, а не лише збирають. |
+| 57 | `diary_open` | Показано екран diary. | `lines_owned`: int (23); `lines_unseen`: int (2) | Чи цікавить щоденник окремо від рядка на довідці. |
+
+### Грамоти (016) (3)
+
+| # | Подія | Коли спрацьовує | Властивості (тип, приклад) | Питання |
+| --- | --- | --- | --- | --- |
+| 58 | `award_unlock` | Умова грамоти з content/awards.json виконалась, грамоту записано в збереження. Одна подія на грамоту. Грамоти, видані «заднім числом» після оновлення контенту, шлються при завантаженні з is\_retroactive = true. | `award_id`: str (aw\_tg\_50); `award_category`: str (telegrams); `award_type`: str (podyaka); `is_hidden`: bool (false); `awards_owned_after`: int (15); `is_retroactive`: bool (false); `is_resolved_offline`: bool (false); `is_mirrored`: bool (true); `sec_since_install`: int (1382400) | Чи тримається темп «одна грамота на 1–2 дні», які категорії не відкривають і які приховані знаходять. |
+| 59 | `awards_wall_open` | Показано сегмент «Грамоти»: перемикачем сегментів, з тосту грамоти або з особової справи. Не частіше разу на 60 с для того самого джерела. | `source`: str (award\_toast); `awards_owned`: int (15); `awards_unseen`: int (1) | Чи дивляться на грамоти взагалі, чи працює тост як вхід. |
+| 60 | `award_platform_sync` | Закінчилась спроба входу або звіту в Game Center / Google Play Ігри: на старті після онбордингу, при новій грамоті з дзеркалом, при ввімкненні перемикача. Не частіше разу на сесію з тим самим result, крім першого входу. | `platform`: str (game\_center); `result`: str (synced); `reported_count`: int (2); `pending_count`: int (0); `is_first_sign_in`: bool (false) | Скільки гравців мають дзеркало, скільки відмовляються від входу і скільки звітів зависає в черзі. |
+
 ## Властивості гравця
 
 Властивостей гравця 30. `$set_once` передаємо разом з `identify(install_id, …)` на першому запуску. `$set` їде в тій події, що змінила значення: `purchase_complete` ставить `is_payer = true`, крок `callsign_choose` — `protagonist_gender`.
@@ -256,7 +295,7 @@
 | `protagonist_gender` | str | `$set` | f | Форма протагоніста з кроку позивного (він / вона). Не персональні дані гравця. Значення: m, f |
 | `is_onboarding_complete` | bool | `$set` | true | Пройдено крок 10 онбордингу |
 | `onboarding_last_step_index` | int | `$set` | 10 | Останній завершений крок онбордингу, 1–11 |
-| `current_level_id` | str | `$set` | batalion | Поточний рівень гри. Значення: batalion, bryhada |
+| `current_level_id` | str | `$set` | batalion | Поточний рівень гри. Значення: batalion, bryhada, komanduvannia, henshtab, bez\_paperu |
 | `digitization_count` | int | `$set` | 2 | Скільки цифровізацій зроблено |
 | `digital_points_total` | int | `$set` | 79 | Усі цифрові бали |
 | `prestige_multiplier` | num | `$set` | 2.58 | 1 + 0,02 × усі бали |

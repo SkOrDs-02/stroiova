@@ -1,5 +1,10 @@
-# Generates the telegram content JSON for spec 03 (validated, compact layout).
-import json, sys
+# Generates the telegram content JSON for spec 03 (validated, compact layout)
+# and checks every telegram pool against content/schema/telegram.schema.json.
+#   python3 tools/gen_tg.py content/telegrams.json   regenerate content/telegrams.json
+#   python3 tools/gen_tg.py --check                  check telegrams.json + content/tg/*.json
+import json, sys, os, glob, re, collections
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 S = lambda target, mult=0.5, hours=1: {"target": target, "mult": mult, "hours": hours}
 STALL = 0.25  # decision 25: no event zeroes income; "стоїть" = ×0,25 на 1 год
@@ -415,7 +420,15 @@ tg(id="tg_0025b_prize_cancelled", no="4581", kind="notice", **{"from": "higher_h
 
 # ---------- validation ----------
 ids = set()
-STAGES = {"kombat", "stroy", "fin", "kazna", "raporty", "akty", "dovidky", "nakladni", "nakazy"}
+# Slowdown targets: streams and pipeline stages. 03: L1–L2; 011: zvedennia, narada; 012 FR-26: zpz, dopovid.
+STAGES = {"kombat", "stroy", "fin", "kazna", "raporty", "akty", "dovidky", "nakladni", "nakazy",
+          "zvedennia", "narada", "zpz", "dopovid"}
+# Senders and recipients: 03 «Модель даних»; cmd_hq — штаб командування (Р3, content/tg/level3.sources.md).
+SENDERS = {"higher_hq", "bn_chief_of_staff", "bde_support", "fin_chief", "info_security", "treasury",
+           "bde_chief_of_staff", "cmd_hq"}
+RECIPIENTS = {"bn_commander", "stroy_chief", "bde_fin"}
+NOTE_MAX = 60      # 03: choices[].note ≤ 60
+TITLE_MAX = 22     # 03: choices[].title ≤ 22 — лише попередження, частина наявних кнопок довша
 def walk_eff(e, where):
     for s in e.get("slow", []):
         assert s["target"] in STAGES, where
@@ -426,6 +439,7 @@ def walk_eff(e, where):
     if "ifNoClerk" in e: walk_eff(e["ifNoClerk"]["effects"], where)
 for t in T:
     assert t["id"] not in ids, t["id"]; ids.add(t["id"])
+    assert t["from"] in SENDERS and t["to"] in RECIPIENTS, t["id"]
     k = t["kind"]
     n = len(t["choices"])
     if k == "notice": assert n == 0
@@ -437,13 +451,13 @@ for t in T:
     for c in t["choices"]:
         walk_eff(c["effects"], t["id"])
         assert c["kind"] in ("diligent", "formal_reply", "drawer", "special")
-        assert len(c.get("note", "")) <= 60, (t["id"], c["id"])
+        assert len(c.get("note", "")) <= NOTE_MAX, (t["id"], c["id"])
 for t in T:
     for f in t.get("followUps", []): assert f["id"] in ids, f
     for c in t["choices"]:
         for q in c["effects"].get("queueNext", []): assert q in ids, q
-numbered = [t for t in T if t["kind"] == "standard"]
-assert len(numbered) == 40, len(numbered)
+nos = [t["no"] for t in T]
+assert len(nos) == len(set(nos)), "duplicate no"
 for t in T:
     for c in t["choices"]:
         def nozero(e):
@@ -475,7 +489,164 @@ def dump(t):
     else:
         out += ',\n    "choices": []'
     return out + "\n  }"
-txt = "[\n" + ",\n".join(dump(t) for t in T) + "\n]\n"
-json.loads(txt)
-open(sys.argv[1], "w", encoding="utf-8").write(txt)
-print("ok", len(T), "entries,", len(txt.encode("utf-8")), "bytes")
+def render():
+    txt = "[\n" + ",\n".join(dump(t) for t in T) + "\n]\n"
+    json.loads(txt)
+    return txt
+
+
+# ---------- --check: all pools (content/telegrams.json + content/tg/*.json) ----------
+SCHEMA_PATH = os.path.join(ROOT, "content", "schema", "telegram.schema.json")
+
+def pool_files():
+    return [os.path.join(ROOT, "content", "telegrams.json")] + sorted(glob.glob(os.path.join(ROOT, "content", "tg", "*.json")))
+
+def pack_size():
+    """pack.size from the newest balance preset (principle I: numbers live in balance/)."""
+    presets = glob.glob(os.path.join(ROOT, "balance", "preset-v*.json"))
+    ver = lambda p: int(re.search(r"preset-v(\d+)\.json$", p).group(1))
+    latest = max(presets, key=ver)
+    return json.load(open(latest, encoding="utf-8"))["params"]["pack"]["size"], os.path.relpath(latest, ROOT)
+
+def check_pools():
+    """Returns (errors, warnings, summary). Used by --check and tools/check_content.py."""
+    try:
+        import jsonschema
+    except ImportError:
+        return ["немає модуля jsonschema: pip install jsonschema"], [], ""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from check_content import RED, strings
+
+    errors, warnings = [], []
+    schema = json.load(open(SCHEMA_PATH, encoding="utf-8"))
+    jsonschema.Draft202012Validator.check_schema(schema)
+    defs = schema["$defs"]
+    # the schema and this script must agree on enums
+    if set(defs["unit"]["enum"]) != STAGES:
+        errors.append("схема: $defs.unit ≠ STAGES у gen_tg.py")
+    if set(defs["sender"]["enum"]) != SENDERS:
+        errors.append("схема: $defs.sender ≠ SENDERS у gen_tg.py")
+    if set(defs["recipient"]["enum"]) != RECIPIENTS:
+        errors.append("схема: $defs.recipient ≠ RECIPIENTS у gen_tg.py")
+
+    def validator(ref):
+        sub = {k: v for k, v in schema.items() if k != "oneOf"}
+        sub["$ref"] = ref
+        return jsonschema.Draft202012Validator(sub)
+    v_file, v_tg, v_pack = validator("#/$defs/poolObject"), validator("#/$defs/telegram"), validator("#/$defs/pack")
+
+    def schema_errors(v, obj, where):
+        for e in sorted(v.iter_errors(obj), key=lambda e: list(e.absolute_path)):
+            path = "".join("[%s]" % p if isinstance(p, int) else "." + p for p in e.absolute_path)
+            errors.append("%s%s: %s" % (where, path, e.message[:160]))
+
+    all_tg, packs, owner = [], [], {}
+    for f in pool_files():
+        rel = os.path.relpath(f, ROOT)
+        try:
+            data = json.load(open(f, encoding="utf-8"))
+        except ValueError as e:
+            errors.append("%s: не JSON: %s" % (rel, e)); continue
+        if isinstance(data, list):
+            tgs, fpacks = data, []
+        elif isinstance(data, dict):
+            schema_errors(v_file, {k: v for k, v in data.items() if k not in ("telegrams", "packs")} | {"telegrams": []}, rel)
+            tgs, fpacks = data.get("telegrams", []), data.get("packs", [])
+        else:
+            errors.append("%s: корінь має бути масивом або об'єктом" % rel); continue
+        for t in tgs:
+            schema_errors(v_tg, t, "%s %s" % (rel, t.get("id", "?")))
+            all_tg.append(t); owner[id(t)] = rel
+        for p in fpacks:
+            schema_errors(v_pack, p, "%s %s" % (rel, p.get("id", "?")))
+            packs.append((p, rel))
+        for s in strings(data):
+            m = RED.search(s)
+            if m and "Це не смішно" not in s:
+                errors.append("%s: червона лінія «%s»: %s" % (rel, m.group(0), s[:70]))
+
+    # unique id / no across all pools
+    for key in ("id", "no"):
+        c = collections.Counter(t.get(key) for t in all_tg)
+        for k, n in c.items():
+            if n > 1:
+                errors.append("дубль %s %s: %s" % (key, k, ", ".join(sorted({owner[id(t)] for t in all_tg if t.get(key) == k}))))
+
+    by_id = {t.get("id"): t for t in all_tg}
+    def walk(e, where):
+        for s_ in e.get("slow", []):
+            if s_.get("target") not in STAGES: errors.append("%s: невідома ціль slow %s" % (where, s_.get("target")))
+            if s_.get("mult", 1) < 0.25: errors.append("%s: mult < 0,25" % where)
+        if e.get("kombat", {}).get("maxMin", 0) > 30: errors.append("%s: kombat.maxMin > 30" % where)
+        if e.get("fuel", {}).get("refuelBlockedHours", 0) > 1: errors.append("%s: refuelBlockedHours > 1" % where)
+        for q in e.get("queueNext", []):
+            if q not in by_id: errors.append("%s: queueNext → немає %s" % (where, q))
+        for k in ("roll", "ifFlag", "ifNoClerk"):
+            if k in e: walk(e[k].get("effects", {}), where)
+        for d in e.get("delayed", []): walk(d.get("effects", {}), where)
+
+    long_titles = 0
+    for t in all_tg:
+        where = "%s %s" % (owner[id(t)], t.get("id"))
+        kind, ch = t.get("kind", "standard"), t.get("choices", [])
+        cids = [c.get("id") for c in ch]
+        if len(cids) != len(set(cids)): errors.append("%s: дубль id варіанта" % where)
+        if kind == "notice" and ch: errors.append("%s: notice з варіантами" % where)
+        if kind != "notice":
+            if not 2 <= len(ch) <= 4: errors.append("%s: варіантів %d, треба 2–4" % (where, len(ch)))
+            if ch and all(c.get("effects", {}).get("paper") for c in ch): errors.append("%s: немає варіанта без паперу" % where)
+        for c in ch:
+            walk(c.get("effects", {}), "%s/%s" % (where, c.get("id")))
+            if len(c.get("note", "")) > NOTE_MAX: errors.append("%s/%s: note > %d" % (where, c.get("id"), NOTE_MAX))
+            if len(c.get("title", "")) > TITLE_MAX: long_titles += 1
+        for fu in t.get("followUps", []):
+            if fu.get("id") not in by_id: errors.append("%s: followUps → немає %s" % (where, fu.get("id")))
+        ref = t.get("effects", {}).get("cancelInspRollOf")
+        if ref and ref not in by_id: errors.append("%s: cancelInspRollOf → немає %s" % (where, ref))
+    if long_titles:
+        warnings.append("%d кнопок довші за %d знаки (03: title ≤ %d)" % (long_titles, TITLE_MAX, TITLE_MAX))
+
+    # packs (011 FR-18, FR-30)
+    size, preset = pack_size() if packs else (None, None)
+    pack_ids = collections.Counter(p.get("id") for p, _ in packs)
+    errors += ["дубль пачки %s" % k for k, n in pack_ids.items() if n > 1]
+    listed = {}
+    for p, rel in packs:
+        where = "%s %s" % (rel, p.get("id"))
+        members = p.get("telegrams", [])
+        if len(members) != size: errors.append("%s: %d телеграм, pack.size = %d (%s)" % (where, len(members), size, preset))
+        for i, tid in enumerate(members, 1):
+            listed[tid] = (p.get("id"), i)
+            t = by_id.get(tid)
+            if t is None: errors.append("%s: немає телеграми %s" % (where, tid)); continue
+            if t.get("level") != 3: errors.append("%s: %s не рівня 3" % (where, tid))
+            if t.get("kind", "standard") == "override": errors.append("%s: override у пачці (%s)" % (where, tid))
+            if t.get("pack") != {"id": p.get("id"), "index": i}: errors.append("%s: %s.pack ≠ {id: %s, index: %d}" % (where, tid, p.get("id"), i))
+    for t in all_tg:
+        if "pack" in t and t.get("id") not in listed:
+            errors.append("%s %s: pack %s, але пачка її не містить" % (owner[id(t)], t.get("id"), t["pack"].get("id")))
+
+    per = collections.Counter(t.get("level") for t in all_tg)
+    summary = "Пули телеграм: %d файлів, %d записів (за рівнями %s), %d пачок" % (
+        len(pool_files()), len(all_tg), dict(sorted(per.items())), len(packs))
+    return errors, warnings, summary
+
+
+def main(argv):
+    if len(argv) == 2 and argv[1] == "--check":
+        errors, warnings, summary = check_pools()
+        print(summary)
+        for w in warnings: print("УВАГА:", w)
+        for e in errors: print("ПОМИЛКА:", e)
+        print("ok" if not errors else "помилок: %d" % len(errors))
+        return 1 if errors else 0
+    if len(argv) == 2:
+        txt = render()
+        open(argv[1], "w", encoding="utf-8").write(txt)
+        print("ok", len(T), "entries,", len(txt.encode("utf-8")), "bytes")
+        return 0
+    print("usage: gen_tg.py content/telegrams.json | --check", file=sys.stderr)
+    return 2
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

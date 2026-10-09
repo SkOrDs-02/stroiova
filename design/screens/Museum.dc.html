@@ -22,6 +22,7 @@ button{font:inherit;cursor:pointer}
 
     <h1 style="margin: 0; min-height: 44px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.3">Музей</h1>
 
+    <sc-if value="{{o.on}}" hint-placeholder-val="{{true}}">
     <div role="tablist" aria-label="Розділи музею" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: var(--radius-12); background: var(--bg-deep); border: 1px solid var(--border)">
       <span role="tab" aria-selected="true" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-8); background: var(--surface); border: 1px solid var(--border-strong); font-size: 14px; font-weight: 600; color: var(--text)">Журнали</span>
       <a href="Curios.dc.html" role="tab" aria-selected="false" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-8); font-size: 14px; font-weight: 500; color: var(--muted)">Курйози</a>
@@ -117,6 +118,199 @@ button{font:inherit;cursor:pointer}
       </div>
     </sc-if>
 
+    </sc-if>
+
+    <sc-if value="{{n.on}}" hint-placeholder-val="{{false}}">
+      <div role="tablist" aria-label="Розділи музею" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: var(--radius-12); background: var(--bg-deep); border: 1px solid var(--border)">
+        <button role="tab" aria-selected="{{n.segJ}}" onClick="{{n.toJ}}" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-8); background: {{n.jBg}}; border: 1px solid {{n.jBd}}; font-size: 14px; font-weight: {{n.jFw}}; color: {{n.jC}}">Журнали</button>
+        <a href="Curios.dc.html" role="tab" aria-selected="false" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-8); font-size: 14px; font-weight: 500; color: var(--muted)">Курйози</a>
+        <button role="tab" aria-selected="{{n.segA}}" aria-label="{{n.aLabel}}" onClick="{{n.toA}}" style="position: relative; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius-8); background: {{n.aBg}}; border: 1px solid {{n.aBd}}; font-size: 14px; font-weight: {{n.aFw}}; color: {{n.aC}}">Грамоти<sc-if value="{{n.aDot}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent)"></span></sc-if></button>
+      </div>
+
+      <sc-if value="{{n.journals}}" hint-placeholder-val="{{true}}">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+            <span style="font-size: 13px; color: var(--muted)">Скасованих журналів у колекції</span>
+            <span style="font: 600 15px/1.2 var(--font-mono); color: var(--text); white-space: nowrap">{{n.countText}}</span>
+          </div>
+          <div role="progressbar" aria-label="Журналів у колекції" aria-valuemin="0" aria-valuemax="24" aria-valuenow="{{n.count}}" style="display: flex; gap: 2px">
+            <sc-for list="{{n.steps}}" as="x" hint-placeholder-count="24">
+              <i style="flex: 1; height: 4px; border-radius: 2px; background: {{x.bg}}"></i>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{n.full}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-10); border: 1.5px solid var(--accent); background: var(--surface)">
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 14px; font-weight: 600">Музей укомплектовано</span>
+              <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">Скасовані всі двадцять чотири. Двадцять четвертого не існувало.</span>
+            </div>
+            <span class="st-stamp st-stamp--dark" style="--st-rot: 6deg; --st-edge: 80deg; flex: none">Виконано</span>
+          </div>
+        </sc-if>
+
+        <div class="st-seg" role="group" aria-label="Фільтр журналів">
+          <button aria-pressed="{{n.f.all}}" onClick="{{n.setAll}}">Усі</button>
+          <button aria-pressed="{{n.f.prop}}" onClick="{{n.setProp}}">Майно</button>
+          <button aria-pressed="{{n.f.people}}" onClick="{{n.setPeople}}">Особовий склад</button>
+        </div>
+
+        <sc-for list="{{n.series}}" as="se" hint-placeholder-count="5">
+          <section aria-label="{{se.aria}}" style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding-top: 4px">
+              <h2 style="margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 14px; line-height: 1.35">{{se.head}}</h2>
+              <sc-if value="{{se.done}}" hint-placeholder-val="{{false}}">
+                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 1.4; color: var(--accent)"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>{{se.doneText}}</span>
+              </sc-if>
+              <sc-if value="{{se.lockedLvl}}" hint-placeholder-val="{{false}}">
+                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 1.4; color: var(--muted)"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>{{se.lockText}}</span>
+              </sc-if>
+              <sc-if value="{{se.plainNote}}" hint-placeholder-val="{{true}}">
+                <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">{{se.note}}</span>
+              </sc-if>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+              <sc-for list="{{se.cards}}" as="it" hint-placeholder-count="4">
+              <sc-if value="{{it.plain}}" hint-placeholder-val="{{true}}">
+                <a href="JournalDetail.dc.html" class="st-jr" aria-label="{{it.aria}}" style="color: var(--text)">
+                  <span class="st-jr-cover" style="background: {{it.bg}}">
+                    <span class="st-jr-label"><b>{{it.head}}</b><span>{{it.name}}</span></span>
+                    <span class="st-stamp st-stamp--s st-stamp--dark" style="transform: rotate({{it.rot}})">Скасовано</span>
+                  </span>
+                  <span class="st-jr-txt"><span class="st-jr-rar" style="color: {{it.rc}}">{{it.rar}}</span><span class="st-jr-bonus">{{it.bonus}}</span></span>
+                </a>
+              </sc-if>
+              <sc-if value="{{it.legend}}" hint-placeholder-val="{{false}}">
+                <a href="JournalDetail.dc.html" class="st-jr st-jr--legend" aria-label="{{it.aria}}" style="color: var(--text)">
+                  <span class="st-jr-cover" style="background: {{it.bg}}; padding: 10px 26px 20px 20px">
+                    <span class="st-jr-label"><b>{{it.head}}</b><span>{{it.name}}</span></span>
+                    <span class="st-jr-star"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+                  </span>
+                  <span class="st-jr-txt"><span class="st-jr-rar" style="color: var(--rarity-legend)">Легендарний</span><span class="st-jr-bonus">{{it.bonus}}</span></span>
+                </a>
+              </sc-if>
+              <sc-if value="{{it.locked}}" hint-placeholder-val="{{false}}">
+                <a href="JournalDetail.dc.html" class="st-jr st-jr--locked" aria-label="{{it.aria}}" style="color: var(--text)">
+                  <span class="st-jr-cover">
+                    <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                    <span style="font: 500 13px/1 var(--font-mono)">???</span>
+                  </span>
+                  <span class="st-jr-txt"><span class="st-jr-rar" style="color: var(--muted); font-weight: 500">Не знайдено</span><span class="st-jr-bonus">{{it.src}}</span></span>
+                </a>
+              </sc-if>
+              </sc-for>
+            </div>
+          </section>
+        </sc-for>
+
+        <sc-if value="{{n.flat}}" hint-placeholder-val="{{false}}">
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+            <sc-for list="{{n.flatCards}}" as="it" hint-placeholder-count="6">
+              <sc-if value="{{it.plain}}" hint-placeholder-val="{{true}}">
+                <a href="JournalDetail.dc.html" class="st-jr" aria-label="{{it.aria}}" style="color: var(--text)">
+                  <span class="st-jr-cover" style="background: {{it.bg}}">
+                    <span class="st-jr-label"><b>{{it.head}}</b><span>{{it.name}}</span></span>
+                    <span class="st-stamp st-stamp--s st-stamp--dark" style="transform: rotate({{it.rot}})">Скасовано</span>
+                  </span>
+                  <span class="st-jr-txt"><span class="st-jr-rar" style="color: {{it.rc}}">{{it.rar}}</span><span class="st-jr-bonus">{{it.bonus}}</span></span>
+                </a>
+              </sc-if>
+              <sc-if value="{{it.legend}}" hint-placeholder-val="{{false}}">
+                <a href="JournalDetail.dc.html" class="st-jr st-jr--legend" aria-label="{{it.aria}}" style="color: var(--text)">
+                  <span class="st-jr-cover" style="background: {{it.bg}}; padding: 10px 26px 20px 20px">
+                    <span class="st-jr-label"><b>{{it.head}}</b><span>{{it.name}}</span></span>
+                    <span class="st-jr-star"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+                  </span>
+                  <span class="st-jr-txt"><span class="st-jr-rar" style="color: var(--rarity-legend)">Легендарний</span><span class="st-jr-bonus">{{it.bonus}}</span></span>
+                </a>
+              </sc-if>
+              <sc-if value="{{it.locked}}" hint-placeholder-val="{{false}}">
+                <a href="JournalDetail.dc.html" class="st-jr st-jr--locked" aria-label="{{it.aria}}" style="color: var(--text)">
+                  <span class="st-jr-cover">
+                    <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                    <span style="font: 500 13px/1 var(--font-mono)">???</span>
+                  </span>
+                  <span class="st-jr-txt"><span class="st-jr-rar" style="color: var(--muted); font-weight: 500">Не знайдено</span><span class="st-jr-bonus">{{it.src}}</span></span>
+                </a>
+              </sc-if>
+            </sc-for>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{n.awards}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+            <h2 style="margin: 0; font-size: 14px; font-weight: 600">Грамоти</h2>
+            <span style="font: 600 15px/1.2 var(--font-mono); color: var(--text); white-space: nowrap">{{n.awCount}}</span>
+          </div>
+          <div class="st-track" role="progressbar" aria-label="Грамот отримано" aria-valuemin="0" aria-valuemax="62" aria-valuenow="{{n.awN}}"><i style="--p: {{n.awPct}}%"></i></div>
+        </div>
+
+        <sc-if value="{{n.awEmpty}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)">
+            <div class="st-unit-plate" aria-hidden="true"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v14H6z"></path><path d="M9 7h6M9 11h4M10 17l-1 4 3-2 3 2-1-4"></path></svg></div>
+            <span style="flex: 1; font-size: 14px; line-height: 1.5">Грамот поки немає. Першу оголосять швидше, ніж підпишуть.</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{n.awAll}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-10); border: 1.5px solid var(--accent); background: var(--surface)">
+            <span style="flex: 1; font-size: 14px; line-height: 1.45">Нагороджено всім, що передбачено. Нове передбачать.</span>
+            <span class="st-stamp st-stamp--dark" style="--st-rot: -5deg; --st-edge: 80deg; flex: none">Виконано</span>
+          </div>
+        </sc-if>
+
+        <div class="st-seg" role="group" aria-label="Фільтр грамот">
+          <button aria-pressed="{{n.af.all}}" onClick="{{n.aAll}}">Усі</button>
+          <button aria-pressed="{{n.af.owned}}" onClick="{{n.aOwned}}">Отримані</button>
+          <button aria-pressed="{{n.af.ahead}}" onClick="{{n.aAhead}}">Попереду</button>
+        </div>
+
+        <sc-for list="{{n.cats}}" as="c" hint-placeholder-count="3">
+          <section aria-label="{{c.head}}" style="display: flex; flex-direction: column; gap: 8px">
+            <h2 style="margin: 0; padding-top: 4px; font-family: var(--font-display); font-weight: 500; font-size: 14px; line-height: 1.35">{{c.head}}</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{c.tiles}}" as="t" hint-placeholder-count="4">
+                <sc-if value="{{t.owned}}" hint-placeholder-val="{{true}}">
+                  <a href="AwardDetail.dc.html" aria-label="{{t.aria}}" style="position: relative; min-height: 112px; box-sizing: border-box; padding: 10px 12px 10px 14px; border-radius: var(--radius-6); background: var(--paper); color: var(--ink); display: flex; flex-direction: column; gap: 4px; box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--paper-rule)">
+                    <span style="font: 500 12px/1.3 var(--font-mono); color: var(--stamp); text-transform: uppercase; letter-spacing: .5px">{{t.type}}</span>
+                    <span style="font-size: 14px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden">{{t.title}}</span>
+                    <span style="margin-top: auto; font: 400 12px/1.3 var(--font-mono); color: var(--ink-2)">{{t.date}}</span>
+                    <sc-if value="{{t.isNew}}" hint-placeholder-val="{{false}}"><span style="position: absolute; top: 8px; right: 8px; font: 600 12px/1 var(--font-sans); color: var(--ink); background: var(--accent); border-radius: var(--radius-pill); padding: 3px 7px">нова</span></sc-if>
+                  </a>
+                </sc-if>
+                <sc-if value="{{t.open}}" hint-placeholder-val="{{false}}">
+                  <a href="AwardDetail.dc.html" aria-label="{{t.aria}}" style="min-height: 112px; box-sizing: border-box; padding: 10px 12px; border-radius: var(--radius-6); background: var(--surface); border: 1px dashed var(--border-strong); color: var(--text); display: flex; flex-direction: column; gap: 4px">
+                    <span style="font-size: 12px; line-height: 1.3; color: var(--muted)">{{t.type}}</span>
+                    <span style="font-size: 14px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden">{{t.title}}</span>
+                    <span style="font-size: 12px; line-height: 1.35; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden">{{t.hint}}</span>
+                    <sc-if value="{{t.hasProg}}" hint-placeholder-val="{{false}}">
+                      <span style="margin-top: auto; display: flex; align-items: center; gap: 8px"><span class="st-track" aria-hidden="true" style="flex: 1; background: var(--bg)"><i style="--p: {{t.pct}}%"></i></span><span style="font: 500 12px/1 var(--font-mono); white-space: nowrap">{{t.prog}}</span></span>
+                    </sc-if>
+                  </a>
+                </sc-if>
+                <sc-if value="{{t.hidden}}" hint-placeholder-val="{{false}}">
+                  <a href="AwardDetail.dc.html" aria-label="{{t.aria}}" style="min-height: 112px; box-sizing: border-box; padding: 10px 12px; border-radius: var(--radius-6); background: var(--surface-2); border: 1px dashed var(--border); color: var(--muted); display: flex; flex-direction: column; gap: 4px">
+                    <svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                    <span style="font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--text)">Для службового користування</span>
+                    <span style="font-size: 12px; line-height: 1.35">Умову оголосять після нагородження</span>
+                  </a>
+                </sc-if>
+              </sc-for>
+            </div>
+          </section>
+        </sc-for>
+
+        <sc-if value="{{n.awNoRes}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 24px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
+            <span style="font-size: 15px; font-weight: 600">{{n.awNoResText}}</span>
+            <button class="st-btn st-btn--neutral st-btn--s" onClick="{{n.aAll}}">Показати всі</button>
+          </div>
+        </sc-if>
+      </sc-if>
+    </sc-if>
+
   </main>
 
   <nav aria-label="Розділи" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg-deep); border-top: 1px solid var(--border); padding: 6px 4px 10px">
@@ -133,9 +327,10 @@ button{font:inherit;cursor:pointer}
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
       <span>Цифра</span>
     </a>
-    <a href="Museum.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--accent); font-size: 11px; font-weight: 500">
+    <a href="Museum.dc.html" aria-current="page" aria-label="{{tabLabel}}" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--accent); font-size: 11px; font-weight: 500">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
       <span>Музей</span>
+      <sc-if value="{{n.tabDot}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 6px; left: 50%; margin-left: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg-deep)"></span></sc-if>
     </a>
     <a href="Shop.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
@@ -144,11 +339,145 @@ button{font:inherit;cursor:pointer}
   </nav>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["частково","порожньо","серію зібрано","фільтр без результатів"],"default":"частково","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["частково","порожньо","серію зібрано","фільтр без результатів","з 24: Р3, серії","з 24: новий гравець","з 24: укомплектовано","з 24: нова грамота (крапка)","Грамоти: порожньо","Грамоти: частково","Грамоти: Отримані","Грамоти: Попереду","Грамоти: усе отримано"],"default":"частково","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
+  newMuseum(st) {
+    var self = this;
+    var JD = [[1, "Книга", "обліку видавання мила, миття в лазні та заміни білизни", "Книга обліку видавання мила, миття в лазні та заміни білизни", "property", "common", "+5% до швидкості Стройової частини", "Перша цифровізація", "var(--cover-olive)", 1], [2, "Стелажні", "(штабельні) ярлики", "Стелажні (штабельні) ярлики", "property", "common", "+5% до місткості сховища", "Перша цифровізація", "var(--cover-navy)", 1], [3, "Книга", "обліку руху осіб, що харчуються", "Книга обліку руху осіб, що харчуються", "property", "rare", "+10% паперу з будь-якого джерела", "Перша цифровізація", "var(--cover-brown)", 1], [4, "Книга", "обліку посуду, обладнання та інвентарю", "Книга обліку посуду, обладнання та інвентарю", "property", "common", "+5% до потоку «Накладні»", "Друга цифровізація", "var(--cover-earth)", 1], [5, "Книга", "обліку особового складу", "Книга обліку особового складу", "people", "common", "+5% до потоку «Рапорти»", "Друга цифровізація", "var(--cover-navy)", 1], [6, "Книга", "обліку призів і подарунків", "Книга обліку призів і подарунків", "property", "rare", "Акти на подарунки йдуть на 10% швидше", "Випадає з телеграм", "var(--cover-olive)", 1], [7, "Журнал", "результатів звірки обліку військового майна", "Журнал результатів звірки обліку військового майна", "property", "rare", "−10% часу кроку Фінслужби в гонці", "Перевірка без зауважень", "var(--cover-brown)", 1], [8, "Книга", "обліку експонатів музеїв, кімнат бойової слави", "Книга обліку експонатів музеїв, кімнат бойової слави", "property", "legend", "×2 до бонусу всіх інших журналів", "Зібрати сім інших", "var(--cover-black)", 1], [9, "Іменний", "список для проведення вечірньої повірки", "Іменний список для проведення вечірньої повірки", "people", "common", "+5% до потоку «Накази по частині»", "Перша цифровізація в бригаді", "var(--cover-navy)", 2], [10, "Книга", "алфавітного обліку особового складу", "Книга алфавітного обліку особового складу", "people", "common", "+5% до ланки «Казначейство»", "Друга цифровізація в бригаді", "var(--cover-navy)", 2], [11, "Добова", "відомість", "Добова відомість", "people", "common", "−10% тривалості сповільнень від телеграм", "Третя цифровізація в бригаді", "var(--cover-navy)", 2], [12, "Журнал", "контролю за станом обліку особового складу", "Журнал контролю за станом обліку особового складу", "people", "rare", "−10% ціни пунктів чекліста", "Підсумкова перевірка бригади", "var(--cover-navy)", 2], [13, "Книга", "обліку відвантаження (надходження) військового майна", "Книга обліку відвантаження (надходження) військового майна", "property", "common", "+5% до потоку «Акти на майно»", "Перша цифровізація в командуванні", "var(--cover-olive)", 3], [14, "Книга", "обліку подачі та повернення транспортних засобів", "Книга обліку подачі та повернення транспортних засобів", "property", "common", "−10% часу кроку Казначейства в гонці", "Друга цифровізація в командуванні", "var(--cover-olive)", 3], [15, "Книга", "зведеного обліку запасних частин, інструменту і приладдя", "Книга зведеного обліку запасних частин, інструменту і приладдя", "property", "common", "+5% до потоку «Зведення»", "Четверта цифровізація в командуванні", "var(--cover-olive)", 3], [16, "Книга-рознарядка", "на видавання запасних частин, інструменту і приладдя розсипом", "Книга-рознарядка на видавання запасних частин, інструменту і приладдя розсипом", "property", "rare", "+10% до ланки «Нарада»", "Перевірка зі столиці", "var(--cover-olive)", 3], [17, "Книга", "обліку білизни, прийнятої для прання", "Книга обліку білизни, прийнятої для прання", "property", "common", "+5% до потоку «Довідки»", "Перша цифровізація на 4-му рівні", "var(--cover-brown)", 4], [18, "Книжка", "квитанцій на прийняті особисті речі", "Книжка квитанцій на прийняті особисті речі", "property", "common", "+5% до ланки «Доповідь»", "Третя цифровізація на 4-му рівні", "var(--cover-brown)", 4], [19, "Відомість", "обліку продовольства, отриманого від суб’єкта господарювання", "Відомість обліку продовольства, отриманого військовою частиною від суб’єкта господарювання згідно з договором", "property", "common", "+5% до потоку «Звіти про звіти»", "Телеграма згори", "var(--cover-brown)", 4], [20, "Книга", "штатно-посадового обліку особового складу", "Книга штатно-посадового обліку особового складу", "people", "rare", "+10% до часу служби подарунків Ліни", "Аудит усього", "var(--cover-brown)", 4], [21, "Книга", "обліку земельних ділянок", "Книга обліку земельних ділянок", "property", "common", "+5% до всіх цифрових ланок", "Друга цифрова ланка", "var(--cover-earth)", 5], [22, "Індивідуальна", "картка обліку земельної ділянки", "Індивідуальна картка обліку земельної ділянки", "property", "common", "+5% до ланки «Фінслужба» і «КЕП на первинці»", "Четверта цифрова ланка", "var(--cover-earth)", 5], [23, "Відомість", "наявності та використання земельних ділянок", "Відомість наявності та використання земельних ділянок", "property", "rare", "−10% ціни конвертації ланки", "П’ята цифрова ланка", "var(--cover-earth)", 5], [24, "Журнал", "обліку журналів обліку", "Журнал обліку журналів обліку", "property", "legend", "×2 до бонусів журналів № 9–23", "Остання книга", "var(--cover-black)", 5]];
+    var SD = [[1, "Майно батальйону", [1, 2, 3, 4, 5, 6, 7, 8], "Батальйон", "×2 до бонусів журналів № 1–7 (журнал № 8)"], [2, "Особовий склад", [9, 10, 11, 12], "Бригада", "+5% до всіх підписів"], [3, "Транспорт і склад", [13, 14, 15, 16], "Командування", "+5% до всіх підписів"], [4, "Побут", [17, 18, 19, 20], "Генштаб", "+5% до всіх підписів"], [5, "Земля", [21, 22, 23, 24], "Армія без паперу", "+5% до всіх підписів"]];
+    var AD = [["aw_digit_first", "progress", "gramota", "Перша цифровізація", "Провести першу цифровізацію.", 0, "", 0, 3.4], ["aw_level_bryhada", "progress", "nakaz", "Переведення в бригаду", "Перейти на рівень «Бригада».", 0, "", 0, 8.4], ["aw_level_komand", "progress", "nakaz", "Переведення в командування", "Перейти на рівень «Командування».", 0, "", 0, 19], ["aw_digit_10", "progress", "podyaka", "Десята цифровізація", "Провести 10 цифровізацій.", 0, "digitizations", 10, 24], ["aw_level_genshtab", "progress", "nakaz", "Зал для доповідей", "Перейти на четвертий рівень.", 0, "", 0, 39], ["aw_brief_rewrite", "progress", "podyaka", "Тезово", "Тричі переписати доповідь тезово.", 0, "brief_rewrites", 3, 46], ["aw_zpz_half", "progress", "podyaka", "Звіт про звіти", "Довести «Звіти про звіти» до половини суми потоків.", 0, "", 0, 50], ["aw_digit_20", "progress", "podyaka", "Двадцята цифровізація", "Провести 20 цифровізацій.", 0, "digitizations", 20, 52], ["aw_level_r5", "progress", "gramota", "Армія без паперу", "Перейти на рівень «Армія без паперу».", 0, "", 0, 58], ["aw_convert_first", "progress", "podyaka", "Пакетне підписання", "Оцифрувати першу ланку.", 0, "", 0, 58], ["aw_convert_3", "progress", "podyaka", "КЕП на первинці", "Оцифрувати три ланки.", 0, "conversions", 3, 66], ["aw_convert_5", "progress", "nakaz", "Нарада скасована", "Оцифрувати п’ять ланок.", 0, "conversions", 5, 73], ["aw_finale", "progress", "gramota", "Розсилку вимкнено", "", 1, "", 0, 77.5], ["aw_quiet_week", "progress", "podyaka", "Тиждень тиші", "", 1, "", 0, 84.5], ["aw_dub_1", "progress", "nakaz", "Дублювати на папері", "", 1, "", 0, 85], ["aw_dub_2", "progress", "podyaka", "Другий примірник", "Почати Дубль 2.", 0, "", 0, 102], ["aw_dub_3", "progress", "podyaka", "Третій примірник", "Почати Дубль 3.", 0, "", 0, 120], ["aw_dub_5", "progress", "gramota", "Згідно з оригіналом", "Почати Дубль 5.", 0, "dub_max", 5, 155], ["aw_tg_first", "telegrams", "podyaka", "Перша телеграма", "Відповісти на телеграму.", 0, "", 0, 1], ["aw_tg_all_kinds", "telegrams", "podyaka", "Усі варіанти", "Відповісти сумлінно, відпискою, у шухляду й по-своєму.", 0, "", 0, 2], ["aw_tg_50", "telegrams", "podyaka", "П’ятдесят телеграм", "Відповісти на 50 телеграм.", 0, "tg_answered", 50, 16], ["aw_tg_pack_beats", "telegrams", "nakaz", "Зведення б’ється", "Закрити пачку телеграм сумлінно.", 0, "", 0, 20], ["aw_tg_diligent_25", "telegrams", "podyaka", "Сумлінно", "Виконати сумлінно 25 телеграм.", 0, "tg_diligent", 25, 25], ["aw_tg_formal_25", "telegrams", "podyaka", "Відписка", "Написати 25 відписок.", 0, "tg_formal", 25, 25], ["aw_tg_drawer_25", "telegrams", "podyaka", "Шухляда", "Покласти в шухляду 25 телеграм.", 0, "tg_drawer", 25, 25], ["aw_tg_100", "telegrams", "gramota", "Сто телеграм", "Відповісти на 100 телеграм.", 0, "tg_answered", 100, 32], ["aw_tg_200", "telegrams", "gramota", "Двісті телеграм", "Відповісти на 200 телеграм.", 0, "tg_answered", 200, 65], ["aw_insp_clean", "inspections", "podyaka", "Без зауважень", "Пройти перевірку без зауважень.", 0, "", 0, 2], ["aw_insp_streak_5", "inspections", "gramota", "П’ять без зауважень", "Пройти 5 перевірок поспіль без зауважень.", 0, "insp_clean_streak", 5, 12], ["aw_boss_r2", "inspections", "nakaz", "Комісія командування", "Пройти «Комісію командування».", 0, "", 0, 17.4], ["aw_boss_r3", "inspections", "nakaz", "Перевірка зі столиці", "Пройти «Перевірку зі столиці».", 0, "", 0, 36.5], ["aw_insp_30", "inspections", "gramota", "Тридцять перевірок", "Пройти 30 перевірок.", 0, "insp_passed", 30, 43], ["aw_boss_r4", "inspections", "gramota", "Аудит усього", "Пройти «Аудит усього».", 0, "", 0, 55.3], ["aw_insp_r5", "inspections", "podyaka", "Цифрова комісія", "Пройти перевірку на рівні «Армія без паперу».", 0, "", 0, 59], ["aw_race_first_win", "race", "podyaka", "Пташка в небі", "Встигнути з актом на подарунок.", 0, "", 0, 2.5], ["aw_race_all_gifts", "race", "podyaka", "Дрон, лопати, генератор", "Встигнути з актом на кожен вид подарунка.", 0, "race_gift_types_won", 3, 6], ["aw_race_first_lost", "race", "podyaka", "Списано без штрафу", "Не встигнути з актом. Таке буває.", 0, "", 0, 8], ["aw_race_10", "race", "gramota", "Десять гонок", "Встигнути з 10 актами.", 0, "race_won", 10, 13], ["aw_race_ptashka3", "race", "podyaka", "Пташка-3", "Встигнути з актом у командуванні.", 0, "", 0, 21], ["aw_race_30", "race", "gramota", "Тридцять гонок", "Встигнути з 30 актами.", 0, "race_won", 30, 40], ["aw_museum_first", "museum", "podyaka", "Перший експонат", "Здати в музей перший журнал.", 0, "", 0, 3.4], ["aw_series_battalion", "museum", "gramota", "Майно батальйону", "Зібрати серію «Майно батальйону».", 0, "", 0, 5.3], ["aw_series_3", "museum", "gramota", "Три серії", "Зібрати три серії журналів.", 0, "series_complete", 3, 36.5], ["aw_journals_read_16", "museum", "podyaka", "З історією ознайомлений", "Прочитати історії 16 журналів.", 0, "journal_details_read", 16, 38], ["aw_museum_24", "museum", "gramota", "Музей укомплектовано", "", 1, "", 0, 77.5], ["aw_share_first", "curios", "podyaka", "Картинку надіслано", "Поділитися записом курйозів.", 0, "", 0, 2], ["aw_diary_30", "curios", "podyaka", "Щоденник стройовика", "Зібрати 30 рядків щоденника.", 0, "diary_lines", 30, 30], ["aw_stack_meter", "curios", "podyaka", "Метр звітів", "Зібрати стос звітів на метр.", 0, "", 0, 42], ["aw_share_10", "curios", "podyaka", "Десять копій", "Поділитися 10 записами.", 0, "shares", 10, 50], ["aw_archive_all", "curios", "gramota", "Таблиці Археолога", "Зібрати 12 аркушів Археолога.", 0, "archive_sheets", 12, 75], ["aw_cat_first", "cat", "podyaka", "Кіт на сейфі", "Познайомитися з котом.", 0, "", 0, 1], ["aw_cat_100", "cat", "podyaka", "Сто перевертань", "Кіт має перевернутися 100 разів.", 0, "cat_bonus_taps", 100, 20], ["aw_cat_300", "cat", "gramota", "Кіт, сірий, 1 од.", "Кіт має перевернутися 300 разів.", 0, "cat_bonus_taps", 300, 60], ["aw_clerk_first", "clerks", "podyaka", "Перший діловод", "Найняти діловода.", 0, "", 0, 1], ["aw_clerks_all_r3", "clerks", "gramota", "Штат командування", "Найняти діловодів на всі потоки й ланки командування.", 0, "", 0, 21], ["aw_clerks_100", "clerks", "podyaka", "Сто наймів", "Найняти діловодів 100 разів.", 0, "clerks_hired", 100, 26], ["aw_h_cat_sleep", "hidden", "podyaka", "Кіт спить", "", 1, "", 0, 999], ["aw_h_drawer_streak", "hidden", "nakaz", "Шухляда повна", "", 1, "", 0, 999], ["aw_h_race_minute", "hidden", "podyaka", "Бракувало хвилини", "", 1, "", 0, 999], ["aw_h_script_no", "hidden", "nakaz", "Не вимикати", "", 1, "", 0, 999], ["aw_h_sedo_print", "hidden", "podyaka", "Паперова копія", "", 1, "", 0, 999], ["aw_h_callsign", "hidden", "podyaka", "Новий позивний", "", 1, "", 0, 999]];
+    var CAT = {"progress": "Служба", "telegrams": "Телеграми", "inspections": "Перевірки", "race": "Гонка з часом", "museum": "Музей", "curios": "Курйози", "cat": "Кіт Сейф", "clerks": "Діловоди", "hidden": "Для службового користування"};
+    var ORDER = ["progress", "telegrams", "inspections", "race", "museum", "curios", "cat", "clerks", "hidden"];
+    var TYPE = {"gramota": "Грамота", "podyaka": "Подяка", "nakaz": "Оголошено в наказі"};
+    var RAR = { common: ['Звичайний', 'var(--rarity-common)'], rare: ['Рідкісний', 'var(--rarity-rare)'], legend: ['Легендарний', 'var(--rarity-legend)'] };
+    var ROT = ['-8deg', '6deg', '-5deg', '4deg', '-7deg', '3deg', '-4deg', '0deg'];
+    var cfg = {
+      'з 24: Р3, серії': { seg: 'j', found: 14, visited: 3, day: 25 },
+      'з 24: новий гравець': { seg: 'j', found: 0, visited: 1, day: 0 },
+      'з 24: укомплектовано': { seg: 'j', found: 24, visited: 5, day: 84 },
+      'з 24: нова грамота (крапка)': { seg: 'j', found: 14, visited: 3, day: 25, newAw: true },
+      'Грамоти: порожньо': { seg: 'a', found: 0, visited: 1, day: 0, filter: 'all' },
+      'Грамоти: частково': { seg: 'a', found: 14, visited: 3, day: 25, filter: 'all' },
+      'Грамоти: Отримані': { seg: 'a', found: 14, visited: 3, day: 25, filter: 'owned' },
+      'Грамоти: Попереду': { seg: 'a', found: 14, visited: 3, day: 25, filter: 'ahead' },
+      'Грамоти: усе отримано': { seg: 'a', found: 24, visited: 5, day: 200, filter: 'all' }
+    }[st];
+    var ls = (this.state && this.state.nm && this.state.nm.st === st) ? this.state.nm : { st: st, seg: cfg.seg, jf: 'all', af: cfg.filter || 'all' };
+    function put(o) { var n = Object.assign({}, ls, o); self.setState({ nm: n }); }
+    var seg = ls.seg;
+    var foundSet = {};
+    var FOUND = { 0: [], 14: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 24: JD.map(function (j) { return j[0]; }) }[cfg.found];
+    FOUND.forEach(function (n) { foundSet[n] = true; });
+    function card(j) {
+      var found = !!foundSet[j[0]], r = j[5], se = SD[j[9] - 1], visited = j[9] <= cfg.visited;
+      return {
+        plain: found && r !== 'legend', legend: found && r === 'legend', locked: !found,
+        head: j[1], name: j[2], bg: j[8], rot: ROT[j[0] % 8],
+        rar: RAR[r][0], rc: RAR[r][1], bonus: j[6],
+        src: visited ? j[7] : 'Відкриється на рівні «' + se[3] + '»',
+        aria: found ? (j[3] + '. ' + RAR[r][0] + '. ' + j[6]) : ('Не знайдено. ' + (visited ? j[7] : 'Відкриється на рівні «' + se[3] + '»'))
+      };
+    }
+    var series = [], flatCards = [];
+    if (ls.jf === 'all') {
+      SD.forEach(function (x) {
+        var js2 = JD.filter(function (j) { return j[9] === x[0]; });
+        var n = js2.filter(function (j) { return foundSet[j[0]]; }).length, m = js2.length;
+        var done = n === m, visited = x[0] <= cfg.visited;
+        series.push({
+          head: x[1] + ' · ' + n + ' з ' + m, aria: 'Серія ' + x[1] + ', ' + n + ' з ' + m,
+          done: done, doneText: 'Серію зібрано · ' + x[4],
+          lockedLvl: !visited, lockText: 'Відкриється на рівні «' + x[3] + '»',
+          plainNote: visited && !done, note: 'Серія: ' + x[4],
+          cards: js2.map(card)
+        });
+      });
+    } else {
+      JD.forEach(function (j) { if (foundSet[j[0]] && j[4] === (ls.jf === 'prop' ? 'property' : 'people')) flatCards.push(card(j)); });
+    }
+    var C = cfg.day === 0 ? {} : (cfg.day > 100 ? null : { digitizations: 11, tg_answered: 56, tg_diligent: 14, tg_formal: 9, tg_drawer: 11, insp_clean_streak: 3, insp_passed: 12, race_won: 8, race_gift_types_won: 3, series_complete: 2, journal_details_read: 7, diary_lines: 16, shares: 3, archive_sheets: 2, cat_bonus_taps: 64, clerks_hired: 41, conversions: 0, dub_max: 0, brief_rewrites: 0 });
+    var OWN_HIDDEN = { aw_h_cat_sleep: 1 };
+    function pad(x) { return (x < 10 ? '0' : '') + x; }
+    function date(d) { var t = new Date(2026, 8, 14 + Math.floor(d)); return pad(t.getDate()) + '.' + pad(t.getMonth() + 1) + '.' + t.getFullYear(); }
+    var tiles = AD.map(function (a, idx) {
+      var owned;
+      if (C === null) owned = true;
+      else if (cfg.day === 0) owned = false;
+      else if (a[5]) owned = !!OWN_HIDDEN[a[0]];
+      else if (a[6]) owned = (C[a[6]] || 0) >= a[7];
+      else owned = a[8] <= cfg.day;
+      var when = Math.min(a[8], cfg.day === 200 ? 160 : cfg.day);
+      if (a[0] === 'aw_h_cat_sleep') when = 11;
+      var hiddenNow = !owned && !!a[5];
+      var cur = a[6] && C ? Math.min(C[a[6]] || 0, a[7]) : 0;
+      return {
+        id: a[0], cat: a[1], owned: owned, open: !owned && !a[5], hidden: hiddenNow, est: a[8], when: when, idx: idx,
+        type: TYPE[a[2]], title: a[3], hint: a[4],
+        date: 'Оголошено ' + date(when),
+        hasProg: !owned && !!a[6], pct: a[7] ? String(Math.round(cur / a[7] * 100)) : '0', prog: cur + ' з ' + a[7],
+        isNew: false,
+        aria: owned ? (TYPE[a[2]] + ': ' + a[3] + '. Оголошено ' + date(when)) : (a[5] ? 'Для службового користування. Умову оголосять після нагородження' : (a[3] + '. ' + a[4] + (a[6] ? ' ' + cur + ' з ' + a[7] : '')))
+      };
+    });
+    if (cfg.newAw || st === 'Грамоти: частково') {
+      var nw = tiles.filter(function (t) { return t.id === 'aw_tg_pack_beats'; })[0];
+      if (nw) { nw.isNew = !!cfg.newAw; nw.when = cfg.day; nw.date = 'Оголошено ' + date(cfg.day); }
+    }
+    var ownedN = tiles.filter(function (t) { return t.owned; }).length;
+    var cats = [];
+    ORDER.forEach(function (k) {
+      var ts = tiles.filter(function (t) { return t.cat === k; });
+      var n = ts.filter(function (t) { return t.owned; }).length, m = ts.length;
+      ts.sort(function (x, y) {
+        var gx = x.owned ? 0 : (x.hidden ? 2 : 1), gy = y.owned ? 0 : (y.hidden ? 2 : 1);
+        if (gx !== gy) return gx - gy;
+        if (gx === 0) return y.when - x.when || x.idx - y.idx;
+        return x.est - y.est || x.idx - y.idx;
+      });
+      if (ls.af === 'owned') ts = ts.filter(function (t) { return t.owned; });
+      if (ls.af === 'ahead') ts = ts.filter(function (t) { return !t.owned; });
+      if (ts.length) cats.push({ head: CAT[k] + ' · ' + n + ' з ' + m, tiles: ts });
+    });
+    var steps = [];
+    for (var i = 0; i < 24; i++) steps.push({ bg: i < FOUND.length ? 'var(--accent)' : 'var(--border)' });
+    function p(on) { return on ? 'true' : 'false'; }
+    var dot = !!cfg.newAw;
+    var onJ = seg === 'j', onA = seg === 'a';
+    return {
+      o: { on: false },
+      s: { empty: false, some: false, complete: false, noRes: false, hasRes: false },
+      cards: [], steps: [], count: 0, countText: '', f: {}, noResTitle: '',
+      tabLabel: dot ? 'Музей, є нові грамоти' : 'Музей',
+      n: {
+        on: true, tabDot: dot, aDot: dot && !onA,
+        segJ: p(onJ), segA: p(onA), aLabel: dot ? 'Грамоти, є нові' : 'Грамоти',
+        jBg: onJ ? 'var(--surface)' : 'transparent', jBd: onJ ? 'var(--border-strong)' : 'transparent', jFw: onJ ? '600' : '500', jC: onJ ? 'var(--text)' : 'var(--muted)',
+        aBg: onA ? 'var(--surface)' : 'transparent', aBd: onA ? 'var(--border-strong)' : 'transparent', aFw: onA ? '600' : '500', aC: onA ? 'var(--text)' : 'var(--muted)',
+        toJ: function () { put({ seg: 'j' }); }, toA: function () { put({ seg: 'a' }); },
+        journals: onJ, awards: onA,
+        count: String(FOUND.length), countText: FOUND.length + ' з 24', steps: steps, full: FOUND.length === 24,
+        f: { all: p(ls.jf === 'all'), prop: p(ls.jf === 'prop'), people: p(ls.jf === 'people') },
+        setAll: function () { put({ jf: 'all' }); }, setProp: function () { put({ jf: 'prop' }); }, setPeople: function () { put({ jf: 'people' }); },
+        series: series, flat: ls.jf !== 'all', flatCards: flatCards,
+        awN: String(ownedN), awCount: ownedN + ' з 62', awPct: String(Math.round(ownedN / 62 * 100)),
+        awEmpty: ownedN === 0, awAll: ownedN === 62,
+        af: { all: p(ls.af === 'all'), owned: p(ls.af === 'owned'), ahead: p(ls.af === 'ahead') },
+        aAll: function () { put({ af: 'all' }); }, aOwned: function () { put({ af: 'owned' }); }, aAhead: function () { put({ af: 'ahead' }); },
+        cats: cats, awNoRes: cats.length === 0, awNoResText: ls.af === 'owned' ? 'Отриманих грамот поки немає' : 'Попереду нічого: усе вже оголошено'
+      }
+    };
+  }
   renderVals() {
     var self = this;
     var st = this.props.state ?? "частково";
+    if (/^(з 24|Грамоти)/.test(st)) {
+      var nmv = this.newMuseum(st);
+      var saved = this.props; this.props = { state: 'частково' };
+      var ov = this.renderVals(); this.props = saved;
+      ['cards', 'steps', 'count', 'countText', 'f', 'noResTitle', 'setAll', 'setProp', 'setPeople'].forEach(function (k) { nmv[k] = ov[k]; });
+      nmv.s = { empty: false, some: false, complete: false, noRes: false, hasRes: false };
+      return nmv;
+    }
     var J = [
       { n: 1, head: "Книга", name: "обліку видавання мила, миття в лазні та заміни білизни", cat: "property", r: "common", bonus: "+5% до швидкості Стройової частини", src: "Перша цифровізація", bg: "var(--cover-olive)", rot: "-8deg" },
       { n: 2, head: "Стелажні", name: "(штабельні) ярлики", cat: "property", r: "common", bonus: "+5% до місткості сховища", src: "Перша цифровізація", bg: "var(--cover-navy)", rot: "6deg" },
@@ -187,6 +516,7 @@ class Component extends DCLogic {
     var noRes = cards.length === 0;
     function p(on) { return on ? "true" : "false"; }
     return {
+      o: { on: true }, n: (function () { var x = self.newMuseum('з 24: Р3, серії').n; x.on = false; x.tabDot = false; return x; })(), tabLabel: 'Музей',
       s: { empty: count === 0, some: count > 0, complete: count === 8, noRes: noRes, hasRes: !noRes },
       cards: cards,
       steps: steps,

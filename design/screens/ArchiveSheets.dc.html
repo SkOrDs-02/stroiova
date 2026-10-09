@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Таблиці Археолога</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+.xl { display: grid; border-top: 1px solid var(--paper-rule); border-left: 1px solid var(--paper-rule); background: var(--paper); color: var(--ink); font: 400 12px/1.35 var(--font-mono); }
+.xl > span { border-right: 1px solid var(--paper-rule); border-bottom: 1px solid var(--paper-rule); padding: 4px 5px; min-width: 0; overflow-wrap: anywhere; }
+.xl > .xl-h { background: var(--paper-3); color: var(--ink); text-align: center; font-weight: 500; padding: 2px 0; }
+.xl > .xl-th { font-weight: 600; background: var(--paper-2); }
+.xl-tab { min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-top: 0; border-radius: 0 0 var(--radius-8) var(--radius-8); background: var(--surface-2); color: var(--muted); font: 500 13px/1 var(--font-mono); }
+.xl-tab[aria-selected="true"] { background: var(--paper); color: var(--ink); border-color: var(--paper-rule); font-weight: 600; }
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 12px">
+    <span style="font-family: var(--font-display); font-weight: 700; font-size: 22px">Музей</span>
+    <div style="height: 44px; width: 230px; border-radius: var(--radius-pill); background: var(--surface)"></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <div style="height: 160px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+      <div style="height: 160px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    </div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="ar-title" style="height: 90%; max-height: 90%">
+    <div class="st-sheet-grab" aria-hidden="true"></div>
+
+    <sc-if value="{{s.coll}}" hint-placeholder-val="{{true}}">
+      <div class="st-sheet-head">
+        <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5"></rect><path d="M3 9h18M3 14h18M9 4v16M15 4v16"></path></svg></div>
+        <div class="st-sheet-title">
+          <h2 class="st-h2" id="ar-title">Таблиці Археолога</h2>
+          <p class="st-sub" style="font-size: 12px">{{k}} з 12</p>
+        </div>
+        <a class="st-iconbtn st-iconbtn--bare" href="Museum.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+      </div>
+      <div class="st-track" role="progressbar" aria-label="Знайдено аркушів" aria-valuenow="{{k}}" aria-valuemin="0" aria-valuemax="12" style="background: var(--surface)"><i style="--p: {{pct}}%"></i></div>
+      <div style="flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: min-content; gap: 8px; padding-bottom: 4px">
+        <sc-for list="{{slots}}" as="sl" hint-placeholder-count="12">
+          <sc-if value="{{sl.found}}" hint-placeholder-val="{{true}}">
+            <a href="ArchiveSheets.dc.html" class="st-card" aria-label="Аркуш {{sl.no}}. {{sl.title}}. Рівень {{sl.lvl}}" style="min-height: 104px; padding: 8px; display: flex; flex-direction: column; gap: 6px">
+              <span aria-hidden="true" style="height: 30px; border-radius: var(--radius-2); background: var(--paper); display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); overflow: hidden">
+                <i style="grid-column: 1 / 5; background: var(--paper-3); border-bottom: 1px solid var(--paper-rule)"></i>
+                <i style="border-right: 1px solid var(--paper-line)"></i><i style="border-right: 1px solid var(--paper-line)"></i><i style="border-right: 1px solid var(--paper-line)"></i><i></i>
+              </span>
+              <span style="display: flex; align-items: baseline; justify-content: space-between; gap: 4px; font: 500 12px/1.2 var(--font-mono); color: var(--muted)"><span>№ {{sl.no}}</span><span>Р{{sl.lvl}}</span></span>
+              <span style="font-size: 12px; font-weight: 500; line-height: 1.3; overflow-wrap: anywhere">{{sl.title}}</span>
+            </a>
+          </sc-if>
+          <sc-if value="{{sl.locked}}" hint-placeholder-val="{{false}}">
+            <div aria-label="Аркуш {{sl.no}}. Не знайдено. {{sl.src}}" style="min-height: 104px; padding: 8px; box-sizing: border-box; border: 1px dashed var(--border-strong); border-radius: var(--radius-10); background: var(--surface-2); display: flex; flex-direction: column; gap: 6px; color: var(--muted)">
+              <span style="height: 30px; border-radius: var(--radius-2); border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; font: 600 13px/1 var(--font-mono)">???</span>
+              <span style="font: 500 12px/1.2 var(--font-mono)">№ {{sl.no}}</span>
+              <span style="font-size: 12px; line-height: 1.3; color: var(--muted)">Не знайдено · {{sl.src}}</span>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+      <a href="Museum.dc.html" class="st-btn st-btn--neutral st-btn--m">До музею</a>
+    </sc-if>
+
+    <sc-if value="{{s.sheet}}" hint-placeholder-val="{{false}}">
+      <div class="st-sheet-head">
+        <a class="st-iconbtn st-iconbtn--bare" href="ArchiveSheets.dc.html" aria-label="Назад до всіх аркушів"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></a>
+        <div class="st-sheet-title">
+          <h2 class="st-h2" id="ar-title" style="font-size: 17px">{{sh.title}}</h2>
+          <p class="st-sub" style="font-size: 12px">Аркуш {{sh.no}} · рівень {{sh.lvl}}</p>
+        </div>
+        <sc-if value="{{s.fresh}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">новий</span></sc-if>
+      </div>
+
+      <sc-if value="{{s.fresh}}" hint-placeholder-val="{{false}}">
+        <div class="st-toast" role="status" style="box-shadow: none">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5"></rect><path d="M3 9h18M9 4v16"></path></svg>
+          <span class="st-toast-txt">Знайдено аркуш Археолога: {{sh.title}}</span>
+        </div>
+      </sc-if>
+
+      <div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 0">
+        <div class="xl" role="table" aria-label="{{sh.title}}, вкладка {{sh.tab}}" style="grid-template-columns: 26px repeat({{sh.cols}}, minmax(0, 1fr))">
+          <span class="xl-h" aria-hidden="true"></span>
+          <sc-for list="{{sh.letters}}" as="lt" hint-placeholder-count="4"><span class="xl-h" aria-hidden="true">{{lt}}</span></sc-for>
+          <sc-for list="{{sh.rows}}" as="r" hint-placeholder-count="6">
+            <span class="xl-h" aria-hidden="true">{{r.n}}</span>
+            <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="4"><span class="{{r.cls}}" role="cell">{{c}}</span></sc-for>
+          </sc-for>
+        </div>
+        <div role="tablist" aria-label="Вкладки аркуша" style="display: flex; gap: 4px; padding-left: 26px">
+          <sc-for list="{{sh.tabs}}" as="t" hint-placeholder-count="2">
+            <button class="xl-tab" role="tab" aria-selected="{{t.sel}}">{{t.name}}</button>
+          </sc-for>
+        </div>
+        <p style="margin: 14px 0 0; padding: 10px 12px; border-left: 3px solid var(--border-strong); background: var(--surface); border-radius: 0 var(--radius-8) var(--radius-8) 0; font: 400 13px/1.5 var(--font-mono); color: var(--text)">{{sh.foot}}</p>
+      </div>
+      <a href="ArchiveSheets.dc.html" class="st-btn st-btn--neutral st-btn--m">Усі аркуші · {{k}} з 12</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["колекція 0 з 12","колекція 7 з 12","колекція 12 з 12","аркуш","аркуш: вкладка Чернетка","новий аркуш"],"default":"колекція 7 з 12","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'колекція 7 з 12';
+    var SH = [
+      ['Вхідні телеграми', 2, '1‑й подарунок на\u00a0Р2'], ['Кошторис: зв’язок', 2, '2‑й подарунок на\u00a0Р2'], ['Індекси телеграм', 2, 'підсумкова Р2'],
+      ['Час надходження', 3, '«Переїзд» на\u00a0Р3'], ['Протокол наради, витяг', 3, '1‑й подарунок на\u00a0Р3'], ['Хто надсилав', 3, 'підсумкова Р3'],
+      ['Штат 1998, витяг', 4, '«Переїзд» на\u00a0Р4'], ['Час телеграм за роки', 4, '1‑й подарунок на\u00a0Р4'], ['Хто має погодити', 4, '«Аудит усього»'],
+      ['Технічне завдання, 1998', 5, '1‑й подарунок на\u00a0Р5'], ['Навчальний центр: розклад', 5, 'конвертація №\u00a03'], ['Наказ про вимкнення, чернетка', 5, 'конвертація №\u00a05']
+    ];
+    var k = st === 'колекція 0 з 12' ? 0 : (st === 'колекція 12 з 12' ? 12 : (st === 'новий аркуш' ? 5 : 8));
+    if (st === 'колекція 7 з 12') k = 7;
+    var slots = SH.map(function (x, i) { var f = i < k; return { no: i + 1, title: x[0], lvl: x[1], src: x[2], found: f, locked: !f }; });
+    var L = ['A', 'B', 'C', 'D', 'E'];
+    function sheet(no, title, lvl, tabs, tabIdx, columns, rows, foot) {
+      var all = [{ n: 1, cls: 'xl-th', cells: columns }].concat(rows.map(function (r, i) { return { n: i + 2, cls: '', cells: r }; }));
+      return { no: no, title: title, lvl: lvl, cols: columns.length, letters: L.slice(0, columns.length), rows: all, tab: tabs[tabIdx], tabs: tabs.map(function (t, i) { return { name: t, sel: i === tabIdx ? 'true' : 'false' }; }), foot: foot };
+    }
+    var sh;
+    if (st === 'аркуш: вкладка Чернетка') {
+      sh = sheet(8, 'Час телеграм за роки', 4, ['Роки', 'Чернетка'], 1, ['Нотатки'],
+        [['Людина о 03:00 не пише.'], ['Машина пише.'], ['Кабель іде під залу доповідей.'], ['Ключ у чергового.']],
+        'Аркуш 8. Запізнень за всі роки: жодного.');
+    } else if (st === 'новий аркуш') {
+      sh = sheet(5, 'Протокол наради, витяг', 3, ['Протокол', 'Присутні'], 0, ['Розділ', 'Зміст'],
+        [['СЛУХАЛИ', 'Облік — в один журнал'], ['ВИСТУПИЛИ', 'А на папері?'], ['ВИСТУПИЛИ', 'А як світло вимкнуть?'], ['УХВАЛИЛИ', 'Винести на обговорення'], ['ДОПОВІДАЧА', 'Учити діловодів']],
+        'Аркуш 5. Питання виносили на обговорення 6 разів. Обговорили 0.');
+    } else {
+      sh = sheet(8, 'Час телеграм за роки', 4, ['Роки', 'Чернетка'], 0, ['Рік', 'Телеграм', 'Час', 'Звідки'],
+        [['1998', 'мало', '03:00', 'з-під зали'], ['2004', 'більше', '03:00', 'з-під зали'], ['2014', 'ще більше', '03:00', 'з-під зали'], ['2022', 'не влізли', '03:00', 'з-під зали'], ['цей', 'щоночі', '03:00', 'з-під зали']],
+        'Аркуш 8. Запізнень за всі роки: жодного.');
+    }
+    var isSheet = st === 'аркуш' || st === 'аркуш: вкладка Чернетка' || st === 'новий аркуш';
+    return {
+      k: k, pct: Math.round(k / 12 * 100), slots: slots, sh: sh,
+      s: { coll: !isSheet, sheet: isSheet, fresh: st === 'новий аркуш' }
+    };
+  }
+}
+</script>
+</body>
+</html>

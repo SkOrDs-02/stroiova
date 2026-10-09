@@ -66,6 +66,31 @@ button{font:inherit;cursor:pointer}
       </div>
     </sc-if>
 
+    <sc-if value="{{s.pack}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted); padding: 4px 2px">Нові · 2</span>
+        <a href="TgPack.dc.html" class="st-card st-tg is-new" aria-label="Нова пачка телеграм: Зведення № 1, 0 з 3 відповідей. Про скорочення нарад, про розділ ВИСТУПИЛИ, про розділ ВИРІШИЛИ" style="margin: 0 8px 8px 0; box-shadow: 4px 4px 0 var(--surface-2), 4px 4px 0 1px var(--border), 8px 8px 0 var(--surface-2), 8px 8px 0 1px var(--border)">
+          <span class="st-tg-top"><span>№ 5101–5103</span><span class="st-stamp st-stamp--s st-stamp--dark" style="--st-rot:-3deg;--st-edge:100deg;">Терміново</span><span class="st-tg-status st-tg-status--new">нова</span></span>
+          <span class="st-tg-title">Зведення № 1 · 0 з 3 відповідей</span>
+          <span class="st-tg-meta" style="color: var(--text)">Про скорочення нарад · Про розділ ВИСТУПИЛИ · Про розділ ВИРІШИЛИ</span>
+          <span class="st-tg-meta">Від: штаб командування · прийшла о 03:00</span>
+        </a>
+        <a href="TgDetail.dc.html" class="st-card st-tg is-new" aria-label="Нова телеграма № 5161. Про дату">
+          <span class="st-tg-top"><span>№ 5161</span><span class="st-tg-status st-tg-status--new">нова</span></span>
+          <span class="st-tg-title">Про дату</span>
+          <span class="st-tg-meta">Від: штаб командування · строк — завтра</span>
+        </a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted); padding: 4px 2px">Записки</span>
+        <a href="NoteDetail.dc.html" class="st-card st-tg" aria-label="Записка від Кави. Про рапорт комбата">
+          <span class="st-tg-top"><span>Записка</span><span class="st-tg-status">учора</span></span>
+          <span class="st-tg-title">Про рапорт комбата</span>
+          <span class="st-tg-meta">Начштабу «Кава»</span>
+        </a>
+      </div>
+    </sc-if>
+
     <sc-if value="{{s.empty}}" hint-placeholder-val="{{false}}">
       <div style="flex: 1; min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 0 12px">
         <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--muted); display: flex; align-items: center; justify-content: center">
@@ -210,13 +235,13 @@ button{font:inherit;cursor:pointer}
   </nav>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["нові","порожньо","на виконанні","у шухляді","архів","записки"],"default":"нові","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["нові","порожньо","на виконанні","у шухляді","архів","записки","Р3: пачка в Нових"],"default":"нові","section":"Стан"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = this.props.state ?? 'нові';
     var seg = st === 'у шухляді' ? 'dr' : (st === 'архів' ? 'ar' : 'in');
-    var badges = { 'нові': '3', 'порожньо': '', 'на виконанні': '1', 'у шухляді': '', 'архів': '', 'записки': '1' };
-    var inCount = { 'нові': ' · 4', 'порожньо': '', 'на виконанні': ' · 3', 'у шухляді': ' · 3', 'архів': ' · 3', 'записки': ' · 3' };
+    var badges = { 'нові': '3', 'порожньо': '', 'на виконанні': '1', 'у шухляді': '', 'архів': '', 'записки': '1', 'Р3: пачка в Нових': '2' };
+    var inCount = { 'нові': ' · 4', 'порожньо': '', 'на виконанні': ' · 3', 'у шухляді': ' · 3', 'архів': ' · 3', 'записки': ' · 3', 'Р3: пачка в Нових': ' · 3' };
     var b = badges[st] ?? '';
     function on(k) { return seg === k; }
     return {
@@ -227,6 +252,7 @@ class Component extends DCLogic {
         drawer: st === 'у шухляді',
         archive: st === 'архів',
         notes: st === 'записки',
+        pack: st === 'Р3: пачка в Нових',
         hasBadge: b !== '',
         badge: b,
         badgeLabel: 'нових: ' + b,
