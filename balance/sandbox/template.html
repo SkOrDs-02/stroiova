@@ -143,6 +143,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
         <p class="sub">«Вузьке місце» — частка ігрового часу, коли дохід обмежували потоки документів, а коли труба погоджень.</p>
         <div class="table-wrap"><table id="scen-table"></table></div>
         <p class="sub" id="paper-note" style="margin-top:10px"></p>
+        <p class="sub" id="content-note" style="margin-top:6px"></p>
       </div>
 
       <details class="card howto">
@@ -156,7 +157,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
           <li>Цифровізація можлива, коли відкриті всі потоки і бали за неї не менші за мінімум. Бали = (усі підписи циклу ÷ дільник) у степені; кожен бал дає постійний бонус до доходу. Гравець чекає, доки бали досягнуть порогу наступної, але якщо наступна покупка далі ніж задана кількість годин, цифровізується раніше — коли нова цифровізація дає хоча б задану частку вже набраних балів.</li>
           <li>Цифровізація з заданим номером на рівні 1 переводить на рівень 2 «Бригада». Бали переходять. Там ті самі потоки й ланки з множниками виробітку, цін і діловодів, плюс новий потік і нова ланка. Цифровізації на «Бригаді» лишають гравця на ній.</li>
           <li>Генератор: гравець заправляє його на початку кожної сесії, бака вистачає на задану кількість годин (і офлайн теж). Поки є пальне, дохід множиться на бонус.</li>
-          <li>Реклама: буст ×2 на кілька годин кілька разів на день (у моделі — середній множник за добу) і ×N до офлайн-доходу на перших поверненнях дня. Після покупки «Без реклами» те саме дає кнопка «Забрати».</li>
+          <li>Реклама: буст ×2 на кілька годин кілька разів на день (у моделі — середній множник за добу) і ×N до офлайн-доходу на перших поверненнях дня. Після покупки «Без реклами» те саме дає кнопка «Забрати». Гравець без реклами раз на добу отримує безкоштовний ×N до офлайну без ролика (рішення 35); бот бере його на найдовшому поверненні дня — після ночі.</li>
           <li>Телеграми «виконати сумлінно»: кілька разів на день на початку випадкової сесії (крім першої) одна випадкова ланка працює повільніше. Дні й ланки задає зерно випадковості; віртуальний гравець планує покупки без урахування сповільнень.</li>
           <li>Очікування покупки — від однієї покупки до наступної. Очікування балів перед цифровізацією (нічого купувати, але бали ростуть) показане окремо й у ціль не входить.</li>
           <li>Генератор дає бонус, поки в баку більше заданої частки (20%), і множить також тапи.</li>
@@ -169,7 +170,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
           <li>Папір рахується окремо й нічого не блокує: Накладні дають аркуші за рівень, подарунок — 20, кожна телеграма «сумлінно» забирає середню ціну. Якщо паперу бракує, модель лише рахує такі випадки.</li>
           <li>Рівні (v7): рівень k — потоки й ланки рівня 1 плюс нові потоки й ланки рівнів 2…k, усе помножене на блок рівня k (виробіток, ціни, діловоди, ріст ціни). Свій дільник балів і ціна чекліста. Вихід: на Р1 — N-та цифровізація; на Р2–Р4 після N-ї оголошують підсумкову перевірку, пройдена — наступна цифровізація переводить на рівень вище.</li>
           <li>Підсумкова перевірка: оголошується в циклі після N-ї цифровізації, щойно знову відкрито всі потоки (одразу після цифровізації дохід замалий, щоб ціна «у хвилинах доходу» щось важила). Попередження 24 год, ціна — хвилини базового доходу на мить оголошення, 6 пунктів; за задану кількість годин до приїзду гравець перестає купувати й збирає на пункти; реклама закриває 5 базових, пункт механіки — лише підписами. Поки вона оголошена, звичайних перевірок немає. Провал — Стройова ×0,5 на 1 год і повтор через 24 год, куплені пункти лишаються. На Р4 пункт механіки — «Звіти про звіти» дають не менше заданої частки потоків на мить приїзду; гравець докуповує їх свідомо.</li>
-          <li>Р3: телеграми пачками (1 на день + 0–1 окрема). «Звести в одну відповідь» — одне сповільнення «Наради» і «Зведення б'ється» (потік ×1,5); окремо — до трьох сповільнень випадкових ланок. «Нарада затягнулась» — як «Комбата шукають».</li>
+          <li>Р3: телеграми пачками (1 на день + 0–1 окрема). «Звести в одну відповідь» — одне сповільнення «Наради» і «Зведення б'ється» (потік ×1,5); окремо — до трьох сповільнень випадкових ланок. Ціна зведення — сильніше й довше сповільнення «Наради» (рішення 38); у режимі 2 бот на кожній пачці рахує, що втратить за наступні години при поточних рівнях, і бере менше зло: зведення, коли «Нарада» має запас або окремі відповіді влучають у вузьку ланку; окремо — коли «Нарада» близька до вузької, а окремі сповільнюють ланки із запасом, і майже завжди — поки «Зведення» в циклі ще не відкрите. «Нарада затягнулась» — як «Комбата шукають».</li>
           <li>Р4: «Звіти про звіти» = s(n) × сума решти потоків, s(n) = s_max · n / (n + K).</li>
           <li>Р5: конвертація ланок у цифрові за порядком; k-та відкривається після (k−1)-ї цифровізації на Р5, щойно в циклі відкрито всі потоки, і коштує хвилини базового доходу на ту мить; дає ×3 і знімає сповільнення (крім «Збою СЕДО», якщо нема паперу на роздрук). Після 4-ї конвертації телеграм удвічі менше. Шоста — фінал: модель зупиняється і показує день.</li>
           <li>Не враховано: позапланові перевірки, вибір у телеграмах (усі вважаються сумлінними), ефекти телеграми № 20 на гонку, посильного до комбата, розширене сховище.</li>
@@ -282,13 +283,13 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
 <script>
 (function () {
   var SIM_SRC = document.getElementById('sim-src').textContent;
-  var lib = (new Function(SIM_SRC + '\nreturn { DEFAULTS: DEFAULTS, SCENARIOS: SCENARIOS, simulate: simulate, waitStats: waitStats, stallStats: stallStats, withDefaults: withDefaults, levelStats: levelStats };'))();
+  var lib = (new Function(SIM_SRC + '\nreturn { DEFAULTS: DEFAULTS, SCENARIOS: SCENARIOS, simulate: simulate, waitStats: waitStats, stallStats: stallStats, withDefaults: withDefaults, levelStats: levelStats, eventStats: eventStats };'))();
   // docs/levels-3-5.md §4.1, the ad player; early-game rows as in v6
   var TARGETS_DEFAULT = { clerkMin: 3, clerkMax: 4, prestigeMinDays: 3, prestigeMaxDays: 5, waitMaxHours: 12, level2MinDays: 7, level2MaxDays: 9,
     boss2MinDays: 16, boss2MaxDays: 19, level3MinDays: 18, level3MaxDays: 21, boss3MinDays: 34, boss3MaxDays: 38, level4MinDays: 37, level4MaxDays: 41,
     boss4MinDays: 53, boss4MaxDays: 58, level5MinDays: 56, level5MaxDays: 61, finaleMinDays: 72, finaleMaxDays: 85,
     gapMinDays: 2, gapMaxDays: 3, freeRatioMax: 1.8, paidRatioMin: 0.7, storageLossMax: 15 };
-  var STORE_KEY = 'stroyova-econ-v7';
+  var STORE_KEY = 'stroyova-econ-v7.1';
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   // older presets (v3, v4) lack newer fields: the model fills them in with the new mechanics switched off,
@@ -348,6 +349,8 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     fieldHTML('params.adHours', 'Годин одного бусту', 'буст ×2', 0.5) +
     fieldHTML('params.offlineAdMult', 'Офлайн-дохід за рекламу, ×', 'або «Забрати» після покупки', 0.1) +
     fieldHTML('params.offlineAdPerDay', '… на перших поверненнях дня', 'скільки разів на день', 1) +
+    fieldHTML('params.offlineFreeMult', 'Без реклами: безкоштовний офлайн, ×', 'рішення 35, без ролика; 1 — вимкнено', 0.25) +
+    fieldHTML('params.offlineFreePerDay', '… на найдовших поверненнях дня', 'скільки разів на день (ніч)', 1) +
     fieldHTML('params.paidMult', 'Покупка «Без реклами», ×', 'постійний множник; бусти — без перегляду', 0.1) +
     fieldHTML('params.starterSignatures', 'Стартовий набір, підписів', 'лише сценарій «Купив», після першої перевірки', 1000) +
     fieldHTML('params.starterFuelHours', 'Бак зі стартовим набором, год', '', 1);
@@ -423,9 +426,9 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     fieldHTML('params.boss.zpzMin', 'Р4: «Звіти про звіти» на мить приїзду від', 'частка суми потоків', 0.05) +
     fieldHTML('params.pack.perDay', 'Р3: пачок на день', 'по 3 телеграми', 1) +
     fieldHTML('params.pack.singleChance', 'Р3: шанс окремої телеграми', '', 0.05) +
-    fieldHTML('params.pack.merge', 'Р3: «Звести в одну відповідь»', '1 — гравець зводить, 0 — відповідає окремо', 1) +
-    fieldHTML('params.pack.slowMult', 'Р3: «Нарада» після зведеної, ×', '', 0.05) +
-    fieldHTML('params.pack.slowHours', '… на, год', '', 0.5) +
+    fieldHTML('params.pack.merge', 'Р3: «Звести в одну відповідь»', '0 — окремо, 1 — завжди зводить, 2 — вибирає, що менше втрачає', 1) +
+    fieldHTML('params.pack.slowMult', 'Р3: «Нарада» після зведеної, ×', 'ціна зведення (рішення 38)', 0.05) +
+    fieldHTML('params.pack.slowHours', '… на, год', '', 0.25) +
     fieldHTML('params.pack.summaryBuff', 'Р3: «Зведення б\'ється», ×', 'потік «Зведення»', 0.1) +
     fieldHTML('params.pack.summaryBuffHours', '… на, год', '', 0.5) +
     fieldHTML('params.naradaChance', '«Нарада затягнулась»: шанс на сесію', 'не частіше разу на добу; 0 — вимкнено', 0.05) +
@@ -538,7 +541,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
   // ---------- simulation (worker when available) ----------
   var worker = null, pending = 0;
   try {
-    var src = SIM_SRC + '\nself.onmessage = function (e) { var p = e.data.params; var res = SCENARIOS.map(function (sc) { var r = simulate(p, sc); r.waitStats = waitStats(r, e.data.wallH); r.stallStats = stallStats(r, p.days); r.levelStats = levelStats(r); delete r.out.waits; return r; }); self.postMessage({ id: e.data.id, res: res }); };';
+    var src = SIM_SRC + '\nself.onmessage = function (e) { var p = e.data.params; var res = SCENARIOS.map(function (sc) { var r = simulate(p, sc); r.waitStats = waitStats(r, e.data.wallH); r.stallStats = stallStats(r, p.days); r.levelStats = levelStats(r); r.eventStats = eventStats(r); delete r.out.waits; return r; }); self.postMessage({ id: e.data.id, res: res }); };';
     worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
     worker.onmessage = function (e) { if (e.data.id === pending) render(e.data.res); };
     worker.onerror = function () { worker = null; run(); };
@@ -551,13 +554,15 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     p.sessionsPerDay = Math.max(1, Math.round(p.sessionsPerDay || 1));
     p.levels.forEach(function (L) { L.exitDigitizations = Math.max(0, Math.round(L.exitDigitizations || 0)); L.boss = L.boss ? 1 : 0; });
     p.offlineAdPerDay = Math.max(0, Math.round(p.offlineAdPerDay || 0));
+    p.offlineFreePerDay = Math.max(0, Math.round(p.offlineFreePerDay || 0));
+    p.pack.merge = Math.max(0, Math.min(2, Math.round(p.pack.merge || 0)));
     statusEl.textContent = 'Рахую…';
     pending++;
     var wallH = state.targets.waitMaxHours;
     if (worker) { worker.postMessage({ id: pending, params: p, wallH: wallH }); return; }
     var id = pending;
     setTimeout(function () {
-      var res = lib.SCENARIOS.map(function (sc) { var r = lib.simulate(p, sc); r.waitStats = lib.waitStats(r, wallH); r.stallStats = lib.stallStats(r, p.days); r.levelStats = lib.levelStats(r); delete r.out.waits; return r; });
+      var res = lib.SCENARIOS.map(function (sc) { var r = lib.simulate(p, sc); r.waitStats = lib.waitStats(r, wallH); r.stallStats = lib.stallStats(r, p.days); r.levelStats = lib.levelStats(r); r.eventStats = lib.eventStats(r); delete r.out.waits; return r; });
       if (id === pending) render(res);
     }, 30);
   }
@@ -644,6 +649,16 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     document.getElementById('scen-table').innerHTML = th + '</tbody>';
     var pa = ads.paper;
     document.getElementById('paper-note').textContent = pa && pa.byDay && pa.byDay.length ? 'Папір гравця з рекламою на кінець дня: ' + [1, 7, 21, 40, 60, 80].filter(function (d) { return d <= pa.byDay.length; }).map(function (d) { return d + '-й — ' + nf0.format(Math.floor(pa.byDay[d - 1])); }).join(', ') + ' аркушів. Витрачено на телеграми ' + nf0.format(Math.round(pa.spent)) + ', найменше було ' + nf0.format(Math.floor(pa.min)) + (pa.short ? ', бракувало ' + nf0.format(pa.short) + ' разів' : ', не бракувало жодного разу') + '. Конвеєр папір не зупиняє.' : '';
+    // v7.1: content moments per level (the content budget, balance/content-budget.md) and the Р3 pack picks
+    var cn = res.filter(function (r) { return r.scenario.id !== 'paid'; }).map(function (r) {
+      var es = r.eventStats || {}, Ls = Object.keys(es);
+      if (!Ls.length) return '';
+      var tg = Ls.map(function (L) { return 'Р' + L + ' ' + nf0.format(es[L].telegrams.n); }).join(', ');
+      var pk = r.out.packs ? r.out.packs.filter(function (x) { return x.level === 3; }) : [];
+      return r.scenario.name + ': телеграм за прохід ' + tg + '; пушів за 7 днів до ' + nf0.format(Math.max.apply(null, Ls.map(function (L) { return es[L].pushes.w7; }))) +
+        (pk.length ? '; Р3 зведено ' + nf0.format(pk.filter(function (x) { return x.choice === 'M'; }).length) + ' з ' + nf0.format(pk.length) + ' пачок' : '') + '.';
+    }).join(' ');
+    document.getElementById('content-note').textContent = cn;
     document.getElementById('legend').innerHTML = res.map(function (r) { return '<span style="--c: var(' + COLORS[r.scenario.id] + ')">' + r.scenario.name + '</span>'; }).join('') + '<span class="mark">цифровізація</span><span class="mark2">перехід на рівень, фінал</span>';
     drawChart(res);
     statusEl.textContent = 'Готово';
@@ -723,7 +738,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
 
   // ---------- export ----------
   var exportEl = document.getElementById('export');
-  function exportJSON() { var p = clone(state.params); return JSON.stringify({ version: 7, model: 'streams+pipe+levels', params: p }, null, 2); }
+  function exportJSON() { var p = clone(state.params); return JSON.stringify({ version: 7.1, rev: '7.1', model: 'streams+pipe+levels', params: p }, null, 2); }
   function updateExport() { exportEl.value = exportJSON(); }
   updateExport();
   var copyNote = document.getElementById('copy-note');

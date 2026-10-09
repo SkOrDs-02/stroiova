@@ -9,8 +9,12 @@
 // then the next digitization moves up). Level twists: telegram packs and «Звести в одну відповідь» (Р3), the
 // «Звіти про звіти» stream as a saturating share of the other streams (Р4), stage conversions to digital (Р5);
 // the finale is all stages digital, the run stops there. «Нарада затягнулась» and «Збій СЕДО» events.
+// v7.1 (decisions 35, 38, 41): the player without ads gets one free offline ×N a day on the longest return of the day;
+// «Звести в одну відповідь» has its own price (a stronger, longer «Нарада» slowdown) and the bot picks per pack (merge 2);
+// eventStats() counts the content moments (sessions, telegrams, pushes, inspections, races…) per level for the content budget.
 // Pure functions, no DOM, deterministic (seeded random); the sandbox page embeds this file as is.
 var DEFAULTS = {
+  rev: '7.1',
   // v6 re-tune: the events speed the ad player up by about half, so level 1 output is ×0,66 and stream prices ×1,1 (v5 in comments)
   streams: [
     { id: 'raporty', name: 'Рапорти', rate: 3.96, unlock: 0, cost: 8.8, growth: 1.12, manager: 165 }, // v5: 6, 8, clerk 90
@@ -57,8 +61,11 @@ var DEFAULTS = {
     saveH: 12, // the bot: this many hours before the arrival the player saves for the items left instead of buying
     zpzMin: 0.4 // Р4: «Звіти про звіти» give at least this share of all streams at the arrival
   },
-  // Р3: telegrams come in packs; the player answers «Звести в одну відповідь» (merge 1) or one by one (merge 0)
-  pack: { size: 3, perDay: 1, singleChance: 0.5, merge: 1, slowMult: 0.5, slowHours: 1.5, summaryBuff: 1.5, summaryBuffHours: 2 },
+  // Р3: telegrams come in packs; the player answers «Звести в одну відповідь» (merge 1), one by one (merge 0) or picks per
+  // pack the answer that loses less income over the next hours at the current state (merge 2, v7.1). The merged answer:
+  // «Нарада» × slowMult for slowHours (its price) and, all three diligent, «Зведення» × summaryBuff for summaryBuffHours;
+  // one by one: size slowdowns × p.slowMult for p.slowHours on random stages (as the other levels).
+  pack: { size: 3, perDay: 1, singleChance: 0.5, merge: 2, slowMult: 0.4, slowHours: 1.75, summaryBuff: 1.5, summaryBuffHours: 2 }, // v7: merge 1, ×0,5 for 1,5 h
   // Р4: «Звіти про звіти» = s(n) × sum of the other streams, s(n) = shareMax · n / (n + K)
   zpz: { shareMax: 1.5, K: 9 }, // s(1) = 0,15 → 13% of all streams on entry; the bot keeps it at 57–60% (s → 1,5 = 60%)
   // Р5: stage conversions to digital in this order; k opens after the (k−1)-th digitization on the level, once all streams
@@ -86,6 +93,8 @@ var DEFAULTS = {
   adHours: 4,
   offlineAdMult: 2, // offline income × this for an ad (or «Забрати» after the purchase)…
   offlineAdPerDay: 3, // …on the first N returns of each day
+  offlineFreeMult: 3, // v7.1, decision 35: the player without ads gets offline income × this for free (no video)… (×2: finale ≈ 137 days)
+  offlineFreePerDay: 1, // …on the N longest returns of each day (the night); 1 and 1 = off
   paidMult: 1.3,
   fuelHours: 6, // the player refuels at every session start; a tank lasts this long, offline too
   fuelBonus: 1.25, // conveyor income × this while there is fuel; 1 = no generator
@@ -187,6 +196,9 @@ function withDefaults(params) {
   if (src.prestigeStallHours == null) base.prestigeStallHours = 0; // v3
   if (src.prestigeStallShare == null) base.prestigeStallShare = 0.5; // v3, v4: fixed at a half
   if (src.offlineAdPerDay == null) { base.offlineAdPerDay = 99; base.offlineAdMult = 1.5; } // v3, v4: the average multiplier on every return
+  if (src.offlineFreeMult == null) { base.offlineFreeMult = 1; base.offlineFreePerDay = 0; } // v7 and older: no free ×2
+  if (src.pack && src.pack.merge == null) src.pack.merge = 1;
+  if (src.levels != null && !src.pack) src.pack = { merge: 1, slowMult: 0.5, slowHours: 1.5 }; // v7 without a pack block: the v7 pack
   if (src.fuelBonus == null) base.fuelBonus = 1;
   if (src.slowPerDayMax == null) { base.slowPerDayMin = 0; base.slowPerDayMax = 0; }
   if (src.giftOrder == null) { // v5 and older: none of the v6 events
@@ -272,7 +284,8 @@ function simulate(p, scenario) {
   var st;
   var out = { firstClerk: null, allStreams: null, level2At: null, prestiges: [], unlocks: [], purchases: 0, waits: [], stalls: [],
     insp: [], races: [], journals: {}, kombats: 0, cats: 0, archive: 0, starterAt: null,
-    levelAt: { 1: 0 }, bossAnn: {}, bosses: [], conversions: [], finaleAt: null, zpzShare: {} };
+    levelAt: { 1: 0 }, bossAnn: {}, bosses: [], conversions: [], finaleAt: null, zpzShare: {},
+    sessions: [], returns: [], telegrams: [], packs: [], pushes: [], naradaAt: [], sedoAt: [], kombatAt: [], earned: {}, earned0: { 1: 0 } }; // v7.1: content counters
   var H = 3600, day = 86400, clock0 = (p.dayStartHour || 0) * H;
   function localH(t) { return ((clock0 + t) % day + day) % day / H; }
   function calDay(t) { return Math.floor((clock0 + t) / day); }
@@ -514,7 +527,8 @@ function simulate(p, scenario) {
     return (best.cost - st.sig) / Math.max(ipm(false), 1e-9) / 60 >= p.prestigeStallHours;
   }
   function levelUp(t) {
-    level++; out.levelAt[level] = t;
+    out.earned[level] = earned - (out.earned0[level] || 0);
+    level++; out.levelAt[level] = t; out.earned0[level] = earned;
     if (level === 2) out.level2At = t;
     B = p.levels[level - 1];
     items = levelItems(p, level); SR = items.streams; ST = items.stages;
@@ -614,35 +628,70 @@ function simulate(p, scenario) {
     if (ds === sDay) continue;
     if (randS() < p.sedoFailChance) { sDay = ds; sedos.push({ t: starts[ss], end: starts[ss] + p.sedoFailMin * 60, pick: randS(), state: null }); }
   }
-  // Р3 packs: one pack a day at a random session (not the first one of the game) plus 0–1 single telegram
-  var packEv = [], packPaper = [], randP = lcg((p.seed || 1) * 214013 + 2531011);
+  // Р3 packs: one pack a day at a random session (not the first one of the game) plus 0–1 single telegram.
+  // A pack keeps both answers (M merged, S one by one) when the bot picks (merge 2); merge 0 and 1 fix the answer as in v7.
+  var packEv = [], packPaper = [], packs = [], packSingles = [], randP = lcg((p.seed || 1) * 214013 + 2531011), randPx = lcg((p.seed || 1) * 16807 + 7);
   var hasPacks = p.levels.slice(0, nLevels).some(function (x) { return x.packs; });
+  var mergeMode = p.pack.merge === 2 ? 2 : p.pack.merge ? 1 : 0;
   if (hasPacks) for (var dp = 0; dp < p.days; dp++) {
     var poolP = [];
     for (var sp = 0; sp < p.sessionsPerDay; sp++) if (dp > 0 || sp > 0) poolP.push(starts[dp * p.sessionsPerDay + sp]);
     for (var np = 0; np < (p.pack.perDay || 0) && poolP.length; np++) {
       var ip = Math.floor(randP() * poolP.length), tp = poolP[ip]; poolP.splice(ip, 1);
       var ppt = p.paperPerTelegram || 0;
-      if (p.pack.merge) { // one answer for all three: one slowdown on «Нарада», «Зведення б'ється»
-        packEv.push({ t: tp, end: tp + p.pack.slowHours * H, stage: 'narada', m: p.pack.slowMult });
-        packEv.push({ t: tp, end: tp + p.pack.summaryBuffHours * H, stream: 'zvedennia', m: p.pack.summaryBuff });
-        packPaper.push({ t: tp, x: p.pack.size * ppt - (p.pack.size - 1) });
-      } else {
-        for (var ix = 0; ix < p.pack.size; ix++) packEv.push({ t: tp, end: tp + (p.slowHours || 0) * H, pick: randP(), m: p.slowMult });
-        packPaper.push({ t: tp, x: p.pack.size * ppt });
-      }
+      var pk = { t: tp, choice: mergeMode === 2 ? null : mergeMode ? 'M' : 'S', M: [], S: [] };
+      // one answer for all three: one slowdown on «Нарада», «Зведення б'ється»
+      pk.M.push({ t: tp, end: tp + p.pack.slowHours * H, stage: 'narada', m: p.pack.slowMult, pk: pk, opt: 'M' });
+      pk.M.push({ t: tp, end: tp + p.pack.summaryBuffHours * H, stream: 'zvedennia', m: p.pack.summaryBuff, pk: pk, opt: 'M' });
+      // one by one: the picks come from randP as in v7; with merge 1 they are only a what-if for the statistics (own generator)
+      for (var ix = 0; ix < p.pack.size; ix++) pk.S.push({ t: tp, end: tp + (p.slowHours || 0) * H, pick: mergeMode === 1 ? randPx() : randP(), m: p.slowMult, pk: pk, opt: 'S' });
+      (mergeMode === 2 ? pk.M.concat(pk.S) : mergeMode ? pk.M : pk.S).forEach(function (ev) { packEv.push(ev); });
+      packPaper.push({ t: tp, pk: pk, xM: p.pack.size * ppt - (p.pack.size - 1), xS: p.pack.size * ppt });
+      packs.push(pk);
     }
     if (poolP.length && randP() < p.pack.singleChance) {
       var is = Math.floor(randP() * poolP.length), ts1 = poolP[is];
       packEv.push({ t: ts1, end: ts1 + (p.slowHours || 0) * H, pick: randP(), m: p.slowMult });
       packPaper.push({ t: ts1, x: p.paperPerTelegram || 0 });
+      packSingles.push(ts1);
     }
+  }
+  // the bot's pick for a pack (merge 2): the answer that loses less conveyor output over the window at the current state;
+  // a tie goes to the merged one (it saves paper). Other events are left out: they hit both answers alike.
+  function packLoss(evs, t0, W) {
+    var cuts = [t0, t0 + W];
+    evs.forEach(function (ev) { if (ev.end > t0 && ev.end < t0 + W) cuts.push(ev.end); });
+    cuts.sort(function (x, y) { return x - y; });
+    var base = flow(st.sl, st.gl, true).v, loss = 0;
+    for (var c = 0; c + 1 < cuts.length; c++) {
+      var x0 = cuts[c], x1 = cuts[c + 1]; if (x1 <= x0) continue;
+      var mid = (x0 + x1) / 2, fac = [], sf = [];
+      for (var j = 0; j < ST.length; j++) fac.push(1);
+      for (var k = 0; k < SR.length; k++) sf.push(1);
+      evs.forEach(function (ev) {
+        if (mid >= ev.end) return;
+        if (ev.stream) { var si = streamIdx(ev.stream); if (si >= 0) sf[si] *= ev.m; }
+        else { var jj = ev.stage ? stageIdx(ev.stage) : Math.floor(ev.pick * ST.length); if (jj >= 0) fac[jj] *= ev.m; }
+      });
+      if (nDigital) for (var j3 = 0; j3 < ST.length; j3++) if (digital[ST[j3].id] != null) fac[j3] = 1;
+      loss += (base - flow(st.sl, st.gl, true, fac, sf).v) * (x1 - x0) / 60;
+    }
+    return { loss: loss * mult(), base: base * W / 60 * mult() };
+  }
+  function decidePack(pk) {
+    if (!B.packs) { if (pk.choice == null) pk.choice = 'M'; return; }
+    var W = Math.max(p.pack.slowHours, p.pack.summaryBuffHours, p.slowHours || 0) * H;
+    var lM = packLoss(pk.M, pk.t, W), lS = packLoss(pk.S, pk.t, W);
+    if (pk.choice == null) pk.choice = lM.loss <= lS.loss ? 'M' : 'S';
+    out.packs.push({ t: pk.t, level: level, choice: pk.choice, lossM: lM.loss, lossS: lS.loss, base: lM.base, streams: unlockedStreams() + '/' + SR.length, slack: (function () { var f0 = flow(st.sl, st.gl, true); return f0.pipe > 0 ? Math.round(f0.sum / f0.pipe * 100) / 100 : null; })(),
+      naradaRoom: (function () { var j = stageIdx('narada'), f0 = flow(st.sl, st.gl, true); return j >= 0 && f0.v > 0 ? Math.round(capU(ST[j], st.gl[j]) / f0.v * 100) / 100 : null; })() }); // slack: streams / pipe; naradaRoom: «Нарада» / income
   }
   function packFac(t, fac, sfac) {
     for (var i = 0; i < packEv.length; i++) {
       var ev = packEv[i];
       if (ev.t > t) break;
       if (t >= ev.end) continue;
+      if (ev.pk && ev.pk.choice !== ev.opt) continue;
       if (ev.stream) { var si = streamIdx(ev.stream); if (si >= 0) sfac[si] *= ev.m; }
       else { var j = ev.stage ? stageIdx(ev.stage) : Math.floor(ev.pick * ST.length); if (j >= 0) fac[j] *= ev.m; }
     }
@@ -801,13 +850,16 @@ function simulate(p, scenario) {
         if (q.n === 1) starterDue = true;
       }
     }
+    packs.forEach(function (pk) { if (pk.t > a && pk.t <= b && !pk.seen) { pk.seen = true; decidePack(pk); if (B.packs) out.telegrams.push({ t: pk.t, level: level, pack: 1, n: p.pack.size }); } });
+    if (B.packs) packSingles.forEach(function (ts) { if (ts > a && ts <= b) out.telegrams.push({ t: ts, level: level, pack: 0, n: 1 }); });
+    else slowList.forEach(function (ev) { if (ev.t > a && ev.t <= b && (!lateCut() || ev.i < Math.ceil(ev.n / 2))) out.telegrams.push({ t: ev.t, level: level, pack: 0, n: 1 }); });
     if (p.museum && firstDigT != null && !J[6] && firstDigT + p.museumJ6DelayHours * H <= b) grant(6, firstDigT + p.museumJ6DelayHours * H);
     // a diligent telegram costs paper; with too little the player would have to pick another answer
     if (p.paperPerTelegram > 0) {
       if (!B.packs) slowList.forEach(function (ev) {
         if (ev.t > a && ev.t <= b && (!lateCut() || ev.i < Math.ceil(ev.n / 2))) { if (paper >= p.paperPerTelegram) { paper -= p.paperPerTelegram; paperSpent += p.paperPerTelegram; } else paperShort++; }
       });
-      else packPaper.forEach(function (ev) { if (ev.t > a && ev.t <= b) spendPaper(ev.x); });
+      else packPaper.forEach(function (ev) { if (ev.t > a && ev.t <= b) spendPaper(ev.pk ? (ev.pk.choice === 'S' ? ev.xS : ev.xM) : ev.x); });
     }
     // «Збій СЕДО»: the player prints a paper copy if there is paper, else the stage runs at half speed for a while
     if (nDigital) sedos.forEach(function (sd) {
@@ -851,11 +903,20 @@ function simulate(p, scenario) {
   });
   sess.sort(function (x, y) { return x.t - y.t; });
   out.visits = sess.filter(function (x) { return x.visit; }).length;
+  // v7.1: the free offline bonus of the player without ads goes to the N longest returns of each day (the bot knows the night is the longest)
+  var freeX2 = {};
+  if (!scenario.ads && p.offlineFreeMult > 1 && p.offlineFreePerDay > 0) {
+    var byD = {};
+    for (var sf = 1; sf < sess.length; sf++) { var dF = Math.floor(sess[sf].t / day); (byD[dF] = byD[dF] || []).push({ i: sf, gap: sess[sf].t - sess[sf - 1].t }); }
+    for (var dF2 in byD) byD[dF2].sort(function (x, y) { return y.gap - x.gap || x.i - y.i; }).slice(0, p.offlineFreePerDay).forEach(function (x) { freeX2[x.i] = true; });
+  }
 
   var tPrev = 0, nextSample = 0, every = 1800, adDay = -1, adUsed = 0, tEnd = p.days * day;
+  var earned = 0, storageFull = [];
   for (var si = 0; si < sess.length && !ended; si++) {
     var t0 = sess[si].t;
     var len = sess[si].visit ? Math.max(1, Math.round(p.inspPushVisit * 60)) : (si === 0 ? p.firstSessionMin : p.sessionMin) * 60;
+    sess[si].len = len;
     if (si > 0) {
       var gap = t0 - tPrev, fuelEnd = sess[si - 1].t + fuelSec * (1 - fuelThr);
       advance(tPrev, t0);
@@ -876,18 +937,22 @@ function simulate(p, scenario) {
         var mid = (x0 + x1) / 2;
         got += flow(st.sl, st.gl, true, facAt(mid), sfacAt(mid)).v * mult() / 60 * (mid < fuelEnd || genOn(mid) ? fuelBonus : 1) * giftMult(mid) * inspMult(mid) * (x1 - x0);
       }
-      if (idleInc > 0) { offlineTotal += gap; lostToStorage += gap - eff; }
+      if (idleInc > 0) { offlineTotal += gap; lostToStorage += gap - eff; if (gap > storSec()) storageFull.push(tPrev + storSec()); }
       // an ad (or «Забрати» after the purchase) multiplies the offline income on the first N returns of a day
       var dNow = Math.floor(t0 / day);
       if (dNow !== adDay) { adDay = dNow; adUsed = 0; }
-      if (scenario.ads && got > 0 && adUsed < p.offlineAdPerDay) { got *= p.offlineAdMult; adUsed++; }
-      st.sig += got; st.life += got;
+      var x2 = null;
+      if (scenario.ads && got > 0 && adUsed < p.offlineAdPerDay) { got *= p.offlineAdMult; adUsed++; x2 = 'ad'; }
+      else if (freeX2[si] && got > 0) { got *= p.offlineFreeMult; x2 = 'free'; }
+      if (got > 0) out.returns.push({ t: t0, level: level, x2: x2, visit: sess[si].visit });
+      st.sig += got; st.life += got; earned += got;
       var ni = nakIdx(); if (ni >= 0 && st.sm[ni]) addPaper(paperRate() * eff / 60);
       while (nextSample < t0) { series.push({ t: nextSample, ipm: idleInc * 60 * (nextSample < Math.min(fuelEnd, a1) ? fuelBonus : 1), prestige: prestigeTotal, level: level, paper: paper }); nextSample += every; }
     }
     if (si === 0) advance(-1, 0);
     raceAdSession = 0;
     maybePrestige(t0);
+    out.sessions.push({ t: t0, level: level, visit: sess[si].visit });
     var tapRate = sess[si].visit ? 0 : p.tapsPerSession / len;
     for (var x = 0; x < len; x++) {
       var t = t0 + x;
@@ -900,7 +965,7 @@ function simulate(p, scenario) {
       var bird = p.onboardingBirdMin > 0 && playSec >= p.onboardingBirdStartSec && playSec < p.onboardingBirdStartSec + p.onboardingBirdMin * 60 ? p.onboardingBirdMult : 1;
       var evm = bird * giftMult(t) * inspMult(t);
       var g = (fl.v * mult() * fuelNow / 60 + tapRate * p.tapValue * mult() * (p.fuelOnTaps ? fuelNow : 1)) * evm;
-      st.sig += g; st.life += g;
+      st.sig += g; st.life += g; earned += g;
       addPaper(paperRate() / 60);
       playSec++;
       tryBuy(t);
@@ -913,6 +978,37 @@ function simulate(p, scenario) {
     if (ended || si === sess.length - 1 || Math.floor(sess[si + 1].t / day) > Math.floor(t0 / day)) paperByDay.push(Math.round(paper * 10) / 10);
   }
   settleRace(tEnd);
+  out.earned[level] = earned - (out.earned0[level] || 0);
+  // v7.1 content counters: random events that really happened, with the level at that moment
+  function levelAtT(t) { var L = 1; for (var k in out.levelAt) if (out.levelAt[k] <= t && +k > L) L = +k; return L; }
+  kombats.forEach(function (k) { if (k.t <= tEnd) out.kombatAt.push({ t: k.t, level: levelAtT(k.t) }); });
+  naradas.forEach(function (k) { if (k.t <= tEnd && levelItems(p, levelAtT(k.t)).stages.some(function (x) { return x.id === 'narada'; })) out.naradaAt.push({ t: k.t, level: levelAtT(k.t) }); });
+  sedos.forEach(function (k) { if (k.state) out.sedoAt.push({ t: k.t, level: levelAtT(k.t), printed: k.state === 'printed' }); });
+  // pushes (010): candidates while the player is away, default categories (no «Бусти й комбат»), at most 2 a calendar day
+  // by priority: inspection → race → storage → the rest; the generator push at most once a day
+  function away(t) { for (var i = 0; i < sess.length; i++) { if (sess[i].t > t) return true; if (sess[i].len != null && t < sess[i].t + sess[i].len) return false; } return true; }
+  var cand = [];
+  function addC(t, type, pr) { if (t >= 0 && t <= tEnd && away(t)) cand.push({ t: t, type: type, pr: pr }); }
+  storageFull.forEach(function (t) { addC(t, 'storage_full', 2); });
+  out.telegrams.forEach(function (x) { cand.push({ t: x.t, type: 'telegram_new', pr: 3 }); }); // in the game a telegram lands on its schedule, mostly while away
+  out.insp.forEach(function (q) { addC(q.arr - 2 * H, 'inspection', 0); if (q.pass) addC(q.arr, 'inspection_passed', 0); });
+  out.bosses.forEach(function (b) { addC(b.arr - 2 * H, 'inspection', 0); });
+  out.races.forEach(function (r) {
+    addC(r.start, 'gift_arrived', 1);
+    if (r.actEnd > r.svcEnd - 2 * H) addC(r.svcEnd - 2 * H, 'race_reminder', 1);
+    if (r.win) addC(r.actEnd, 'race_won', 1);
+  });
+  if (fuelBonus > 1) for (var fi = 0; fi < sess.length; fi++) { var fe = sess[fi].t + fuelSec * (1 - fuelThr); if (fi + 1 < sess.length && fe < sess[fi + 1].t) addC(fe, 'fuel_bonus_end', 3); }
+  var byDay = {};
+  cand.forEach(function (c) { (byDay[calDay(c.t)] = byDay[calDay(c.t)] || []).push(c); });
+  out.pushCandidates = cand.length;
+  Object.keys(byDay).forEach(function (d) {
+    var fuel = 0;
+    byDay[d].sort(function (x, y) { return x.pr - y.pr || x.t - y.t; }).filter(function (c) { return c.type !== 'fuel_bonus_end' || fuel++ < 1; }).slice(0, 2)
+      .forEach(function (c) { out.pushes.push({ t: c.t, type: c.type, level: levelAtT(c.t) }); });
+  });
+  out.pushes.sort(function (x, y) { return x.t - y.t; });
+  delete out.earned0;
   var longest = { w: 0, t: 0, level: 1 };
   out.waits.forEach(function (w) { if (w.t > 3600 && w.w > longest.w) longest = w; });
   var byLevel = [];
@@ -971,4 +1067,56 @@ function levelStats(r) {
   return s;
 }
 
-if (typeof module !== 'undefined') module.exports = { DEFAULTS: DEFAULTS, SCENARIOS: SCENARIOS, simulate: simulate, waitStats: waitStats, stallStats: stallStats, withDefaults: withDefaults, levelItems: levelItems, levelStats: levelStats, reachableLevels: reachableLevels };
+// v7.1 content budget (decision 41): how many times each content moment happens on each level, for the whole stay on the
+// level (n) and at most in any 7 days on it (w7: a pool with fewer lines repeats a line within a week). Unscheduled
+// inspections are an estimate: the bot always answers «сумлінно», so opt.formalShare of the telegrams after the first
+// scheduled inspection are taken as «відписка» with opt.inspPct % (≤ 1 a day, 03 FR-15).
+function eventStats(r, opt) {
+  opt = opt || {};
+  var D = 86400, o = r.out, share = opt.formalShare == null ? 0.25 : opt.formalShare, pct = opt.inspPct == null ? 14 : opt.inspPct;
+  var end = r.endT, levels = [], firstInsp = o.insp.length ? o.insp[0].arr : Infinity;
+  for (var L in o.levelAt) levels.push(+L);
+  levels.sort(function (a, b) { return a - b; });
+  var res = {};
+  levels.forEach(function (L, i) {
+    var a = o.levelAt[L], b = i + 1 < levels.length ? o.levelAt[levels[i + 1]] : (o.finaleAt != null ? o.finaleAt : end);
+    function on(t) { return t >= a && t < b || (t === b && i === levels.length - 1); }
+    function count(list, f, w) { // w: weight of an item (default 1); returns { n, w7 }
+      var xs = list.filter(function (x) { return x.level != null ? x.level === L : on(x.t); }).filter(f || function () { return true; });
+      var n = 0, w7 = 0; xs.forEach(function (x) { n += w ? w(x) : 1; });
+      for (var d = a; d < b; d += D) { var c = 0; xs.forEach(function (x) { if (x.t >= d && x.t < d + 7 * D) c += w ? w(x) : 1; }); if (c > w7) w7 = c; }
+      return { n: Math.round(n * 10) / 10, w7: Math.round(w7 * 10) / 10 };
+    }
+    var days = (b - a) / D;
+    // unscheduled: expected per calendar day, capped at 1
+    var byDay = {};
+    o.telegrams.forEach(function (x) { if (x.level === L && on(x.t) && x.t > firstInsp) { var d = Math.floor(x.t / D); byDay[d] = (byDay[d] || 0) + x.n; } });
+    var uns = Object.keys(byDay).map(function (d) { return { t: +d * D, v: Math.min(1, byDay[d] * share * pct / 100) }; }).map(function (x) { x.t = Math.max(x.t, a); return x; });
+    var pushTypes = {};
+    o.pushes.forEach(function (x) { if (x.level === L) pushTypes[x.type] = 1; });
+    for (var ty in pushTypes) pushTypes[ty] = count(o.pushes, function (x) { return x.type === ty; });
+    res[L] = {
+      days: Math.round(days * 10) / 10,
+      sessions: count(o.sessions, function (x) { return !x.visit; }),
+      pushVisits: count(o.sessions, function (x) { return x.visit; }),
+      returns: count(o.returns),
+      returnsX2: count(o.returns, function (x) { return x.x2; }),
+      telegrams: count(o.telegrams, null, function (x) { return x.n; }),
+      packs: count(o.telegrams, function (x) { return x.pack; }),
+      pushes: count(o.pushes), pushTypes: pushTypes,
+      inspections: count(o.insp.map(function (q) { return { t: q.arr, level: q.level, pass: q.pass }; })),
+      inspPassed: count(o.insp.map(function (q) { return { t: q.arr, level: q.level, pass: q.pass }; }), function (x) { return x.pass; }),
+      unscheduled: count(uns, null, function (x) { return x.v; }),
+      finals: count(o.bosses.map(function (x) { return { t: x.arr, level: x.level, pass: x.pass }; })),
+      racesWon: count(o.races.map(function (x) { return { t: x.start, level: x.level, win: x.win }; }), function (x) { return x.win; }),
+      racesLost: count(o.races.map(function (x) { return { t: x.start, level: x.level, win: x.win }; }), function (x) { return !x.win; }),
+      kombat: count(o.kombatAt), narada: count(o.naradaAt), sedo: count(o.sedoAt),
+      digitizations: count(o.prestiges),
+      conversions: count(o.conversions.map(function (x) { return { t: x.t, level: 5 }; })),
+      packMerged: (o.packs || []).filter(function (x) { return x.level === L && on(x.t) && x.choice === 'M'; }).length
+    };
+  });
+  return res;
+}
+
+if (typeof module !== 'undefined') module.exports = { DEFAULTS: DEFAULTS, SCENARIOS: SCENARIOS, simulate: simulate, waitStats: waitStats, stallStats: stallStats, withDefaults: withDefaults, levelItems: levelItems, levelStats: levelStats, reachableLevels: reachableLevels, eventStats: eventStats };

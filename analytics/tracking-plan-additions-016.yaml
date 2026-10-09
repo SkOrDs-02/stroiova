@@ -1,0 +1,93 @@
+# Стройова — доповнення до плану аналітики для специфікації 016 «Музей і грамоти»
+# Чернетка 9.10.2026. НЕ злито в tracking-plan.yaml: після підтвердження специфікації перенести
+# в основний план разом із tracking-plan-additions-011-014.yaml (принцип VII) і підняти version.
+# Формат і правила іменування — як у tracking-plan.yaml (object_action, snake_case, _sec, _log10, is_/has_).
+# Тапи й перегляди стіни не шлемо поштучно: лише відкриття стіни й розблокування.
+
+version: draft-016
+base_plan: "analytics/tracking-plan.yaml (version 2) + tracking-plan-additions-011-014.yaml"
+updated: "2026-10-09"
+specs: [016-museum-awards]
+
+# ---------------- Глобальні властивості ----------------
+global_properties_changes:
+  - name: awards_owned
+    change: add
+    definition: {name: awards_owned, type: integer, required: true, example: 14, description: "Скільки грамот гравець має на мить події (016 FR-25). Потрібна, щоб бачити, чи збігаються грамоти з утриманням"}
+    spec: [016]
+
+# ---------------- Розширення enum-ів наявних подій ----------------
+enum_extensions:
+  - {event: curio_entry_share, property: entry_type, add: [award], spec: [016], note: "entry_id = award_id; поширення грамоти з award-detail"}
+  - {event: museum_open, property: source, add: [award_toast, profile], spec: [016], note: "award_toast — тап «Переглянути» на тості грамоти відкриває музей на сегменті «Грамоти»; profile — рядок «Грамоти» в особовій справі"}
+  - {event: setting_change, property: setting_name, add: [platform_awards], spec: [016], note: "Перемикач «Game Center» / «Google Play Ігри»; new_value = on | off"}
+  - {event: app_error_log, property: source, add: [platform_awards], spec: [016], note: "Помилка входу або звіту в Game Center / Play Games, крім скасування входу гравцем"}
+  - {event: museum_journal_unlock, property: source, note: "Значення 011–014 (final_inspection, conversion, story, finale) використовує 016 для № 12, 16, 19, 20, 21–24; digitization — і для цифровізацій на Р2–Р4 (№ 9–11, 13–15, 17–18)"}
+
+# ---------------- Нові властивості наявних подій ----------------
+property_additions:
+  - event: museum_journal_unlock
+    spec: [016]
+    properties:
+      - {name: series_id, type: string, required: true, enum: [battalion_property, personnel, transport_storage, household, land], example: personnel, description: "Серія журналу (016, таблиця серій)"}
+      - {name: series_owned_after, type: integer, required: true, example: 4, description: "Скільки журналів серії зібрано після цього"}
+      - {name: series_complete_count, type: integer, required: true, example: 2, description: "Скільки серій повністю зібрано після цього (1–5)"}
+    change_note: "is_series_complete тепер означає «цей журнал завершив свою серію» (№ 8 — серія 1, № 12 — серія 2 тощо), а не лише № 8"
+  - event: museum_open
+    spec: [016]
+    properties:
+      - {name: segment, type: string, required: true, enum: [journals, curios, awards], example: journals, description: "Сегмент, з яким відкрито музей"}
+  - event: inspection_finish
+    spec: [016]
+    properties:
+      - {name: is_without_remarks, type: boolean, required: true, example: true, description: "Пройдено без зауважень (04 FR-18). Потрібно для лічильників insp_clean і insp_clean_streak"}
+  - event: race_finish
+    spec: [016]
+    properties:
+      - {name: gift_type, type: string, required: true, enum: [drone, shovel, generator], example: drone, description: "Дублює race_start, щоб умову грамоти aw_race_all_gifts і звіти не треба було з'єднувати за race_id"}
+
+# ---------------- Нові події ----------------
+events:
+  - name: award_unlock
+    category: awards
+    spec: "016 FR-17–FR-24, FR-34"
+    description: "Гравець отримав грамоту, подяку або оголошення в наказі."
+    trigger: "Умова грамоти з content/awards.json виконалась, грамоту записано в збереження. Одна подія на грамоту. Грамоти, видані «заднім числом» після оновлення контенту, шлються при завантаженні з is_retroactive = true."
+    answers: "Чи тримається темп «одна грамота на 1–2 дні» (оцінка estDayAds проти фактичного дня), які категорії не відкривають і які приховані знаходять."
+    sampling: all
+    properties:
+      - {name: award_id, type: string, required: true, example: "aw_tg_50", description: "id з content/awards.json"}
+      - {name: award_category, type: string, required: true, enum: [progress, telegrams, inspections, race, museum, curios, cat, clerks, hidden], example: telegrams}
+      - {name: award_type, type: string, required: true, enum: [gramota, podyaka, nakaz], example: podyaka}
+      - {name: is_hidden, type: boolean, required: true, example: false, description: "Прихована (пасхалка або спойлер)"}
+      - {name: awards_owned_after, type: integer, required: true, example: 15}
+      - {name: is_retroactive, type: boolean, required: true, example: false, description: "Видано при завантаженні після оновлення контенту, умову виконано раніше"}
+      - {name: is_resolved_offline, type: boolean, required: true, example: false, description: "Умову виконано подією, що сталася без гравця (перевірка, гонка), видано при поверненні"}
+      - {name: is_mirrored, type: boolean, required: true, example: true, description: "Грамота має дзеркало в Game Center / Play Games"}
+      - {name: sec_since_install, type: integer, required: true, example: 1382400}
+
+  - name: awards_wall_open
+    category: awards
+    spec: "016 FR-25–FR-29"
+    description: "Відкрито стіну грамот (сегмент «Грамоти» музею)."
+    trigger: "Показано сегмент «Грамоти»: перемикачем сегментів, з тосту грамоти або з особової справи. Не частіше разу на 60 с для того самого джерела."
+    answers: "Чи дивляться на грамоти взагалі, чи працює тост як вхід."
+    sampling: all
+    properties:
+      - {name: source, type: string, required: true, enum: [segment, award_toast, profile], example: award_toast}
+      - {name: awards_owned, type: integer, required: true, example: 15}
+      - {name: awards_unseen, type: integer, required: true, example: 1, description: "Отримані, але ще не показані на стіні"}
+
+  - name: award_platform_sync
+    category: awards
+    spec: "016 FR-38–FR-44"
+    description: "Результат синхронізації грамот із Game Center (iOS) або Google Play Ігри (Android)."
+    trigger: "Закінчилась спроба входу або звіту в платформу: на старті після онбордингу, при новій грамоті з дзеркалом, при ввімкненні перемикача. Не частіше разу на сесію з тим самим result, крім першого входу."
+    answers: "Скільки гравців мають дзеркало, скільки відмовляються від входу і скільки звітів зависає в черзі."
+    sampling: all
+    properties:
+      - {name: platform, type: string, required: true, enum: [game_center, play_games], example: game_center}
+      - {name: result, type: string, required: true, enum: [synced, not_signed_in, sign_in_cancelled, disabled, error], example: synced, description: "disabled — перемикач вимкнено; error — деталі в app_error_log з source = platform_awards"}
+      - {name: reported_count, type: integer, required: true, example: 2, description: "Скільки грамот звітовано в цій спробі"}
+      - {name: pending_count, type: integer, required: true, example: 0, description: "Скільки лишилось у черзі після спроби"}
+      - {name: is_first_sign_in, type: boolean, required: true, example: false}

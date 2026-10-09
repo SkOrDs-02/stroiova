@@ -1,0 +1,1855 @@
+{
+  "version": 1,
+  "spec": "016-museum-awards",
+  "updated": "2026-10-09",
+  "note": "Грамоти (рішення 42): внутрішні досягнення без бонусів до економіки. Умова — над лічильниками counters, які гра веде в збереженні в ту саму мить, що й відповідні події аналітики, і незалежно від вимикача аналітики. «Це не смішно» (telegram_flag) не рахується ніде. estDayAds — оцінка дня для гравця з рекламою за preset-v7 (не число балансу, перевірити в sim). Усі тексти на вичитку.",
+  "types": {
+    "gramota": {
+      "label": "Грамота",
+      "docTitle": "ГРАМОТА",
+      "toast": "Вручено грамоту: {title}"
+    },
+    "podyaka": {
+      "label": "Подяка",
+      "docTitle": "ПОДЯКА",
+      "toast": "Оголошено подяку: {title}"
+    },
+    "nakaz": {
+      "label": "Оголошено в наказі",
+      "docTitle": "ВИТЯГ З НАКАЗУ № {orderNo}",
+      "toast": "Оголошено в наказі: {title}"
+    }
+  },
+  "categories": {
+    "progress": "Служба",
+    "telegrams": "Телеграми",
+    "inspections": "Перевірки",
+    "race": "Гонка з часом",
+    "museum": "Музей",
+    "curios": "Курйози",
+    "cat": "Кіт Сейф",
+    "clerks": "Діловоди",
+    "hidden": "Для службового користування"
+  },
+  "platform": {
+    "idPrefixIos": "aw_",
+    "androidIds": "заповнити після створення в Play Console (id генерує консоль)",
+    "pointsTotalMirrored": 800,
+    "limits": {
+      "ios": {
+        "maxAchievements": 100,
+        "maxPointsEach": 100,
+        "maxPointsTotal": 1000
+      },
+      "android": {
+        "minAchievements": 10,
+        "maxPointsEach": 200,
+        "maxPointsTotal": 2000,
+        "pointsMultipleOf": 5
+      }
+    }
+  },
+  "counters": {
+    "tg_answered": {
+      "on": "telegram_choice_submit",
+      "where": {},
+      "note": "Будь-який варіант; кожна телеграма пачки окремо"
+    },
+    "tg_diligent": {
+      "on": "telegram_choice_submit",
+      "where": {
+        "choice_kind": "diligent"
+      }
+    },
+    "tg_formal": {
+      "on": "telegram_choice_submit",
+      "where": {
+        "choice_kind": "formal_reply"
+      }
+    },
+    "tg_drawer": {
+      "on": "telegram_choice_submit",
+      "where": {
+        "choice_kind": "drawer"
+      }
+    },
+    "tg_special": {
+      "on": "telegram_choice_submit",
+      "where": {
+        "choice_kind": "special"
+      }
+    },
+    "tg_drawer_streak": {
+      "on": "telegram_choice_submit",
+      "where": {
+        "choice_kind": "drawer"
+      },
+      "resetOn": {
+        "event": "telegram_choice_submit",
+        "where": {
+          "choice_kind": [
+            "diligent",
+            "formal_reply",
+            "special"
+          ]
+        }
+      },
+      "note": "Поспіль; телеграми без вибору серію не переривають"
+    },
+    "tg_pack_beats": {
+      "on": "telegram_pack_resolve",
+      "where": {
+        "is_beats": true
+      }
+    },
+    "insp_passed": {
+      "on": "inspection_finish",
+      "where": {
+        "result": "passed"
+      }
+    },
+    "insp_clean": {
+      "on": "inspection_finish",
+      "where": {
+        "result": "passed",
+        "is_without_remarks": true
+      },
+      "note": "is_without_remarks — нова властивість (tracking-plan-additions-016)"
+    },
+    "insp_clean_streak": {
+      "on": "inspection_finish",
+      "where": {
+        "result": "passed",
+        "is_without_remarks": true
+      },
+      "resetOn": {
+        "event": "inspection_finish",
+        "where": {
+          "any": [
+            {
+              "result": "failed"
+            },
+            {
+              "is_without_remarks": false
+            }
+          ]
+        }
+      }
+    },
+    "race_won": {
+      "on": "race_finish",
+      "where": {
+        "result": "success"
+      }
+    },
+    "race_lost": {
+      "on": "race_finish",
+      "where": {
+        "result": "fail"
+      }
+    },
+    "race_gift_types_won": {
+      "on": "race_finish",
+      "where": {
+        "result": "success"
+      },
+      "distinct": "gift_type",
+      "note": "gift_type береться з race_start того самого race_id"
+    },
+    "race_lost_close": {
+      "on": "race_finish",
+      "where": {
+        "result": "fail",
+        "margin_sec": {
+          "gte": -60
+        }
+      }
+    },
+    "race_won_on_r3": {
+      "on": "race_finish",
+      "where": {
+        "result": "success",
+        "level_id": "komanduvannia"
+      }
+    },
+    "digitizations": {
+      "on": "digitization_complete",
+      "where": {},
+      "note": "Усі цифровізації за встановлення, зокрема в Дублях"
+    },
+    "conversions": {
+      "on": "stage_convert",
+      "where": {},
+      "note": "Максимум convert_index за встановлення (у Дублях конвертації повторюються)",
+      "aggregate": "max:convert_index"
+    },
+    "brief_rewrites": {
+      "on": "random_event_resolve",
+      "where": {
+        "event_type": "brief_onepage",
+        "choice": "rewrite"
+      }
+    },
+    "sedo_prints": {
+      "on": "random_event_resolve",
+      "where": {
+        "event_type": "sedo_failure",
+        "choice": "print"
+      }
+    },
+    "dub_max": {
+      "on": "dub_start",
+      "where": {},
+      "aggregate": "max:dub_number"
+    },
+    "zpz_share_max_pct": {
+      "on": "state",
+      "where": {},
+      "aggregate": "max:zpz_share_pct",
+      "note": "Частка «Звітів про звіти» від суми інших потоків, перевіряється при кожному перерахунку доходу (012 FR-7)"
+    },
+    "journals_owned": {
+      "on": "museum_journal_unlock",
+      "where": {},
+      "aggregate": "max:journals_owned_after"
+    },
+    "series_complete": {
+      "on": "museum_journal_unlock",
+      "where": {
+        "is_series_complete": true
+      },
+      "note": "Серії 1–5, кожна раз"
+    },
+    "journal_details_read": {
+      "on": "ui:journal-detail",
+      "where": {
+        "is_found": true
+      },
+      "distinct": "journal_id",
+      "note": "Локальний лічильник без події аналітики: відкрито шторку знайденого журналу"
+    },
+    "shares": {
+      "on": "curio_entry_share",
+      "where": {
+        "share_result": "shared"
+      }
+    },
+    "curio_entries": {
+      "on": "state",
+      "where": {},
+      "note": "Кількість записів у Журналі курйозів (07 FR-21, без вилучених оновленням)"
+    },
+    "stack_meters": {
+      "on": "stack_meter_reach",
+      "where": {}
+    },
+    "archive_sheets": {
+      "on": "archive_sheet_unlock",
+      "where": {},
+      "aggregate": "max:sheets_owned_after"
+    },
+    "diary_lines": {
+      "on": "state",
+      "where": {},
+      "note": "Рядків щоденника отримано (014)"
+    },
+    "cat_bonus_taps": {
+      "on": "ui:cat_tap",
+      "where": {
+        "is_bonus": true
+      },
+      "note": "Те саме, що сумується в session_end.cat_taps_count"
+    },
+    "cat_sleep_taps": {
+      "on": "ui:cat_tap",
+      "where": {
+        "is_bonus": false
+      },
+      "resetOn": {
+        "event": "ui:cat_tap",
+        "where": {
+          "is_bonus": true
+        }
+      },
+      "note": "Тапи по сплячому коту в межах одного кулдауну (catCooldownMin)"
+    },
+    "clerks_hired": {
+      "on": "clerk_hire",
+      "where": {}
+    },
+    "units_with_clerks": {
+      "on": "state",
+      "where": {},
+      "note": "Скільки потоків і ланок поточного рівня мають діловода; порівнюється з units_total рівня"
+    },
+    "callsign_changes": {
+      "on": "ui:callsign_change",
+      "where": {
+        "after_onboarding": true
+      },
+      "note": "Підтверджено «Рапорт на зміну позивного» в profile → callsign-input"
+    },
+    "script_declines": {
+      "on": "ui:finale_script_no",
+      "where": {},
+      "note": "Те саме, що finale_step_complete.declined_count"
+    }
+  },
+  "awards": [
+    {
+      "no": 1,
+      "id": "aw_digit_first",
+      "category": "progress",
+      "type": "gramota",
+      "title": "Перша цифровізація",
+      "text": "За переведення стройової на цифру й три журнали, зданих у музей. До електронного обліку додано паперову копію.",
+      "condition": {
+        "counter": "digitizations",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Провести першу цифровізацію.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 3.4,
+      "review": true
+    },
+    {
+      "no": 2,
+      "id": "aw_level_bryhada",
+      "category": "progress",
+      "type": "nakaz",
+      "title": "Переведення в бригаду",
+      "text": "§ 1. Стройову частину батальйону вважати такою, що прибула в бригаду. Справи здано й прийнято, акт у трьох примірниках.",
+      "condition": {
+        "event": "level_advance",
+        "where": {
+          "to_level_id": "bryhada"
+        }
+      },
+      "progress": null,
+      "hint": "Перейти на рівень «Бригада».",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 8.4,
+      "review": true
+    },
+    {
+      "no": 3,
+      "id": "aw_level_komand",
+      "category": "progress",
+      "type": "nakaz",
+      "title": "Переведення в командування",
+      "text": "§ 2. Призначити в командування. Кабінет 214-б, він же 214 і 214-а. Ключ один.",
+      "condition": {
+        "event": "level_advance",
+        "where": {
+          "to_level_id": "komanduvannia"
+        }
+      },
+      "progress": null,
+      "hint": "Перейти на рівень «Командування».",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 19,
+      "review": true
+    },
+    {
+      "no": 4,
+      "id": "aw_digit_10",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "Десята цифровізація",
+      "text": "За десять цифровізацій. Журнал обліку цифровізацій вести не потрібно: його теж скасовано.",
+      "condition": {
+        "counter": "digitizations",
+        "gte": 10
+      },
+      "progress": {
+        "counter": "digitizations",
+        "target": 10
+      },
+      "hint": "Провести 10 цифровізацій.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 24,
+      "review": true
+    },
+    {
+      "no": 5,
+      "id": "aw_level_genshtab",
+      "category": "progress",
+      "type": "nakaz",
+      "title": "Зал для доповідей",
+      "text": "§ 3. Прибути в зал для доповідей. Доповідь тезово, на одну сторінку, кегль чотирнадцятий.",
+      "condition": {
+        "event": "level_advance",
+        "where": {
+          "to_level_id": "henshtab"
+        }
+      },
+      "progress": null,
+      "hint": "Перейти на четвертий рівень.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 39,
+      "review": true
+    },
+    {
+      "no": 6,
+      "id": "aw_brief_rewrite",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "Тезово",
+      "text": "За три доповіді, переписані з трьох сторінок в одну. Четверту сторінку здано окремим додатком.",
+      "condition": {
+        "counter": "brief_rewrites",
+        "gte": 3
+      },
+      "progress": {
+        "counter": "brief_rewrites",
+        "target": 3
+      },
+      "hint": "Тричі переписати доповідь тезово.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 46,
+      "review": true
+    },
+    {
+      "no": 7,
+      "id": "aw_zpz_half",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "Звіт про звіти",
+      "text": "За звітів про звіти більше, ніж половина всіх звітів. Звіт про цю подяку подати до п'ятниці.",
+      "condition": {
+        "counter": "zpz_share_max_pct",
+        "gte": 50
+      },
+      "progress": null,
+      "hint": "Довести «Звіти про звіти» до половини суми потоків.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 50,
+      "review": true
+    },
+    {
+      "no": 8,
+      "id": "aw_digit_20",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "Двадцята цифровізація",
+      "text": "За двадцять цифровізацій. Номер акта про переведення обліку в електронну форму вже не влазить у графу.",
+      "condition": {
+        "counter": "digitizations",
+        "gte": 20
+      },
+      "progress": {
+        "counter": "digitizations",
+        "target": 20
+      },
+      "hint": "Провести 20 цифровізацій.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 52,
+      "review": true
+    },
+    {
+      "no": 9,
+      "id": "aw_level_r5",
+      "category": "progress",
+      "type": "gramota",
+      "title": "Армія без паперу",
+      "text": "За прибуття в бліндаж, де на полицях нічого немає. Полиці поставити на облік як порожні.",
+      "condition": {
+        "event": "level_advance",
+        "where": {
+          "to_level_id": "bez_paperu"
+        }
+      },
+      "progress": null,
+      "hint": "Перейти на рівень «Армія без паперу».",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 20,
+        "platformHidden": false
+      },
+      "estDayAds": 58,
+      "review": true
+    },
+    {
+      "no": 10,
+      "id": "aw_convert_first",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "Пакетне підписання",
+      "text": "За першу цифрову ланку. Комбат підписав пачкою. Свій рапорт на відпустку теж.",
+      "condition": {
+        "counter": "conversions",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Оцифрувати першу ланку.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 58,
+      "review": true
+    },
+    {
+      "no": 11,
+      "id": "aw_convert_3",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "КЕП на первинці",
+      "text": "За три цифрові ланки. Фінслужба ставить кваліфікований електронний підпис і про всяк випадок тримає ручку.",
+      "condition": {
+        "counter": "conversions",
+        "gte": 3
+      },
+      "progress": {
+        "counter": "conversions",
+        "target": 3
+      },
+      "hint": "Оцифрувати три ланки.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 66,
+      "review": true
+    },
+    {
+      "no": 12,
+      "id": "aw_convert_5",
+      "category": "progress",
+      "type": "nakaz",
+      "title": "Нарада скасована",
+      "text": "§ 9. Нараду скасувати. Нараду щодо скасування наради теж скасувати. Присутні: немає.",
+      "condition": {
+        "counter": "conversions",
+        "gte": 5
+      },
+      "progress": {
+        "counter": "conversions",
+        "target": 5
+      },
+      "hint": "Оцифрувати п'ять ланок.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 73,
+      "review": true
+    },
+    {
+      "no": 13,
+      "id": "aw_finale",
+      "category": "progress",
+      "type": "gramota",
+      "title": "Розсилку вимкнено",
+      "text": "За наказ «Про вимкнення розсилки», погоджений усіма ланками за хвилину. Наступного дня телеграм немає.",
+      "condition": {
+        "event": "finale_step_complete",
+        "where": {
+          "step_id": "script"
+        }
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "spoiler",
+      "mirror": {
+        "enabled": true,
+        "points": 50,
+        "platformHidden": true
+      },
+      "estDayAds": 77.5,
+      "review": true
+    },
+    {
+      "no": 14,
+      "id": "aw_quiet_week",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "Тиждень тиші",
+      "text": "За сім діб без жодної телеграми. Вхідні перевіряли щодня. Вхідні порожні.",
+      "condition": {
+        "event": "finale_step_complete",
+        "where": {
+          "step_id": "quiet"
+        }
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "spoiler",
+      "mirror": {
+        "enabled": true,
+        "points": 20,
+        "platformHidden": true
+      },
+      "estDayAds": 84.5,
+      "review": true
+    },
+    {
+      "no": 15,
+      "id": "aw_dub_1",
+      "category": "progress",
+      "type": "nakaz",
+      "title": "Дублювати на папері",
+      "text": "§ 1. Усе дублювати на папері. Підстава: телеграма з живим підписом. Строк виконання не встановлено.",
+      "condition": {
+        "counter": "dub_max",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "spoiler",
+      "mirror": {
+        "enabled": true,
+        "points": 20,
+        "platformHidden": true
+      },
+      "estDayAds": 85,
+      "review": true
+    },
+    {
+      "no": 16,
+      "id": "aw_dub_2",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "Другий примірник",
+      "text": "За другий Дубль. Другий примірник звірено з першим. Розбіжність у комі на третій сторінці.",
+      "condition": {
+        "counter": "dub_max",
+        "gte": 2
+      },
+      "progress": null,
+      "hint": "Почати Дубль 2.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 102,
+      "review": true
+    },
+    {
+      "no": 17,
+      "id": "aw_dub_3",
+      "category": "progress",
+      "type": "podyaka",
+      "title": "Третій примірник",
+      "text": "За третій Дубль. Третій примірник лишається у справі. Справу закрито, бо в ній більше немає місця.",
+      "condition": {
+        "counter": "dub_max",
+        "gte": 3
+      },
+      "progress": null,
+      "hint": "Почати Дубль 3.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 120,
+      "review": true
+    },
+    {
+      "no": 18,
+      "id": "aw_dub_5",
+      "category": "progress",
+      "type": "gramota",
+      "title": "Згідно з оригіналом",
+      "text": "За п'ять Дублів. На кожній копії напис «Згідно з оригіналом». Оригінал шукають.",
+      "condition": {
+        "counter": "dub_max",
+        "gte": 5
+      },
+      "progress": {
+        "counter": "dub_max",
+        "target": 5
+      },
+      "hint": "Почати Дубль 5.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 30,
+        "platformHidden": false
+      },
+      "estDayAds": 155,
+      "review": true
+    },
+    {
+      "no": 19,
+      "id": "aw_tg_first",
+      "category": "telegrams",
+      "type": "podyaka",
+      "title": "Перша телеграма",
+      "text": "За першу відповідь на телеграму згори. Відповідь зареєстровано чорною пастою у вхідних.",
+      "condition": {
+        "counter": "tg_answered",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Відповісти на телеграму.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 5,
+        "platformHidden": false
+      },
+      "estDayAds": 1,
+      "review": true
+    },
+    {
+      "no": 20,
+      "id": "aw_tg_all_kinds",
+      "category": "telegrams",
+      "type": "podyaka",
+      "title": "Усі варіанти",
+      "text": "За відповіді всіма способами, які передбачає телеграма, і одним, якого вона не передбачала.",
+      "condition": {
+        "all": [
+          {
+            "counter": "tg_diligent",
+            "gte": 1
+          },
+          {
+            "counter": "tg_formal",
+            "gte": 1
+          },
+          {
+            "counter": "tg_drawer",
+            "gte": 1
+          },
+          {
+            "counter": "tg_special",
+            "gte": 1
+          }
+        ]
+      },
+      "progress": null,
+      "hint": "Відповісти сумлінно, відпискою, у шухляду й по-своєму.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 5,
+        "platformHidden": false
+      },
+      "estDayAds": 2,
+      "review": true
+    },
+    {
+      "no": 21,
+      "id": "aw_tg_50",
+      "category": "telegrams",
+      "type": "podyaka",
+      "title": "П'ятдесят телеграм",
+      "text": "За п'ятдесят телеграм. Вихідні номери згори йдуть підряд, без розриву. З якого року, не встановлено.",
+      "condition": {
+        "counter": "tg_answered",
+        "gte": 50
+      },
+      "progress": {
+        "counter": "tg_answered",
+        "target": 50
+      },
+      "hint": "Відповісти на 50 телеграм.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 16,
+      "review": true
+    },
+    {
+      "no": 22,
+      "id": "aw_tg_pack_beats",
+      "category": "telegrams",
+      "type": "nakaz",
+      "title": "Зведення б'ється",
+      "text": "§ 4. Зведення звести. Зведення б'ється. Перевірено калькулятором і ще одним калькулятором.",
+      "condition": {
+        "counter": "tg_pack_beats",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Закрити пачку телеграм сумлінно.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 20,
+      "review": true
+    },
+    {
+      "no": 23,
+      "id": "aw_tg_diligent_25",
+      "category": "telegrams",
+      "type": "podyaka",
+      "title": "Сумлінно",
+      "text": "За двадцять п'ять телеграм, виконаних сумлінно. Стройова працювала вдвічі повільніше, але сумлінно.",
+      "condition": {
+        "counter": "tg_diligent",
+        "gte": 25
+      },
+      "progress": {
+        "counter": "tg_diligent",
+        "target": 25
+      },
+      "hint": "Виконати сумлінно 25 телеграм.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 25,
+      "review": true
+    },
+    {
+      "no": 24,
+      "id": "aw_tg_formal_25",
+      "category": "telegrams",
+      "type": "podyaka",
+      "title": "Відписка",
+      "text": "За двадцять п'ять відписок. Усі прийнято до відома. Жодну не дочитали до кінця.",
+      "condition": {
+        "counter": "tg_formal",
+        "gte": 25
+      },
+      "progress": {
+        "counter": "tg_formal",
+        "target": 25
+      },
+      "hint": "Написати 25 відписок.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 25,
+      "review": true
+    },
+    {
+      "no": 25,
+      "id": "aw_tg_drawer_25",
+      "category": "telegrams",
+      "type": "podyaka",
+      "title": "Шухляда",
+      "text": "За двадцять п'ять телеграм, зареєстрованих і покладених у шухляду. Шухляда зачиняється з другої спроби.",
+      "condition": {
+        "counter": "tg_drawer",
+        "gte": 25
+      },
+      "progress": {
+        "counter": "tg_drawer",
+        "target": 25
+      },
+      "hint": "Покласти в шухляду 25 телеграм.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 25,
+      "review": true
+    },
+    {
+      "no": 26,
+      "id": "aw_tg_100",
+      "category": "telegrams",
+      "type": "gramota",
+      "title": "Сто телеграм",
+      "text": "За сто телеграм згори. Вхідний номер сотої збігся з вихідним номером першої. Збіг не досліджувати.",
+      "condition": {
+        "counter": "tg_answered",
+        "gte": 100
+      },
+      "progress": {
+        "counter": "tg_answered",
+        "target": 100
+      },
+      "hint": "Відповісти на 100 телеграм.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 32,
+      "review": true
+    },
+    {
+      "no": 27,
+      "id": "aw_tg_200",
+      "category": "telegrams",
+      "type": "gramota",
+      "title": "Двісті телеграм",
+      "text": "За двісті телеграм. Під кожною підпис «Оператор ЕОМ № 1». Такої посади в штаті не знайдено.",
+      "condition": {
+        "counter": "tg_answered",
+        "gte": 200
+      },
+      "progress": {
+        "counter": "tg_answered",
+        "target": 200
+      },
+      "hint": "Відповісти на 200 телеграм.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 20,
+        "platformHidden": false
+      },
+      "estDayAds": 65,
+      "review": true
+    },
+    {
+      "no": 28,
+      "id": "aw_insp_clean",
+      "category": "inspections",
+      "type": "podyaka",
+      "title": "Без зауважень",
+      "text": "За перевірку без жодного зауваження. Ліве поле тридцять міліметрів, відступ за лінійкою.",
+      "condition": {
+        "counter": "insp_clean",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Пройти перевірку без зауважень.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 5,
+        "platformHidden": false
+      },
+      "estDayAds": 2,
+      "review": true
+    },
+    {
+      "no": 29,
+      "id": "aw_insp_streak_5",
+      "category": "inspections",
+      "type": "gramota",
+      "title": "П'ять без зауважень",
+      "text": "За п'ять перевірок без зауважень поспіль. Комісія шукала, до чого придертися, і знайшла цю грамоту.",
+      "condition": {
+        "counter": "insp_clean_streak",
+        "gte": 5
+      },
+      "progress": {
+        "counter": "insp_clean_streak",
+        "target": 5
+      },
+      "hint": "Пройти 5 перевірок поспіль без зауважень.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 12,
+      "review": true
+    },
+    {
+      "no": 30,
+      "id": "aw_boss_r2",
+      "category": "inspections",
+      "type": "nakaz",
+      "title": "Комісія командування",
+      "text": "§ 5. За підсумкову перевірку бригади. Протоколи пронумеровано, прошнуровано та скріплено печаткою.",
+      "condition": {
+        "event": "inspection_finish",
+        "where": {
+          "result": "passed",
+          "inspection_kind": "final",
+          "level_id": "bryhada"
+        }
+      },
+      "progress": null,
+      "hint": "Пройти «Комісію командування».",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 17.4,
+      "review": true
+    },
+    {
+      "no": 31,
+      "id": "aw_boss_r3",
+      "category": "inspections",
+      "type": "nakaz",
+      "title": "Перевірка зі столиці",
+      "text": "§ 6. За перевірку зі столиці. Графин наповнено, воду не пили, протокол наради має додаток «Присутні».",
+      "condition": {
+        "event": "inspection_finish",
+        "where": {
+          "result": "passed",
+          "inspection_kind": "final",
+          "level_id": "komanduvannia"
+        }
+      },
+      "progress": null,
+      "hint": "Пройти «Перевірку зі столиці».",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 20,
+        "platformHidden": false
+      },
+      "estDayAds": 36.5,
+      "review": true
+    },
+    {
+      "no": 32,
+      "id": "aw_insp_30",
+      "category": "inspections",
+      "type": "gramota",
+      "title": "Тридцять перевірок",
+      "text": "За тридцять пройдених перевірок. Акти попередніх перевірок пред'явлено з № 1. Акт № 1 знайшовся в тумбочці.",
+      "condition": {
+        "counter": "insp_passed",
+        "gte": 30
+      },
+      "progress": {
+        "counter": "insp_passed",
+        "target": 30
+      },
+      "hint": "Пройти 30 перевірок.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 43,
+      "review": true
+    },
+    {
+      "no": 33,
+      "id": "aw_boss_r4",
+      "category": "inspections",
+      "type": "gramota",
+      "title": "Аудит усього",
+      "text": "За аудит усього. Аудитор перевірив акти власних перевірок. Зауважень до себе не мав.",
+      "condition": {
+        "event": "inspection_finish",
+        "where": {
+          "result": "passed",
+          "inspection_kind": "final",
+          "level_id": "henshtab"
+        }
+      },
+      "progress": null,
+      "hint": "Пройти «Аудит усього».",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 25,
+        "platformHidden": false
+      },
+      "estDayAds": 55.3,
+      "review": true
+    },
+    {
+      "no": 34,
+      "id": "aw_insp_r5",
+      "category": "inspections",
+      "type": "podyaka",
+      "title": "Цифрова комісія",
+      "text": "За першу перевірку без паперу. Електронний журнал роздрукувати відмовились. Ноутбук протерто білою рукавичкою.",
+      "condition": {
+        "event": "inspection_finish",
+        "where": {
+          "result": "passed",
+          "level_id": "bez_paperu"
+        }
+      },
+      "progress": null,
+      "hint": "Пройти перевірку на рівні «Армія без паперу».",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 59,
+      "review": true
+    },
+    {
+      "no": 35,
+      "id": "aw_race_first_win",
+      "category": "race",
+      "type": "podyaka",
+      "title": "Пташка в небі",
+      "text": "За акт, погоджений раніше, ніж скінчилась служба подарунка. Екіпаж передає дякую стройовій.",
+      "condition": {
+        "counter": "race_won",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Встигнути з актом на подарунок.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 2.5,
+      "review": true
+    },
+    {
+      "no": 36,
+      "id": "aw_race_all_gifts",
+      "category": "race",
+      "type": "podyaka",
+      "title": "Дрон, лопати, генератор",
+      "text": "За введення в експлуатацію дрона, лопат і генератора. Лопати обліковано поштучно, без маркера.",
+      "condition": {
+        "counter": "race_gift_types_won",
+        "gte": 3
+      },
+      "progress": {
+        "counter": "race_gift_types_won",
+        "target": 3
+      },
+      "hint": "Встигнути з актом на кожен вид подарунка.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 6,
+      "review": true
+    },
+    {
+      "no": 37,
+      "id": "aw_race_first_lost",
+      "category": "race",
+      "type": "podyaka",
+      "title": "Списано без штрафу",
+      "text": "За подарунок, списаний раніше, ніж поставлений на облік. Штрафу немає. Запис у журналі курйозів є.",
+      "condition": {
+        "counter": "race_lost",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Не встигнути з актом. Таке буває.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 5,
+        "platformHidden": false
+      },
+      "estDayAds": 8,
+      "review": true
+    },
+    {
+      "no": 38,
+      "id": "aw_race_10",
+      "category": "race",
+      "type": "gramota",
+      "title": "Десять гонок",
+      "text": "За десять подарунків, поставлених на облік до списання. Волонтерка тепер привозить їх із накладною.",
+      "condition": {
+        "counter": "race_won",
+        "gte": 10
+      },
+      "progress": {
+        "counter": "race_won",
+        "target": 10
+      },
+      "hint": "Встигнути з 10 актами.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 13,
+      "review": true
+    },
+    {
+      "no": 39,
+      "id": "aw_race_ptashka3",
+      "category": "race",
+      "type": "podyaka",
+      "title": "Пташка-3",
+      "text": "За першу гонку в командуванні. Пташка-3 у небі. Кількість вильотів у зведення не внесли.",
+      "condition": {
+        "counter": "race_won_on_r3",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Встигнути з актом у командуванні.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 21,
+      "review": true
+    },
+    {
+      "no": 40,
+      "id": "aw_race_30",
+      "category": "race",
+      "type": "gramota",
+      "title": "Тридцять гонок",
+      "text": "За тридцять актів у строк. Ліна каже, що так швидко її подарунки ще ніде не приймали. Про це складено акт.",
+      "condition": {
+        "counter": "race_won",
+        "gte": 30
+      },
+      "progress": {
+        "counter": "race_won",
+        "target": 30
+      },
+      "hint": "Встигнути з 30 актами.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 20,
+        "platformHidden": false
+      },
+      "estDayAds": 40,
+      "review": true
+    },
+    {
+      "no": 41,
+      "id": "aw_museum_first",
+      "category": "museum",
+      "type": "podyaka",
+      "title": "Перший експонат",
+      "text": "За перший скасований журнал, зданий у музей. Журнал здано, опис складено, опис теж здано.",
+      "condition": {
+        "counter": "journals_owned",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Здати в музей перший журнал.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 5,
+        "platformHidden": false
+      },
+      "estDayAds": 3.4,
+      "review": true
+    },
+    {
+      "no": 42,
+      "id": "aw_series_battalion",
+      "category": "museum",
+      "type": "gramota",
+      "title": "Майно батальйону",
+      "text": "За повну серію журналів батальйону. Книга обліку експонатів музеїв сама стала експонатом.",
+      "condition": {
+        "event": "museum_journal_unlock",
+        "where": {
+          "series_id": "battalion_property",
+          "is_series_complete": true
+        }
+      },
+      "progress": null,
+      "hint": "Зібрати серію «Майно батальйону».",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 5.3,
+      "review": true
+    },
+    {
+      "no": 43,
+      "id": "aw_series_3",
+      "category": "museum",
+      "type": "gramota",
+      "title": "Три серії",
+      "text": "За три повні серії скасованих журналів. Музей розширено на одну полицю. Полицю поставлено на облік.",
+      "condition": {
+        "counter": "series_complete",
+        "gte": 3
+      },
+      "progress": {
+        "counter": "series_complete",
+        "target": 3
+      },
+      "hint": "Зібрати три серії журналів.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 20,
+        "platformHidden": false
+      },
+      "estDayAds": 36.5,
+      "review": true
+    },
+    {
+      "no": 44,
+      "id": "aw_journals_read_16",
+      "category": "museum",
+      "type": "podyaka",
+      "title": "З історією ознайомлений",
+      "text": "За прочитані історії скасування шістнадцяти журналів. Підпис про ознайомлення стоїть на кожній.",
+      "condition": {
+        "counter": "journal_details_read",
+        "gte": 16
+      },
+      "progress": {
+        "counter": "journal_details_read",
+        "target": 16
+      },
+      "hint": "Прочитати історії 16 журналів.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 38,
+      "review": true
+    },
+    {
+      "no": 45,
+      "id": "aw_museum_24",
+      "category": "museum",
+      "type": "gramota",
+      "title": "Музей укомплектовано",
+      "text": "За двадцять чотири скасовані журнали. Останній запис у журналі обліку журналів обліку зроблено про нього самого.",
+      "condition": {
+        "counter": "journals_owned",
+        "gte": 24
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "spoiler",
+      "mirror": {
+        "enabled": true,
+        "points": 30,
+        "platformHidden": true
+      },
+      "estDayAds": 77.5,
+      "review": true
+    },
+    {
+      "no": 46,
+      "id": "aw_share_first",
+      "category": "curios",
+      "type": "podyaka",
+      "title": "Картинку надіслано",
+      "text": "За першу картинку з журналу курйозів. Позивного на ній немає, рівня теж. Сміятися дозволено.",
+      "condition": {
+        "counter": "shares",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Поділитися записом курйозів.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": false,
+        "points": null,
+        "platformHidden": null
+      },
+      "estDayAds": 2,
+      "review": true
+    },
+    {
+      "no": 47,
+      "id": "aw_diary_30",
+      "category": "curios",
+      "type": "podyaka",
+      "title": "Щоденник стройовика",
+      "text": "За тридцять записів у щоденнику. Кутовий штамп у ньому вже стоїть у правильному куті.",
+      "condition": {
+        "counter": "diary_lines",
+        "gte": 30
+      },
+      "progress": {
+        "counter": "diary_lines",
+        "target": 30
+      },
+      "hint": "Зібрати 30 рядків щоденника.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 30,
+      "review": true
+    },
+    {
+      "no": 48,
+      "id": "aw_stack_meter",
+      "category": "curios",
+      "type": "podyaka",
+      "title": "Метр звітів",
+      "text": "За стос звітів заввишки один метр. Виміряно лінійкою Наталі. Лінійка завдовжки тридцять сантиметрів.",
+      "condition": {
+        "counter": "stack_meters",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Зібрати стос звітів на метр.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 42,
+      "review": true
+    },
+    {
+      "no": 49,
+      "id": "aw_share_10",
+      "category": "curios",
+      "type": "podyaka",
+      "title": "Десять копій",
+      "text": "За десять поширених курйозів. Кожну копію засвідчено написом «Згідно з оригіналом».",
+      "condition": {
+        "counter": "shares",
+        "gte": 10
+      },
+      "progress": {
+        "counter": "shares",
+        "target": 10
+      },
+      "hint": "Поділитися 10 записами.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": false,
+        "points": null,
+        "platformHidden": null
+      },
+      "estDayAds": 50,
+      "review": true
+    },
+    {
+      "no": 50,
+      "id": "aw_archive_all",
+      "category": "curios",
+      "type": "gramota",
+      "title": "Таблиці Археолога",
+      "text": "За всі дванадцять аркушів Археолога. Вкладку «Чернетка» відкрито. Нічого страшного в ній не було.",
+      "condition": {
+        "counter": "archive_sheets",
+        "gte": 12
+      },
+      "progress": {
+        "counter": "archive_sheets",
+        "target": 12
+      },
+      "hint": "Зібрати 12 аркушів Археолога.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 75,
+      "review": true
+    },
+    {
+      "no": 51,
+      "id": "aw_cat_first",
+      "category": "cat",
+      "type": "podyaka",
+      "title": "Кіт на сейфі",
+      "text": "За знайомство з котом Сейфом. Кіт на балансі не числиться. Подяку оголошено людині.",
+      "condition": {
+        "counter": "cat_bonus_taps",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Познайомитися з котом.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 5,
+        "platformHidden": false
+      },
+      "estDayAds": 1,
+      "review": true
+    },
+    {
+      "no": 52,
+      "id": "aw_cat_100",
+      "category": "cat",
+      "type": "podyaka",
+      "title": "Сто перевертань",
+      "text": "За сто разів, коли кіт Сейф перевернувся на інший бік. Інший бік на балансі теж не числиться.",
+      "condition": {
+        "counter": "cat_bonus_taps",
+        "gte": 100
+      },
+      "progress": {
+        "counter": "cat_bonus_taps",
+        "target": 100
+      },
+      "hint": "Кіт має перевернутися 100 разів.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 20,
+      "review": true
+    },
+    {
+      "no": 53,
+      "id": "aw_cat_300",
+      "category": "cat",
+      "type": "gramota",
+      "title": "Кіт, сірий, 1 од.",
+      "text": "За триста перевертань кота. Кота внесено в акт як «неврахований об'єкт, спить». Акт кіт не підписав.",
+      "condition": {
+        "counter": "cat_bonus_taps",
+        "gte": 300
+      },
+      "progress": {
+        "counter": "cat_bonus_taps",
+        "target": 300
+      },
+      "hint": "Кіт має перевернутися 300 разів.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 60,
+      "review": true
+    },
+    {
+      "no": 54,
+      "id": "aw_clerk_first",
+      "category": "clerks",
+      "type": "podyaka",
+      "title": "Перший діловод",
+      "text": "За першого найнятого діловода. Рапорти тепер пишуться й тоді, коли стройовика немає в бліндажі.",
+      "condition": {
+        "counter": "clerks_hired",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": "Найняти діловода.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 5,
+        "platformHidden": false
+      },
+      "estDayAds": 1,
+      "review": true
+    },
+    {
+      "no": 55,
+      "id": "aw_clerks_all_r3",
+      "category": "clerks",
+      "type": "gramota",
+      "title": "Штат командування",
+      "text": "За діловодів на всіх одинадцяти потоках і ланках командування. У кожного табличка на дверях. Без прізвища.",
+      "condition": {
+        "all": [
+          {
+            "state": "level_id",
+            "eq": "komanduvannia"
+          },
+          {
+            "counter": "units_with_clerks",
+            "eqUnitsTotal": true
+          }
+        ]
+      },
+      "progress": null,
+      "hint": "Найняти діловодів на всі потоки й ланки командування.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": false
+      },
+      "estDayAds": 21,
+      "review": true
+    },
+    {
+      "no": 56,
+      "id": "aw_clerks_100",
+      "category": "clerks",
+      "type": "podyaka",
+      "title": "Сто наймів",
+      "text": "За сто наймів діловодів. Особові справи всіх ста лежать в одній папці. Папка тонка.",
+      "condition": {
+        "counter": "clerks_hired",
+        "gte": 100
+      },
+      "progress": {
+        "counter": "clerks_hired",
+        "target": 100
+      },
+      "hint": "Найняти діловодів 100 разів.",
+      "hidden": false,
+      "hiddenKind": null,
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": false
+      },
+      "estDayAds": 26,
+      "review": true
+    },
+    {
+      "no": 57,
+      "id": "aw_h_cat_sleep",
+      "category": "hidden",
+      "type": "podyaka",
+      "title": "Кіт спить",
+      "text": "За десять спроб розбудити кота Сейфа. Кіт спить. Спроби записано в журнал, який теж спить.",
+      "condition": {
+        "counter": "cat_sleep_taps",
+        "gte": 10
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "easter_egg",
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": true
+      },
+      "estDayAds": null,
+      "review": true
+    },
+    {
+      "no": 58,
+      "id": "aw_h_drawer_streak",
+      "category": "hidden",
+      "type": "nakaz",
+      "title": "Шухляда повна",
+      "text": "§ 7. Десять телеграм поспіль зареєструвати й покласти в шухляду. Виконано. Шухляда більше не зачиняється.",
+      "condition": {
+        "counter": "tg_drawer_streak",
+        "gte": 10
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "easter_egg",
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": true
+      },
+      "estDayAds": null,
+      "review": true
+    },
+    {
+      "no": 59,
+      "id": "aw_h_race_minute",
+      "category": "hidden",
+      "type": "podyaka",
+      "title": "Бракувало хвилини",
+      "text": "За акт, якому до погодження забракло менше хвилини. Хвилину поставлено на облік як втрачену.",
+      "condition": {
+        "counter": "race_lost_close",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "easter_egg",
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": true
+      },
+      "estDayAds": null,
+      "review": true
+    },
+    {
+      "no": 60,
+      "id": "aw_h_script_no",
+      "category": "hidden",
+      "type": "nakaz",
+      "title": "Не вимикати",
+      "text": "§ 8. На запит «ВИМКНУТИ РОЗСИЛКУ?» тричі відповісти «N». Вимогу наліпки «НЕ ВИМИКАТИ» виконано.",
+      "condition": {
+        "counter": "script_declines",
+        "gte": 3
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "easter_egg",
+      "mirror": {
+        "enabled": true,
+        "points": 15,
+        "platformHidden": true
+      },
+      "estDayAds": null,
+      "review": true
+    },
+    {
+      "no": 61,
+      "id": "aw_h_sedo_print",
+      "category": "hidden",
+      "type": "podyaka",
+      "title": "Паперова копія",
+      "text": "За п'ять паперових копій електронного документа. Штамп «Паперова копія електронного документа» справжній.",
+      "condition": {
+        "counter": "sedo_prints",
+        "gte": 5
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "easter_egg",
+      "mirror": {
+        "enabled": true,
+        "points": 10,
+        "platformHidden": true
+      },
+      "estDayAds": null,
+      "review": true
+    },
+    {
+      "no": 62,
+      "id": "aw_h_callsign",
+      "category": "hidden",
+      "type": "podyaka",
+      "title": "Новий позивний",
+      "text": "За рапорт на зміну позивного. Рапорт погоджено. Вписати новий позивний нікуди: книгу обліку скасовано.",
+      "condition": {
+        "counter": "callsign_changes",
+        "gte": 1
+      },
+      "progress": null,
+      "hint": null,
+      "hidden": true,
+      "hiddenKind": "easter_egg",
+      "mirror": {
+        "enabled": false,
+        "points": null,
+        "platformHidden": null
+      },
+      "estDayAds": null,
+      "review": true
+    }
+  ]
+}

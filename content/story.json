@@ -1,0 +1,816 @@
+{
+  "schema": 1,
+  "beats": [
+    {
+      "id": "st_who_writes_01",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 1,
+      "level": 1,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 1
+      },
+      "carrier": "call",
+      "payload": {
+        "from": "archaeologist",
+        "lines": [
+          "Глянь на підпис під телеграмами. Такої посади в штаті немає."
+        ]
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_02",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 2,
+      "level": 2,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 1
+      },
+      "carrier": "note",
+      "payload": {
+        "from": "kopiyka",
+        "title": "Про кошторис",
+        "body": "Звірив кошторис бригади до копійки. Папір є, тонер є, пальне для Діда є. Телеграм немає: ні рядка, ні коду видатків, ні гривні. Їх ніхто не оплачує, і ніхто не просить оплатити. У Казначействі на мене подивились, як на помилку в реєстрі. Копійка."
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_03",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 3,
+      "level": 2,
+      "trigger": {
+        "type": "beat_delivered",
+        "beat": "st_who_writes_02"
+      },
+      "requires": [
+        {
+          "beat": "st_who_writes_02",
+          "afterHours": 24
+        }
+      ],
+      "carrier": "telegram",
+      "payload": {
+        "telegramId": "tg_notice_kopiyka_numbering"
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_04",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 4,
+      "level": 3,
+      "trigger": {
+        "type": "pack_received",
+        "n": 1
+      },
+      "carrier": "curio",
+      "payload": {
+        "from": "stroy",
+        "title": "Зведення телеграм",
+        "body": "Зведення № 1. У журналі вхідних черговий записав час: 03:00. Більше в цій графі нічого не написано."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_05",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 5,
+      "level": 3,
+      "trigger": {
+        "type": "pack_received",
+        "n": 3
+      },
+      "requires": [
+        {
+          "beat": "st_who_writes_04"
+        }
+      ],
+      "carrier": "note",
+      "payload": {
+        "from": "kava",
+        "title": "Про пачки",
+        "body": "Третю ніч пачка о 03:00. Обійшов увесь коридор, 214, 214-а і 214-б теж, хоча це один кабінет. Ніхто не надсилав. Скрізь кажуть одне: «Ми думали, це ви». Я, до речі, теж так думав. Кава."
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_06",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 6,
+      "level": 3,
+      "trigger": {
+        "type": "beat_delivered",
+        "beat": "st_who_writes_05"
+      },
+      "requires": [
+        {
+          "beat": "st_who_writes_05"
+        }
+      ],
+      "carrier": "curio",
+      "payload": {
+        "from": "stroy",
+        "title": "Зведення телеграм: три доби",
+        "body": "Зведення № 1–3. Для «НЕВІДКЛАДНО» фіксують не лише дату, а й години та хвилини. Години: 03, 03, 03. Хвилини: 00, 00, 00."
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_07",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 7,
+      "level": 4,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 1
+      },
+      "requires": [
+        {
+          "beat": "st_who_writes_06"
+        }
+      ],
+      "carrier": "telegram",
+      "payload": {
+        "telegramId": "tg_0089_arrival_time"
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_08",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 8,
+      "level": 4,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 2
+      },
+      "requires": [
+        {
+          "beat": "st_who_writes_07"
+        }
+      ],
+      "carrier": "telegram",
+      "payload": {
+        "telegramId": "tg_0090_timely_review"
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_09",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 9,
+      "level": 4,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 3
+      },
+      "requires": [
+        {
+          "beat": "st_who_writes_08"
+        }
+      ],
+      "carrier": "telegram",
+      "payload": {
+        "telegramId": "tg_0091_computers"
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_10",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 10,
+      "level": 4,
+      "trigger": {
+        "type": "boss_announced"
+      },
+      "requires": [
+        {
+          "beat": "st_who_writes_09"
+        }
+      ],
+      "carrier": "telegram",
+      "payload": {
+        "telegramId": "tg_0092_hall_prep"
+      },
+      "required": true,
+      "effects": {
+        "journal": 19
+      },
+      "review": true
+    },
+    {
+      "id": "st_who_writes_11",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 11,
+      "level": 4,
+      "trigger": {
+        "type": "beat_delivered",
+        "beat": "st_who_writes_10"
+      },
+      "requires": [
+        {
+          "beat": "st_who_writes_10"
+        },
+        {
+          "beat": "st_archaeologist_04"
+        }
+      ],
+      "carrier": "scene",
+      "payload": {
+        "screen": "finale-script",
+        "state": "found",
+        "lines": [
+          "REM РОЗСИЛКА. 1998",
+          "REM ЩОБ ТЕЛЕГРАМИ НЕ ГУБИЛИСЬ",
+          ":ЦИКЛ",
+          "ЧЕКАТИ 03:00",
+          "ДЛЯ КОЖНОГО В \\ВХІДНІ",
+          "  ПІДПИС «ОПЕРАТОР ЕОМ № 1»",
+          "  ІНДЕКС +1, РІК 98",
+          "  НАДІСЛАТИ ВСІМ",
+          "ПЕРЕЙТИ :ЦИКЛ"
+        ]
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_12",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 12,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 1
+      },
+      "carrier": "event_toast",
+      "payload": {
+        "from": "stroy",
+        "title": "Шлях наказу",
+        "body": "Шлях наказу: паперових ланок {n}. Підпис — з телефона."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_13",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 13,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 2
+      },
+      "carrier": "event_toast",
+      "payload": {
+        "from": "stroy",
+        "title": "Шлях наказу",
+        "body": "Шлях наказу: паперових ланок {n}. Журнал замість книг — один."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_14",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 14,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 3
+      },
+      "carrier": "event_toast",
+      "payload": {
+        "from": "stroy",
+        "title": "Шлях наказу",
+        "body": "Шлях наказу: паперових ланок {n}. Первинка — з КЕП."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_15",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 15,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 4
+      },
+      "carrier": "event_toast",
+      "payload": {
+        "from": "stroy",
+        "title": "Шлях наказу",
+        "body": "Шлях наказу: паперових ланок {n}. Копійка звіряє в таблиці."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_16",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 16,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 5
+      },
+      "carrier": "event_toast",
+      "payload": {
+        "from": "stroy",
+        "title": "Шлях наказу",
+        "body": "Шлях наказу: паперових ланок {n}. Графин лишили."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_who_writes_17",
+      "rev": 1,
+      "arc": "who_writes",
+      "order": 17,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 6
+      },
+      "carrier": "event_toast",
+      "payload": {
+        "from": "stroy",
+        "title": "Шлях наказу",
+        "body": "Шлях наказу: паперових ланок {n}. Наказ іде за хвилину."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_archaeologist_01",
+      "rev": 1,
+      "arc": "archaeologist",
+      "order": 1,
+      "level": 2,
+      "trigger": {
+        "type": "gift_arrived",
+        "level": 2,
+        "nth": 1
+      },
+      "carrier": "archive_sheet",
+      "payload": {
+        "sheetId": "ar_01"
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_archaeologist_02",
+      "rev": 1,
+      "arc": "archaeologist",
+      "order": 2,
+      "level": 2,
+      "trigger": {
+        "type": "beat_delivered",
+        "beat": "st_archaeologist_01"
+      },
+      "requires": [
+        {
+          "beat": "st_archaeologist_01"
+        }
+      ],
+      "carrier": "event_toast",
+      "payload": {
+        "from": "archaeologist",
+        "title": "Археолог",
+        "body": "Не відкривай вкладку «Чернетка». Ну, відкрий."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_archaeologist_03",
+      "rev": 1,
+      "arc": "archaeologist",
+      "order": 3,
+      "level": 3,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 2
+      },
+      "carrier": "note",
+      "payload": {
+        "from": "kava",
+        "title": "Про попередника",
+        "body": "Знайшов протокол наради. Твій попередник пропонував вести облік в одному електронному журналі замість дванадцяти книг. Ухвалили: винести на обговорення. Його перевели в навчальний центр, учити діловодів. Дзвонив йому: бурчить, задоволений, кава там є. Кава."
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_archaeologist_04",
+      "rev": 1,
+      "arc": "archaeologist",
+      "order": 4,
+      "level": 4,
+      "trigger": {
+        "type": "gift_arrived",
+        "level": 4,
+        "nth": 1
+      },
+      "carrier": "archive_sheet",
+      "payload": {
+        "sheetId": "ar_08"
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_archaeologist_05",
+      "rev": 1,
+      "arc": "archaeologist",
+      "order": 5,
+      "trigger": {
+        "type": "finale_step",
+        "step": "call"
+      },
+      "carrier": "call",
+      "payload": {
+        "from": "archaeologist",
+        "lines": [
+          "Вимкнув? Я теж хотів. У мене не було погодження Наради.",
+          "Я тепер учу діловодів. Перше заняття — де ставити кутовий штамп.",
+          "Друге буде про те, коли його вже не ставлять. Матеріал є.",
+          "Кота не списуй. Він на тобі висить, а це надійніше за сейф."
+        ]
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_ptashka_01",
+      "rev": 1,
+      "arc": "ptashka",
+      "order": 1,
+      "level": 2,
+      "trigger": {
+        "type": "race_won",
+        "gift": "drone",
+        "level": 2,
+        "nth": 1
+      },
+      "carrier": "note",
+      "payload": {
+        "from": "lina",
+        "title": "Пташка-2",
+        "body": "Екіпаж назвав дрон «Пташка-2». Перша була та, з акта на вісім підписів. Цю поставили на облік раніше, ніж я доїхала назад. Передають дякую стройовій. Ліна."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_ptashka_02",
+      "rev": 1,
+      "arc": "ptashka",
+      "order": 2,
+      "level": 3,
+      "trigger": {
+        "type": "race_won",
+        "gift": "drone",
+        "level": 3,
+        "nth": 1
+      },
+      "carrier": "note",
+      "payload": {
+        "from": "lina",
+        "title": "Пташка-3",
+        "body": "Пташка-3 у небі. Екіпаж передає дякую стройовій."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_ptashka_03",
+      "rev": 1,
+      "arc": "ptashka",
+      "order": 3,
+      "level": 4,
+      "trigger": {
+        "type": "race_won",
+        "gift": "drone",
+        "level": 4,
+        "nth": 1
+      },
+      "carrier": "share_card",
+      "payload": {
+        "card": "ptashka3",
+        "caption": "Пташка-3 з наліпкою «стройова». Наліпку екіпаж клеїв сам, по лінійці."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_ptashka_04",
+      "rev": 1,
+      "arc": "ptashka",
+      "order": 4,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 2
+      },
+      "carrier": "note",
+      "payload": {
+        "from": "lina",
+        "title": "Пташка-3",
+        "body": "Пташка-3 тепер на навчанні: на ній вчаться нові пілоти. Наліпку «стройова» не знімали. Ліна."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_ptashka_05",
+      "rev": 1,
+      "arc": "ptashka",
+      "order": 5,
+      "trigger": {
+        "type": "finale_step",
+        "step": "credits"
+      },
+      "carrier": "credits_line",
+      "payload": {
+        "line": "Пташка-3 · вильотів: багато, точну цифру в зведення не внесли"
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_kombat_leave_01",
+      "rev": 1,
+      "arc": "kombat_leave",
+      "order": 1,
+      "level": 3,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 1
+      },
+      "carrier": "note",
+      "payload": {
+        "from": "kava",
+        "title": "Про рапорт комбата",
+        "body": "Рапорт Граніта на відпустку дійшов до Наради. Ухвалили: винести на обговорення. Обговоримо наступного разу, графин уже порожній. Кава."
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_kombat_leave_02",
+      "rev": 1,
+      "arc": "kombat_leave",
+      "order": 2,
+      "level": 3,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 3
+      },
+      "requires": [
+        {
+          "beat": "st_kombat_leave_01"
+        }
+      ],
+      "carrier": "note",
+      "payload": {
+        "from": "kava",
+        "title": "Про рапорт комбата",
+        "body": "Рапорт Граніта вдруге на Нараді. Ухвалили: винести на обговорення. У протоколі є додаток «Присутні». Граніта в ньому немає, він на позиціях. Кава."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_kombat_leave_03",
+      "rev": 1,
+      "arc": "kombat_leave",
+      "order": 3,
+      "level": 3,
+      "trigger": {
+        "type": "boss_announced"
+      },
+      "requires": [
+        {
+          "beat": "st_kombat_leave_02"
+        }
+      ],
+      "carrier": "note",
+      "payload": {
+        "from": "kava",
+        "title": "Про рапорт комбата",
+        "body": "Утретє. Рапорт винесли на обговорення разом із питанням, чому рапорт так довго на обговоренні. Обидва питання перенесли. Кава."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_kombat_leave_04",
+      "rev": 1,
+      "arc": "kombat_leave",
+      "order": 4,
+      "level": 4,
+      "trigger": {
+        "type": "digitization_on_level",
+        "n": 2
+      },
+      "carrier": "telegram",
+      "payload": {
+        "telegramId": "tg_0088_kombat_example"
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_kombat_leave_05",
+      "rev": 1,
+      "arc": "kombat_leave",
+      "order": 5,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 1
+      },
+      "carrier": "event_toast",
+      "payload": {
+        "from": "granit",
+        "title": "Граніт",
+        "body": "Підписав пачкою. Свій теж."
+      },
+      "required": true,
+      "review": true
+    },
+    {
+      "id": "st_kombat_leave_06",
+      "rev": 1,
+      "arc": "kombat_leave",
+      "order": 6,
+      "level": 5,
+      "trigger": {
+        "type": "beat_delivered",
+        "beat": "st_kombat_leave_05"
+      },
+      "requires": [
+        {
+          "beat": "st_kombat_leave_05"
+        }
+      ],
+      "carrier": "character_state",
+      "payload": {
+        "character": "granit",
+        "state": "granit_on_leave"
+      },
+      "required": true,
+      "effects": {
+        "characterState": "granit_on_leave"
+      },
+      "review": true
+    },
+    {
+      "id": "st_cat_01",
+      "rev": 1,
+      "arc": "cat",
+      "order": 1,
+      "level": 3,
+      "trigger": {
+        "type": "level_enter",
+        "level": 3,
+        "afterHours": 24
+      },
+      "carrier": "telegram",
+      "payload": {
+        "telegramId": "tg_notice_cat_inventory"
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_cat_02",
+      "rev": 1,
+      "arc": "cat",
+      "order": 2,
+      "level": 4,
+      "trigger": {
+        "type": "boss_passed",
+        "level": 4
+      },
+      "carrier": "insp_act_line",
+      "payload": {
+        "line": "Неврахований об’єкт, спить."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_cat_03",
+      "rev": 1,
+      "arc": "cat",
+      "order": 3,
+      "trigger": {
+        "type": "finale_step",
+        "step": "last_book"
+      },
+      "carrier": "curio",
+      "payload": {
+        "from": "museum",
+        "title": "Журнал № 24, останній запис",
+        "body": "Кіт, сірий, 1 од., інв. № б/н. Висить на {позивний}. Списанню не підлягає."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_tumbochkin_01",
+      "rev": 1,
+      "arc": "tumbochkin",
+      "order": 1,
+      "level": 5,
+      "trigger": {
+        "type": "conversion",
+        "k": 4
+      },
+      "carrier": "event_toast",
+      "payload": {
+        "from": "tumbochkin",
+        "title": "Тумбочкін",
+        "body": "Тумбочкін відчинив тумбочку. Порожньо. Зауважень немає."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_tumbochkin_02",
+      "rev": 1,
+      "arc": "tumbochkin",
+      "order": 2,
+      "level": 5,
+      "trigger": {
+        "type": "beat_delivered",
+        "beat": "st_tumbochkin_01"
+      },
+      "requires": [
+        {
+          "beat": "st_tumbochkin_01"
+        }
+      ],
+      "carrier": "curio",
+      "payload": {
+        "from": "tumbochkin",
+        "title": "Порожня тумбочка",
+        "body": "Полковник Тумбочкін приїхав без валізи й без методичок. Відчинив тумбочку: ні журналу, ні графіка прибирання. Довго дивився. Записав у блокнот: «Зауважень немає». Сказав, що блокнот паперовий останній."
+      },
+      "required": false,
+      "review": true
+    },
+    {
+      "id": "st_finale_01",
+      "rev": 1,
+      "arc": "finale",
+      "order": 1,
+      "trigger": {
+        "type": "finale_step",
+        "step": "script",
+        "afterHours": "next_day"
+      },
+      "carrier": "note",
+      "payload": {
+        "from": "kava",
+        "title": "Про телеграми",
+        "body": "Телеграм немає. Я на нараді. Нараду скасовано."
+      },
+      "required": false,
+      "review": true
+    }
+  ]
+}
