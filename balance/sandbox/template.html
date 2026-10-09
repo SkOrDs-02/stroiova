@@ -95,6 +95,9 @@ input[type="number"], input[type="text"] { font: inherit; font-family: var(--fon
 .grid-table td { padding: 4px; border-bottom: 0; }
 .grid-table th { padding: 4px; font-size: 11px; white-space: normal; vertical-align: bottom; }
 .grid-table input[type="text"] { font-family: var(--font-body); }
+#t-levels { min-width: 860px; }
+#t-levels td:first-child { white-space: nowrap; font-size: 12px; }
+#t-lv-streams, #t-lv-stages { min-width: 680px; }
 .note { font-size: 12px; color: var(--muted); margin: 0; }
 textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-size: 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 8px; resize: vertical; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -109,9 +112,9 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
 <div class="wrap">
   <header class="top">
     <div>
-      <p class="eyebrow">Пісочниця балансу v6 · 3 типи гравців · 21 день гри · рівні 1 і 2 · події</p>
+      <p class="eyebrow">Пісочниця балансу v7 · 3 типи гравців · до 150 днів гри · рівні 1–5 і фінал · події</p>
       <h1>Економіка Стройової</h1>
-      <p class="lede">Віртуальний гравець заходить у гру за розкладом, заправляє генератор, готується до перевірок, ганяє акти подарунків і купує те, що найшвидше окупається, а коли застряг — цифровізується. Після третьої цифровізації переходить на «Бригаду». Змінюй параметри — модель перераховує всі три сценарії й підсвічує цілі темпу, яких не досягнуто.</p>
+      <p class="lede">Віртуальний гравець заходить у гру за розкладом, заправляє генератор, готується до перевірок, ганяє акти подарунків і купує те, що найшвидше окупається, а коли застряг — цифровізується. Після третьої цифровізації переходить на «Бригаду», далі рівні відкриває підсумкова перевірка, а на «Армії без паперу» ланки по черзі стають цифровими до фіналу. Змінюй параметри — модель перераховує всі три сценарії й підсвічує цілі темпу, яких не досягнуто.</p>
     </div>
     <div class="actions">
       <button class="primary" id="run" type="button">Перерахувати</button>
@@ -124,13 +127,13 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     <section class="results">
       <div class="card">
         <h2>Цілі темпу</h2>
-        <p class="sub">Рахуються для гравця, який дивиться рекламу, крім рядка про перевагу покупки.</p>
+        <p class="sub">Рахуються для гравця, який дивиться рекламу, крім рядків про гравця без реклами й про покупку. День — від встановлення.</p>
         <div class="checks" id="checks"></div>
       </div>
 
       <figure class="card" style="margin:0">
         <h2>Дохід за хвилину, логарифмічна шкала</h2>
-        <p class="sub">Провали до нуля — цифровізації: прогрес скидається, множник лишається. Суцільна лінія — перехід на «Бригаду».</p>
+        <p class="sub">Провали — цифровізації: прогрес скидається, множник лишається. Суцільні лінії з підписом — переходи на рівні 2–5 і фінал (колір — сценарій).</p>
         <div class="chart-box"><canvas id="chart" aria-label="Дохід підписів за хвилину по днях для трьох сценаріїв" role="img"></canvas></div>
         <div class="legend" id="legend"></div>
       </figure>
@@ -164,6 +167,11 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
           <li>Сценарій «Купив» бере «Без реклами» з початку і «Стартовий набір» після першого результату перевірки: +50 000 підписів і бак на 12 год.</li>
           <li>Музей: журнали № 1–3 за 1-шу цифровізацію, № 4–5 за 2-гу, № 6 — через задані години після 1-ї, № 7 — за першу пройдену перевірку після 1-ї, № 8 — коли є 7 інших (подвоює бонуси).</li>
           <li>Папір рахується окремо й нічого не блокує: Накладні дають аркуші за рівень, подарунок — 20, кожна телеграма «сумлінно» забирає середню ціну. Якщо паперу бракує, модель лише рахує такі випадки.</li>
+          <li>Рівні (v7): рівень k — потоки й ланки рівня 1 плюс нові потоки й ланки рівнів 2…k, усе помножене на блок рівня k (виробіток, ціни, діловоди, ріст ціни). Свій дільник балів і ціна чекліста. Вихід: на Р1 — N-та цифровізація; на Р2–Р4 після N-ї оголошують підсумкову перевірку, пройдена — наступна цифровізація переводить на рівень вище.</li>
+          <li>Підсумкова перевірка: оголошується в циклі після N-ї цифровізації, щойно знову відкрито всі потоки (одразу після цифровізації дохід замалий, щоб ціна «у хвилинах доходу» щось важила). Попередження 24 год, ціна — хвилини базового доходу на мить оголошення, 6 пунктів; за задану кількість годин до приїзду гравець перестає купувати й збирає на пункти; реклама закриває 5 базових, пункт механіки — лише підписами. Поки вона оголошена, звичайних перевірок немає. Провал — Стройова ×0,5 на 1 год і повтор через 24 год, куплені пункти лишаються. На Р4 пункт механіки — «Звіти про звіти» дають не менше заданої частки потоків на мить приїзду; гравець докуповує їх свідомо.</li>
+          <li>Р3: телеграми пачками (1 на день + 0–1 окрема). «Звести в одну відповідь» — одне сповільнення «Наради» і «Зведення б'ється» (потік ×1,5); окремо — до трьох сповільнень випадкових ланок. «Нарада затягнулась» — як «Комбата шукають».</li>
+          <li>Р4: «Звіти про звіти» = s(n) × сума решти потоків, s(n) = s_max · n / (n + K).</li>
+          <li>Р5: конвертація ланок у цифрові за порядком; k-та відкривається після (k−1)-ї цифровізації на Р5, щойно в циклі відкрито всі потоки, і коштує хвилини базового доходу на ту мить; дає ×3 і знімає сповільнення (крім «Збою СЕДО», якщо нема паперу на роздрук). Після 4-ї конвертації телеграм удвічі менше. Шоста — фінал: модель зупиняється і показує день.</li>
           <li>Не враховано: позапланові перевірки, вибір у телеграмах (усі вважаються сумлінними), ефекти телеграми № 20 на гонку, посильного до комбата, розширене сховище.</li>
         </ul>
       </details>
@@ -221,13 +229,18 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
         <div class="pbody" id="p-prestige"></div>
       </details>
       <details>
-        <summary>Рівень 2 «Бригада»</summary>
+        <summary>Рівні 1–5</summary>
         <div class="pbody">
-          <div id="p-level2" style="display:flex;flex-direction:column;gap:10px"></div>
-          <p class="note">Новий потік і нова ланка задані в одиницях рівня 1: множники рівня 2 діють і на них. Потоки й ланки рівня 1 беруться з таблиць вище.</p>
-          <div class="grid-table"><table id="t-l2-stream"></table></div>
-          <div class="grid-table"><table id="t-l2-stage"></table></div>
+          <p class="note">Множники діють на всі потоки й ланки рівня, зокрема нові. «Ріст ×» стискає ріст ціни: 0,5 — удвічі повільніше дорожчає. Вихід — номер цифровізації на рівні: без боса вона переводить вище, з босом — оголошує підсумкову перевірку; 0 — рівень останній. Дільник — головний важіль частоти цифровізацій.</p>
+          <div class="grid-table"><table id="t-levels"></table></div>
+          <p class="note">Нові потоки й ланки рівнів — в одиницях рівня 1. «Звіти про звіти» не мають власного виробітку: їхня частка — у блоці механік.</p>
+          <div class="grid-table"><table id="t-lv-streams"></table></div>
+          <div class="grid-table"><table id="t-lv-stages"></table></div>
         </div>
+      </details>
+      <details>
+        <summary>Підсумкова перевірка й механіки рівнів</summary>
+        <div class="pbody" id="p-twists"></div>
       </details>
       <details>
         <summary>Цілі темпу</summary>
@@ -269,9 +282,13 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
 <script>
 (function () {
   var SIM_SRC = document.getElementById('sim-src').textContent;
-  var lib = (new Function(SIM_SRC + '\nreturn { DEFAULTS: DEFAULTS, SCENARIOS: SCENARIOS, simulate: simulate, waitStats: waitStats, stallStats: stallStats, withDefaults: withDefaults };'))();
-  var TARGETS_DEFAULT = { clerkMin: 3, clerkMax: 4, prestigeMinDays: 3, prestigeMaxDays: 5, waitMaxHours: 12, level2MinDays: 7, level2MaxDays: 9, contentDaysMin: 14, paidRatioMax: 3, storageLossMax: 15 };
-  var STORE_KEY = 'stroyova-econ-v6';
+  var lib = (new Function(SIM_SRC + '\nreturn { DEFAULTS: DEFAULTS, SCENARIOS: SCENARIOS, simulate: simulate, waitStats: waitStats, stallStats: stallStats, withDefaults: withDefaults, levelStats: levelStats };'))();
+  // docs/levels-3-5.md §4.1, the ad player; early-game rows as in v6
+  var TARGETS_DEFAULT = { clerkMin: 3, clerkMax: 4, prestigeMinDays: 3, prestigeMaxDays: 5, waitMaxHours: 12, level2MinDays: 7, level2MaxDays: 9,
+    boss2MinDays: 16, boss2MaxDays: 19, level3MinDays: 18, level3MaxDays: 21, boss3MinDays: 34, boss3MaxDays: 38, level4MinDays: 37, level4MaxDays: 41,
+    boss4MinDays: 53, boss4MaxDays: 58, level5MinDays: 56, level5MaxDays: 61, finaleMinDays: 72, finaleMaxDays: 85,
+    gapMinDays: 2, gapMaxDays: 3, freeRatioMax: 1.8, paidRatioMin: 0.7, storageLossMax: 15 };
+  var STORE_KEY = 'stroyova-econ-v7';
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   // older presets (v3, v4) lack newer fields: the model fills them in with the new mechanics switched off,
@@ -281,7 +298,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
   var state = { params: clone(lib.DEFAULTS), targets: clone(TARGETS_DEFAULT) };
   try {
     var saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
-    if (saved && saved.params && saved.params.streams) { state.params = fillParams(saved.params); state.targets = Object.assign(clone(TARGETS_DEFAULT), saved.targets || {}); }
+    if (saved && saved.params && saved.params.streams && saved.params.levels) { state.params = fillParams(saved.params); state.targets = Object.assign(clone(TARGETS_DEFAULT), saved.targets || {}); }
   } catch (e) {}
   function persist() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
 
@@ -323,7 +340,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     fieldHTML('params.tapValue', 'Підписів за тап', '', 0.5) +
     fieldHTML('params.storageHours', 'Сховище, год', 'ліміт офлайн-доходу', 1) +
     fieldHTML('params.dayStartHour', 'Перша сесія о, год', 'місцевий час; сесії йдуть 16 год', 1) +
-    fieldHTML('params.days', 'Горизонт, днів', 'до 30', 1);
+    fieldHTML('params.days', 'Горизонт, днів', 'до 150; модель зупиняється на фіналі', 1);
   document.getElementById('p-boosts').innerHTML =
     fieldHTML('params.milestoneEvery', 'Віха кожні … рівнів', '', 1) +
     fieldHTML('params.milestoneMult', 'Множник віхи', '', 0.1) +
@@ -363,8 +380,6 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     fieldHTML('params.inspIntervalMaxH', 'Інтервал до, год', '0 — перевірок немає', 1) +
     fieldHTML('params.inspWarnMinH', 'Попередження від, год', '', 0.5) +
     fieldHTML('params.inspWarnMaxH', 'Попередження до, год', '', 0.5) +
-    fieldHTML('params.inspChecklistMin', 'Чекліст Р1, хв доходу', 'сума 5 пунктів', 1) +
-    fieldHTML('params.inspChecklistMinL2', 'Чекліст Р2, хв доходу', 'сума 4 пунктів', 1) +
     fieldHTML('params.inspMult', 'Пройшли, ×', 'лише планова', 0.5) +
     fieldHTML('params.inspHours', '… на, год', '', 0.5) +
     fieldHTML('params.inspFailMult', 'Провалили: Стройова, ×', '', 0.05) +
@@ -392,28 +407,51 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     fieldHTML('params.museumPaperPct', '№ 3: папір, %', '', 1) +
     fieldHTML('params.museumRacePct', '№ 6 і 7: час акта, %', '№ 6 — кожен крок, № 7 — Фінслужба', 1);
   document.getElementById('p-prestige').innerHTML =
-    fieldHTML('params.prestigeDivisor', 'Дільник', 'підписи циклу ÷ дільник', 1000) +
     fieldHTML('params.prestigeExponent', 'Степінь', '0,5 — корінь', 0.05) +
     fieldHTML('params.prestigeBonus', 'Бонус за бал', '0,01 = +1% доходу', 0.005) +
     fieldHTML('params.prestigeMinPoints', 'Мінімум балів', 'на будь-яку цифровізацію', 1) +
     fieldHTML('params.prestigeGrowth', 'Поріг наступної', 'частка від уже набраних балів', 0.1) +
     fieldHTML('params.prestigeStallHours', 'Цифровізується, якщо застряг', 'наступна покупка далі ніж … год; 0 — вимкнено', 1) +
     fieldHTML('params.prestigeStallShare', '… і бали за неї не менші за', 'частку вже набраних балів', 0.05);
-  document.getElementById('p-level2').innerHTML =
-    fieldHTML('params.level2.afterDigitizations', 'Перехід після цифровізації №', 'на рівні 1; 0 — без «Бригади»', 1) +
-    fieldHTML('params.level2.rateMult', 'Виробіток і пропускна, ×', 'усіх потоків і ланок', 0.5) +
-    fieldHTML('params.level2.costMult', 'Ціни рівнів і відкриття, ×', '', 0.5) +
-    fieldHTML('params.level2.clerkMult', 'Ціни діловодів, ×', '', 0.5);
+  document.getElementById('p-twists').innerHTML =
+    fieldHTML('params.boss.warnH', 'Бос: попередження, год', '', 1) +
+    fieldHTML('params.boss.retryH', 'Бос: повтор після провалу, год', 'куплені пункти лишаються', 1) +
+    fieldHTML('params.boss.checklistMin', 'Бос: чекліст, хв доходу', 'базового, на мить оголошення', 5) +
+    fieldHTML('params.boss.items', 'Бос: пунктів', '', 1) +
+    fieldHTML('params.boss.adItems', 'Бос: реклама закриває пунктів', 'пункт механіки — лише підписами', 1) +
+    fieldHTML('params.boss.saveH', 'Бос: відкладає підписи за, год', 'до приїзду гравець перестає купувати й збирає на пункти', 1) +
+    fieldHTML('params.boss.zpzMin', 'Р4: «Звіти про звіти» на мить приїзду від', 'частка суми потоків', 0.05) +
+    fieldHTML('params.pack.perDay', 'Р3: пачок на день', 'по 3 телеграми', 1) +
+    fieldHTML('params.pack.singleChance', 'Р3: шанс окремої телеграми', '', 0.05) +
+    fieldHTML('params.pack.merge', 'Р3: «Звести в одну відповідь»', '1 — гравець зводить, 0 — відповідає окремо', 1) +
+    fieldHTML('params.pack.slowMult', 'Р3: «Нарада» після зведеної, ×', '', 0.05) +
+    fieldHTML('params.pack.slowHours', '… на, год', '', 0.5) +
+    fieldHTML('params.pack.summaryBuff', 'Р3: «Зведення б\'ється», ×', 'потік «Зведення»', 0.1) +
+    fieldHTML('params.pack.summaryBuffHours', '… на, год', '', 0.5) +
+    fieldHTML('params.naradaChance', '«Нарада затягнулась»: шанс на сесію', 'не частіше разу на добу; 0 — вимкнено', 0.05) +
+    fieldHTML('params.naradaMult', '«Нарада» в цей час, ×', '', 0.05) +
+    fieldHTML('params.zpz.shareMax', 'Р4: s_max «Звітів про звіти»', 'частка від решти потоків, до якої тягнеться', 0.1) +
+    fieldHTML('params.zpz.K', 'Р4: K', 's(n) = s_max · n / (n + K)', 1) +
+    fieldHTML('params.convert.mult', 'Р5: цифрова ланка, ×', '', 0.5) +
+    fieldHTML('params.convert.costMin', 'Р5: конвертація, хв доходу', 'базового, на мить відкриття', 5) +
+    fieldHTML('params.sedoFailChance', '«Збій СЕДО»: шанс на сесію', 'не частіше разу на добу', 0.05) +
+    fieldHTML('params.sedoFailMult', '«Збій СЕДО», ×', '', 0.05) +
+    fieldHTML('params.sedoFailMin', '«Збій СЕДО», хв', '', 5) +
+    fieldHTML('params.sedoPrintPaper', '«Роздрукувати», аркушів', 'знімає збій', 1);
+  // v7 milestones (docs/levels-3-5.md §4.1): [key, label] pairs, min/max in days for the ad player
+  var MILES = [['level2', 'Вхід у Р2 «Бригада»'], ['boss2', 'Підсумкова Р2 оголошена'], ['level3', 'Вхід у Р3 «Командування»'], ['boss3', 'Підсумкова Р3 оголошена'],
+    ['level4', 'Вхід у Р4 «Генштаб»'], ['boss4', '«Аудит усього» оголошено'], ['level5', 'Вхід у Р5 «Армія без паперу»'], ['finale', 'Конвертація № 6, фінал']];
   document.getElementById('p-targets').innerHTML =
     fieldHTML('targets.clerkMin', 'Перший діловод від, хв', 'дизайн-документ', 0.5) +
     fieldHTML('targets.clerkMax', 'Перший діловод до, хв', 'дизайн-документ', 0.5) +
     fieldHTML('targets.prestigeMinDays', 'Перша цифровізація від, дн', 'дизайн-документ', 0.5) +
     fieldHTML('targets.prestigeMaxDays', 'Перша цифровізація до, дн', 'дизайн-документ', 0.5) +
     fieldHTML('targets.waitMaxHours', 'Очікування покупки до, год', 'до першої цифровізації · орієнтир', 1) +
-    fieldHTML('targets.level2MinDays', 'Перехід на «Бригаду» від, дн', 'орієнтир', 0.5) +
-    fieldHTML('targets.level2MaxDays', 'Перехід на «Бригаду» до, дн', 'орієнтир', 0.5) +
-    fieldHTML('targets.contentDaysMin', 'Контенту вистачає від, дн', 'орієнтир, не з документа', 1) +
-    fieldHTML('targets.paidRatioMax', 'Перевага покупки до, ×', 'орієнтир, не з документа', 0.5) +
+    MILES.map(function (m) { return fieldHTML('targets.' + m[0] + 'MinDays', m[1] + ' від, дн', 'levels-3-5.md, 4.1', 0.5) + fieldHTML('targets.' + m[0] + 'MaxDays', m[1] + ' до, дн', '', 0.5); }).join('') +
+    fieldHTML('targets.gapMinDays', 'Між цифровізаціями на Р2–Р4 від, дн', 'у середньому на рівні', 0.5) +
+    fieldHTML('targets.gapMaxDays', 'Між цифровізаціями на Р2–Р4 до, дн', '', 0.5) +
+    fieldHTML('targets.freeRatioMax', 'Без реклами — не довше ніж, ×', 'час гравця з рекламою, на віхах після Р2', 0.1) +
+    fieldHTML('targets.paidRatioMin', 'Платний — не швидше ніж, ×', 'час гравця з рекламою', 0.05) +
     fieldHTML('targets.storageLossMax', 'Втрати сховища до, %', 'орієнтир, не з документа', 1);
 
   function gridTable(id, rows, cols, key) {
@@ -438,24 +476,36 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     { k: 'name', label: 'Назва' }, { k: 'rate', label: 'Пропускна' }, { k: 'cost', label: 'Ціна рівня' },
     { k: 'growth', label: 'Ріст ціни' }, { k: 'manager', label: 'Діловод' }
   ], 'stages');
-  // one-row tables for the level 2 stream and stage (a single object, not a list)
-  function rowTable(id, base, cols, what) {
-    var h = '<thead><tr>' + cols.map(function (c) { return '<th scope="col">' + c.label + '</th>'; }).join('') + '</tr></thead><tbody><tr>';
-    h += cols.map(function (c) {
-      var path = base + '.' + c.k, iid = 'f-' + path.replace(/\./g, '-');
-      if (c.k === 'name') return '<td><input type="text" id="' + iid + '" data-path="' + path + '" aria-label="Назва: ' + what + '"></td>';
-      return '<td><input type="number" id="' + iid + '" data-path="' + path + '" step="any" aria-label="' + c.label + ': ' + what + '"></td>';
-    }).join('');
-    document.getElementById(id).innerHTML = h + '</tr></tbody>';
-  }
-  rowTable('t-l2-stream', 'params.level2.stream', [
-    { k: 'name', label: 'Новий потік' }, { k: 'rate', label: 'Виробіток' }, { k: 'unlock', label: 'Відкриття' },
-    { k: 'cost', label: 'Ціна рівня' }, { k: 'growth', label: 'Ріст ціни' }, { k: 'manager', label: 'Діловод' }
-  ], 'новий потік');
-  rowTable('t-l2-stage', 'params.level2.stage', [
-    { k: 'name', label: 'Нова ланка' }, { k: 'rate', label: 'Пропускна' }, { k: 'cost', label: 'Ціна рівня' },
-    { k: 'growth', label: 'Ріст ціни' }, { k: 'manager', label: 'Діловод' }
-  ], 'нова ланка');
+  // levels: one row per level; the new stream and stage of a level in their own tables (Р1 and Р5 have none)
+  (function levelTables() {
+    var cols = [['rateMult', 'Виробіток ×'], ['costMult', 'Ціни ×'], ['clerkMult', 'Діловоди ×'], ['growthMult', 'Ріст ×'], ['prestigeDivisor', 'Дільник балів'], ['exitDigitizations', 'Вихід, N'], ['boss', 'Бос'], ['inspChecklistMin', 'Чекліст, хв']];
+    var h = '<thead><tr><th scope="col">Рівень</th>' + cols.map(function (c) { return '<th scope="col">' + c[1] + '</th>'; }).join('') + '</tr></thead><tbody>';
+    state.params.levels.forEach(function (L, i) {
+      h += '<tr><td>Р' + (i + 1) + ' ' + (L.name || '') + '</td>' + cols.map(function (c) {
+        var path = 'params.levels.' + i + '.' + c[0], iid = 'f-' + path.replace(/\./g, '-');
+        if (i === 0 && (c[0] === 'rateMult' || c[0] === 'costMult' || c[0] === 'clerkMult' || c[0] === 'growthMult' || c[0] === 'boss')) return '<td class="note">' + (c[0] === 'boss' ? '—' : '1') + '</td>';
+        return '<td><input type="number" id="' + iid + '" data-path="' + path + '" step="any" aria-label="' + c[1] + ': Р' + (i + 1) + '"></td>';
+      }).join('') + '</tr>';
+    });
+    document.getElementById('t-levels').innerHTML = h + '</tbody>';
+    function itemTable(id, key, cols, what) {
+      var t = '<thead><tr><th scope="col">' + what + '</th>' + cols.map(function (c) { return '<th scope="col">' + c[1] + '</th>'; }).join('') + '</tr></thead><tbody>';
+      var any = false;
+      state.params.levels.forEach(function (L, i) {
+        if (!L[key]) return;
+        any = true;
+        t += '<tr><td>Р' + (i + 1) + '</td>' + cols.map(function (c) {
+          var path = 'params.levels.' + i + '.' + key + '.' + c[0], iid = 'f-' + path.replace(/\./g, '-');
+          if (c[0] === 'name') return '<td><input type="text" id="' + iid + '" data-path="' + path + '" aria-label="Назва: ' + what + ' Р' + (i + 1) + '"></td>';
+          if (c[0] === 'rate' && L[key].share) return '<td class="note">частка</td>';
+          return '<td><input type="number" id="' + iid + '" data-path="' + path + '" step="any" aria-label="' + c[1] + ': ' + what + ' Р' + (i + 1) + '"></td>';
+        }).join('') + '</tr>';
+      });
+      document.getElementById(id).innerHTML = any ? t + '</tbody>' : '';
+    }
+    itemTable('t-lv-streams', 'stream', [['name', 'Назва'], ['rate', 'Виробіток'], ['unlock', 'Відкриття'], ['cost', 'Ціна рівня'], ['growth', 'Ріст ціни'], ['manager', 'Діловод']], 'Новий потік');
+    itemTable('t-lv-stages', 'stage', [['name', 'Назва'], ['rate', 'Пропускна'], ['cost', 'Ціна рівня'], ['growth', 'Ріст ціни'], ['manager', 'Діловод']], 'Нова ланка');
+  })();
 
   (function giftTable() {
     var types = [['drone', 'Дрон'], ['shovel', 'Лопати'], ['generator', 'Генератор']];
@@ -470,12 +520,14 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     document.getElementById('t-gifts').innerHTML = h + '</tbody>';
   })();
   var inputs = Array.prototype.slice.call(document.querySelectorAll('[data-path]'));
-  function fillInputs() { inputs.forEach(function (el) { var v = get(el.getAttribute('data-path')); el.value = v; }); }
+  function get2(path) { try { return get(path); } catch (e) { return undefined; } }
+  function fillInputs() { inputs.forEach(function (el) { var v = get2(el.getAttribute('data-path')); el.value = v == null ? '' : v; el.disabled = v == null; }); }
   fillInputs();
   var debounce = null;
   inputs.forEach(function (el) {
     el.addEventListener('input', function () {
       var path = el.getAttribute('data-path');
+      if (get2(path) === undefined) return;
       if (el.type === 'number') { var v = parseFloat(el.value); if (!isFinite(v)) return; set(path, v); }
       else set(path, el.value);
       persist(); updateExport();
@@ -486,7 +538,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
   // ---------- simulation (worker when available) ----------
   var worker = null, pending = 0;
   try {
-    var src = SIM_SRC + '\nself.onmessage = function (e) { var p = e.data.params; var res = SCENARIOS.map(function (sc) { var r = simulate(p, sc); r.waitStats = waitStats(r, e.data.wallH); r.stallStats = stallStats(r, p.days); delete r.out.waits; return r; }); self.postMessage({ id: e.data.id, res: res }); };';
+    var src = SIM_SRC + '\nself.onmessage = function (e) { var p = e.data.params; var res = SCENARIOS.map(function (sc) { var r = simulate(p, sc); r.waitStats = waitStats(r, e.data.wallH); r.stallStats = stallStats(r, p.days); r.levelStats = levelStats(r); delete r.out.waits; return r; }); self.postMessage({ id: e.data.id, res: res }); };';
     worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
     worker.onmessage = function (e) { if (e.data.id === pending) render(e.data.res); };
     worker.onerror = function () { worker = null; run(); };
@@ -495,9 +547,9 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
   var statusEl = document.getElementById('status');
   function run() {
     var p = clone(state.params);
-    p.days = Math.max(1, Math.min(30, Math.round(p.days || 21)));
+    p.days = Math.max(1, Math.min(150, Math.round(p.days || 150)));
     p.sessionsPerDay = Math.max(1, Math.round(p.sessionsPerDay || 1));
-    p.level2.afterDigitizations = Math.max(0, Math.round(p.level2.afterDigitizations || 0));
+    p.levels.forEach(function (L) { L.exitDigitizations = Math.max(0, Math.round(L.exitDigitizations || 0)); L.boss = L.boss ? 1 : 0; });
     p.offlineAdPerDay = Math.max(0, Math.round(p.offlineAdPerDay || 0));
     statusEl.textContent = 'Рахую…';
     pending++;
@@ -505,7 +557,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     if (worker) { worker.postMessage({ id: pending, params: p, wallH: wallH }); return; }
     var id = pending;
     setTimeout(function () {
-      var res = lib.SCENARIOS.map(function (sc) { var r = lib.simulate(p, sc); r.waitStats = lib.waitStats(r, wallH); r.stallStats = lib.stallStats(r, p.days); delete r.out.waits; return r; });
+      var res = lib.SCENARIOS.map(function (sc) { var r = lib.simulate(p, sc); r.waitStats = lib.waitStats(r, wallH); r.stallStats = lib.stallStats(r, p.days); r.levelStats = lib.levelStats(r); delete r.out.waits; return r; });
       if (id === pending) render(res);
     }, 30);
   }
@@ -520,6 +572,12 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
   function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
   var COLORS = { free: '--s-free', ads: '--s-ads', paid: '--s-paid' };
 
+  // milestone days of one run: level entries, final inspections announced, the finale
+  function miles(r) {
+    var ls = r.levelStats || { levelAt: {}, bossAnn: {}, finale: null, perLevel: {} };
+    return { level2: ls.levelAt[2], boss2: ls.bossAnn[2], level3: ls.levelAt[3], boss3: ls.bossAnn[3], level4: ls.levelAt[4], boss4: ls.bossAnn[4], level5: ls.levelAt[5], finale: ls.finale };
+  }
+  function dd(x) { return x == null ? null : r1(x); }
   function render(res) {
     last = res;
     var T = state.targets;
@@ -528,75 +586,102 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     var p1 = ads.out.prestiges[0] ? r1(ads.out.prestiges[0].t / 86400) : null;
     var waitH = r1(ads.waitStats.first / 3600);
     var stallH = ads.stallStats ? r1(ads.stallStats.first / 3600) : 0;
-    var wallD = ads.waitStats.wallAt == null ? null : r1(ads.waitStats.wallAt / 86400);
-    var pf = free.out.prestiges[0], pp = paid.out.prestiges[0];
-    var ratio = pf && pp ? r1(pf.t / pp.t) : null;
     var loss = Math.round(ads.storageLostShare * 100);
-    var l2On = state.params.level2 && state.params.level2.afterDigitizations > 0;
-    var l2D = ads.out.level2At == null ? null : r1(ads.out.level2At / 86400);
+    var mA = miles(ads), mF = miles(free), mP = miles(paid);
+    var horizon = Math.round(state.params.days || 150);
     var rows = [
       { name: 'Перший діловод', meta: 'Ціль ' + nf1.format(T.clerkMin) + '–' + nf1.format(T.clerkMax) + ' хв · дизайн-документ', val: clerkMin == null ? '—' : nf1.format(clerkMin) + ' хв', ok: clerkMin != null && clerkMin >= T.clerkMin && clerkMin <= T.clerkMax },
       { name: 'Перша цифровізація', meta: 'Ціль ' + nf1.format(T.prestigeMinDays) + '–' + nf1.format(T.prestigeMaxDays) + ' дн · дизайн-документ', val: p1 == null ? 'не настала' : nf1.format(p1) + ' дн', ok: p1 != null && p1 >= T.prestigeMinDays && p1 <= T.prestigeMaxDays },
-      { name: 'Найдовше очікування до цифровізації', meta: 'Очікування покупки від першої години до першої цифровізації · ціль до ' + nf0.format(T.waitMaxHours) + ' год · довше — гравець бачить стіну. Окремо: перед цифровізацією ' + nf1.format(stallH) + ' год купувати нічого, гравець чекає бали', val: nf1.format(waitH) + ' год', ok: waitH <= T.waitMaxHours },
-      { name: 'Перехід на «Бригаду»', meta: l2On ? 'Цифровізація №' + nf0.format(state.params.level2.afterDigitizations) + ' на рівні 1 · ціль ' + nf1.format(T.level2MinDays) + '–' + nf1.format(T.level2MaxDays) + ' дн' : 'Рівень 2 вимкнено в параметрах «Бригади»', val: !l2On ? 'вимкнено' : l2D == null ? 'не настав' : nf1.format(l2D) + ' дн', ok: l2On ? (l2D != null && l2D >= T.level2MinDays && l2D <= T.level2MaxDays) : null },
-      { name: 'Контенту вистачає', meta: 'День, коли вперше чекати покупку довше ' + nf0.format(T.waitMaxHours) + ' год · ціль від ' + nf0.format(T.contentDaysMin) + ' дн · далі потрібен новий шар гри', val: wallD == null ? 'весь горизонт' : 'до ' + nf1.format(wallD) + ' дн', ok: wallD == null || wallD >= T.contentDaysMin },
-      { name: 'Перевага покупки', meta: 'У скільки разів «Купив» раніше за «Без реклами» доходить до першої цифровізації · ціль до ' + nf1.format(T.paidRatioMax) + '×', val: ratio == null ? (pp ? 'безкоштовний не дійшов' : '—') : nf1.format(ratio) + '×', ok: ratio != null && ratio <= T.paidRatioMax },
-      { name: 'Втрати через ліміт сховища', meta: 'Частка офлайн-часу, коли сховище вже повне · ціль до ' + nf0.format(T.storageLossMax) + '%', val: nf0.format(loss) + '%', ok: loss <= T.storageLossMax }
+      { name: 'Найдовше очікування до цифровізації', meta: 'Очікування покупки від першої години до першої цифровізації · ціль до ' + nf0.format(T.waitMaxHours) + ' год. Окремо: перед цифровізацією ' + nf1.format(stallH) + ' год купувати нічого, гравець чекає бали', val: nf1.format(waitH) + ' год', ok: waitH <= T.waitMaxHours }
     ];
+    var reachable = 1; while (reachable < state.params.levels.length && state.params.levels[reachable - 1].exitDigitizations > 0) reachable++;
+    MILES.forEach(function (m) {
+      var lvNeed = m[0] === 'finale' ? 5 : +m[0].slice(-1) + (m[0].indexOf('boss') === 0 ? 0 : 0);
+      var on = m[0] === 'finale' ? state.params.levels[reachable - 1] && state.params.levels[reachable - 1].convert : (m[0].indexOf('boss') === 0 ? state.params.levels[lvNeed - 1] && state.params.levels[lvNeed - 1].boss && reachable > lvNeed : reachable >= lvNeed);
+      var v = dd(mA[m[0]]), lo = T[m[0] + 'MinDays'], hi = T[m[0] + 'MaxDays'];
+      rows.push({ name: m[1], meta: 'Ціль ' + nf1.format(lo) + '–' + nf1.format(hi) + ' дн · без реклами ' + (mF[m[0]] == null ? 'не дійшов' : nf1.format(mF[m[0]]) + ' дн') + ' · платний ' + (mP[m[0]] == null ? 'не дійшов' : nf1.format(mP[m[0]]) + ' дн'),
+        val: !on ? 'вимкнено' : v == null ? 'не настав' : nf1.format(v) + ' дн', ok: on ? (v != null && v >= lo && v <= hi) : null });
+    });
+    var ls = ads.levelStats || { perLevel: {} }, gaps = [];
+    [2, 3, 4].forEach(function (L) { var q = ls.perLevel[L]; if (q && q.n > 1) gaps.push({ L: L, g: q.gapAvg, w: q.longestWaitH }); });
+    rows.push({ name: 'Між цифровізаціями на Р2–Р4', meta: 'Середній проміжок на кожному рівні · ціль ' + nf1.format(T.gapMinDays) + '–' + nf1.format(T.gapMaxDays) + ' дн. Найдовше очікування покупки: ' + (gaps.length ? gaps.map(function (x) { return 'Р' + x.L + ' ' + nf1.format(x.w) + ' год'; }).join(', ') : '—') + ' (ніч між сесіями — 11,2 год)',
+      val: gaps.length ? gaps.map(function (x) { return nf1.format(x.g); }).join(' · ') + ' дн' : '—', ok: gaps.length ? gaps.every(function (x) { return x.g >= T.gapMinDays && x.g <= T.gapMaxDays; }) : null });
+    // ratios on every milestone after Р2 that the ad player reached
+    var after = ['boss2', 'level3', 'boss3', 'level4', 'boss4', 'level5', 'finale'], fr = null, pr = null, frMiss = null;
+    after.forEach(function (k) {
+      if (mA[k] == null) return;
+      if (mF[k] == null) { if (frMiss == null) frMiss = k; var lb = horizon / mA[k]; if (fr == null || lb > fr) fr = lb; } else { var x = mF[k] / mA[k]; if (fr == null || x > fr) fr = x; }
+      if (mP[k] != null) { var y = mP[k] / mA[k]; if (pr == null || y < pr) pr = y; }
+    });
+    rows.push({ name: 'Гравець без реклами', meta: 'Найбільше відношення його дня до дня гравця з рекламою на віхах після Р2 · ціль до ' + nf1.format(T.freeRatioMax) + '×' + (frMiss ? ' · до деяких віх за ' + horizon + ' дн не дійшов, тоді рахується горизонт' : ''), val: fr == null ? '—' : (frMiss ? '≥ ' : '') + nfs.format(Math.round(fr * 100) / 100) + '×', ok: fr == null ? null : fr <= T.freeRatioMax });
+    rows.push({ name: 'Платний гравець', meta: 'Найменше відношення його дня до дня гравця з рекламою на віхах після Р2 · ціль від ' + nfs.format(T.paidRatioMin) + '×', val: pr == null ? '—' : nfs.format(Math.round(pr * 100) / 100) + '×', ok: pr == null ? null : pr >= T.paidRatioMin });
+    rows.push({ name: 'Втрати через ліміт сховища', meta: 'Частка офлайн-часу, коли сховище вже повне · ціль до ' + nf0.format(T.storageLossMax) + '%', val: nf0.format(loss) + '%', ok: loss <= T.storageLossMax });
     document.getElementById('checks').innerHTML = rows.map(function (r) {
       return '<div class="check"><span class="name">' + r.name + '</span><span class="val">' + r.val + '</span>' +
         '<span class="pill ' + (r.ok == null ? 'na' : r.ok ? 'ok' : 'no') + '">' + (r.ok == null ? 'не рахується' : r.ok ? 'у цілі' : 'поза ціллю') + '</span><span class="meta">' + r.meta + '</span></div>';
     }).join('');
 
-    var th = '<thead><tr><th scope="col">Сценарій</th><th scope="col">Перший діловод</th><th scope="col">Усі потоки</th><th scope="col">Перша цифровізація</th><th scope="col">«Бригада»</th><th scope="col">Цифровізацій, Р1 + Р2</th><th scope="col">Найдовше очікування</th><th scope="col">Перевірки пройдено</th><th scope="col">Гонки виграно</th><th scope="col">Папір: мін. · кінець</th><th scope="col">Вузьке місце</th></tr></thead><tbody>';
+    var th = '<thead><tr><th scope="col">Сценарій</th><th scope="col">Перший діловод</th><th scope="col">Перша цифровізація</th><th scope="col">Р2</th><th scope="col">Р3</th><th scope="col">Р4</th><th scope="col">Р5</th><th scope="col">Фінал</th><th scope="col">Цифровізацій по рівнях</th><th scope="col">Підсумкові: спроб</th><th scope="col">Найдовше очікування</th><th scope="col">Перевірки пройдено</th><th scope="col">Гонки виграно</th><th scope="col">Папір: мін. · кінець</th><th scope="col">Вузьке місце</th></tr></thead><tbody>';
     res.forEach(function (r) {
       var tot = r.neck.streams + r.neck.stage.reduce(function (a, b) { return a + b; }, 0) || 1;
       var dg = r.digitizations || [r.out.prestiges.length, 0];
       var p1t = r.out.prestiges.length ? nf1.format(r.out.prestiges[0].t / 86400) + ' дн' : 'не настала';
-      var pr = nf0.format(dg[0]) + ' + ' + nf0.format(dg[1]);
       var names = r.stageNames || state.params.stages.map(function (s) { return s.name; });
       var stageShare = r.neck.stage.map(function (v, i) { return { n: names[i] || '', v: v / tot }; }).filter(function (x) { return x.v > 0.005; });
       var neck = 'потоки ' + nf0.format(r.neck.streams / tot * 100) + '%' + stageShare.map(function (x) { return ' · ' + x.n.toLowerCase() + ' ' + nf0.format(x.v * 100) + '%'; }).join('');
-      var lv2 = !l2On ? 'вимкнено' : r.out.level2At == null ? 'не настав' : nf1.format(r.out.level2At / 86400) + ' дн';
+      var m = miles(r);
+      function cell(x) { return '<td class="num">' + (x == null ? '—' : nf1.format(x) + ' дн') + '</td>'; }
+      var bs = {}; (r.out.bosses || []).forEach(function (b) { bs[b.level] = (bs[b.level] || 0) + 1; });
+      var bsT = Object.keys(bs).map(function (k) { return 'Р' + k + ' ' + bs[k]; }).join(' · ') || '—';
       var lw = r.longestWait ? nf1.format(r.longestWait / 3600) + ' год · день ' + nf0.format(Math.floor(r.longestWaitAt / 86400)) : '—';
       th += '<tr><td><span class="sw" style="--c: var(' + COLORS[r.scenario.id] + ')"></span>' + r.scenario.name + '</td>' +
-        '<td class="num">' + dur(r.out.firstClerk) + '</td><td class="num">' + dur(r.out.allStreams) + '</td>' +
-        '<td class="num">' + p1t + '</td><td class="num">' + lv2 + '</td><td class="num">' + pr + '</td><td class="num soft">' + lw + '</td>' +
+        '<td class="num">' + dur(r.out.firstClerk) + '</td><td class="num">' + p1t + '</td>' + cell(m.level2) + cell(m.level3) + cell(m.level4) + cell(m.level5) + cell(m.finale) +
+        '<td class="num">' + dg.map(function (x) { return nf0.format(x); }).join(' + ') + '</td><td class="num soft">' + bsT + '</td><td class="num soft">' + lw + '</td>' +
         '<td class="num">' + (r.out.insp ? nf0.format(r.out.insp.filter(function (q) { return q.pass; }).length) + ' з ' + nf0.format(r.out.insp.length) : '—') + '</td>' +
         '<td class="num">' + (r.out.races ? nf0.format(r.out.races.filter(function (q) { return q.win; }).length) + ' з ' + nf0.format(r.out.races.length) : '—') + '</td>' +
         '<td class="num">' + (r.paper ? nf0.format(Math.floor(r.paper.min)) + ' · ' + nf0.format(Math.floor(r.paper.end)) + (r.paper.short ? ' · бракувало ' + nf0.format(r.paper.short) + '×' : '') : '—') + '</td><td>' + neck + '</td></tr>';
     });
     document.getElementById('scen-table').innerHTML = th + '</tbody>';
     var pa = ads.paper;
-    document.getElementById('paper-note').textContent = pa && pa.byDay && pa.byDay.length ? 'Папір гравця з рекламою на кінець дня: ' + [1, 3, 7, 14, 21].filter(function (d) { return d <= pa.byDay.length; }).map(function (d) { return d + '-й — ' + nf0.format(Math.floor(pa.byDay[d - 1])); }).join(', ') + ' аркушів. Витрачено на телеграми ' + nf0.format(Math.round(pa.spent)) + ', найменше було ' + nf0.format(Math.floor(pa.min)) + (pa.short ? ', бракувало ' + nf0.format(pa.short) + ' разів' : ', не бракувало жодного разу') + '. Конвеєр папір не зупиняє.' : '';
-    document.getElementById('legend').innerHTML = res.map(function (r) { return '<span style="--c: var(' + COLORS[r.scenario.id] + ')">' + r.scenario.name + '</span>'; }).join('') + '<span class="mark">цифровізація</span>' + (l2On ? '<span class="mark2">перехід на «Бригаду»</span>' : '');
+    document.getElementById('paper-note').textContent = pa && pa.byDay && pa.byDay.length ? 'Папір гравця з рекламою на кінець дня: ' + [1, 7, 21, 40, 60, 80].filter(function (d) { return d <= pa.byDay.length; }).map(function (d) { return d + '-й — ' + nf0.format(Math.floor(pa.byDay[d - 1])); }).join(', ') + ' аркушів. Витрачено на телеграми ' + nf0.format(Math.round(pa.spent)) + ', найменше було ' + nf0.format(Math.floor(pa.min)) + (pa.short ? ', бракувало ' + nf0.format(pa.short) + ' разів' : ', не бракувало жодного разу') + '. Конвеєр папір не зупиняє.' : '';
+    document.getElementById('legend').innerHTML = res.map(function (r) { return '<span style="--c: var(' + COLORS[r.scenario.id] + ')">' + r.scenario.name + '</span>'; }).join('') + '<span class="mark">цифровізація</span><span class="mark2">перехід на рівень, фінал</span>';
     drawChart(res);
     statusEl.textContent = 'Готово';
   }
 
+  // level transitions (Р2–Р5) and the finale: solid lines with a label; digitizations: dashed
+  function transitions(r) {
+    var o = [], la = r.out.levelAt || {};
+    for (var k in la) if (+k >= 2) o.push({ t: la[k], label: 'Р' + k });
+    if (r.out.finaleAt != null) o.push({ t: r.out.finaleAt, label: 'фінал' });
+    return o;
+  }
   var prestigeLines = {
     id: 'prestigeLines',
     afterDatasetsDraw: function (c) {
       if (!last) return;
       var ctx = c.ctx, x = c.scales.x, area = c.chartArea;
-      ctx.save(); ctx.setLineDash([3, 4]); ctx.lineWidth = 1.25;
+      ctx.save(); ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
       last.forEach(function (r) {
-        ctx.strokeStyle = tok(COLORS[r.scenario.id]);
+        ctx.strokeStyle = tok(COLORS[r.scenario.id]); ctx.globalAlpha = 0.6;
+        var ts = {}; transitions(r).forEach(function (m) { ts[m.t] = 1; });
         r.out.prestiges.forEach(function (pp) {
-          if (pp.t === r.out.level2At) return; // drawn solid below
+          if (ts[pp.t]) return; // drawn solid below
           var px = x.getPixelForValue(pp.t / 86400);
           if (px < area.left || px > area.right) return;
           ctx.beginPath(); ctx.moveTo(px, area.top); ctx.lineTo(px, area.bottom); ctx.stroke();
         });
       });
-      // the move to level 2 «Бригада»: a solid, thicker line
-      ctx.setLineDash([]); ctx.lineWidth = 2.5;
-      last.forEach(function (r) {
-        if (r.out.level2At == null) return;
-        var px = x.getPixelForValue(r.out.level2At / 86400);
-        if (px < area.left || px > area.right) return;
-        ctx.strokeStyle = tok(COLORS[r.scenario.id]);
-        ctx.beginPath(); ctx.moveTo(px, area.top); ctx.lineTo(px, area.bottom); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.setLineDash([]); ctx.lineWidth = 2;
+      ctx.font = '600 11px ' + tok('--font-mono'); ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      last.forEach(function (r, si) {
+        var col = tok(COLORS[r.scenario.id]);
+        transitions(r).forEach(function (m) {
+          var px = x.getPixelForValue(m.t / 86400);
+          if (px < area.left || px > area.right) return;
+          ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(px, area.top); ctx.lineTo(px, area.bottom); ctx.stroke();
+          ctx.fillStyle = col; ctx.fillText(m.label, px + 3, area.top + 2 + si * 13);
+        });
       });
       ctx.restore();
     }
@@ -607,10 +692,12 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
     var fg = tok('--muted'), grid = tok('--grid');
     var datasets = res.map(function (r) {
       var c = tok(COLORS[r.scenario.id]);
-      return { label: r.scenario.name, data: r.series.map(function (s) { return { x: s.t / 86400, y: Math.max(1, s.ipm) }; }), borderColor: c, backgroundColor: c, borderWidth: r.scenario.id === 'ads' ? 2.25 : 1.5, pointRadius: 0, tension: 0 };
+      return { label: r.scenario.name, data: r.series.map(function (s) { return { x: s.t / 86400, y: Math.max(1, s.ipm) }; }), borderColor: c, backgroundColor: c, borderWidth: r.scenario.id === 'ads' ? 2 : 1.25, pointRadius: 0, tension: 0 };
     });
-    var maxDay = Math.max(1, Math.min(30, Math.round(state.params.days || 21)));
-    if (chart) { chart.data.datasets = datasets; chart.options.scales.x.max = maxDay; chart.options.scales.x.ticks.color = fg; chart.options.scales.y.ticks.color = fg; chart.options.scales.x.grid.color = grid; chart.options.scales.y.grid.color = grid; chart.update('none'); return; }
+    var maxDay = Math.max(1, Math.min(150, Math.round(state.params.days || 150)));
+    var step = maxDay > 60 ? 10 : maxDay > 30 ? 5 : 2;
+    var tick = function (v) { return v % step === 0 ? v : ''; };
+    if (chart) { chart.data.datasets = datasets; chart.options.scales.x.max = maxDay; chart.options.scales.x.ticks.callback = tick; chart.options.scales.x.ticks.color = fg; chart.options.scales.y.ticks.color = fg; chart.options.scales.x.grid.color = grid; chart.options.scales.y.grid.color = grid; chart.update('none'); return; }
     chart = new Chart(document.getElementById('chart'), {
       type: 'line',
       data: { datasets: datasets },
@@ -618,13 +705,13 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
       options: {
         responsive: true, maintainAspectRatio: false, animation: false, parsing: false, normalized: true,
         interaction: { mode: 'nearest', intersect: false, axis: 'x' },
-        plugins: { legend: { display: false }, tooltip: { callbacks: {
+        plugins: { legend: { display: false }, decimation: { enabled: true, algorithm: 'min-max' }, tooltip: { callbacks: {
           title: function (items) { return 'День ' + nf1.format(items[0].parsed.x); },
           label: function (it) { return it.dataset.label + ': ' + big(it.parsed.y) + ' підп./хв'; }
         } } },
         scales: {
-          x: { type: 'linear', min: 0, max: maxDay, title: { display: true, text: 'день гри', color: fg }, ticks: { color: fg, stepSize: 1, callback: function (v) { return v % 2 === 0 ? v : ''; } }, grid: { color: grid } },
-          y: { type: 'logarithmic', min: 1, title: { display: true, text: 'підписів за хвилину', color: fg }, ticks: { color: fg, callback: function (v) { var l = Math.log10(v); return Math.abs(l - Math.round(l)) < 1e-6 ? big(v) : ''; } }, grid: { color: grid } }
+          x: { type: 'linear', min: 0, max: maxDay, title: { display: true, text: 'день від встановлення', color: fg }, ticks: { color: fg, stepSize: 1, autoSkip: false, maxRotation: 0, callback: tick }, grid: { color: grid } },
+          y: { type: 'logarithmic', min: 1, title: { display: true, text: 'підписів за хвилину', color: fg }, ticks: { color: fg, callback: function (v) { var l = Math.log10(v); return Math.abs(l - Math.round(l)) < 1e-6 && Math.round(l) % 3 === 0 ? big(v) : ''; } }, grid: { color: grid } }
         }
       }
     });
@@ -636,7 +723,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
 
   // ---------- export ----------
   var exportEl = document.getElementById('export');
-  function exportJSON() { var p = clone(state.params); return JSON.stringify({ version: 6, model: 'streams+pipe', params: p }, null, 2); }
+  function exportJSON() { var p = clone(state.params); return JSON.stringify({ version: 7, model: 'streams+pipe+levels', params: p }, null, 2); }
   function updateExport() { exportEl.value = exportJSON(); }
   updateExport();
   var copyNote = document.getElementById('copy-note');
@@ -653,8 +740,11 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
   var saveBtn = document.getElementById('preset-save'), nameEl = document.getElementById('preset-name');
   function summary() {
     if (!last) return null;
-    var a = last[1];
-    return { firstClerkMin: a.out.firstClerk == null ? null : +(a.out.firstClerk / 60).toFixed(2), firstPrestigeDays: a.out.prestiges[0] ? +(a.out.prestiges[0].t / 86400).toFixed(2) : null, level2Day: a.out.level2At == null ? null : +(a.out.level2At / 86400).toFixed(2), waitBeforePrestigeHours: +(a.waitStats.first / 3600).toFixed(1), contentDays: a.waitStats.wallAt == null ? null : +(a.waitStats.wallAt / 86400).toFixed(1), longestWaitHours: +(a.longestWait / 3600).toFixed(1), paidRatio: last[0].out.prestiges[0] && last[2].out.prestiges[0] ? +(last[0].out.prestiges[0].t / last[2].out.prestiges[0].t).toFixed(1) : null, prestiges: a.out.prestiges.length };
+    var a = last[1], m = miles(a), f = miles(last[0]), pd = miles(last[2]);
+    function rd(x) { return x == null ? null : +x.toFixed(2); }
+    return { firstClerkMin: a.out.firstClerk == null ? null : +(a.out.firstClerk / 60).toFixed(2), firstPrestigeDays: a.out.prestiges[0] ? +(a.out.prestiges[0].t / 86400).toFixed(2) : null,
+      level2Day: rd(m.level2), boss2Day: rd(m.boss2), level3Day: rd(m.level3), boss3Day: rd(m.boss3), level4Day: rd(m.level4), boss4Day: rd(m.boss4), level5Day: rd(m.level5), finaleDay: rd(m.finale),
+      freeFinaleDay: rd(f.finale), paidFinaleDay: rd(pd.finale), digitizations: a.digitizations, longestWaitHours: +(a.longestWait / 3600).toFixed(1) };
   }
   function renderPresets(snap) {
     if (snap.empty) { listEl.innerHTML = '<li class="note">Збережених пресетів ще немає. Налаштуй параметри, дай назву й натисни «Зберегти».</li>'; return; }
@@ -665,7 +755,7 @@ textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-s
       var nm = document.createElement('div'); nm.className = 'pname'; nm.textContent = v.name || 'Без назви';
       var mt = document.createElement('div'); mt.className = 'pmeta';
       var s = v.summary || {};
-      mt.textContent = (v.savedAt ? new Date(v.savedAt).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' }) : '') + (s.firstPrestigeDays != null ? ' · цифровізація на ' + nf1.format(s.firstPrestigeDays) + ' дн' : '') + (s.level2Day != null ? ' · «Бригада» на ' + nf1.format(s.level2Day) + ' дн' : '');
+      mt.textContent = (v.savedAt ? new Date(v.savedAt).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' }) : '') + (s.firstPrestigeDays != null ? ' · цифровізація на ' + nf1.format(s.firstPrestigeDays) + ' дн' : '') + (s.level2Day != null ? ' · «Бригада» на ' + nf1.format(s.level2Day) + ' дн' : '') + (s.finaleDay != null ? ' · фінал на ' + nf1.format(s.finaleDay) + ' дн' : '');
       info.appendChild(nm); info.appendChild(mt);
       var btns = document.createElement('div'); btns.className = 'row';
       var load = document.createElement('button'); load.type = 'button'; load.textContent = 'Завантажити';

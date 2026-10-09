@@ -1,0 +1,233 @@
+# Стройова — доповнення до плану аналітики для специфікацій 011–014
+# Чернетка 9.10.2026. НЕ злито в tracking-plan.yaml: після підтвердження специфікацій перенести
+# в основний план (принцип VII: нова подія — спершу в план, потім у код) і підняти version до 3.
+# Формат і правила іменування — як у tracking-plan.yaml (object_action, snake_case, _sec, _log10, is_/has_).
+
+version: draft-011-014
+base_plan: "analytics/tracking-plan.yaml (version 2)"
+updated: "2026-10-09"
+specs: [011-level3-command, 012-level4-general-staff, 013-level5-finale-endless, 014-story]
+
+# ---------------- Глобальні властивості ----------------
+global_properties_changes:
+  - name: level_id
+    change: enum_extend
+    add: [komanduvannia, henshtab, bez_paperu]
+    spec: [011, 012, 013]
+  - name: dub_number
+    change: add
+    definition: {name: dub_number, type: integer, required: true, example: 0, description: "Номер Дубля нескінченного режиму; 0 до першого Дубля (013 FR-30)"}
+    spec: [013]
+  - name: is_finale_done
+    change: add
+    definition: {name: is_finale_done, type: boolean, required: true, example: false, description: "Гравець натиснув Y на finale-script (013 FR-18)"}
+    spec: [013]
+
+# ---------------- Розширення enum-ів наявних подій ----------------
+enum_extensions:
+  - {event: stream_unlock, property: stream_id, add: [zvedennia, zpz], spec: [011, 012]}
+  - {event: stream_unlock, property: unlock_index, note: "2–6 на Р3, 2–7 на Р4–Р5"}
+  - {event: upgrade_purchase, property: target_id, add: [zvedennia, zpz, narada, dopovid], spec: [011, 012]}
+  - {event: clerk_hire, property: target_id, add: [zvedennia, zpz, narada, dopovid], spec: [011, 012]}
+  - {event: session_end, property: bottleneck_id, add: [narada, dopovid], spec: [011, 012]}
+  - {event: session_end, property: levels, note: "на Р3 додаються zvedennia, narada; на Р4–Р5 — zpz, dopovid"}
+  - {event: telegram_choice_submit, property: slowdown_target_id, add: [zvedennia, zpz, narada, dopovid], spec: [011, 012]}
+  - {event: inspection_start, property: boss_id, add: [capital_commission, total_audit, digital_commission], spec: [011, 012, 013]}
+  - {event: inspection_item_complete, property: item_id, add: [kazna_kopiyka, nakazy_open, minutes_stitch, door_plates, carafe_full, kettles_hide, summary_check, summary_beats, slides_number, stack_meter, report_prep, brief_onepage, audit_acts, zpz_level, print_ejournal, laptop_glove, dashboard_font, act_kep], spec: [011, 012, 013]}
+  - {event: inspection_item_complete, property: method, add: [condition], note: "Пункт механіки підсумкової, перевірений на мить приїзду; шлеться разом з inspection_finish"}
+  - {event: random_event_resolve, property: event_type, add: [meeting_overrun, brief_onepage, sedo_failure], spec: [011, 012, 013]}
+  - {event: random_event_resolve, property: choice, add: [send_note, rewrite, formal_reply, print], note: "wait і expired — наявні"}
+  - {event: level_advance, property: from_level_id, add: [bryhada, komanduvannia, henshtab], spec: [011, 012, 013]}
+  - {event: level_advance, property: to_level_id, add: [komanduvannia, henshtab, bez_paperu], spec: [011, 012, 013]}
+  - {event: museum_journal_unlock, property: source, add: [final_inspection, conversion, story, finale], spec: [011, 012, 013, 014]}
+  - {event: curio_entry_share, property: entry_type, add: [pack, stack_meter, finale_card, personal_record, ptashka], spec: [011, 012, 013, 014]}
+  - {event: telegram_receive, property: is_scripted, note: "true для сюжетних телеграм 014 і сценарних телеграм фіналу 108–113"}
+
+# ---------------- Нові властивості наявних подій ----------------
+property_additions:
+  - event: inspection_start
+    spec: [011]
+    properties:
+      - {name: inspection_kind, type: string, required: true, enum: [regular, final], example: final, description: "final — підсумкова перевірка рівня (011 FR-2)"}
+      - {name: attempt_number, type: integer, required: false, example: 2, description: "Лише для final: номер спроби з 1"}
+  - event: inspection_finish
+    spec: [011, 012]
+    properties:
+      - {name: inspection_kind, type: string, required: true, enum: [regular, final], example: final}
+      - {name: is_mechanic_item_done, type: boolean, required: false, example: true, description: "Лише для final: пункт механіки рівня виконано на мить приїзду"}
+      - {name: is_level_exit_unlocked, type: boolean, required: false, example: true, description: "Лише для final: levelExitAllowed став true"}
+      - {name: zpz_share_pct, type: number, required: false, example: 42.5, description: "Лише Р4: частка «Звітів про звіти» від суми інших потоків на мить приїзду"}
+  - event: telegram_choice_submit
+    spec: [011]
+    properties:
+      - {name: pack_id, type: string, required: false, example: "pack_03", description: "Лише для телеграм пачки Р3"}
+      - {name: is_pack_summary, type: boolean, required: false, example: true, description: "Відповідь дано зведенням «Звести в одну відповідь»; ефекти в цій події — частка телеграми, сума — у telegram_pack_resolve"}
+  - event: level_advance
+    spec: [011]
+    properties:
+      - {name: final_attempts, type: integer, required: false, example: 1, description: "Скільки спроб підсумкової знадобилось на рівні, з якого вийшли"}
+  - event: session_end
+    spec: [012]
+    properties:
+      - {name: zpz_share_pct, type: number, required: false, example: 18.2, description: "Лише Р4–Р5: частка «Звітів про звіти» на кінець сесії"}
+      - {name: stack_cm, type: integer, required: false, example: 64, description: "Лише Р4: висота стосу на кінець сесії, до 999"}
+  - event: digitization_complete
+    spec: [013]
+    properties:
+      - {name: digital_stages_count, type: integer, required: false, example: 2, description: "Лише Р5: скільки ланок уже цифрові"}
+      - {name: cycle_sec_previous, type: integer, required: false, example: 172800, description: "Лише Р5: тривалість попереднього циклу Р5 для порівняння (013 FR-11)"}
+
+# ---------------- Нові події ----------------
+events:
+  # ---------- 011: пачки ----------
+  - name: telegram_pack_receive
+    category: telegrams
+    spec: "011 FR-17, FR-18"
+    description: "Пачка з трьох телеграм лягла у вхідні."
+    trigger: "Настала 03:00 за часом пристрою на Р3; якщо гравця не було — при поверненні. Окремо від неї надсилаються три telegram_receive."
+    answers: "Чи доходить одна пачка на добу і скільки пачок пропущено через ліміт «Нових»."
+    sampling: all
+    properties:
+      - {name: pack_id, type: string, required: true, example: "pack_03"}
+      - {name: pack_number, type: integer, required: true, example: 3, description: "Номер «Зведення № N» у грі"}
+      - {name: is_repeat, type: boolean, required: true, example: false}
+      - {name: delivery, type: string, required: true, enum: [live, while_away], example: while_away}
+
+  - name: telegram_pack_resolve
+    category: telegrams
+    spec: "011 FR-19–FR-22"
+    description: "Усі три телеграми пачки мають відповідь."
+    trigger: "Остання з трьох відповідей застосована (зведена або окрема)."
+    answers: "Чи справжній вибір між зведенням і окремими відповідями; скільки паперу й репутації він коштує."
+    sampling: all
+    properties:
+      - {name: pack_id, type: string, required: true, example: "pack_03"}
+      - {name: mode, type: string, required: true, enum: [summary, separate, mixed], example: summary}
+      - {name: choice_kind, type: string, required: false, enum: [diligent, formal_reply, drawer], example: diligent, description: "Лише для summary"}
+      - {name: paper_spent, type: integer, required: true, example: 4}
+      - {name: reputation_delta, type: integer, required: true, example: 10}
+      - {name: inspection_chance_pct, type: number, required: true, example: 0}
+      - {name: is_beats, type: boolean, required: true, example: true, description: "Пачка закрита «сумлінно» (для пункту summary_beats)"}
+      - {name: sec_since_received, type: integer, required: true, example: 21600}
+
+  # ---------- 012: стос ----------
+  - name: stack_meter_reach
+    category: economy
+    spec: "012 FR-15"
+    description: "Стос «Звітів про звіти» вперше в циклі досяг 100 см."
+    trigger: "Висота стосу перетнула 100 см; раз на цикл цифровізації. Запис «Метр звітів» створено в Журналі курйозів."
+    answers: "Чи досягають метра в типовій сесії і чи поширюють цей запис."
+    sampling: all
+    properties:
+      - {name: zpz_share_pct, type: number, required: true, example: 35.0}
+      - {name: zpz_level, type: integer, required: true, example: 24}
+      - {name: sec_since_session_start, type: integer, required: true, example: 180}
+      - {name: offline_share_pct, type: number, required: true, example: 80.0, description: "Яку частку висоти дав офлайн на початку сесії"}
+
+  # ---------- 013: Р5, фінал, Дублі ----------
+  - name: stage_convert
+    category: digitization
+    spec: "013 FR-4–FR-8"
+    description: "Паперову ланку перетворено на цифрову."
+    trigger: "Підтверджено «Оцифрувати ланку» в stage-convert, підписи списано, стан збережено."
+    answers: "Темп конвертацій на Р5 і чи не стала ціна стіною."
+    sampling: all
+    properties:
+      - {name: stage_id, type: string, required: true, enum: [kombat, stroy, fin, kazna, narada, dopovid], example: kombat}
+      - {name: convert_index, type: integer, required: true, example: 1, description: "1–6 у порядку convert.order"}
+      - {name: cost_log10, type: number, required: true, example: 14.2}
+      - {name: digitizations_on_level, type: integer, required: true, example: 0}
+      - {name: sec_since_level_start, type: integer, required: true, example: 5400}
+      - {name: sec_since_available, type: integer, required: true, example: 3600, description: "Від моменту, коли конвертація стала доступною"}
+
+  - name: finale_step_complete
+    category: story
+    spec: "013 FR-15–FR-23"
+    description: "Завершено крок фінальної послідовності."
+    trigger: "Крок стан-машини фіналу збережено як завершений."
+    answers: "Скільки гравців проходять фінал до кінця і де зупиняються (зокрема N на Y/N)."
+    sampling: all
+    properties:
+      - {name: step_id, type: string, required: true, enum: [order, script, last_book, call, credits, quiet, endless_offer], example: script}
+      - {name: step_index, type: integer, required: true, example: 2}
+      - {name: sec_since_finale_start, type: integer, required: true, example: 240}
+      - {name: is_resumed, type: boolean, required: true, example: false, description: "Крок продовжено після перезапуску або з банера"}
+      - {name: declined_count, type: integer, required: false, example: 1, description: "Лише script: скільки разів натиснуто N"}
+
+  - name: dub_start
+    category: endless
+    spec: "013 FR-23–FR-27"
+    description: "Почався Дубль нескінченного режиму."
+    trigger: "Утримано «Прийняти до виконання» в endless-intro, стан скинуто й збережено."
+    answers: "Скільки гравців ідуть у нескінченний режим, як швидко і з яким модифікатором."
+    sampling: all
+    properties:
+      - {name: dub_number, type: integer, required: true, example: 1}
+      - {name: modifier_id, type: string, required: true, enum: [two_copies, wet_seal, no_did], example: two_copies}
+      - {name: points_total, type: integer, required: true, example: 1840}
+      - {name: sec_since_finale, type: integer, required: true, example: 640000, description: "Від Y на finale-script"}
+      - {name: sec_since_offer, type: integer, required: true, example: 3600, description: "Від показу пропозиції Дубля"}
+
+  - name: personal_record_update
+    category: endless
+    spec: "013 FR-29"
+    description: "Оновлено локальний особистий рекорд."
+    trigger: "Новий найвищий Дубль або новий максимум log10 підписів за весь час (не частіше разу на сесію для lifetime_signatures)."
+    answers: "Чи мотивує рекорд без лідерборду; база для рішення про 020."
+    sampling: all
+    properties:
+      - {name: record_type, type: string, required: true, enum: [dub, lifetime_signatures], example: dub}
+      - {name: value, type: number, required: true, example: 3}
+      - {name: previous_value, type: number, required: true, example: 2}
+
+  # ---------- 014: сюжет ----------
+  - name: story_beat_deliver
+    category: story
+    spec: "014 FR-2–FR-10, FR-30"
+    description: "Сюжетний крок показано гравцеві."
+    trigger: "Рушій сюжету віддав крок із черги, і носій (записка, тост, дзвінок, сцена, телеграма тощо) став видимим."
+    answers: "Чи доходять арки, скільки кроків наздоганяють і як довго вони чекають у черзі."
+    sampling: all
+    properties:
+      - {name: beat_id, type: string, required: true, example: "st_who_writes_05"}
+      - {name: arc, type: string, required: true, enum: [who_writes, archaeologist, ptashka, kombat_leave, cat, tumbochkin, transition, finale], example: who_writes}
+      - {name: carrier, type: string, required: true, enum: [telegram, note, call, event_toast, curio, scene, archive_sheet, share_card, insp_act_line, credits_line, character_state], example: note}
+      - {name: beat_order, type: integer, required: true, example: 5}
+      - {name: delay_sec, type: integer, required: true, example: 21600, description: "Від готовності кроку до показу"}
+      - {name: is_catch_up, type: boolean, required: true, example: false}
+      - {name: is_while_away, type: boolean, required: true, example: true}
+
+  - name: archive_sheet_unlock
+    category: story
+    spec: "014 FR-16, FR-17"
+    description: "Отримано аркуш «Таблиць Археолога»."
+    trigger: "Аркуш додано в колекцію."
+    answers: "Як швидко збирається колекція і з яких джерел."
+    sampling: all
+    properties:
+      - {name: sheet_id, type: string, required: true, example: "ar_04"}
+      - {name: sheet_number, type: integer, required: true, example: 4}
+      - {name: source, type: string, required: true, enum: [gift, move, boss, conversion, catch_up], example: gift}
+      - {name: sheets_owned_after, type: integer, required: true, example: 4}
+
+  - name: archive_open
+    category: story
+    spec: "014 FR-18"
+    description: "Відкрито «Таблиці Археолога»."
+    trigger: "Показано шторку archive-sheets."
+    answers: "Чи читають аркуші, а не лише збирають."
+    sampling: all
+    properties:
+      - {name: source, type: string, required: true, enum: [museum, call, toast], example: museum}
+      - {name: sheets_owned, type: integer, required: true, example: 4}
+
+  - name: diary_open
+    category: story
+    spec: "014 FR-25"
+    description: "Відкрито «Щоденник стройовика»."
+    trigger: "Показано екран diary."
+    answers: "Чи цікавить щоденник окремо від рядка на довідці."
+    sampling: all
+    properties:
+      - {name: lines_owned, type: integer, required: true, example: 23}
+      - {name: lines_unseen, type: integer, required: true, example: 2}
