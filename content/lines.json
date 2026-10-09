@@ -719,7 +719,8 @@
     "pool": 8,
     "levels": [
       3,
-      4
+      4,
+      5
     ],
     "limit": 80,
     "lines": [
@@ -771,6 +772,78 @@
         "text": "Погоджуємо порядок денний наступної наради.",
         "chars": 43,
         "review": true
+      },
+      {
+        "id": "kava.narada_wait.09",
+        "text": "Нарада тепер у відеозв'язку. Камери вимкнені, рішень теж немає.",
+        "chars": 63,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_wait.10",
+        "text": "Мене не чути. Решта двадцять хвилин обговорювала, чи мене чути.",
+        "chars": 63,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_wait.11",
+        "text": "Нарада щодо переходу на цифру. Порядок денний роздрукували.",
+        "chars": 59,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_wait.12",
+        "text": "Хтось ділиться екраном. Екран — роздрукована таблиця.",
+        "chars": 53,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_wait.13",
+        "text": "Протокол ведуть в СЕДО. Підписуватимуть на папері, за звичкою.",
+        "chars": 62,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_wait.14",
+        "text": "На нараді вирішують, як проводити наради без паперу.",
+        "chars": 52,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_wait.15",
+        "text": "Ланка ще паперова. Нарада, відповідно, теж.",
+        "chars": 43,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_wait.16",
+        "text": "Нарада в бліндажі на трьох. Затягнулась на двох.",
+        "chars": 48,
+        "levels": [
+          5
+        ],
+        "review": true
       }
     ]
   },
@@ -780,7 +853,8 @@
     "pool": 8,
     "levels": [
       3,
-      4
+      4,
+      5
     ],
     "limit": 80,
     "lines": [
@@ -830,6 +904,78 @@
         "id": "kava.narada_found.08",
         "text": "Скінчили. Вирішили скоротити наради до години. Ухвалювали дві.",
         "chars": 62,
+        "review": true
+      },
+      {
+        "id": "kava.narada_found.09",
+        "text": "Від'єднався. Рішення: надіслати рішення окремим листом.",
+        "chars": 55,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_found.10",
+        "text": "Скінчили. Протокол у СЕДО, підписи — у черзі на КЕП.",
+        "chars": 52,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_found.11",
+        "text": "Вийшов з наради. Нарада, здається, ще ні.",
+        "chars": 41,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_found.12",
+        "text": "Ухвалили перейти на цифру. Протокол друкують.",
+        "chars": 45,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_found.13",
+        "text": "Закінчили на «Різному». «Різне» перенесли.",
+        "chars": 42,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_found.14",
+        "text": "Нараду закрито. Посилання на наступну вже в календарі.",
+        "chars": 54,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_found.15",
+        "text": "Розійшлися. Кіт лишився на нараді за мене.",
+        "chars": 42,
+        "levels": [
+          5
+        ],
+        "review": true
+      },
+      {
+        "id": "kava.narada_found.16",
+        "text": "Нарада скінчилась раніше: сів ноутбук у начштабу.",
+        "chars": 49,
+        "levels": [
+          5
+        ],
         "review": true
       }
     ]
@@ -6674,6 +6820,135 @@
         "text": "Конвертація доступна. Кожна цифрова ланка скорочує шлях наказу.",
         "titleChars": 24,
         "chars": 63,
+        "review": true
+      }
+    ]
+  },
+  "did.nodid.full": {
+    "where": "Дубль з модифікатором «Без Діда» (`no_did`, 013 FR-27): замість `did.full` — підпис до кадру запасного принтера, бак > 20%. Поза лімітом реплік (рішення 47)",
+    "perWeek": 14,
+    "pool": 7,
+    "levels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "limit": 60,
+    "lines": [
+      {
+        "id": "did.nodid.full.01",
+        "text": "Запасний принтер друкує. Ображатися ще не навчився.",
+        "chars": 51,
+        "review": true
+      },
+      {
+        "id": "did.nodid.full.02",
+        "text": "Запасний гріє фарбу, як уміє. Дід грів краще.",
+        "chars": 45,
+        "review": true
+      },
+      {
+        "id": "did.nodid.full.03",
+        "text": "Принтер новий, інвентарний номер ще не написали.",
+        "chars": 48,
+        "review": true
+      },
+      {
+        "id": "did.nodid.full.04",
+        "text": "Запасний працює тихо. Кіт до нього не звик.",
+        "chars": 43,
+        "review": true
+      },
+      {
+        "id": "did.nodid.full.05",
+        "text": "Друкує рівно. Без характеру, зате без зажовування.",
+        "chars": 50,
+        "review": true
+      },
+      {
+        "id": "did.nodid.full.06",
+        "text": "Генератор гуде, запасний старається. ×1,25 до підписів.",
+        "chars": 55,
+        "review": true
+      },
+      {
+        "id": "did.nodid.full.07",
+        "text": "Місце Діда в музеї, його робота — тут, у запасного.",
+        "chars": 51,
+        "review": true
+      }
+    ]
+  },
+  "did.nodid.low": {
+    "where": "Дубль «Без Діда»: замість `did.low`, пальне < 20%. Поза лімітом реплік",
+    "perWeek": 7,
+    "pool": 4,
+    "levels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "limit": 60,
+    "lines": [
+      {
+        "id": "did.nodid.low.01",
+        "text": "Пальне на межі. Запасний друкує, як звичайний принтер.",
+        "chars": 54,
+        "review": true
+      },
+      {
+        "id": "did.nodid.low.02",
+        "text": "Бак майже порожній. Запасний не скаржиться, бо не вміє.",
+        "chars": 55,
+        "review": true
+      },
+      {
+        "id": "did.nodid.low.03",
+        "text": "Фарба холодна. Дід би вже бурчав.",
+        "chars": 33,
+        "review": true
+      },
+      {
+        "id": "did.nodid.low.04",
+        "text": "Запасний охолов. Конвеєр іде звичайним темпом.",
+        "chars": 46,
+        "review": true
+      }
+    ]
+  },
+  "did.nodid.nopaper": {
+    "where": "Дубль «Без Діда»: замість `did.nopaper`, папір 0. Поза лімітом реплік",
+    "perWeek": 1,
+    "pool": 3,
+    "levels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "limit": 60,
+    "lines": [
+      {
+        "id": "did.nodid.nopaper.01",
+        "text": "Паперу немає. Запасний чекає мовчки.",
+        "chars": 36,
+        "review": true
+      },
+      {
+        "id": "did.nodid.nopaper.02",
+        "text": "Лоток порожній. Запасний мигає лампочкою, як учили.",
+        "chars": 51,
+        "review": true
+      },
+      {
+        "id": "did.nodid.nopaper.03",
+        "text": "Без паперу стоїть навіть запасний.",
+        "chars": 34,
         "review": true
       }
     ]
