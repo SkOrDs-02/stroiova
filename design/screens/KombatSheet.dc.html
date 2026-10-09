@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Комбата шукають</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: flex-start; gap: 8px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 12px; color: var(--muted)">1-й батальйон · бліндаж</span>
+        <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">186 412</span>
+      </div>
+      <span style="width: 64px; height: 44px; border-radius: var(--radius-8); border: 1px solid var(--accent)"></span>
+      <span style="width: 44px; height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span></div>
+    <div style="height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="ks-title" style="max-height: 90%">
+    <div class="st-sheet-grab" aria-hidden="true"></div>
+    <div class="st-sheet-head">
+      <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg></div>
+      <div class="st-sheet-title">
+        <h2 class="st-h2" id="ks-title">{{title}}</h2>
+        <p class="st-sub" style="font-size: 12px">Ланка «Резолюції комбата» · рів. 60</p>
+      </div>
+      <a class="st-iconbtn st-iconbtn--bare" href="Main.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+      <sc-if value="{{chip.wait}}" hint-placeholder-val="{{true}}"><span class="st-chip" aria-label="Резолюції в чверть сили ще 18 хвилин"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>×0,25 · ще 18 хв</span></sc-if>
+      <sc-if value="{{chip.run}}" hint-placeholder-val="{{false}}"><span class="st-chip st-chip--accent" aria-label="Посильний у дорозі, ще 3 хвилини"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>посильний · ще 3 хв</span></sc-if>
+      <sc-if value="{{chip.done}}" hint-placeholder-val="{{false}}"><span class="st-chip st-chip--done"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>знайшли</span></sc-if>
+      <span style="font-size: 13px; line-height: 1.4; color: var(--accent)">{{status}}</span>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: flex-start">
+      <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: {{av}}; color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">{{avInit}}</div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 12px; color: var(--muted)">{{who}}</span>
+        <div style="padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; font-size: 15px; line-height: 1.45">{{line}}</div>
+      </div>
+    </div>
+
+    <sc-if value="{{done}}" hint-placeholder-val="{{false}}">
+      <article class="st-paper st-paper--card" aria-label="Рапорт із резолюцією комбата: Не заперечую. Граніт." style="gap: 6px">
+        <span class="st-doc-meta">Рапорт № 1 208 · вх. 12/604</span>
+        <div class="st-doc-res" style="align-self: flex-end; margin: -2px 12px 2px 0; text-align: right">Не заперечую.<br>Граніт. 09.10</div>
+        <span class="st-doc-meta">Резолюцію поставлено. Місце підписання: капот.</span>
+      </article>
+    </sc-if>
+
+    <div class="st-flow" role="group" aria-label="{{flowAria}}">
+      <div class="st-flow-nums"><span class="st-flow-part">Потоки <b>4 392/хв</b></span><span class="st-flow-arrow"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span><span class="st-flow-part is-narrow">Погодження <b>{{pipe}}</b></span></div>
+      <sc-if value="{{stopped}}" hint-placeholder-val="{{true}}"><span class="st-flow-verdict"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Вузько: <b>Резолюції комбата</b>, ×0,25 {{left}}</span></sc-if>
+      <sc-if value="{{done}}" hint-placeholder-val="{{false}}"><span class="st-flow-verdict">Вузько: <b>Резолюції комбата</b></span></sc-if>
+    </div>
+
+    <sc-if value="{{choose}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div class="st-card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 14px; font-weight: 600">Чекати</span>
+          <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">Комбат повернеться сам за 18 хв. Безкоштовно. Резолюції тим часом ідуть у чверть сили.</span>
+        </div>
+        <div class="st-card" style="padding: 11.5px 13.5px; display: flex; flex-direction: column; gap: 4px; border: 1.5px solid var(--accent)">
+          <div style="display: flex; align-items: baseline; gap: 8px"><span style="flex: 1; font-size: 14px; font-weight: 600">Відправити посильного</span><b style="font: 600 13px/1.3 var(--font-mono); color: var(--accent)">12 тис.</b></div>
+          <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">Знайде за 3 хв. Підписи за папку з документами й дорогу.</span>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{running}}" hint-placeholder-val="{{false}}">
+      <p class="st-sub" style="color: var(--text)">Посильний побіг на позиції з папкою. Резолюції йдуть у чверть сили, поки він не повернеться.</p>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <sc-if value="{{choose}}" hint-placeholder-val="{{true}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)" aria-label="Відправити посильного за 12 тисяч підписів"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>Відправити посильного</a>
+        <a href="Main.dc.html" class="st-btn st-btn--neutral st-btn--m">Чекати 18 хв</a>
+      </sc-if>
+      <sc-if value="{{running}}" hint-placeholder-val="{{false}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">Добре</a>
+      </sc-if>
+      <sc-if value="{{done}}" hint-placeholder-val="{{false}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">До стройової</a>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["чекаємо","посильного відправлено","знайшли"],"default":"чекаємо","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'чекаємо';
+    var NB = ' ';
+    var wait = st === 'чекаємо', run = st === 'посильного відправлено', done = st === 'знайшли';
+    var left = run ? 'ще 3' + NB + 'хв' : 'ще 18' + NB + 'хв';
+    return {
+      title: done ? 'Комбата знайшли' : 'Комбата шукають',
+      chip: { wait: wait, run: run, done: done },
+      status: done ? 'Резолюції знову йдуть.' : 'Комбат на позиціях. Резолюції ×0,25, не довше 30 хв.',
+      av: done ? 'var(--cover-olive)' : 'var(--cover-navy)',
+      avInit: done ? 'Г' : 'К',
+      who: done ? 'Комбат «Граніт»' : 'Начштабу «Кава»',
+      line: done ? 'Знайшли. Підписав на капоті.' : 'Без резолюції комбата не понесу. Шукай його.',
+      pipe: done ? '2' + NB + '880/хв' : '720/хв',
+      stopped: !done, left: left, done: done,
+      choose: wait, running: run,
+      flowAria: done ? 'Потоки 4 392 за хвилину, погодження 2 880 за хвилину. Вузько: Резолюції комбата' : 'Потоки 4 392 за хвилину, погодження 720 за хвилину. Вузько: Резолюції комбата, у чверть сили ' + left
+    };
+  }
+}
+</script>
+</body>
+</html>

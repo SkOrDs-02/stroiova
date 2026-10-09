@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Це не смішно</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+textarea{font:inherit}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+    <div style="height: 44px; display: flex; align-items: center; gap: 12px">
+      <div style="width: 72px; height: 14px; border-radius: 7px; background: var(--surface)"></div>
+      <div style="flex: 1"></div>
+      <div style="width: 96px; height: 14px; border-radius: 7px; background: var(--surface)"></div>
+    </div>
+    <div style="height: 300px; border-radius: var(--radius-4); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 64px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 64px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <sc-if value="{{s.form}}" hint-placeholder-val="{{true}}">
+    <div role="dialog" aria-modal="true" aria-labelledby="flag-title" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 88%; box-sizing: border-box; background: var(--bg); border-radius: 12px 12px 0 0; box-shadow: var(--shadow-sheet); padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 12px">
+      <div aria-hidden="true" style="align-self: center; width: 36px; height: 4px; border-radius: 2px; background: var(--border)"></div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 36px; height: 36px; flex-shrink: 0; border-radius: var(--radius-8); background: var(--border); color: var(--text); display: flex; align-items: center; justify-content: center">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4h11l-2 4 2 4H5"></path></svg>
+        </div>
+        <div style="flex: 1; min-width: 0">
+          <h2 id="flag-title" class="st-h2">Це не смішно</h2>
+          <p class="st-sub" style="font-size: 12px">Телеграма № 4495 · Про моральний стан</p>
+        </div>
+        <a href="TgDetail.dc.html" class="st-iconbtn st-iconbtn--bare" aria-label="Закрити">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </a>
+      </div>
+
+      <p style="margin: 0; font-size: 14px; line-height: 1.5">Скажи, що не так. Причину можна не обирати.</p>
+
+      <div role="radiogroup" aria-label="Причина" style="display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{reasons}}" as="it" hint-placeholder-count="4">
+          <button role="radio" aria-checked="{{it.pressed}}" onClick="{{it.tap}}" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-radius: var(--radius-10); border: 1px solid {{it.border}}; background: {{it.bg}}; color: {{it.color}}; text-align: left; font-size: 14px; font-weight: 500">
+            <span aria-hidden="true" style="width: 18px; height: 18px; flex-shrink: 0; box-sizing: border-box; border-radius: 50%; border: 2px solid currentColor; display: flex; align-items: center; justify-content: center">
+              <sc-if value="{{it.on}}" hint-placeholder-val="{{false}}">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor"></span>
+              </sc-if>
+            </span>
+            <span style="flex: 1">{{it.t}}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; color: var(--muted)">Коментар, якщо хочеш</span>
+        <textarea rows="3" placeholder="Що саме не так?" style="width: 100%; box-sizing: border-box; min-height: 80px; resize: none; padding: 10px 12px; border-radius: var(--radius-10); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 14px; line-height: 1.45"></textarea>
+      </label>
+
+      <p style="margin: 0; font-size: 12px; line-height: 1.4; color: var(--muted)">Надсилаємо номер телеграми, причину й коментар. Без позивного і без імені.</p>
+
+      <button onClick="{{send}}" class="st-btn st-btn--primary st-btn--l">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 21V4h11l-2 4 2 4H5"></path></svg>
+        Надіслати позначку
+      </button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{s.thanks}}" hint-placeholder-val="{{false}}">
+    <div role="dialog" aria-modal="true" aria-labelledby="thanks-title" style="position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: var(--bg); border-radius: 12px 12px 0 0; box-shadow: var(--shadow-sheet); padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 14px">
+      <div aria-hidden="true" style="align-self: center; width: 36px; height: 4px; border-radius: 2px; background: var(--border)"></div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 36px; height: 36px; flex-shrink: 0; border-radius: var(--radius-8); background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+        </div>
+        <div style="flex: 1; min-width: 0">
+          <h2 id="thanks-title" class="st-h2">Дякуємо</h2>
+          <p class="st-sub" style="font-size: 12px">Позначку отримано</p>
+        </div>
+        <a href="TgDetail.dc.html" class="st-iconbtn st-iconbtn--bare" aria-label="Закрити">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </a>
+      </div>
+
+      <article class="st-paper st-paper--card" aria-label="Позначку зараховано" style="flex-direction: row; align-items: center; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span class="st-doc-meta">Позначка до телеграми № 4495</span>
+          <span class="st-doc-title" style="font-size: 15px">Не смішно</span>
+        </div>
+        <span class="st-stamp" style="--st-rot:-6deg;--st-edge:110deg; flex-shrink: 0">Зараховано</span>
+      </article>
+
+      <p style="margin: 0; font-size: 14px; line-height: 1.5">Телеграму перечитаємо. Якщо жарт б’є по людях, а не по паперу, її замінять оновленням.</p>
+
+      <a href="TgDetail.dc.html" class="st-btn st-btn--primary st-btn--l">До телеграми</a>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["форма","дякуємо"],"default":"форма","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.props.state ?? 'форма';
+    var sel = (this.state && this.state.sel !== undefined) ? this.state.sel : -1;
+    var labels = ['Б’є по людях, а не по паперу', 'Неправда: так не буває', 'Образливо для військових', 'Просто не смішно'];
+    var reasons = labels.map(function (t, i) {
+      var on = i === sel;
+      return {
+        t: t,
+        on: on,
+        pressed: on ? 'true' : 'false',
+        bg: on ? 'var(--accent)' : 'transparent',
+        color: on ? 'var(--accent-ink)' : 'var(--text)',
+        border: on ? 'var(--accent)' : 'var(--border-strong)',
+        tap: function () { self.setState({ sel: on ? -1 : i }); }
+      };
+    });
+    var sent = st === 'форма' && !!(this.state && this.state.sent);
+    return {
+      reasons: reasons,
+      send: function () { self.setState({ sent: true }); },
+      s: { form: st === 'форма' && !sent, thanks: st === 'дякуємо' || sent }
+    };
+  }
+}
+</script>
+</body>
+</html>

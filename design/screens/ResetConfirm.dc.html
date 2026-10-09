@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Скинути прогрес</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 20px">
+    <div style="display: flex; align-items: center; gap: 4px; height: 52px; margin-left: -12px">
+      <span style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg></span>
+      <span style="font-family: var(--font-display); font-weight: 700; font-size: 20px">Налаштування</span>
+    </div>
+    <div style="height: 96px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 232px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 116px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <sc-if value="{{s.step1}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px">
+      <div role="dialog" aria-modal="true" aria-labelledby="rc1" style="position: relative; width: 100%; box-sizing: border-box; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: center; gap: 10px; padding-right: 40px">
+          <div aria-hidden="true" style="display: flex; gap: 4px; width: 56px">
+            <i style="flex: 1; height: 4px; border-radius: 2px; background: var(--accent)"></i>
+            <i style="flex: 1; height: 4px; border-radius: 2px; background: var(--border)"></i>
+          </div>
+          <span style="font-family: var(--font-mono); font-size: 12px; color: var(--muted)">Крок 1 з 2</span>
+        </div>
+        <a href="Settings.dc.html" aria-label="Закрити" style="position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: var(--text)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
+        </a>
+        <h2 id="rc1" style="margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 20px; line-height: 1.3">Скинути прогрес?</h2>
+        <p style="margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted)">Гра почнеться з наказу № 1. Повернути справу не вийде.</p>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 12px; font-weight: 500; color: var(--muted)">Зникне</span>
+          <span style="font-size: 14px; line-height: 1.45">Підписи, рівні потоків і ланок, діловоди, цифрові бали, музей, телеграми й особова справа.</span>
+        </div>
+        <div style="border: 1.5px solid var(--accent); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+          <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--accent)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+            Лишається
+          </span>
+          <span style="font-size: 14px; line-height: 1.45">Покупки. «Без реклами» і «Розширене сховище» працюватимуть одразу.</span>
+        </div>
+
+        <a href="Settings.dc.html" class="st-btn st-btn--primary st-btn--l">Не скидати</a>
+        <button onClick="{{toStep2}}" class="st-btn st-btn--neutral st-btn--m">Скинути прогрес</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{s.step2}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px">
+      <div role="dialog" aria-modal="true" aria-labelledby="rc2" style="width: 100%; display: flex; flex-direction: column; gap: 12px">
+        <article class="st-paper" style="padding-top: 20px; padding-bottom: 20px; gap: 12px; box-shadow: var(--shadow-stack)">
+          <span class="st-paper-num" aria-hidden="true">2</span>
+          <span class="st-doc-meta">Крок 2 з 2</span>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="rc2" class="st-doc-title" style="margin: 0">Акт № 0</h2>
+            <span class="st-doc-meta">про списання особової справи</span>
+          </div>
+          <hr class="st-doc-rule">
+          <p class="st-doc-body">Особову справу позивного «Ексель» списати. Підписи, діловодів і цифрові бали здати в архів. Архів не зберігається.</p>
+          <div class="st-doc-row"><span>Покупки</span><i class="st-doc-dots"></i><span class="st-doc-val">лишаються</span></div>
+          <div class="st-doc-foot">
+            <div class="st-doc-sign">
+              <div style="width: 150px; height: 30px"></div>
+              <span>Начальник стройової частини</span>
+            </div>
+          </div>
+        </article>
+        <a href="OnbTitle.dc.html" class="st-btn st-btn--primary st-btn--l">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg>
+          Підписати й скинути
+        </a>
+        <a href="Settings.dc.html" class="st-btn st-btn--neutral st-btn--m">Не скидати</a>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["крок 1","крок 2"],"default":"крок 1","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.props.state ?? 'крок 1';
+    var two = (this.state && this.state.step2) || st === 'крок 2';
+    return {
+      s: { step1: !two, step2: two },
+      toStep2: function () { self.setState({ step2: true }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,709 @@
+<title>Економіка Стройової</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Unbounded:wght@600&display=swap">
+<style>
+/* Layout: results column (verdicts → chart → table) beside a parameters panel; stacks on phones. */
+:root {
+  --bg: #F2F3EC; --surface: #FFFFFF; --sunk: #E8EADF; --fg: #1E211A; --muted: #575B4C; --line: #D3D6C7;
+  --accent: #7A5C00; --accent-fill: #E9B824; --on-accent: #1E211A;
+  --good: #2D6A2F; --good-bg: #E1EEDB; --bad: #A3261D; --bad-bg: #F6E0DC;
+  --s-free: #7C8170; --s-ads: #2F64A8; --s-paid: #B07F06;
+  --grid: rgba(30, 33, 26, 0.08);
+  --font-display: 'Unbounded', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1B1E16; --surface: #24281E; --sunk: #2D3226; --fg: #ECE8D9; --muted: #B3B19E; --line: #3C4234;
+  --accent: #E9B824; --accent-fill: #E9B824; --on-accent: #1E211A;
+  --good: #8BC98A; --good-bg: #24331F; --bad: #F08A78; --bad-bg: #3A231E;
+  --s-free: #A4A894; --s-ads: #7FA9E6; --s-paid: #E9B824;
+  --grid: rgba(236, 232, 217, 0.09);
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #1B1E16; --surface: #24281E; --sunk: #2D3226; --fg: #ECE8D9; --muted: #B3B19E; --line: #3C4234;
+  --accent: #E9B824; --accent-fill: #E9B824; --on-accent: #1E211A;
+  --good: #8BC98A; --good-bg: #24331F; --bad: #F08A78; --bad-bg: #3A231E;
+  --s-free: #A4A894; --s-ads: #7FA9E6; --s-paid: #E9B824;
+  --grid: rgba(236, 232, 217, 0.09);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding-inline: 16px; padding-block: 20px 48px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.eyebrow { margin: 0 0 6px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--muted); }
+h1 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: clamp(22px, 3vw, 30px); letter-spacing: 0.01em; text-wrap: balance; }
+.lede { margin: 8px 0 0; max-width: 62ch; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+button:hover { border-color: var(--muted); }
+button:focus-visible, input:focus-visible, summary:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent); font-weight: 600; }
+.status { font-family: var(--font-mono); font-size: 12px; color: var(--muted); min-width: 9ch; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 20px; align-items: start; }
+@media (max-width: 960px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.results { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
+.card h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+.card .sub { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.checks { display: flex; flex-direction: column; }
+.check { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 14px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.check:first-child { border-top: 0; padding-top: 0; }
+.check .name { font-weight: 500; }
+.check .meta { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.check .val { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; text-align: right; }
+.pill { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--good-bg); color: var(--good); }
+.pill.no { background: var(--bad-bg); color: var(--bad); }
+.pill.na { background: var(--sunk); color: var(--muted); }
+.chart-box { position: relative; height: 340px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.legend span::before { content: ''; display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: middle; background: var(--c); }
+.legend .mark::before { width: 0; height: 12px; border-left: 2px dashed var(--muted); background: none; border-radius: 0; }
+.legend .mark2::before { width: 3px; height: 12px; background: var(--muted); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; white-space: nowrap; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.num.soft { white-space: normal; min-width: 10ch; }
+#scen-table th { white-space: normal; vertical-align: bottom; }
+#scen-table { min-width: 980px; }
+#scen-table td:first-child { min-width: 11ch; }
+#scen-table td:last-child { min-width: 18ch; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--c); margin-right: 8px; vertical-align: -1px; }
+details.howto summary { cursor: pointer; font-weight: 600; }
+details.howto p, details.howto li { color: var(--muted); max-width: 70ch; }
+details.howto ul { padding-left: 18px; }
+.params { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.params details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.params summary { cursor: pointer; padding: 12px 14px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
+.params summary::-webkit-details-marker { display: none; }
+.params summary::after { content: '+'; font-family: var(--font-mono); color: var(--muted); }
+.params details[open] summary::after { content: '−'; }
+.pbody { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 10px; align-items: center; }
+.field label { font-size: 13px; }
+.field small { display: block; color: var(--muted); font-size: 12px; }
+input[type="number"], input[type="text"] { font: inherit; font-family: var(--font-mono); font-size: 13px; width: 100%; min-height: 36px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+.grid-table { overflow-x: auto; }
+.grid-table table { min-width: 560px; }
+.grid-table td { padding: 4px; border-bottom: 0; }
+.grid-table th { padding: 4px; font-size: 11px; white-space: normal; vertical-align: bottom; }
+.grid-table input[type="text"] { font-family: var(--font-body); }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+textarea { width: 100%; min-height: 160px; font-family: var(--font-mono); font-size: 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 8px; resize: vertical; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.presets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.presets li { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.presets .pname { font-weight: 500; }
+.presets .pmeta { font-size: 12px; color: var(--muted); }
+.presets button { min-height: 36px; padding: 0 10px; font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Пісочниця балансу v6 · 3 типи гравців · 21 день гри · рівні 1 і 2 · події</p>
+      <h1>Економіка Стройової</h1>
+      <p class="lede">Віртуальний гравець заходить у гру за розкладом, заправляє генератор, готується до перевірок, ганяє акти подарунків і купує те, що найшвидше окупається, а коли застряг — цифровізується. Після третьої цифровізації переходить на «Бригаду». Змінюй параметри — модель перераховує всі три сценарії й підсвічує цілі темпу, яких не досягнуто.</p>
+    </div>
+    <div class="actions">
+      <button class="primary" id="run" type="button">Перерахувати</button>
+      <button id="reset" type="button">Скинути до стартових</button>
+      <span class="status" id="status" aria-live="polite">Рахую…</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="results">
+      <div class="card">
+        <h2>Цілі темпу</h2>
+        <p class="sub">Рахуються для гравця, який дивиться рекламу, крім рядка про перевагу покупки.</p>
+        <div class="checks" id="checks"></div>
+      </div>
+
+      <figure class="card" style="margin:0">
+        <h2>Дохід за хвилину, логарифмічна шкала</h2>
+        <p class="sub">Провали до нуля — цифровізації: прогрес скидається, множник лишається. Суцільна лінія — перехід на «Бригаду».</p>
+        <div class="chart-box"><canvas id="chart" aria-label="Дохід підписів за хвилину по днях для трьох сценаріїв" role="img"></canvas></div>
+        <div class="legend" id="legend"></div>
+      </figure>
+
+      <div class="card">
+        <h2>Сценарії поруч</h2>
+        <p class="sub">«Вузьке місце» — частка ігрового часу, коли дохід обмежували потоки документів, а коли труба погоджень.</p>
+        <div class="table-wrap"><table id="scen-table"></table></div>
+        <p class="sub" id="paper-note" style="margin-top:10px"></p>
+      </div>
+
+      <details class="card howto">
+        <summary>Як працює модель</summary>
+        <ul>
+          <li>Чотири потоки документів (рапорти, акти, довідки, накладні) виробляють підписи. Вони сходяться в трубу погоджень: резолюції комбата, стройова, фінслужба.</li>
+          <li>Дохід за хвилину — менше з двох: сума потоків або найвужча ланка труби. Новий потік ніколи не зменшує дохід, але без ширшої труби може нічого не додати.</li>
+          <li>Ціна наступного рівня множиться на «ріст ціни». Кожні 25 рівнів (віха) виробіток подвоюється.</li>
+          <li>Без діловода ланка працює лише поки гравець у грі. Офлайн-дохід іде, тільки коли діловоди є всюди, і накопичується не довше за ліміт сховища.</li>
+          <li>Віртуальний гравець спершу наймає діловодів. Потім купує те, що найшвидше окупається, докуповує рівні до віх і відкриває новий потік одразу з діловодом. Поки збирає на дороге, бере дешевше, якщо воно окупиться раніше. Коли потоки й труба врівень, качає їх разом.</li>
+          <li>Цифровізація можлива, коли відкриті всі потоки і бали за неї не менші за мінімум. Бали = (усі підписи циклу ÷ дільник) у степені; кожен бал дає постійний бонус до доходу. Гравець чекає, доки бали досягнуть порогу наступної, але якщо наступна покупка далі ніж задана кількість годин, цифровізується раніше — коли нова цифровізація дає хоча б задану частку вже набраних балів.</li>
+          <li>Цифровізація з заданим номером на рівні 1 переводить на рівень 2 «Бригада». Бали переходять. Там ті самі потоки й ланки з множниками виробітку, цін і діловодів, плюс новий потік і нова ланка. Цифровізації на «Бригаді» лишають гравця на ній.</li>
+          <li>Генератор: гравець заправляє його на початку кожної сесії, бака вистачає на задану кількість годин (і офлайн теж). Поки є пальне, дохід множиться на бонус.</li>
+          <li>Реклама: буст ×2 на кілька годин кілька разів на день (у моделі — середній множник за добу) і ×N до офлайн-доходу на перших поверненнях дня. Після покупки «Без реклами» те саме дає кнопка «Забрати».</li>
+          <li>Телеграми «виконати сумлінно»: кілька разів на день на початку випадкової сесії (крім першої) одна випадкова ланка працює повільніше. Дні й ланки задає зерно випадковості; віртуальний гравець планує покупки без урахування сповільнень.</li>
+          <li>Очікування покупки — від однієї покупки до наступної. Очікування балів перед цифровізацією (нічого купувати, але бали ростуть) показане окремо й у ціль не входить.</li>
+          <li>Генератор дає бонус, поки в баку більше заданої частки (20%), і множить також тапи.</li>
+          <li>Онбординг: «Пташка в небі» ×2 на перші 20 хв ігрового часу (лише в грі) і бонус архіву — 60 хв базового доходу на 7-й хвилині. Кіт Сейф — 5 хв базового доходу, не частіше разу на годину, з другої сесії. Базовий дохід — без бустів, подарунків, перевірки й пального.</li>
+          <li>«Комбата шукають»: на початку сесії (не першої) з імовірністю 0,2, не частіше разу на добу, резолюції ×0,25 на 10–30 хв; гравець чекає.</li>
+          <li>Планові перевірки за репутацією «норма»: перша — на першій сесії через 8 год, далі раз на 24–48 год, приїзд 10:00–21:00, попередження за 2–3 год. Чекліст коштує хвилини базового доходу. Гравець з рекламою чи «Без реклами» закриває його роликом або «Забрати», безкоштовний — підписами, коли вистачає. Якщо жодна сесія не потрапляє між попередженням і приїздом, гравець заходить на хвилину за пушем за 2 год. Пройшли — ×3 на 2 год, ні — Стройова ×0,5 на 1 год. Позапланові не моделюються.</li>
+          <li>Подарунки з 2-го дня, раз на добу, о 08:00–22:00, через 20 год після кінця попередньої гонки, коли відкрито «Акти на майно»: дрон, лопати, дрон, генератор. Гравець з рекламою зрізає −50% залишку акта (ліміт на день і на сесію), «Послатися на цифру» −2 год раз за гонку при балах ≥ 1. Виграв — множник на решту служби; генератор тримає бонус пального.</li>
+          <li>Сценарій «Купив» бере «Без реклами» з початку і «Стартовий набір» після першого результату перевірки: +50 000 підписів і бак на 12 год.</li>
+          <li>Музей: журнали № 1–3 за 1-шу цифровізацію, № 4–5 за 2-гу, № 6 — через задані години після 1-ї, № 7 — за першу пройдену перевірку після 1-ї, № 8 — коли є 7 інших (подвоює бонуси).</li>
+          <li>Папір рахується окремо й нічого не блокує: Накладні дають аркуші за рівень, подарунок — 20, кожна телеграма «сумлінно» забирає середню ціну. Якщо паперу бракує, модель лише рахує такі випадки.</li>
+          <li>Не враховано: позапланові перевірки, вибір у телеграмах (усі вважаються сумлінними), ефекти телеграми № 20 на гонку, посильного до комбата, розширене сховище.</li>
+        </ul>
+      </details>
+    </section>
+
+    <aside class="params" id="params" aria-label="Параметри моделі">
+      <details open>
+        <summary>Гравець</summary>
+        <div class="pbody" id="p-player"></div>
+      </details>
+      <details>
+        <summary>Потоки документів</summary>
+        <div class="pbody">
+          <p class="note">Виробіток — підписів за хвилину на рівень. Відкриття — ціна першого рівня.</p>
+          <div class="grid-table"><table id="t-streams"></table></div>
+        </div>
+      </details>
+      <details>
+        <summary>Труба погоджень</summary>
+        <div class="pbody">
+          <p class="note">Пропускна — підписів за хвилину на рівень. Усі ланки відкриті з початку.</p>
+          <div class="grid-table"><table id="t-stages"></table></div>
+        </div>
+      </details>
+      <details>
+        <summary>Віхи, реклама, покупка</summary>
+        <div class="pbody" id="p-boosts"></div>
+      </details>
+      <details>
+        <summary>Генератор, телеграми, комбат</summary>
+        <div class="pbody" id="p-events"></div>
+      </details>
+      <details>
+        <summary>Онбординг і Кіт Сейф</summary>
+        <div class="pbody" id="p-onb"></div>
+      </details>
+      <details>
+        <summary>Перевірки</summary>
+        <div class="pbody" id="p-insp"></div>
+      </details>
+      <details>
+        <summary>Подарунки й гонка</summary>
+        <div class="pbody">
+          <div id="p-race" style="display:flex;flex-direction:column;gap:10px"></div>
+          <p class="note">Кроки акта — години: Акти, Комбат, Стройова, Фінслужба. Порядок подарунків: дрон, лопати, дрон, генератор. Множник генератора не діє: він тримає бонус пального.</p>
+          <div class="grid-table"><table id="t-gifts"></table></div>
+        </div>
+      </details>
+      <details>
+        <summary>Папір і музей</summary>
+        <div class="pbody" id="p-paper"></div>
+      </details>
+      <details>
+        <summary>Цифровізація</summary>
+        <div class="pbody" id="p-prestige"></div>
+      </details>
+      <details>
+        <summary>Рівень 2 «Бригада»</summary>
+        <div class="pbody">
+          <div id="p-level2" style="display:flex;flex-direction:column;gap:10px"></div>
+          <p class="note">Новий потік і нова ланка задані в одиницях рівня 1: множники рівня 2 діють і на них. Потоки й ланки рівня 1 беруться з таблиць вище.</p>
+          <div class="grid-table"><table id="t-l2-stream"></table></div>
+          <div class="grid-table"><table id="t-l2-stage"></table></div>
+        </div>
+      </details>
+      <details>
+        <summary>Цілі темпу</summary>
+        <div class="pbody" id="p-targets"></div>
+      </details>
+      <details open>
+        <summary>Пресети</summary>
+        <div class="pbody">
+          <div class="row">
+            <label for="preset-name" class="note" style="flex-basis:100%">Назва пресета</label>
+            <input type="text" id="preset-name" placeholder="Повільніший старт" style="flex:1 1 160px">
+            <button id="preset-save" type="button">Зберегти</button>
+          </div>
+          <p class="note" id="preset-note">Пресети зберігаються в артефакті, Claude зможе їх прочитати.</p>
+          <ul class="presets" id="preset-list"></ul>
+        </div>
+      </details>
+      <details>
+        <summary>JSON для репо</summary>
+        <div class="pbody">
+          <p class="note">Те саме, що піде в <code>balance/</code>: параметри без цілей.</p>
+          <label for="export" class="note">Параметри у JSON</label>
+          <textarea id="export" readonly></textarea>
+          <div class="row">
+            <button id="copy" type="button">Копіювати</button>
+            <button id="download" type="button" hidden>Завантажити balance.json</button>
+            <span class="note" id="copy-note" aria-live="polite"></span>
+          </div>
+        </div>
+      </details>
+    </aside>
+  </div>
+</div>
+
+<script type="text/plain" id="sim-src">
+/*SIM*/
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function () {
+  var SIM_SRC = document.getElementById('sim-src').textContent;
+  var lib = (new Function(SIM_SRC + '\nreturn { DEFAULTS: DEFAULTS, SCENARIOS: SCENARIOS, simulate: simulate, waitStats: waitStats, stallStats: stallStats, withDefaults: withDefaults };'))();
+  var TARGETS_DEFAULT = { clerkMin: 3, clerkMax: 4, prestigeMinDays: 3, prestigeMaxDays: 5, waitMaxHours: 12, level2MinDays: 7, level2MaxDays: 9, contentDaysMin: 14, paidRatioMax: 3, storageLossMax: 15 };
+  var STORE_KEY = 'stroyova-econ-v6';
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  // older presets (v3, v4) lack newer fields: the model fills them in with the new mechanics switched off,
+  // so they behave exactly as when they were saved
+  // (the page build binds lib to the globals of sim.js, so no local function may be called withDefaults)
+  function fillParams(params) { return lib.withDefaults(params); }
+  var state = { params: clone(lib.DEFAULTS), targets: clone(TARGETS_DEFAULT) };
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (saved && saved.params && saved.params.streams) { state.params = fillParams(saved.params); state.targets = Object.assign(clone(TARGETS_DEFAULT), saved.targets || {}); }
+  } catch (e) {}
+  function persist() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ---------- formatting ----------
+  var nf0 = new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 0 });
+  var nf1 = new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+  var nfs = new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 1 });
+  function r1(x) { return Math.round(x * 10) / 10; }
+  function big(n) {
+    if (n == null || !isFinite(n)) return '—';
+    var a = Math.abs(n);
+    if (a >= 1e12) return nfs.format(n / 1e12) + ' трлн';
+    if (a >= 1e9) return nfs.format(n / 1e9) + ' млрд';
+    if (a >= 1e6) return nfs.format(n / 1e6) + ' млн';
+    if (a >= 1e4) return nfs.format(n / 1e3) + ' тис.';
+    return nf0.format(n);
+  }
+  function dur(sec) {
+    if (sec == null) return '—';
+    if (sec < 3600) return nf1.format(sec / 60) + ' хв';
+    if (sec < 86400 * 2) return nf1.format(sec / 3600) + ' год';
+    return nf1.format(sec / 86400) + ' дн';
+  }
+  function days(sec) { return sec == null ? '—' : nf1.format(sec / 86400) + ' дн'; }
+
+  // ---------- parameter UI ----------
+  function get(path) { return path.split('.').reduce(function (o, k) { return o[k]; }, state); }
+  function set(path, v) { var ks = path.split('.'); var o = state; for (var i = 0; i < ks.length - 1; i++) o = o[ks[i]]; o[ks[ks.length - 1]] = v; }
+  function fieldHTML(path, label, hint, step) {
+    var id = 'f-' + path.replace(/\./g, '-');
+    return '<div class="field"><label for="' + id + '">' + label + (hint ? '<small>' + hint + '</small>' : '') + '</label>' +
+      '<input type="number" id="' + id + '" data-path="' + path + '" step="' + (step || 'any') + '"></div>';
+  }
+  document.getElementById('p-player').innerHTML =
+    fieldHTML('params.sessionsPerDay', 'Сесій на день', '', 1) +
+    fieldHTML('params.sessionMin', 'Хвилин у сесії', '', 0.5) +
+    fieldHTML('params.firstSessionMin', 'Перша сесія, хв', 'онбординг', 1) +
+    fieldHTML('params.tapsPerSession', 'Тапів за сесію', '', 1) +
+    fieldHTML('params.tapValue', 'Підписів за тап', '', 0.5) +
+    fieldHTML('params.storageHours', 'Сховище, год', 'ліміт офлайн-доходу', 1) +
+    fieldHTML('params.dayStartHour', 'Перша сесія о, год', 'місцевий час; сесії йдуть 16 год', 1) +
+    fieldHTML('params.days', 'Горизонт, днів', 'до 30', 1);
+  document.getElementById('p-boosts').innerHTML =
+    fieldHTML('params.milestoneEvery', 'Віха кожні … рівнів', '', 1) +
+    fieldHTML('params.milestoneMult', 'Множник віхи', '', 0.1) +
+    fieldHTML('params.adsPerDay', 'Реклам на день', 'буст за рекламу', 1) +
+    fieldHTML('params.adHours', 'Годин одного бусту', 'буст ×2', 0.5) +
+    fieldHTML('params.offlineAdMult', 'Офлайн-дохід за рекламу, ×', 'або «Забрати» після покупки', 0.1) +
+    fieldHTML('params.offlineAdPerDay', '… на перших поверненнях дня', 'скільки разів на день', 1) +
+    fieldHTML('params.paidMult', 'Покупка «Без реклами», ×', 'постійний множник; бусти — без перегляду', 0.1) +
+    fieldHTML('params.starterSignatures', 'Стартовий набір, підписів', 'лише сценарій «Купив», після першої перевірки', 1000) +
+    fieldHTML('params.starterFuelHours', 'Бак зі стартовим набором, год', '', 1);
+  document.getElementById('p-events').innerHTML =
+    fieldHTML('params.fuelHours', 'Бака вистачає на, год', 'заправка на початку кожної сесії', 0.5) +
+    fieldHTML('params.fuelBonus', 'Дохід з пальним, ×', '1 — генератора немає', 0.05) +
+    fieldHTML('params.fuelBonusThreshold', 'Бонус діє, поки в баку більше', 'частка бака; 0,2 = 20%', 0.05) +
+    fieldHTML('params.fuelOnTaps', 'Пальне множить тапи', '1 — так, 0 — ні', 1) +
+    fieldHTML('params.slowPerDayMin', 'Телеграм «сумлінно» на день, від', '0 і 0 — вимкнено', 1) +
+    fieldHTML('params.slowPerDayMax', 'Телеграм «сумлінно» на день, до', 'кількість щодня випадкова', 1) +
+    fieldHTML('params.slowHours', 'Сповільнення триває, год', '', 0.5) +
+    fieldHTML('params.slowMult', 'Ланка в цей час, ×', '0,5 — удвічі повільніше', 0.05) +
+    fieldHTML('params.kombatChance', '«Комбата шукають»: шанс на сесію', 'не частіше разу на добу; 0 — вимкнено', 0.05) +
+    fieldHTML('params.kombatMult', 'Резолюції комбата в цей час, ×', '', 0.05) +
+    fieldHTML('params.kombatMinMin', 'Комбата шукають від, хв', '', 1) +
+    fieldHTML('params.kombatMaxMin', 'Комбата шукають до, хв', 'не довше 30 хв', 1) +
+    fieldHTML('params.seed', 'Зерно випадковості', 'інше число — інші дні, ланки, комбат і перевірки', 1);
+  document.getElementById('p-onb').innerHTML =
+    fieldHTML('params.onboardingBirdMin', '«Пташка в небі», хв гри', '0 — вимкнено', 1) +
+    fieldHTML('params.onboardingBirdMult', '«Пташка», ×', 'лише поки гравець у грі', 0.5) +
+    fieldHTML('params.onboardingBirdStartSec', '«Пташка» з секунди', 'перший штамп', 10) +
+    fieldHTML('params.archiveBonusMin', 'Бонус архіву, хв доходу', 'базового; 0 — вимкнено', 5) +
+    fieldHTML('params.archiveBonusAtSec', 'Бонус архіву на секунді', 'ігрового часу', 10) +
+    fieldHTML('params.catBonusMin', 'Кіт Сейф, хв доходу', 'базового; 0 — вимкнено', 1) +
+    fieldHTML('params.catCooldownMin', 'Кіт — не частіше ніж раз на, хв', '', 5) +
+    fieldHTML('params.catFromSec', 'Кіт доступний з секунди гри', '600 — з другої сесії', 60);
+  document.getElementById('p-insp').innerHTML =
+    fieldHTML('params.inspFirstAfterHours', 'Перша — не раніше ніж через, год', 'на сесії 08:00–19:00', 1) +
+    fieldHTML('params.inspIntervalMinH', 'Інтервал від, год', 'репутація «норма»', 1) +
+    fieldHTML('params.inspIntervalMaxH', 'Інтервал до, год', '0 — перевірок немає', 1) +
+    fieldHTML('params.inspWarnMinH', 'Попередження від, год', '', 0.5) +
+    fieldHTML('params.inspWarnMaxH', 'Попередження до, год', '', 0.5) +
+    fieldHTML('params.inspChecklistMin', 'Чекліст Р1, хв доходу', 'сума 5 пунктів', 1) +
+    fieldHTML('params.inspChecklistMinL2', 'Чекліст Р2, хв доходу', 'сума 4 пунктів', 1) +
+    fieldHTML('params.inspMult', 'Пройшли, ×', 'лише планова', 0.5) +
+    fieldHTML('params.inspHours', '… на, год', '', 0.5) +
+    fieldHTML('params.inspFailMult', 'Провалили: Стройова, ×', '', 0.05) +
+    fieldHTML('params.inspFailHours', '… на, год', '', 0.5) +
+    fieldHTML('params.inspPushVisit', 'Заходить за пушем, хв', 'якщо жодна сесія не між попередженням і приїздом; 0 — ні', 1);
+  document.getElementById('p-race').innerHTML =
+    fieldHTML('params.giftFirstDay', 'Перший подарунок — календарний день №', '1 = 2-й день (від 0)', 1) +
+    fieldHTML('params.giftGapHours', 'Після кінця гонки, год', '', 1) +
+    fieldHTML('params.giftFromHour', 'Приходить від, год', 'місцевий час', 1) +
+    fieldHTML('params.giftToHour', 'Приходить до, год', '', 1) +
+    fieldHTML('params.giftL2StepH', 'Крок Казначейства на Р2, год', '', 0.5) +
+    fieldHTML('params.raceAdPerDay', 'Прискорень рекламою на день', 'усі гонки разом', 1) +
+    fieldHTML('params.raceAdPerSession', '… гравець бере за сесію', '', 1) +
+    fieldHTML('params.raceAdCut', 'Після ролика лишається, частка', '0,5 = −50%', 0.05) +
+    fieldHTML('params.raceDigitalCutH', '«Послатися на цифру», год', 'раз за гонку, бали ≥ 1', 0.5);
+  document.getElementById('p-paper').innerHTML =
+    fieldHTML('params.paperStart', 'Папір на старті, аркушів', '', 1) +
+    fieldHTML('params.paperPerMinPerLevel', 'Накладні, аркуш за хв на рівень', '', 0.0001) +
+    fieldHTML('params.paperGift', 'Подарунок Ліни, аркушів', '', 1) +
+    fieldHTML('params.paperPerTelegram', 'Телеграма «сумлінно», аркушів', 'у середньому', 1) +
+    fieldHTML('params.museum', 'Музей журналів', '1 — так, 0 — ні', 1) +
+    fieldHTML('params.museumJ6DelayHours', 'Журнал № 6 через, год', 'після 1-ї цифровізації', 1) +
+    fieldHTML('params.museumUnitPct', '№ 1, 4, 5: виробіток, %', 'Стройова, Накладні, Рапорти', 1) +
+    fieldHTML('params.museumStoragePct', '№ 2: сховище, %', '', 1) +
+    fieldHTML('params.museumPaperPct', '№ 3: папір, %', '', 1) +
+    fieldHTML('params.museumRacePct', '№ 6 і 7: час акта, %', '№ 6 — кожен крок, № 7 — Фінслужба', 1);
+  document.getElementById('p-prestige').innerHTML =
+    fieldHTML('params.prestigeDivisor', 'Дільник', 'підписи циклу ÷ дільник', 1000) +
+    fieldHTML('params.prestigeExponent', 'Степінь', '0,5 — корінь', 0.05) +
+    fieldHTML('params.prestigeBonus', 'Бонус за бал', '0,01 = +1% доходу', 0.005) +
+    fieldHTML('params.prestigeMinPoints', 'Мінімум балів', 'на будь-яку цифровізацію', 1) +
+    fieldHTML('params.prestigeGrowth', 'Поріг наступної', 'частка від уже набраних балів', 0.1) +
+    fieldHTML('params.prestigeStallHours', 'Цифровізується, якщо застряг', 'наступна покупка далі ніж … год; 0 — вимкнено', 1) +
+    fieldHTML('params.prestigeStallShare', '… і бали за неї не менші за', 'частку вже набраних балів', 0.05);
+  document.getElementById('p-level2').innerHTML =
+    fieldHTML('params.level2.afterDigitizations', 'Перехід після цифровізації №', 'на рівні 1; 0 — без «Бригади»', 1) +
+    fieldHTML('params.level2.rateMult', 'Виробіток і пропускна, ×', 'усіх потоків і ланок', 0.5) +
+    fieldHTML('params.level2.costMult', 'Ціни рівнів і відкриття, ×', '', 0.5) +
+    fieldHTML('params.level2.clerkMult', 'Ціни діловодів, ×', '', 0.5);
+  document.getElementById('p-targets').innerHTML =
+    fieldHTML('targets.clerkMin', 'Перший діловод від, хв', 'дизайн-документ', 0.5) +
+    fieldHTML('targets.clerkMax', 'Перший діловод до, хв', 'дизайн-документ', 0.5) +
+    fieldHTML('targets.prestigeMinDays', 'Перша цифровізація від, дн', 'дизайн-документ', 0.5) +
+    fieldHTML('targets.prestigeMaxDays', 'Перша цифровізація до, дн', 'дизайн-документ', 0.5) +
+    fieldHTML('targets.waitMaxHours', 'Очікування покупки до, год', 'до першої цифровізації · орієнтир', 1) +
+    fieldHTML('targets.level2MinDays', 'Перехід на «Бригаду» від, дн', 'орієнтир', 0.5) +
+    fieldHTML('targets.level2MaxDays', 'Перехід на «Бригаду» до, дн', 'орієнтир', 0.5) +
+    fieldHTML('targets.contentDaysMin', 'Контенту вистачає від, дн', 'орієнтир, не з документа', 1) +
+    fieldHTML('targets.paidRatioMax', 'Перевага покупки до, ×', 'орієнтир, не з документа', 0.5) +
+    fieldHTML('targets.storageLossMax', 'Втрати сховища до, %', 'орієнтир, не з документа', 1);
+
+  function gridTable(id, rows, cols, key) {
+    var h = '<thead><tr>' + cols.map(function (c) { return '<th scope="col">' + c.label + '</th>'; }).join('') + '</tr></thead><tbody>';
+    rows.forEach(function (r, i) {
+      h += '<tr>' + cols.map(function (c) {
+        var path = 'params.' + key + '.' + i + '.' + c.k;
+        var iid = 'f-' + path.replace(/\./g, '-');
+        var aria = c.label + ': ' + (i + 1);
+        if (c.k === 'name') return '<td><input type="text" id="' + iid + '" data-path="' + path + '" aria-label="Назва, рядок ' + (i + 1) + '"></td>';
+        if (c.k === 'unlock' && key === 'streams' && i === 0) return '<td class="note">з початку</td>';
+        return '<td><input type="number" id="' + iid + '" data-path="' + path + '" step="any" aria-label="' + aria + '"></td>';
+      }).join('') + '</tr>';
+    });
+    document.getElementById(id).innerHTML = h + '</tbody>';
+  }
+  gridTable('t-streams', state.params.streams, [
+    { k: 'name', label: 'Назва' }, { k: 'rate', label: 'Виробіток' }, { k: 'unlock', label: 'Відкриття' },
+    { k: 'cost', label: 'Ціна рівня' }, { k: 'growth', label: 'Ріст ціни' }, { k: 'manager', label: 'Діловод' }
+  ], 'streams');
+  gridTable('t-stages', state.params.stages, [
+    { k: 'name', label: 'Назва' }, { k: 'rate', label: 'Пропускна' }, { k: 'cost', label: 'Ціна рівня' },
+    { k: 'growth', label: 'Ріст ціни' }, { k: 'manager', label: 'Діловод' }
+  ], 'stages');
+  // one-row tables for the level 2 stream and stage (a single object, not a list)
+  function rowTable(id, base, cols, what) {
+    var h = '<thead><tr>' + cols.map(function (c) { return '<th scope="col">' + c.label + '</th>'; }).join('') + '</tr></thead><tbody><tr>';
+    h += cols.map(function (c) {
+      var path = base + '.' + c.k, iid = 'f-' + path.replace(/\./g, '-');
+      if (c.k === 'name') return '<td><input type="text" id="' + iid + '" data-path="' + path + '" aria-label="Назва: ' + what + '"></td>';
+      return '<td><input type="number" id="' + iid + '" data-path="' + path + '" step="any" aria-label="' + c.label + ': ' + what + '"></td>';
+    }).join('');
+    document.getElementById(id).innerHTML = h + '</tr></tbody>';
+  }
+  rowTable('t-l2-stream', 'params.level2.stream', [
+    { k: 'name', label: 'Новий потік' }, { k: 'rate', label: 'Виробіток' }, { k: 'unlock', label: 'Відкриття' },
+    { k: 'cost', label: 'Ціна рівня' }, { k: 'growth', label: 'Ріст ціни' }, { k: 'manager', label: 'Діловод' }
+  ], 'новий потік');
+  rowTable('t-l2-stage', 'params.level2.stage', [
+    { k: 'name', label: 'Нова ланка' }, { k: 'rate', label: 'Пропускна' }, { k: 'cost', label: 'Ціна рівня' },
+    { k: 'growth', label: 'Ріст ціни' }, { k: 'manager', label: 'Діловод' }
+  ], 'нова ланка');
+
+  (function giftTable() {
+    var types = [['drone', 'Дрон'], ['shovel', 'Лопати'], ['generator', 'Генератор']];
+    var cols = [['mult', 'Множник'], ['serviceH', 'Служба, год'], ['steps.0', 'Акти'], ['steps.1', 'Комбат'], ['steps.2', 'Стройова'], ['steps.3', 'Фін.']];
+    var h = '<thead><tr><th scope="col">Подарунок</th>' + cols.map(function (c) { return '<th scope="col">' + c[1] + '</th>'; }).join('') + '</tr></thead><tbody>';
+    types.forEach(function (ty) {
+      h += '<tr><td>' + ty[1] + '</td>' + cols.map(function (c) {
+        var path = 'params.gifts.' + ty[0] + '.' + c[0], iid = 'f-' + path.replace(/\./g, '-');
+        return '<td><input type="number" id="' + iid + '" data-path="' + path + '" step="any" aria-label="' + c[1] + ': ' + ty[1] + '"></td>';
+      }).join('') + '</tr>';
+    });
+    document.getElementById('t-gifts').innerHTML = h + '</tbody>';
+  })();
+  var inputs = Array.prototype.slice.call(document.querySelectorAll('[data-path]'));
+  function fillInputs() { inputs.forEach(function (el) { var v = get(el.getAttribute('data-path')); el.value = v; }); }
+  fillInputs();
+  var debounce = null;
+  inputs.forEach(function (el) {
+    el.addEventListener('input', function () {
+      var path = el.getAttribute('data-path');
+      if (el.type === 'number') { var v = parseFloat(el.value); if (!isFinite(v)) return; set(path, v); }
+      else set(path, el.value);
+      persist(); updateExport();
+      clearTimeout(debounce); debounce = setTimeout(run, 600);
+    });
+  });
+
+  // ---------- simulation (worker when available) ----------
+  var worker = null, pending = 0;
+  try {
+    var src = SIM_SRC + '\nself.onmessage = function (e) { var p = e.data.params; var res = SCENARIOS.map(function (sc) { var r = simulate(p, sc); r.waitStats = waitStats(r, e.data.wallH); r.stallStats = stallStats(r, p.days); delete r.out.waits; return r; }); self.postMessage({ id: e.data.id, res: res }); };';
+    worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    worker.onmessage = function (e) { if (e.data.id === pending) render(e.data.res); };
+    worker.onerror = function () { worker = null; run(); };
+  } catch (e) { worker = null; }
+
+  var statusEl = document.getElementById('status');
+  function run() {
+    var p = clone(state.params);
+    p.days = Math.max(1, Math.min(30, Math.round(p.days || 21)));
+    p.sessionsPerDay = Math.max(1, Math.round(p.sessionsPerDay || 1));
+    p.level2.afterDigitizations = Math.max(0, Math.round(p.level2.afterDigitizations || 0));
+    p.offlineAdPerDay = Math.max(0, Math.round(p.offlineAdPerDay || 0));
+    statusEl.textContent = 'Рахую…';
+    pending++;
+    var wallH = state.targets.waitMaxHours;
+    if (worker) { worker.postMessage({ id: pending, params: p, wallH: wallH }); return; }
+    var id = pending;
+    setTimeout(function () {
+      var res = lib.SCENARIOS.map(function (sc) { var r = lib.simulate(p, sc); r.waitStats = lib.waitStats(r, wallH); r.stallStats = lib.stallStats(r, p.days); delete r.out.waits; return r; });
+      if (id === pending) render(res);
+    }, 30);
+  }
+  document.getElementById('run').addEventListener('click', run);
+  document.getElementById('reset').addEventListener('click', function () {
+    state.params = fillParams(lib.DEFAULTS); state.targets = clone(TARGETS_DEFAULT);
+    persist(); fillInputs(); updateExport(); run();
+  });
+
+  // ---------- rendering ----------
+  var last = null, chart = null;
+  function tok(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  var COLORS = { free: '--s-free', ads: '--s-ads', paid: '--s-paid' };
+
+  function render(res) {
+    last = res;
+    var T = state.targets;
+    var ads = res[1], free = res[0], paid = res[2];
+    var clerkMin = ads.out.firstClerk == null ? null : r1(ads.out.firstClerk / 60);
+    var p1 = ads.out.prestiges[0] ? r1(ads.out.prestiges[0].t / 86400) : null;
+    var waitH = r1(ads.waitStats.first / 3600);
+    var stallH = ads.stallStats ? r1(ads.stallStats.first / 3600) : 0;
+    var wallD = ads.waitStats.wallAt == null ? null : r1(ads.waitStats.wallAt / 86400);
+    var pf = free.out.prestiges[0], pp = paid.out.prestiges[0];
+    var ratio = pf && pp ? r1(pf.t / pp.t) : null;
+    var loss = Math.round(ads.storageLostShare * 100);
+    var l2On = state.params.level2 && state.params.level2.afterDigitizations > 0;
+    var l2D = ads.out.level2At == null ? null : r1(ads.out.level2At / 86400);
+    var rows = [
+      { name: 'Перший діловод', meta: 'Ціль ' + nf1.format(T.clerkMin) + '–' + nf1.format(T.clerkMax) + ' хв · дизайн-документ', val: clerkMin == null ? '—' : nf1.format(clerkMin) + ' хв', ok: clerkMin != null && clerkMin >= T.clerkMin && clerkMin <= T.clerkMax },
+      { name: 'Перша цифровізація', meta: 'Ціль ' + nf1.format(T.prestigeMinDays) + '–' + nf1.format(T.prestigeMaxDays) + ' дн · дизайн-документ', val: p1 == null ? 'не настала' : nf1.format(p1) + ' дн', ok: p1 != null && p1 >= T.prestigeMinDays && p1 <= T.prestigeMaxDays },
+      { name: 'Найдовше очікування до цифровізації', meta: 'Очікування покупки від першої години до першої цифровізації · ціль до ' + nf0.format(T.waitMaxHours) + ' год · довше — гравець бачить стіну. Окремо: перед цифровізацією ' + nf1.format(stallH) + ' год купувати нічого, гравець чекає бали', val: nf1.format(waitH) + ' год', ok: waitH <= T.waitMaxHours },
+      { name: 'Перехід на «Бригаду»', meta: l2On ? 'Цифровізація №' + nf0.format(state.params.level2.afterDigitizations) + ' на рівні 1 · ціль ' + nf1.format(T.level2MinDays) + '–' + nf1.format(T.level2MaxDays) + ' дн' : 'Рівень 2 вимкнено в параметрах «Бригади»', val: !l2On ? 'вимкнено' : l2D == null ? 'не настав' : nf1.format(l2D) + ' дн', ok: l2On ? (l2D != null && l2D >= T.level2MinDays && l2D <= T.level2MaxDays) : null },
+      { name: 'Контенту вистачає', meta: 'День, коли вперше чекати покупку довше ' + nf0.format(T.waitMaxHours) + ' год · ціль від ' + nf0.format(T.contentDaysMin) + ' дн · далі потрібен новий шар гри', val: wallD == null ? 'весь горизонт' : 'до ' + nf1.format(wallD) + ' дн', ok: wallD == null || wallD >= T.contentDaysMin },
+      { name: 'Перевага покупки', meta: 'У скільки разів «Купив» раніше за «Без реклами» доходить до першої цифровізації · ціль до ' + nf1.format(T.paidRatioMax) + '×', val: ratio == null ? (pp ? 'безкоштовний не дійшов' : '—') : nf1.format(ratio) + '×', ok: ratio != null && ratio <= T.paidRatioMax },
+      { name: 'Втрати через ліміт сховища', meta: 'Частка офлайн-часу, коли сховище вже повне · ціль до ' + nf0.format(T.storageLossMax) + '%', val: nf0.format(loss) + '%', ok: loss <= T.storageLossMax }
+    ];
+    document.getElementById('checks').innerHTML = rows.map(function (r) {
+      return '<div class="check"><span class="name">' + r.name + '</span><span class="val">' + r.val + '</span>' +
+        '<span class="pill ' + (r.ok == null ? 'na' : r.ok ? 'ok' : 'no') + '">' + (r.ok == null ? 'не рахується' : r.ok ? 'у цілі' : 'поза ціллю') + '</span><span class="meta">' + r.meta + '</span></div>';
+    }).join('');
+
+    var th = '<thead><tr><th scope="col">Сценарій</th><th scope="col">Перший діловод</th><th scope="col">Усі потоки</th><th scope="col">Перша цифровізація</th><th scope="col">«Бригада»</th><th scope="col">Цифровізацій, Р1 + Р2</th><th scope="col">Найдовше очікування</th><th scope="col">Перевірки пройдено</th><th scope="col">Гонки виграно</th><th scope="col">Папір: мін. · кінець</th><th scope="col">Вузьке місце</th></tr></thead><tbody>';
+    res.forEach(function (r) {
+      var tot = r.neck.streams + r.neck.stage.reduce(function (a, b) { return a + b; }, 0) || 1;
+      var dg = r.digitizations || [r.out.prestiges.length, 0];
+      var p1t = r.out.prestiges.length ? nf1.format(r.out.prestiges[0].t / 86400) + ' дн' : 'не настала';
+      var pr = nf0.format(dg[0]) + ' + ' + nf0.format(dg[1]);
+      var names = r.stageNames || state.params.stages.map(function (s) { return s.name; });
+      var stageShare = r.neck.stage.map(function (v, i) { return { n: names[i] || '', v: v / tot }; }).filter(function (x) { return x.v > 0.005; });
+      var neck = 'потоки ' + nf0.format(r.neck.streams / tot * 100) + '%' + stageShare.map(function (x) { return ' · ' + x.n.toLowerCase() + ' ' + nf0.format(x.v * 100) + '%'; }).join('');
+      var lv2 = !l2On ? 'вимкнено' : r.out.level2At == null ? 'не настав' : nf1.format(r.out.level2At / 86400) + ' дн';
+      var lw = r.longestWait ? nf1.format(r.longestWait / 3600) + ' год · день ' + nf0.format(Math.floor(r.longestWaitAt / 86400)) : '—';
+      th += '<tr><td><span class="sw" style="--c: var(' + COLORS[r.scenario.id] + ')"></span>' + r.scenario.name + '</td>' +
+        '<td class="num">' + dur(r.out.firstClerk) + '</td><td class="num">' + dur(r.out.allStreams) + '</td>' +
+        '<td class="num">' + p1t + '</td><td class="num">' + lv2 + '</td><td class="num">' + pr + '</td><td class="num soft">' + lw + '</td>' +
+        '<td class="num">' + (r.out.insp ? nf0.format(r.out.insp.filter(function (q) { return q.pass; }).length) + ' з ' + nf0.format(r.out.insp.length) : '—') + '</td>' +
+        '<td class="num">' + (r.out.races ? nf0.format(r.out.races.filter(function (q) { return q.win; }).length) + ' з ' + nf0.format(r.out.races.length) : '—') + '</td>' +
+        '<td class="num">' + (r.paper ? nf0.format(Math.floor(r.paper.min)) + ' · ' + nf0.format(Math.floor(r.paper.end)) + (r.paper.short ? ' · бракувало ' + nf0.format(r.paper.short) + '×' : '') : '—') + '</td><td>' + neck + '</td></tr>';
+    });
+    document.getElementById('scen-table').innerHTML = th + '</tbody>';
+    var pa = ads.paper;
+    document.getElementById('paper-note').textContent = pa && pa.byDay && pa.byDay.length ? 'Папір гравця з рекламою на кінець дня: ' + [1, 3, 7, 14, 21].filter(function (d) { return d <= pa.byDay.length; }).map(function (d) { return d + '-й — ' + nf0.format(Math.floor(pa.byDay[d - 1])); }).join(', ') + ' аркушів. Витрачено на телеграми ' + nf0.format(Math.round(pa.spent)) + ', найменше було ' + nf0.format(Math.floor(pa.min)) + (pa.short ? ', бракувало ' + nf0.format(pa.short) + ' разів' : ', не бракувало жодного разу') + '. Конвеєр папір не зупиняє.' : '';
+    document.getElementById('legend').innerHTML = res.map(function (r) { return '<span style="--c: var(' + COLORS[r.scenario.id] + ')">' + r.scenario.name + '</span>'; }).join('') + '<span class="mark">цифровізація</span>' + (l2On ? '<span class="mark2">перехід на «Бригаду»</span>' : '');
+    drawChart(res);
+    statusEl.textContent = 'Готово';
+  }
+
+  var prestigeLines = {
+    id: 'prestigeLines',
+    afterDatasetsDraw: function (c) {
+      if (!last) return;
+      var ctx = c.ctx, x = c.scales.x, area = c.chartArea;
+      ctx.save(); ctx.setLineDash([3, 4]); ctx.lineWidth = 1.25;
+      last.forEach(function (r) {
+        ctx.strokeStyle = tok(COLORS[r.scenario.id]);
+        r.out.prestiges.forEach(function (pp) {
+          if (pp.t === r.out.level2At) return; // drawn solid below
+          var px = x.getPixelForValue(pp.t / 86400);
+          if (px < area.left || px > area.right) return;
+          ctx.beginPath(); ctx.moveTo(px, area.top); ctx.lineTo(px, area.bottom); ctx.stroke();
+        });
+      });
+      // the move to level 2 «Бригада»: a solid, thicker line
+      ctx.setLineDash([]); ctx.lineWidth = 2.5;
+      last.forEach(function (r) {
+        if (r.out.level2At == null) return;
+        var px = x.getPixelForValue(r.out.level2At / 86400);
+        if (px < area.left || px > area.right) return;
+        ctx.strokeStyle = tok(COLORS[r.scenario.id]);
+        ctx.beginPath(); ctx.moveTo(px, area.top); ctx.lineTo(px, area.bottom); ctx.stroke();
+      });
+      ctx.restore();
+    }
+  };
+
+  function drawChart(res) {
+    if (typeof Chart === 'undefined') return;
+    var fg = tok('--muted'), grid = tok('--grid');
+    var datasets = res.map(function (r) {
+      var c = tok(COLORS[r.scenario.id]);
+      return { label: r.scenario.name, data: r.series.map(function (s) { return { x: s.t / 86400, y: Math.max(1, s.ipm) }; }), borderColor: c, backgroundColor: c, borderWidth: r.scenario.id === 'ads' ? 2.25 : 1.5, pointRadius: 0, tension: 0 };
+    });
+    var maxDay = Math.max(1, Math.min(30, Math.round(state.params.days || 21)));
+    if (chart) { chart.data.datasets = datasets; chart.options.scales.x.max = maxDay; chart.options.scales.x.ticks.color = fg; chart.options.scales.y.ticks.color = fg; chart.options.scales.x.grid.color = grid; chart.options.scales.y.grid.color = grid; chart.update('none'); return; }
+    chart = new Chart(document.getElementById('chart'), {
+      type: 'line',
+      data: { datasets: datasets },
+      plugins: [prestigeLines],
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false, parsing: false, normalized: true,
+        interaction: { mode: 'nearest', intersect: false, axis: 'x' },
+        plugins: { legend: { display: false }, tooltip: { callbacks: {
+          title: function (items) { return 'День ' + nf1.format(items[0].parsed.x); },
+          label: function (it) { return it.dataset.label + ': ' + big(it.parsed.y) + ' підп./хв'; }
+        } } },
+        scales: {
+          x: { type: 'linear', min: 0, max: maxDay, title: { display: true, text: 'день гри', color: fg }, ticks: { color: fg, stepSize: 1, callback: function (v) { return v % 2 === 0 ? v : ''; } }, grid: { color: grid } },
+          y: { type: 'logarithmic', min: 1, title: { display: true, text: 'підписів за хвилину', color: fg }, ticks: { color: fg, callback: function (v) { var l = Math.log10(v); return Math.abs(l - Math.round(l)) < 1e-6 ? big(v) : ''; } }, grid: { color: grid } }
+        }
+      }
+    });
+  }
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  function retheme() { if (chart) { chart.destroy(); chart = null; } if (last) render(last); }
+  if (mq.addEventListener) mq.addEventListener('change', retheme);
+  new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---------- export ----------
+  var exportEl = document.getElementById('export');
+  function exportJSON() { var p = clone(state.params); return JSON.stringify({ version: 6, model: 'streams+pipe', params: p }, null, 2); }
+  function updateExport() { exportEl.value = exportJSON(); }
+  updateExport();
+  var copyNote = document.getElementById('copy-note');
+  document.getElementById('copy').addEventListener('click', function () {
+    var txt = exportJSON();
+    var done = function () { copyNote.textContent = 'Скопійовано'; };
+    var fallback = function () { exportEl.focus(); exportEl.select(); copyNote.textContent = 'Виділено — натисни Ctrl+C або ⌘C'; };
+    try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (e) { fallback(); }
+  });
+
+  // ---------- capabilities: presets in db, file download ----------
+  var db = null, downloads = null;
+  var listEl = document.getElementById('preset-list'), noteEl = document.getElementById('preset-note');
+  var saveBtn = document.getElementById('preset-save'), nameEl = document.getElementById('preset-name');
+  function summary() {
+    if (!last) return null;
+    var a = last[1];
+    return { firstClerkMin: a.out.firstClerk == null ? null : +(a.out.firstClerk / 60).toFixed(2), firstPrestigeDays: a.out.prestiges[0] ? +(a.out.prestiges[0].t / 86400).toFixed(2) : null, level2Day: a.out.level2At == null ? null : +(a.out.level2At / 86400).toFixed(2), waitBeforePrestigeHours: +(a.waitStats.first / 3600).toFixed(1), contentDays: a.waitStats.wallAt == null ? null : +(a.waitStats.wallAt / 86400).toFixed(1), longestWaitHours: +(a.longestWait / 3600).toFixed(1), paidRatio: last[0].out.prestiges[0] && last[2].out.prestiges[0] ? +(last[0].out.prestiges[0].t / last[2].out.prestiges[0].t).toFixed(1) : null, prestiges: a.out.prestiges.length };
+  }
+  function renderPresets(snap) {
+    if (snap.empty) { listEl.innerHTML = '<li class="note">Збережених пресетів ще немає. Налаштуй параметри, дай назву й натисни «Зберегти».</li>'; return; }
+    listEl.innerHTML = '';
+    snap.docs.forEach(function (d) {
+      var v = d.data(); var li = document.createElement('li');
+      var info = document.createElement('div');
+      var nm = document.createElement('div'); nm.className = 'pname'; nm.textContent = v.name || 'Без назви';
+      var mt = document.createElement('div'); mt.className = 'pmeta';
+      var s = v.summary || {};
+      mt.textContent = (v.savedAt ? new Date(v.savedAt).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' }) : '') + (s.firstPrestigeDays != null ? ' · цифровізація на ' + nf1.format(s.firstPrestigeDays) + ' дн' : '') + (s.level2Day != null ? ' · «Бригада» на ' + nf1.format(s.level2Day) + ' дн' : '');
+      info.appendChild(nm); info.appendChild(mt);
+      var btns = document.createElement('div'); btns.className = 'row';
+      var load = document.createElement('button'); load.type = 'button'; load.textContent = 'Завантажити';
+      load.addEventListener('click', function () { if (v.params && v.params.streams) { state.params = fillParams(v.params); if (v.targets) state.targets = Object.assign(clone(TARGETS_DEFAULT), v.targets); persist(); fillInputs(); updateExport(); run(); } });
+      var del = document.createElement('button'); del.type = 'button'; del.textContent = 'Видалити';
+      del.addEventListener('click', function () {
+        if (del.dataset.confirm) { db.collection('presets').doc(d.id).delete().catch(function () {}); }
+        else { del.dataset.confirm = '1'; del.textContent = 'Точно?'; setTimeout(function () { del.textContent = 'Видалити'; delete del.dataset.confirm; }, 3000); }
+      });
+      btns.appendChild(load); btns.appendChild(del);
+      li.appendChild(info); li.appendChild(btns); listEl.appendChild(li);
+    });
+  }
+  function noDb() { saveBtn.hidden = true; nameEl.hidden = true; noteEl.textContent = 'Збереження пресетів тут недоступне. Скопіюй JSON нижче.'; }
+  saveBtn.addEventListener('click', function () {
+    if (!db) return;
+    var name = nameEl.value.trim() || ('Пресет ' + new Date().toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' }));
+    saveBtn.disabled = true;
+    db.collection('presets').add({ name: name, params: clone(state.params), targets: clone(state.targets), summary: summary(), savedAt: Date.now() })
+      .then(function () { nameEl.value = ''; noteEl.textContent = 'Збережено: ' + name; })
+      .catch(function (e) { noteEl.textContent = e && e.code === 'quota_exceeded' ? 'Місце для пресетів закінчилось. Видали старі.' : 'Не вдалося зберегти. Спробуй ще раз.'; })
+      .then(function () { saveBtn.disabled = false; });
+  });
+  if (window.claude && window.claude.use) {
+    window.claude.use('db').then(function (d) {
+      db = d;
+      if (!db) { noDb(); return; }
+      db.collection('presets').orderBy('savedAt', 'desc').limit(50).onSnapshot(renderPresets, function () { noteEl.textContent = 'Список пресетів зараз недоступний.'; });
+    }, noDb);
+    window.claude.use('downloads').then(function (d) {
+      downloads = d; if (!d) return;
+      var b = document.getElementById('download'); b.hidden = false;
+      b.addEventListener('click', function () {
+        downloads.save({ filename: 'balance.json', data: exportJSON() }).then(function () { copyNote.textContent = 'Файл збережено'; }, function (e) { if (e && e.code !== 'declined') copyNote.textContent = 'Не вдалося зберегти файл'; });
+      });
+    }, function () {});
+  } else { noDb(); }
+
+  run();
+})();
+</script>

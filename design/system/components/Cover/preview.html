@@ -1,0 +1,66 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400&amp;family=Unbounded:wght@700&amp;display=swap">
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); overflow: hidden; }
+  .cover { position: relative; width: 960px; height: 288px; overflow: hidden; }
+  .art { position: absolute; top: 0; left: 480px; width: 480px; height: 288px; overflow: hidden; }
+  .art svg { display: block; }
+  .lamp { fill: var(--accent); }
+  .wire { stroke: var(--border); stroke-width: 2; }
+  .p1 { fill: var(--paper); }
+  .p2 { fill: var(--paper-2); }
+  .p4 { fill: var(--paper-4); }
+  .sheet { rx: var(--radius-4); }
+  .bar { fill: var(--paper-line); rx: var(--radius-2); }
+  .ink { fill: var(--stamp); rx: var(--radius-4); }
+  .frame { fill: none; stroke: var(--stamp); stroke-width: 3; rx: var(--radius-3); }
+  .frame-dark { fill: none; stroke: var(--stamp-on-dark); stroke-width: 2; rx: var(--radius-3); }
+  .ring { fill: none; stroke: var(--stamp-on-dark); stroke-width: 2; }
+  .sign { fill: none; stroke: var(--pen); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .words { position: absolute; left: var(--space-24); bottom: var(--space-24); max-width: 440px; }
+  .name { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 66px; line-height: 0.95; letter-spacing: 1px; color: var(--accent); }
+  .tag { margin: var(--space-12) 0 0 2px; font-size: 14px; line-height: 20px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      paper stack 160×208 (paper over paper-2 over paper-4, radius-4) ≈ the largest field · stamp slab 144×176 bled off the right and bottom (radius-4) · accent lamp disc 48 (2× space-24) on a border wire · pen only as the signature stroke
+  arrangement a staggered stack of sheets turned −7°, +4°, −2°, the way the game piles paper; the stamp slab behind it on the right, the lamp hanging from the top edge on the left
+  pattern     stamp frames, from "Штамп: прямокутна рамка, нахил 2–8°" — three empty frames (radius-3): stamp on the top sheet, stamp-on-dark on the slab, plus one round seal ring on the ground; no words inside
+  scales      sides in space-8/space-16 multiples (160, 208, 144, 176, 104, 32); gutters space-24; corners radius-4 sheets and slab, radius-3 frames, radius-2 placeholder bars
+-->
+<line class="wire" x1="72" y1="0" x2="72" y2="56"/>
+<circle class="lamp" cx="72" cy="80" r="24"/>
+<rect class="ink" x="336" y="120" width="160" height="184" rx="4"/>
+<rect class="frame-dark" x="356" y="176" width="96" height="32" rx="3" transform="rotate(6 404 192)"/>
+<circle class="ring" cx="424" cy="56" r="32"/>
+<circle class="ring" cx="424" cy="56" r="18"/>
+<rect class="p4 sheet" x="128" y="56" width="160" height="208" rx="4" transform="rotate(-7 208 160)"/>
+<rect class="p2 sheet" x="152" y="44" width="160" height="208" rx="4" transform="rotate(4 232 148)"/>
+<g transform="rotate(-2 220 140)">
+  <rect class="p1 sheet" x="140" y="36" width="160" height="208" rx="4"/>
+  <rect class="bar" x="164" y="64" width="112" height="6" rx="2"/>
+  <rect class="bar" x="164" y="80" width="96" height="6" rx="2"/>
+  <rect class="bar" x="164" y="96" width="104" height="6" rx="2"/>
+  <rect class="bar" x="164" y="112" width="56" height="6" rx="2"/>
+  <path class="sign" d="M164 222c6-14 12-16 14-6s-6 12 2 2 10-14 14-2 4 10 10 0 8-10 12-2 10 4 16-2"/>
+  <rect class="frame" x="196" y="140" width="88" height="32" rx="3" transform="rotate(-8 240 156)"/>
+</g>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">Стройова</h1>
+<p class="tag">Гра про те, як папери наздоганяють війну</p>
+</div>
+</div>
+</body>
+</html>

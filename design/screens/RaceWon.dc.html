@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Пташка в небі</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-family: var(--font-display); font-weight: 700; font-size: 20px">Стройова</span>
+        <span style="font-size: 12px; color: var(--muted)">1-й батальйон · бліндаж</span>
+      </div>
+      <span style="width: 44px; height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span>
+    </div>
+    <div style="height: 64px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 150px; border-radius: var(--radius-6); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 73px; background: var(--bg-deep); border-top: 1px solid var(--border)"></div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px">
+    <div class="st-modal st-modal--paper" role="dialog" aria-modal="true" aria-labelledby="rw-title" style="gap: 12px">
+
+      <article class="st-paper" aria-label="{{w.docAria}}">
+        <span class="st-paper-num" aria-hidden="true">1</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 20px">
+          <span class="st-doc-meta">{{w.no}} · вх. 12/431 від 09.10.2026</span>
+          <span class="st-doc-title">Введення в експлуатацію</span>
+          <span class="st-doc-meta">{{w.item}}</span>
+        </div>
+        <ol class="st-route" style="--n: 4; margin: 0; padding: 0; list-style: none" aria-label="Маршрут акта: усі 4 етапи пройдено">
+          <li class="st-route-step is-done"><b><svg class="st-ico" width="11" height="11" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Рапорт</b></li>
+          <li class="st-route-step is-done"><b><svg class="st-ico" width="11" height="11" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Комбат</b></li>
+          <li class="st-route-step is-done"><b><svg class="st-ico" width="11" height="11" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Стройова</b></li>
+          <li class="st-route-step is-done"><b><svg class="st-ico" width="11" height="11" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Фін.</b></li>
+        </ol>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <div class="st-doc-row"><span>Маршрут пройдено за</span><i class="st-doc-dots"></i><span class="st-doc-val">{{w.took}}</span></div>
+          <div class="st-doc-row"><span>Прослужить ще</span><i class="st-doc-dots"></i><span class="st-doc-val">{{w.left}}</span></div>
+          <div class="st-doc-row"><span>Прискорень</span><i class="st-doc-dots"></i><span class="st-doc-val">{{w.speedups}}</span></div>
+        </div>
+        <div class="st-doc-foot">
+          <div class="st-doc-sign">
+            <svg width="112" height="34" viewBox="0 0 120 36" aria-hidden="true"><path d="M4 26C14 6 22 30 30 14S44 8 48 22 64 30 70 12 86 20 92 18L116 14"></path></svg>
+            <span>Начальник стройової</span>
+          </div>
+          <span class="st-stamp st-stamp--l st-stamp--hit" style="--st-rot: -7deg; --st-edge: 95deg; margin: 0 2px 6px 0">Погоджено<span class="st-stamp-date">09.10.2026</span></span>
+        </div>
+      </article>
+
+      <div style="padding: 14px; border: 2px solid var(--accent); border-radius: var(--radius-12); background: var(--bg); display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 14px">
+          <div aria-hidden="true" style="width: 48px; height: 48px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center">
+            <sc-if value="{{s.drone}}" hint-placeholder-val="{{true}}">
+              <svg class="st-ico" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="5" r="2.5"></circle><circle cx="19" cy="5" r="2.5"></circle><circle cx="5" cy="19" r="2.5"></circle><circle cx="19" cy="19" r="2.5"></circle><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"></path><rect x="10" y="10" width="4" height="4"></rect></svg>
+            </sc-if>
+            <sc-if value="{{s.gen}}" hint-placeholder-val="{{false}}">
+              <svg class="st-ico" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"></path></svg>
+            </sc-if>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <h2 id="rw-title" style="margin: 0; font-family: var(--font-display); font-size: 17px; font-weight: 500; line-height: 1.3; color: var(--accent)">{{w.title}}</h2>
+            <span style="font-size: 13px; color: var(--muted); line-height: 1.4">{{w.effect}}</span>
+          </div>
+        </div>
+        <span class="st-chip st-chip--accent" style="align-self: flex-start">
+          <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+          {{w.chip}}
+        </span>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--scene-l1-wood); color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">Л</div>
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-size: 12px; color: var(--muted)">Волонтерка Ліна</span>
+          <div style="padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; font-size: 14px; line-height: 1.45">{{w.lina}}</div>
+        </div>
+      </div>
+
+      <a class="st-btn st-btn--primary st-btn--l" href="Main.dc.html">
+        До стройової
+        <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["дрон ×2","інший подарунок"],"default":"дрон ×2","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'дрон ×2';
+    var gen = st === 'інший подарунок';
+    var w = {
+      docAria: 'Акт № 17, введення в експлуатацію квадрокоптера, погоджено',
+      no: 'Акт № 17',
+      item: 'Квадрокоптер · подарунок волонтерів',
+      took: '7 год 30 хв',
+      left: '1 год 30 хв',
+      speedups: 'немає',
+      title: 'Пташка в небі',
+      effect: '×2 до підписів, поки вона служить',
+      chip: 'ще 1 год 30 хв',
+      lina: 'Пташка літає. Екіпаж передає дякую стройовій.'
+    };
+    if (gen) {
+      w = {
+        docAria: 'Акт № 20, введення в експлуатацію генератора, погоджено',
+        no: 'Акт № 20',
+        item: 'Генератор · подарунок волонтерів',
+        took: '7 год 10 хв',
+        left: '2 год 50 хв',
+        speedups: '1, реклама',
+        title: 'Генератор гуде',
+        effect: '×1,25 до підписів без заправки, поки служить',
+        chip: 'ще 2 год 50 хв',
+        lina: 'Поставили на облік. Тепер його можна вмикати.'
+      };
+    }
+    return { s: { drone: !gen, gen: gen }, w: w };
+  }
+}
+</script>
+</body>
+</html>

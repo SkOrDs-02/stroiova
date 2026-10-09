@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Журнал курйозів</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+  <main style="flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">
+
+    <h1 style="margin: 0; min-height: 44px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.3">Музей</h1>
+
+    <div role="tablist" aria-label="Розділи музею" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: var(--radius-12); background: var(--bg-deep); border: 1px solid var(--border)">
+      <a href="Museum.dc.html" role="tab" aria-selected="false" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-8); font-size: 14px; font-weight: 500; color: var(--muted)">Журнали</a>
+      <span role="tab" aria-selected="true" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-8); background: var(--surface); border: 1px solid var(--border-strong); font-size: 14px; font-weight: 600; color: var(--text)">Курйози</span>
+    </div>
+
+    <sc-if value="{{s.empty}}" hint-placeholder-val="{{false}}">
+      <div style="position: relative; padding: 6px 8px 12px 4px">
+        <div class="st-paper-under" style="background: var(--paper-4); transform: rotate(-3deg); inset: 12px 12px 6px 8px"></div>
+        <div class="st-paper-under" style="background: var(--paper-2); transform: rotate(2deg); inset: 6px 4px 10px 12px"></div>
+        <article class="st-paper" aria-label="Журнал курйозів, записів немає">
+          <span class="st-paper-num" aria-hidden="true">1</span>
+          <div style="display: flex; flex-direction: column; gap: 4px; text-align: center">
+            <span class="st-doc-title">Журнал курйозів</span>
+            <span class="st-doc-meta">розпочато 08.10.2026</span>
+          </div>
+          <hr class="st-doc-rule">
+          <div style="display: grid; grid-template-columns: 28px 74px minmax(0, 1fr); gap: 6px; font: 400 12px/1.4 var(--font-mono); color: var(--ink-2)">
+            <span>№</span><span>Дата</span><span>Зміст</span>
+          </div>
+          <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 14px; padding-bottom: 6px">
+            <i style="display: block; height: 14px; border-bottom: 1px dotted var(--paper-rule)"></i>
+            <i style="display: block; height: 14px; border-bottom: 1px dotted var(--paper-rule)"></i>
+            <i style="display: block; height: 14px; border-bottom: 1px dotted var(--paper-rule)"></i>
+            <i style="display: block; height: 14px; border-bottom: 1px dotted var(--paper-rule)"></i>
+            <i style="display: block; height: 14px; border-bottom: 1px dotted var(--paper-rule)"></i>
+          </div>
+        </article>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 2px">
+        <span style="font-size: 15px; font-weight: 600">Записів поки немає</span>
+        <span style="font-size: 13px; line-height: 1.5; color: var(--muted)">Сюди лягають усі телеграми згори й дрони, списані раніше, ніж їх поставили на облік. Будь-яким записом можна поділитися картинкою.</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.list}}" hint-placeholder-val="{{true}}">
+      <span style="font-size: 13px; color: var(--muted)">9 записів · 8 телеграм · 1 списаний дрон</span>
+
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+        <section aria-label="{{g.day}}" style="display: flex; flex-direction: column; gap: 6px">
+          <h2 style="margin: 6px 0 0; font: 500 12px/1.35 var(--font-mono); color: var(--muted)">{{g.day}}</h2>
+          <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+            <a href="CurioDetail.dc.html" class="st-card st-tg" aria-label="{{it.aria}}" style="color: var(--text)">
+              <span class="st-tg-top">
+                <sc-if value="{{it.tg}}" hint-placeholder-val="{{true}}">
+                  <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                </sc-if>
+                <sc-if value="{{it.drone}}" hint-placeholder-val="{{false}}">
+                  <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="5" r="2.5"></circle><circle cx="19" cy="5" r="2.5"></circle><circle cx="5" cy="19" r="2.5"></circle><circle cx="19" cy="19" r="2.5"></circle><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"></path><rect x="10" y="10" width="4" height="4"></rect></svg>
+                </sc-if>
+                <span>{{it.num}}</span>
+                <span class="st-tg-status" style="color: var(--muted)">{{it.status}}</span>
+              </span>
+              <span class="st-tg-title">{{it.title}}</span>
+              <span class="st-tg-meta">{{it.meta}}</span>
+            </a>
+          </sc-for>
+        </section>
+      </sc-for>
+    </sc-if>
+
+  </main>
+
+  <nav aria-label="Розділи" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg-deep); border-top: 1px solid var(--border); padding: 6px 4px 10px">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>
+      <span>Стройова</span>
+    </a>
+    <a href="TgList.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+      <span>Телеграми</span>
+      <span aria-label="нових: 3" style="position: absolute; top: 2px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--alert); color: var(--on-alert); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center">3</span>
+    </a>
+    <a href="Digital.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
+      <span>Цифра</span>
+    </a>
+    <a href="Museum.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--accent); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
+      <span>Музей</span>
+    </a>
+    <a href="Shop.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+      <span>Магазин</span>
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["список","порожньо"],"default":"список","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "список";
+    function tg(num, time, status, title, meta) {
+      return { tg: true, drone: false, num: "ТЕЛЕГРАМА № " + num + " · " + time, status: status, title: title, meta: meta, aria: "Телеграма № " + num + ", " + title + ". " + status + ". " + meta };
+    }
+    var groups = [
+      { day: "Сьогодні · 09.10.2026", items: [
+        { tg: false, drone: true, num: "АКТ № 17 · 14:05", status: "списано", title: "Списано раніше, ніж поставлено на облік", meta: "Квадрокоптер · подарунок волонтерів", aria: "Запис № 9. Акт № 17: квадрокоптер списано раніше, ніж поставлено на облік" },
+        tg("4563", "13:20", "у шухляді", "Про бобіни", "Флешка лежить у шухляді. Необлікована."),
+        tg("4530", "12:50", "у шухляді", "Про відбиток печатки", "Печатка лежить там само."),
+        tg("4523", "11:40", "сумлінно", "Про другу сторінку", "Дописано два рядки. Більше доповісти нічого."),
+        tg("4519", "10:15", "відписка", "Про паперовий примірник", "Відписано, що дублювати заборонено."),
+        tg("4516", "09:30", "сумлінно", "Про терміновість", "Усі телеграми вважати терміновими. Цю — особливо."),
+        tg("4478", "08:05", "сумлінно", "Про ознайомлення", "Ознайомлено під підпис із порядком ознайомлення під підпис."),
+        tg("4474", "07:20", "сумлінно", "Про скорочення паперу", "План заходів подано в п’яти примірниках.")
+      ] },
+      { day: "Учора · 08.10.2026", items: [
+        tg("4471", "18:40", "сумлінно", "Про сержантів", "Пораховано десятьма формулами. Роздруковано й підшито.")
+      ] }
+    ];
+    return {
+      s: { empty: st === "порожньо", list: st !== "порожньо" },
+      groups: groups
+    };
+  }
+}
+</script>
+</body>
+</html>

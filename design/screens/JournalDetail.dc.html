@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Експонат</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+    <div style="height: 44px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 22px; color: var(--muted)">Музей</div>
+    <div style="height: 54px; border-radius: var(--radius-12); background: var(--bg-deep); border: 1px solid var(--border)"></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <div style="height: 196px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+      <div style="height: 196px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+      <div style="height: 196px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+      <div style="height: 196px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    </div>
+  </div>
+  <div class="st-scrim"></div>
+
+  <section class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="jd-title" style="gap: 14px">
+    <div class="st-sheet-grab" aria-hidden="true"></div>
+    <div class="st-sheet-head">
+      <div class="st-sheet-title">
+        <h2 class="st-h2" id="jd-title">{{j.title}}</h2>
+        <p class="st-sub" style="font-size: 12px">{{j.sub}}</p>
+      </div>
+      <a href="Museum.dc.html" class="st-iconbtn st-iconbtn--bare" aria-label="Закрити" style="border: 0; color: var(--text)"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    </div>
+
+    <sc-if value="{{s.found}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; gap: 14px; align-items: flex-start">
+        <div style="width: 128px; flex: none; padding: 2px; border-radius: var(--radius-6); border: {{j.frame}}">
+          <span class="st-jr-cover" style="height: 164px; background: {{j.bg}}; padding: {{j.pad}}">
+            <span class="st-jr-label"><b>{{j.head}}</b><span>{{j.name}}</span></span>
+            <sc-if value="{{s.legend}}" hint-placeholder-val="{{false}}">
+              <span class="st-jr-star"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+            </sc-if>
+            <span class="st-stamp st-stamp--s st-stamp--dark" style="transform: rotate(-7deg)">Скасовано</span>
+          </span>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 16px; font-weight: 600; line-height: 1.35">{{j.full}}</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: {{j.rc}}">
+            <sc-if value="{{s.legend}}" hint-placeholder-val="{{false}}">
+              <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>
+            </sc-if>
+            {{j.rar}}
+          </span>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 12px; color: var(--muted)">Бонус · діє завжди</span>
+            <span style="font-size: 14px; font-weight: 500; line-height: 1.4">{{j.bonus}}</span>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin: 0; padding-left: 12px; border-left: 2px solid var(--border-strong); font-size: 14px; line-height: 1.5">{{j.flavor}}</p>
+
+      <article class="st-paper st-paper--card" aria-label="Історія скасування" style="gap: 8px">
+        <span class="st-doc-meta">Історія скасування</span>
+        <p class="st-doc-body">{{j.fact}}</p>
+        <div class="st-doc-foot">
+          <span class="st-doc-meta" style="flex: 1; min-width: 0">Джерело: {{j.source}}</span>
+          <span class="st-stamp" style="--st-rot: -6deg; --st-edge: 110deg; flex: none">Скасовано</span>
+        </div>
+      </article>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div class="st-kv"><span>Звідки</span><b style="font-family: var(--font-sans); font-weight: 500">{{j.src}}</b></div>
+        <div class="st-kv"><span>У музеї з</span><b>{{j.date}}</b></div>
+      </div>
+
+      <a href="ShareCard.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"></path><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path></svg>
+        Поділитися
+      </a>
+    </sc-if>
+
+    <sc-if value="{{s.locked}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; gap: 14px; align-items: flex-start">
+        <div style="width: 128px; height: 168px; flex: none; box-sizing: border-box; border-radius: var(--radius-6); border: 1px dashed var(--border-strong); background: var(--surface-2); color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px">
+          <svg class="st-ico" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span style="font: 500 15px/1 var(--font-mono)">???</span>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+          <span style="font: 600 18px/1.3 var(--font-mono)">???</span>
+          <span style="font-size: 13px; font-weight: 600; color: var(--muted)">Не знайдено</span>
+          <span style="font-size: 13px; line-height: 1.5; color: var(--muted)">Назву, рідкість і бонус покаже знахідка.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)">
+        <div class="st-unit-plate" aria-hidden="true">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V3h6v1M9 12l2 2 4-4"></path></svg>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; color: var(--muted)">Звідки береться</span>
+          <span style="font-size: 15px; font-weight: 600">Перевірка без зауважень</span>
+          <span style="font-size: 13px; line-height: 1.5; color: var(--muted)">Підготуй усі пункти чекліста до приїзду комісії.</span>
+        </div>
+      </div>
+
+      <a href="Museum.dc.html" class="st-btn st-btn--neutral st-btn--m" style="color: var(--text)">Зрозуміло</a>
+    </sc-if>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["знайдено: звичайний","знайдено: рідкісний","знайдено: легендарний","не знайдено"],"default":"знайдено: звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "знайдено: звичайний";
+    var D = {
+      "знайдено: звичайний": {
+        title: "Експонат № 1 з 8", sub: "Майно",
+        head: "Книга", name: "обліку видавання мила, миття в лазні та заміни білизни",
+        full: "Книга обліку видавання мила, миття в лазні та заміни білизни",
+        bg: "var(--cover-olive)", frame: "0", pad: "12px 10px 28px 22px", rar: "Звичайний", rc: "var(--rarity-common)",
+        bonus: "+5% до швидкості Стройової частини",
+        flavor: "Мило видавали на одну лазню на тиждень. Кожен шматок записували.",
+        fact: "У 2024 році Міноборони прибрало з обліку майна 16 паперових форм. Ця книга в тому самому переліку.",
+        source: "тези-роз’яснення МОУ, 2024",
+        src: "Перша цифровізація", date: "08.10.2026"
+      },
+      "знайдено: рідкісний": {
+        title: "Експонат № 3 з 8", sub: "Майно",
+        head: "Книга", name: "обліку руху осіб, що харчуються",
+        full: "Книга обліку руху осіб, що харчуються",
+        bg: "var(--cover-brown)", frame: "0", pad: "12px 10px 28px 22px", rar: "Рідкісний", rc: "var(--rarity-rare)",
+        bonus: "+10% паперу з будь-якого джерела",
+        flavor: "Облік тих, хто їсть. Окремо від обліку тих, хто служить. Це ті самі люди.",
+        fact: "Скасована 2024 року разом з іншими формами обліку майна. У Міноборони такі журнали назвали дублюючими.",
+        source: "МОУ; АрміяInform, 2024",
+        src: "Перша цифровізація", date: "08.10.2026"
+      },
+      "знайдено: легендарний": {
+        title: "Експонат № 8 з 8", sub: "Майно · серію зібрано",
+        head: "Книга", name: "обліку експонатів музеїв, кімнат бойової слави",
+        full: "Книга обліку експонатів музеїв, кімнат бойової слави",
+        bg: "var(--cover-black)", frame: "2px solid var(--accent)", pad: "12px 26px 28px 22px", rar: "Легендарний", rc: "var(--rarity-legend)",
+        bonus: "×2 до бонусу всіх інших журналів",
+        flavor: "Скасована в одному переліку з книгою обліку мила. Тепер сама експонат.",
+        fact: "Пункт 13 переліку форм обліку майна, які Міноборони скасувало 2024 року.",
+        source: "тези-роз’яснення МОУ, 2024",
+        src: "Зібрати сім інших", date: "09.10.2026"
+      },
+      "не знайдено": {
+        title: "Експонат № 7 з 8", sub: "Не знайдено"
+      }
+    };
+    var j = Object.assign({}, D["знайдено: звичайний"], D[st] || {});
+    var locked = st === "не знайдено";
+    return {
+      j: j,
+      s: { found: !locked, locked: locked, legend: st === "знайдено: легендарний" }
+    };
+  }
+}
+</script>
+</body>
+</html>

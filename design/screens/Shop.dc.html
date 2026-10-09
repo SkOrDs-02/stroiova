@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Магазин</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+  <main style="flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">
+
+    <h1 style="margin: 0; min-height: 44px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.3">Магазин</h1>
+
+    <sc-if value="{{s.bnNet}}" hint-placeholder-val="{{false}}">
+      <div class="st-banner st-banner--neutral" role="status">
+        <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 2l20 20"></path><path d="M8.5 16.5a5 5 0 0 1 7 0"></path><path d="M2 8.82a15 15 0 0 1 4.17-2.65"></path><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"></path><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"></path><path d="M5 13a10 10 0 0 1 5.24-2.76"></path><path d="M12 20h.01"></path></svg>
+        <span class="st-banner-txt">Немає зв’язку. Магазин і реклама недоступні, гра працює далі.</span>
+        <button class="st-banner-act" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--accent)">Повторити</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.bnBill}}" hint-placeholder-val="{{false}}">
+      <div class="st-banner st-banner--neutral" role="status">
+        <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20M6 15h4"></path></svg>
+        <span class="st-banner-txt">Покупки недоступні: App Store не відповідає або їх обмежено в налаштуваннях телефону.</span>
+        <button class="st-banner-act" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--accent)">Повторити</button>
+      </div>
+    </sc-if>
+
+    <div class="st-card" style="display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 12px">
+      <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: {{adIconBg}}; color: {{adIconColor}}; display: flex; align-items: center; justify-content: center">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"></path></svg>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 14px; font-weight: 500"><span style="font-family: var(--font-mono); font-weight: 600">×2</span> до підписів на 4 год</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">{{adMeta}}</span>
+      </div>
+      <sc-if value="{{s.ad.watch}}" hint-placeholder-val="{{true}}">
+        <button class="st-btn st-btn--secondary st-btn--s" aria-label="Дивитися рекламу 30 секунд: ×2 до підписів на 4 години">Дивитися</button>
+      </sc-if>
+      <sc-if value="{{s.ad.take}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--secondary st-btn--s" aria-label="Забрати ×2 до підписів на 4 години без реклами">Забрати</button>
+      </sc-if>
+      <sc-if value="{{s.ad.off}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--s" aria-disabled="true">Ролика немає</button>
+      </sc-if>
+    </div>
+
+    <h2 style="margin: 6px 0 0; font-size: 13px; font-weight: 500; color: var(--muted)">Покупки</h2>
+
+    <article aria-labelledby="p-noads" style="padding: 16px; border-radius: var(--radius-12); border: {{naBorder}}; background: var(--surface); display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+        <h3 class="st-h2" id="p-noads">Без реклами</h3>
+        <sc-if value="{{s.na.owned}}" hint-placeholder-val="{{false}}">
+          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Куплено</span>
+        </sc-if>
+      </div>
+      <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.4">
+        <li style="display: flex; gap: 10px; align-items: flex-start"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.2; color: var(--accent); margin-top: 2px" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg><span><span style="font-family: var(--font-mono); font-weight: 600">×1,3</span> до всіх підписів назавжди</span></li>
+        <li style="display: flex; gap: 10px; align-items: flex-start"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.2; color: var(--accent); margin-top: 2px" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg><span>Нагороди за рекламу без перегляду: кнопка «Забрати»</span></li>
+        <li style="display: flex; gap: 10px; align-items: flex-start"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.2; color: var(--accent); margin-top: 2px" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg><span>Ліміти ті самі: буст до 12 год, офлайн <span style="font-family: var(--font-mono); font-weight: 600">×2</span> тричі на день</span></li>
+      </ul>
+      <sc-if value="{{s.na.buy}}" hint-placeholder-val="{{true}}">
+        <a href="IapSuccess.dc.html" class="st-btn st-btn--primary st-btn--m" aria-label="Купити «Без реклами» за 199 гривень" style="color: var(--accent-ink)">Купити · <span class="st-btn-num">199 ₴</span></a>
+      </sc-if>
+      <sc-if value="{{s.na.loading}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--m" aria-disabled="true" aria-busy="true"><span class="st-dots" aria-hidden="true"><i></i><i></i><i></i></span>Завантажуємо ціну</button>
+      </sc-if>
+      <sc-if value="{{s.na.off}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--m" aria-disabled="true">Покупка недоступна</button>
+      </sc-if>
+      <sc-if value="{{s.na.owned}}" hint-placeholder-val="{{false}}">
+        <span style="font-size: 13px; line-height: 1.5; color: var(--muted)"><span style="font-family: var(--font-mono); font-weight: 600; color: var(--text)">×1,3</span> уже діє. Нагороди за рекламу тепер кнопкою «Забрати».</span>
+      </sc-if>
+      <sc-if value="{{s.na.busy}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <button class="st-btn st-btn--off st-btn--m" aria-disabled="true" aria-busy="true"><span class="st-dots" aria-hidden="true"><i></i><i></i><i></i></span>Чекаємо оплату</button>
+          <span class="st-btn-note">Підтвердь оплату в системному вікні. Гроші списує App Store.</span>
+        </div>
+      </sc-if>
+    </article>
+
+    <sc-if value="{{s.sp.show}}" hint-placeholder-val="{{true}}">
+      <article class="st-card" aria-labelledby="p-starter" style="display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px">
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+          <h3 id="p-starter" style="margin: 0; font-size: 15px; font-weight: 600">Стартовий набір</h3>
+          <span style="font-size: 13px; line-height: 1.45; color: var(--muted)"><span style="font-family: var(--font-mono)">50 000</span> підписів і бак генератора на 12 год замість 6. Купується один раз.</span>
+        </div>
+        <sc-if value="{{s.sp.buy}}" hint-placeholder-val="{{true}}">
+          <a href="IapSuccess.dc.html" class="st-btn st-btn--secondary st-btn--s" aria-label="Купити стартовий набір за 79 гривень" style="min-width: 76px; color: var(--accent); font-family: var(--font-mono); font-size: 14px">79 ₴</a>
+        </sc-if>
+        <sc-if value="{{s.sp.loading}}" hint-placeholder-val="{{false}}">
+          <button class="st-btn st-btn--off st-btn--s" aria-disabled="true" aria-busy="true" aria-label="Ціна завантажується" style="min-width: 76px"><span class="st-dots" aria-hidden="true"><i></i><i></i><i></i></span></button>
+        </sc-if>
+        <sc-if value="{{s.sp.off}}" hint-placeholder-val="{{false}}">
+          <button class="st-btn st-btn--off st-btn--s" aria-disabled="true" aria-label="Покупка недоступна" style="min-width: 76px; font-family: var(--font-mono); font-size: 14px">—</button>
+        </sc-if>
+        <sc-if value="{{s.sp.lock}}" hint-placeholder-val="{{false}}">
+          <button class="st-btn st-btn--off st-btn--s" aria-disabled="true" aria-label="Зачекай, поки завершиться інша покупка" style="min-width: 76px; font-family: var(--font-mono); font-size: 14px">79 ₴</button>
+        </sc-if>
+      </article>
+    </sc-if>
+
+    <article class="st-card" aria-labelledby="p-storage" style="display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px">
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <h3 id="p-storage" style="margin: 0; font-size: 15px; font-weight: 600">Розширене сховище</h3>
+        <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">{{srDesc}}</span>
+      </div>
+      <sc-if value="{{s.sr.buy}}" hint-placeholder-val="{{true}}">
+        <a href="IapSuccess.dc.html" class="st-btn st-btn--secondary st-btn--s" aria-label="Купити розширене сховище за 99 гривень" style="min-width: 76px; color: var(--accent); font-family: var(--font-mono); font-size: 14px">99 ₴</a>
+      </sc-if>
+      <sc-if value="{{s.sr.loading}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--s" aria-disabled="true" aria-busy="true" aria-label="Ціна завантажується" style="min-width: 76px"><span class="st-dots" aria-hidden="true"><i></i><i></i><i></i></span></button>
+      </sc-if>
+      <sc-if value="{{s.sr.off}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--s" aria-disabled="true" aria-label="Покупка недоступна" style="min-width: 76px; font-family: var(--font-mono); font-size: 14px">—</button>
+      </sc-if>
+      <sc-if value="{{s.sr.lock}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--s" aria-disabled="true" aria-label="Зачекай, поки завершиться інша покупка" style="min-width: 76px; font-family: var(--font-mono); font-size: 14px">99 ₴</button>
+      </sc-if>
+      <sc-if value="{{s.sr.owned}}" hint-placeholder-val="{{false}}">
+        <span style="display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Куплено</span>
+      </sc-if>
+    </article>
+
+    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 6px">
+      <sc-if value="{{s.rs.on}}" hint-placeholder-val="{{true}}">
+        <button class="st-btn st-btn--neutral st-btn--m">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"></path><path d="M3 21v-5h5"></path></svg>
+          Відновити покупки
+        </button>
+      </sc-if>
+      <sc-if value="{{s.rs.off}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--m" aria-disabled="true">Відновити покупки</button>
+      </sc-if>
+      <span class="st-btn-note">{{rsNote}}</span>
+    </div>
+
+  </main>
+
+  <nav aria-label="Розділи" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg-deep); border-top: 1px solid var(--border); padding: 6px 4px 10px">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>
+      <span>Стройова</span>
+    </a>
+    <a href="TgList.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+      <span>Телеграми</span>
+      <span aria-label="нових: 3" style="position: absolute; top: 2px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--alert); color: var(--on-alert); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center">3</span>
+    </a>
+    <a href="Digital.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
+      <span>Цифра</span>
+    </a>
+    <a href="Museum.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
+      <span>Музей</span>
+    </a>
+    <a href="Shop.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--accent); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+      <span>Магазин</span>
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","ціни вантажаться","недоступний: мережа","недоступний: білінг","Без реклами куплено","сховище куплено","стартовий набір куплено","покупка в процесі"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "звичайний";
+    var M = {
+      "звичайний":               { na: "buy",     sp: "buy",     sr: "buy",     ad: "watch", rs: "on",  bn: "" },
+      "ціни вантажаться":        { na: "loading", sp: "loading", sr: "loading", ad: "watch", rs: "on",  bn: "" },
+      "недоступний: мережа":     { na: "off",     sp: "off",     sr: "off",     ad: "off",   rs: "off", bn: "net" },
+      "недоступний: білінг":     { na: "off",     sp: "off",     sr: "off",     ad: "watch", rs: "off", bn: "bill" },
+      "Без реклами куплено":     { na: "owned",   sp: "buy",     sr: "buy",     ad: "take",  rs: "on",  bn: "" },
+      "сховище куплено":         { na: "buy",     sp: "buy",     sr: "owned",   ad: "watch", rs: "on",  bn: "" },
+      "стартовий набір куплено": { na: "buy",     sp: "hidden",  sr: "buy",     ad: "watch", rs: "on",  bn: "" },
+      "покупка в процесі":       { na: "busy",    sp: "lock",    sr: "lock",    ad: "watch", rs: "lock", bn: "" }
+    };
+    var m = M[st] || M["звичайний"];
+    function is(v, k) { return v === k; }
+    var adMeta = m.ad === "take" ? "Без перегляду · ще 3 рази сьогодні" : (m.ad === "off" ? "Немає зв’язку. Гра працює далі." : "Безкоштовно за рекламу · ще 3 рази");
+    var rsNote = "Покупки прив’язані до акаунта App Store або Google Play.";
+    if (m.bn === "net") rsNote = "Відновити можна, коли з’явиться зв’язок.";
+    if (m.bn === "bill") rsNote = "Відновити можна, коли App Store відповідатиме.";
+    if (m.rs === "lock") rsNote = "Спершу завершиться поточна покупка.";
+    return {
+      s: {
+        bnNet: m.bn === "net",
+        bnBill: m.bn === "bill",
+        ad: { watch: is(m.ad, "watch"), take: is(m.ad, "take"), off: is(m.ad, "off") },
+        na: { buy: is(m.na, "buy"), loading: is(m.na, "loading"), off: is(m.na, "off"), owned: is(m.na, "owned"), busy: is(m.na, "busy") },
+        sp: { show: m.sp !== "hidden", buy: is(m.sp, "buy"), loading: is(m.sp, "loading"), off: is(m.sp, "off"), lock: is(m.sp, "lock") },
+        sr: { buy: is(m.sr, "buy"), loading: is(m.sr, "loading"), off: is(m.sr, "off"), lock: is(m.sr, "lock"), owned: is(m.sr, "owned") },
+        rs: { on: m.rs === "on", off: m.rs !== "on" }
+      },
+      naBorder: m.na === "owned" ? "1px solid var(--border)" : "1.5px solid var(--accent)",
+      adIconBg: m.ad === "off" ? "var(--surface-2)" : "var(--accent)",
+      adIconColor: m.ad === "off" ? "var(--muted)" : "var(--accent-ink)",
+      adMeta: adMeta,
+      srDesc: m.sr === "owned" ? "Сховище тримає 24 год замість 8. Уже діє." : "Підписи без тебе накопичуються до 24 год замість 8.",
+      rsNote: rsNote
+    };
+  }
+}
+</script>
+</body>
+</html>

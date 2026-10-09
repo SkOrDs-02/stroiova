@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Зараховано</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+    <div style="height: 44px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 22px; color: var(--muted)">Магазин</div>
+    <div style="height: 64px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 228px; border-radius: var(--radius-12); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 96px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 80px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div class="st-scrim"></div>
+
+  <div class="st-modal-wrap">
+    <section class="st-modal st-modal--paper" role="dialog" aria-modal="true" aria-labelledby="iap-title">
+      <article class="st-paper" style="padding-top: 20px; padding-bottom: 20px">
+        <span class="st-paper-num" aria-hidden="true">1</span>
+        <span class="st-doc-meta">Покупка · 09.10.2026</span>
+        <h2 class="st-doc-title" id="iap-title" style="margin: 0">{{p.title}}</h2>
+        <hr class="st-doc-rule">
+        <div class="st-doc-row"><span>Вартість</span><i class="st-doc-dots"></i><span class="st-doc-val">{{p.price}}</span></div>
+        <sc-for list="{{p.rows}}" as="r" hint-placeholder-count="2">
+          <div class="st-doc-row"><span>{{r.k}}</span><i class="st-doc-dots"></i><span class="st-doc-val">{{r.v}}</span></div>
+        </sc-for>
+        <p class="st-doc-body">{{p.body}}</p>
+        <div style="align-self: flex-end; margin: -2px 8px 0 0"><span class="st-stamp st-stamp--hit" style="--st-rot: -6deg; --st-edge: 110deg">Зараховано<span class="st-stamp-date">09.10.2026</span></span></div>
+      </article>
+      <a href="Shop.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">Добре</a>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["Без реклами","Стартовий набір","Сховище"],"default":"Без реклами","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "Без реклами";
+    var P = {
+      "Без реклами": {
+        title: "Без реклами", price: "199 ₴",
+        rows: [ { k: "Множник", v: "×1,3" }, { k: "Ролики", v: "не потрібні" } ],
+        body: "×1,3 уже діє. Нагороди, що були за рекламу, тепер кнопкою «Забрати». Ліміти ті самі."
+      },
+      "Стартовий набір": {
+        title: "Стартовий набір", price: "79 ₴",
+        rows: [ { k: "Підписи", v: "+50 000" }, { k: "Бак генератора", v: "12 год" } ],
+        body: "Підписи вже в стройовій. Бак тепер на 12 год: ×1,25 від повного бака тримається вдвічі довше."
+      },
+      "Сховище": {
+        title: "Розширене сховище", price: "99 ₴",
+        rows: [ { k: "Сховище", v: "24 год" }, { k: "Було", v: "8 год" } ],
+        body: "Сховище тримає 24 год замість 8. Уже діє: підписи без тебе накопичуються цілу добу."
+      }
+    };
+    return { p: P[st] || P["Без реклами"] };
+  }
+}
+</script>
+</body>
+</html>

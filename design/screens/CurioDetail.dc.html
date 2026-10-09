@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Запис курйозу</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <header style="flex-shrink: 0; height: 52px; margin-top: 8px; padding: 0 20px 0 10px; display: flex; align-items: center; gap: 6px">
+    <a href="Curios.dc.html" class="st-iconbtn st-iconbtn--bare" aria-label="Назад до журналу курйозів" style="border: 0; color: var(--text)"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></a>
+    <h1 style="margin: 0; flex: 1; min-width: 0; font-family: var(--font-display); font-weight: 500; font-size: 17px; line-height: 1.3">Журнал курйозів</h1>
+    <span style="font: 500 12px/1.3 var(--font-mono); color: var(--muted); white-space: nowrap">{{meta}}</span>
+  </header>
+
+  <main style="flex: 1; min-height: 0; overflow-y: auto; padding: 6px 20px 16px; display: flex; flex-direction: column; gap: 14px">
+
+    <sc-if value="{{s.tg}}" hint-placeholder-val="{{true}}">
+      <div style="position: relative; display: flex; flex-direction: column; gap: 0; padding: 2px 6px 8px 0">
+        <div class="st-paper-under" style="background: var(--paper-3); transform: rotate(1.5deg); inset: 10px 0 0 10px"></div>
+        <article class="st-paper" aria-label="Телеграма № 4523" style="box-shadow: var(--shadow-stack)">
+          <span class="st-paper-num" aria-hidden="true">1</span>
+          <div style="position: absolute; top: 56px; right: 14px"><span class="st-stamp" style="--st-rot: 6deg; --st-edge: 80deg">Виконано<span class="st-stamp-date">09.10.2026</span></span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 24px">
+            <span class="st-doc-title">Телеграма № 4523</span>
+            <span class="st-doc-meta">вх. 12/389 від 09.10.2026</span>
+          </div>
+          <div class="st-doc-meta" style="display: flex; flex-direction: column; padding-right: 116px">
+            <span>Від: начальник штабу батальйону</span>
+            <span>Кому: начальнику стройової частини</span>
+          </div>
+          <hr class="st-doc-rule">
+          <p class="st-doc-body">Доповідь повернуто. На другій сторінці лише підпис. Переносити підпис на наступну сторінку дозволено, якщо на ній не менше двох рядків тексту.</p>
+        </article>
+        <article class="st-paper" aria-label="Доповідь, аркуш 2" style="margin: 10px 0 0 14px; transform: rotate(-1deg)">
+          <span class="st-paper-num" aria-hidden="true">2</span>
+          <span class="st-doc-meta">Доповідь · арк. 2</span>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <p class="st-doc-body">Доповідь закінчено.</p>
+            <p class="st-doc-body">Більше доповісти нічого.</p>
+          </div>
+          <div class="st-doc-foot">
+            <div class="st-doc-sign"><svg width="112" height="34" viewBox="0 0 112 34" aria-hidden="true"><path d="M5 25C13 8 20 28 28 14S42 9 46 21 60 28 66 12 82 19 88 17L108 13"></path></svg><span>Начальник стройової частини</span></div>
+          </div>
+        </article>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div class="st-kv"><span>Вибір</span><b style="font-family: var(--font-sans); font-weight: 500; text-align: right">Дописати два рядки</b></div>
+        <div class="st-kv"><span>Наслідок</span><b style="text-align: right">Стройова ×0,5 на 1 год</b></div>
+        <div class="st-kv"><span>Репутація</span><b>+5</b></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.drone}}" hint-placeholder-val="{{false}}">
+      <article class="st-paper" aria-label="Запис № 9: акт № 17, квадрокоптер списано раніше, ніж поставлено на облік" style="box-shadow: var(--shadow-stack)">
+        <span class="st-paper-num" aria-hidden="true">9</span>
+        <div class="st-doc-res" style="align-self: flex-end; margin: 2px 22px -4px 0; text-align: right">До журналу курйозів.</div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span class="st-doc-meta">Журнал курйозів · запис № 9</span>
+          <span class="st-doc-title">Акт № 17</span>
+          <span class="st-doc-meta">Введення в експлуатацію · квадрокоптер</span>
+        </div>
+        <ol class="st-route" aria-label="Маршрут акта: Рапорт і Комбат пройдено, акт застряг у Стройовій" style="--n: 4; margin: 0; padding: 0; list-style: none">
+          <li class="st-route-step is-done"><b><svg class="st-ico" width="11" height="11" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Рапорт</b></li>
+          <li class="st-route-step is-done"><b><svg class="st-ico" width="11" height="11" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Комбат</b></li>
+          <li class="st-route-step is-late" aria-current="step"><b>Стройова</b></li>
+          <li class="st-route-step"><b>Фін.</b></li>
+        </ol>
+        <p class="st-doc-body">Квадрокоптер (1 шт.), подарунок волонтерів, списано раніше, ніж поставлено на облік.</p>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <div class="st-doc-row"><span>Пройдено етапів</span><i class="st-doc-dots"></i><span class="st-doc-val">2 з 4</span></div>
+          <div class="st-doc-row"><span>Бракувало</span><i class="st-doc-dots"></i><span class="st-doc-val">1 год 32 хв</span></div>
+          <div class="st-doc-row"><span>Штраф</span><i class="st-doc-dots"></i><span class="st-doc-val">немає</span></div>
+        </div>
+        <div class="st-doc-foot">
+          <div class="st-doc-sign"><svg width="104" height="34" viewBox="0 0 104 34" aria-hidden="true"><path d="M6 24c6-14 12-16 14-6s-6 12 2 2 10-14 14-2 4 10 10 0 8-10 12-2 10 4 16-2l22-4"></path></svg><span>Начальник стройової</span></div>
+          <span class="st-stamp" style="--st-rot: 6deg; --st-edge: 70deg; flex: none; margin: 0 4px 8px 0">Скасовано<span class="st-stamp-date">09.10.2026</span></span>
+        </div>
+      </article>
+
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font: 600 15px/1 var(--font-sans); color: var(--muted)">Л</div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 12px; color: var(--muted)">Волонтерка Ліна</span>
+          <p style="margin: 0; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; font-size: 14px; line-height: 1.45">Списали раніше, ніж поставили на облік? Наступну привезу з накладною.</p>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div class="st-kv"><span>Не отримано</span><b style="text-align: right">×2 до підписів на час служби</b></div>
+        <div class="st-kv"><span>Подарунок прибув</span><b>09.10, 08:15</b></div>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <div style="flex-shrink: 0; padding: 12px 20px 20px; border-top: 1px solid var(--border); background: var(--bg)">
+    <a href="ShareCard.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">
+      <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"></path><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path></svg>
+      Поділитися
+    </a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["телеграма","списаний дрон"],"default":"телеграма","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "телеграма";
+    var drone = st === "списаний дрон";
+    return {
+      s: { tg: !drone, drone: drone },
+      meta: drone ? "Запис № 9" : "Запис № 6"
+    };
+  }
+}
+</script>
+</body>
+</html>

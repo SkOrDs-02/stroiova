@@ -1,0 +1,80 @@
+<!-- @dsCard group="Числа" height=984 width=760 -->
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Формат чисел</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+</head>
+<body>
+<div class="st-pv" style="grid-template-columns:minmax(0,1fr)">
+<section class="st-spec"><h3 class="st-spec-label">Великі числа · компактно (кнопки, ціни) і лічильник (шапка)</h3>
+<table class="st-numtable"><thead><tr><th>Значення</th><th>Компактно</th><th>Лічильник</th></tr></thead><tbody id="big"></tbody></table></section>
+<section class="st-spec"><h3 class="st-spec-label">Час, швидкість, ціни, множники</h3>
+<table class="st-numtable"><thead><tr><th>Що</th><th>Вигляд</th><th>Де</th></tr></thead><tbody id="misc"></tbody></table></section>
+<section class="st-spec"><h3 class="st-spec-label">Спробуйте число</h3>
+<input class="st-input" id="inp" inputmode="numeric" value="12300000000000000" aria-label="Число для форматування">
+<table class="st-numtable"><tbody><tr><td>Компактно, баланс</td><td class="is-out" id="o1"></td></tr><tr><td>Компактно, ціна</td><td class="is-out" id="o2"></td></tr><tr><td>Лічильник</td><td class="is-out" id="o3"></td></tr></tbody></table></section>
+</div>
+<script>
+var NB = "\u00a0";
+var UNITS = ["тис.", "млн", "млрд"];
+function suffix(k) { // k = 0 → тис.; 3 → aa
+  if (k < 3) return UNITS[k];
+  var i = k - 3, a = "abcdefghijklmnopqrstuvwxyz";
+  return a[Math.floor(i / 26) % 26] + a[i % 26];
+}
+function group(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, NB); }
+function dec(x, d) { var s = x.toFixed(d); if (d > 0) s = s.replace(/0+$/, "").replace(/\.$/, ""); return s.replace(".", ","); }
+function compact(n, mode) {
+  var r = mode === "ceil" ? Math.ceil : mode === "floor" ? Math.floor : Math.round;
+  if (n < 10000) return group(r(n));
+  var k = Math.floor(Math.log10(n) / 3) - 1, v = n / Math.pow(1000, k + 1);
+  var d = v < 10 ? 2 : v < 100 ? 1 : 0, p = Math.pow(10, d);
+  v = r(v * p) / p;
+  if (v >= 1000) { k += 1; v = v / 1000; d = 2; }
+  return dec(v, d) + NB + suffix(k);
+}
+function counter(n) {
+  if (n < 1e7) return group(Math.floor(n));
+  var k = Math.floor(Math.log10(n) / 3) - 1, v = Math.floor(n / Math.pow(1000, k + 1) * 100) / 100;
+  return v.toFixed(2).replace(".", ",") + NB + suffix(k);
+}
+function dur(s) {
+  if (s < 60) return s + NB + "с";
+  var m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24);
+  if (h < 1) return m + NB + "хв";
+  if (d < 2) return h + NB + "год " + String(m % 60).padStart(2, "0") + NB + "хв";
+  return d + NB + "дн " + (h % 24) + NB + "год";
+}
+function clock(s, pad) {
+  var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return (pad ? String(h).padStart(2, "0") : h) + ":" + String(m).padStart(2, "0") + ":" + String(x).padStart(2, "0");
+}
+var big = [7, 4120, 186400, 2412000, 1248360, 12480000, 999990000000, 1.23e16, 4.5e18];
+document.getElementById("big").innerHTML = big.map(function (n) {
+  return "<tr><td>" + (n < 1e21 ? group(Math.round(n)) : n) + "</td><td class=is-out>" + compact(n, "round") + "</td><td class=is-out>" + counter(n) + "</td></tr>";
+}).join("");
+var misc = [
+  ["Тривалість, 38 с", dur(38), "тост кота, кулдаун"],
+  ["Тривалість, 2 520 с", dur(2520), "телеграма на виконанні"],
+  ["Тривалість, 18 720 с", dur(18720), "гонка: реальний час"],
+  ["Відлік, 8 077 с", clock(8077, true), "таймер перевірки"],
+  ["Відлік, 13 272 с", "ще " + clock(13272, false), "чип буста"],
+  ["Швидкість", "+412/хв", "картка, рядок вузького місця"],
+  ["Ціна", "199" + NB + "₴", "магазин, IBM Plex Mono"],
+  ["Множник", "×1,5 · ×2,04", "чип, «Отримаєте»"],
+  ["Відсоток", "+35% · 62%", "бонус колекції, пальне"]
+];
+document.getElementById("misc").innerHTML = misc.map(function (r) { return "<tr><td>" + r[0] + "</td><td class=is-out>" + r[1] + "</td><td class=is-note>" + r[2] + "</td></tr>"; }).join("");
+function upd() {
+  var n = Number(String(document.getElementById("inp").value).replace(/[^0-9.]/g, "")) || 0;
+  document.getElementById("o1").textContent = compact(n, "floor");
+  document.getElementById("o2").textContent = compact(n, "ceil");
+  document.getElementById("o3").textContent = counter(n);
+}
+document.getElementById("inp").addEventListener("input", upd); upd();
+</script>
+</body>
+</html>

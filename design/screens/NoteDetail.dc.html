@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Записка</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+    <div style="height: 44px; display: flex; align-items: center">
+      <div style="width: 140px; height: 18px; border-radius: 9px; background: var(--surface)"></div>
+    </div>
+    <div style="height: 44px; border-radius: var(--radius-pill); background: var(--surface)"></div>
+    <div style="height: 82px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 82px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 82px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div role="dialog" aria-modal="true" aria-labelledby="note-title" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 88%; box-sizing: border-box; background: var(--bg); border-radius: 12px 12px 0 0; box-shadow: var(--shadow-sheet); padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 14px">
+    <div aria-hidden="true" style="align-self: center; width: 36px; height: 4px; border-radius: 2px; background: var(--border)"></div>
+
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="width: 36px; height: 36px; flex-shrink: 0; border-radius: var(--radius-8); background: var(--border); color: var(--text); display: flex; align-items: center; justify-content: center">
+        <sc-if value="{{s.bird}}" hint-placeholder-val="{{true}}">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="5" r="2.5"></circle><circle cx="19" cy="5" r="2.5"></circle><circle cx="5" cy="19" r="2.5"></circle><circle cx="19" cy="19" r="2.5"></circle><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"></path><rect x="10" y="10" width="4" height="4"></rect></svg>
+        </sc-if>
+        <sc-if value="{{s.lina}}" hint-placeholder-val="{{false}}">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="1"></rect><path d="M3 12h18M12 8v13M12 8c-1.5-3-5-4-5-1.5S10 8 12 8zM12 8c1.5-3 5-4 5-1.5S14 8 12 8z"></path></svg>
+        </sc-if>
+        <sc-if value="{{s.call}}" hint-placeholder-val="{{false}}">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg>
+        </sc-if>
+      </div>
+      <div style="flex: 1; min-width: 0">
+        <h2 id="note-title" class="st-h2">{{d.title}}</h2>
+        <p class="st-sub" style="font-size: 12px">{{d.sub}}</p>
+      </div>
+      <a href="TgList.dc.html" class="st-iconbtn st-iconbtn--bare" aria-label="Закрити">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </a>
+    </div>
+
+    <sc-if value="{{s.paper}}" hint-placeholder-val="{{true}}">
+      <article class="st-paper st-paper--card" aria-label="{{d.title}}" style="gap: 8px; padding-top: 16px; padding-bottom: 18px">
+        <span class="st-doc-meta">{{d.paperHead}}</span>
+        <p style="margin: 0; font-family: var(--font-hand); font-weight: 600; font-size: 24px; line-height: 1.25; color: var(--pen); transform: rotate(-2deg); transform-origin: left center">{{d.hand}}</p>
+        <span class="st-doc-meta" style="align-self: flex-end">{{d.paperFoot}}</span>
+      </article>
+    </sc-if>
+
+    <sc-if value="{{s.call}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 12px; color: var(--muted)">«Археолог»</span>
+        <span style="align-self: flex-start; max-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; padding: 10px 12px; font-size: 14px; line-height: 1.45">Стройова? Я вже не там. Архів у третій шухляді, ключ під котом.</span>
+        <span style="align-self: flex-start; max-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; padding: 10px 12px; font-size: 14px; line-height: 1.45">І вимети буржуйку. Комісія туди дивиться навіть улітку.</span>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <sc-for list="{{d.kv}}" as="it" hint-placeholder-count="2">
+        <div class="st-kv"><span>{{it.k}}</span><b>{{it.v}}</b></div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{s.lina}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <a href="TgList.dc.html" class="st-btn st-btn--primary st-btn--l">Добре</a>
+        <a href="RaceSheet.dc.html" class="st-btn st-btn--neutral st-btn--m">Подивитися акт</a>
+      </div>
+    </sc-if>
+    <sc-if value="{{s.notLina}}" hint-placeholder-val="{{true}}">
+      <a href="TgList.dc.html" class="st-btn st-btn--primary st-btn--l">Добре</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["вісточка Пташки","записка Ліни","підсумок дзвінка"],"default":"вісточка Пташки","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'вісточка Пташки';
+    var D = {
+      'вісточка Пташки': {
+        title: 'Вісточка від Пташки', sub: 'Через волонтерку Ліну · учора, 19:40',
+        paperHead: 'Квадрокоптер «Пташка» · акт № 1',
+        hand: 'Пташка: 40 вильотів. Екіпаж передає дякую стройовій.',
+        paperFoot: 'Згідно з оригіналом',
+        kv: [{ k: 'Пташка в небі', v: '×2 до підписів' }, { k: 'Бонус діє', v: 'поки вона служить' }]
+      },
+      'записка Ліни': {
+        title: 'Записка від Ліни', sub: 'Волонтерка Ліна · сьогодні, 11:05',
+        paperHead: 'Аркуш із блокнота, без номера',
+        hand: 'Привезла генератор. Чек є. Знаю, що не годиться.',
+        paperFoot: 'Ліна',
+        kv: [{ k: 'Акт на генератор', v: 'в дорозі 5 год 12 хв' }, { k: 'Ресурс на фронті', v: 'ще 11 год 20 хв' }]
+      },
+      'підсумок дзвінка': {
+        title: 'Дзвінок «Археологу»', sub: 'Попередник · сьогодні, 06:58 · 0:48',
+        paperHead: '', hand: '', paperFoot: '',
+        kv: [{ k: 'Архів попередника', v: '+18,4 тис. підписів' }, { k: 'Ключ від архіву', v: 'під котом' }]
+      }
+    };
+    return {
+      d: D[st] ?? D['вісточка Пташки'],
+      s: {
+        bird: st === 'вісточка Пташки',
+        lina: st === 'записка Ліни',
+        notLina: st !== 'записка Ліни',
+        call: st === 'підсумок дзвінка',
+        paper: st !== 'підсумок дзвінка'
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

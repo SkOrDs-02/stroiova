@@ -1,0 +1,239 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-08T22:44:10Z"
+  },
+  "title": "Стройова — дизайн-система",
+  "namespace": "Stroyova",
+  "libraries": [],
+  "sections": {},
+  "groups": [
+    "Icons"
+  ],
+  "assetGroups": {
+    "Icons": {
+      "name": "Icons",
+      "tile": "s",
+      "order": [
+        "doc.svg",
+        "envelope.svg",
+        "chip.svg",
+        "archive.svg",
+        "bag.svg",
+        "report.svg",
+        "resolution.svg",
+        "cash.svg",
+        "layers.svg",
+        "bolt.svg",
+        "printer.svg",
+        "gauge-low.svg",
+        "gauge-mid.svg",
+        "gauge-high.svg",
+        "pen.svg",
+        "play.svg",
+        "arrow-up.svg",
+        "arrow-right.svg",
+        "arrow-left.svg",
+        "check.svg",
+        "menu.svg",
+        "close.svg",
+        "clock.svg",
+        "warning.svg",
+        "lock.svg",
+        "star.svg",
+        "drone.svg",
+        "cup.svg",
+        "seal.svg"
+      ],
+      "files": {
+        "doc.svg": {
+          "name": "doc.svg",
+          "blob": "5dddb0d24c8b16902adc0c7583786561",
+          "size": 245,
+          "type": "image/svg+xml"
+        },
+        "envelope.svg": {
+          "name": "envelope.svg",
+          "blob": "671ff22bf23dfae88389d01cda266df1",
+          "size": 269,
+          "type": "image/svg+xml"
+        },
+        "chip.svg": {
+          "name": "chip.svg",
+          "blob": "91b1e35cf0a4c3571659782ef9ad32b2",
+          "size": 317,
+          "type": "image/svg+xml"
+        },
+        "archive.svg": {
+          "name": "archive.svg",
+          "blob": "ed2077d7edfaddcd0a03c6cd42eec956",
+          "size": 304,
+          "type": "image/svg+xml"
+        },
+        "bag.svg": {
+          "name": "bag.svg",
+          "blob": "01deeeb04e8bda038407137160f1ae8f",
+          "size": 253,
+          "type": "image/svg+xml"
+        },
+        "report.svg": {
+          "name": "report.svg",
+          "blob": "78f06c6537fe4edb264b9d80bb770a3e",
+          "size": 261,
+          "type": "image/svg+xml"
+        },
+        "resolution.svg": {
+          "name": "resolution.svg",
+          "blob": "00a4ee4ae4a0e0998999ebfcd4ab1982",
+          "size": 252,
+          "type": "image/svg+xml"
+        },
+        "cash.svg": {
+          "name": "cash.svg",
+          "blob": "98c4aebe2148915be151c0995350cec4",
+          "size": 316,
+          "type": "image/svg+xml"
+        },
+        "layers.svg": {
+          "name": "layers.svg",
+          "blob": "bb83d90677261be9a12004bf9148a293",
+          "size": 263,
+          "type": "image/svg+xml"
+        },
+        "bolt.svg": {
+          "name": "bolt.svg",
+          "blob": "7f67ef9ac30cb431a25550c83cc5c4dd",
+          "size": 228,
+          "type": "image/svg+xml"
+        },
+        "printer.svg": {
+          "name": "printer.svg",
+          "blob": "c991cb950dccff4573c26f3cf56bff71",
+          "size": 298,
+          "type": "image/svg+xml"
+        },
+        "gauge-low.svg": {
+          "name": "gauge-low.svg",
+          "blob": "b7e5321e288ef64176f58bb9894dcdbb",
+          "size": 296,
+          "type": "image/svg+xml"
+        },
+        "gauge-mid.svg": {
+          "name": "gauge-mid.svg",
+          "blob": "5c1d5f7f620d246248cf5e1bdc8c802b",
+          "size": 290,
+          "type": "image/svg+xml"
+        },
+        "gauge-high.svg": {
+          "name": "gauge-high.svg",
+          "blob": "db1251de6c1a042a8308a9402155f2d4",
+          "size": 295,
+          "type": "image/svg+xml"
+        },
+        "pen.svg": {
+          "name": "pen.svg",
+          "blob": "33630bae89f5c0a2054232175642df72",
+          "size": 225,
+          "type": "image/svg+xml"
+        },
+        "play.svg": {
+          "name": "play.svg",
+          "blob": "926ee248b99a437141fed3b55e026611",
+          "size": 215,
+          "type": "image/svg+xml"
+        },
+        "arrow-up.svg": {
+          "name": "arrow-up.svg",
+          "blob": "d396df72b6cdf01aad62201ecd092ac6",
+          "size": 223,
+          "type": "image/svg+xml"
+        },
+        "arrow-right.svg": {
+          "name": "arrow-right.svg",
+          "blob": "ff8cf9a565fcc6ede3fd4559174b2af8",
+          "size": 223,
+          "type": "image/svg+xml"
+        },
+        "arrow-left.svg": {
+          "name": "arrow-left.svg",
+          "blob": "e0b89f5d842d290b0dce93513049cea8",
+          "size": 224,
+          "type": "image/svg+xml"
+        },
+        "check.svg": {
+          "name": "check.svg",
+          "blob": "8a586ddb894e431734d90409a0c69b2f",
+          "size": 216,
+          "type": "image/svg+xml"
+        },
+        "menu.svg": {
+          "name": "menu.svg",
+          "blob": "f93b2e57dc61bbe1a29fdf4f8514d640",
+          "size": 225,
+          "type": "image/svg+xml"
+        },
+        "close.svg": {
+          "name": "close.svg",
+          "blob": "92e6f154896eddddac20de17fd96e879",
+          "size": 222,
+          "type": "image/svg+xml"
+        },
+        "clock.svg": {
+          "name": "clock.svg",
+          "blob": "fa57e03b317199dd02b8bd70fc76b26b",
+          "size": 252,
+          "type": "image/svg+xml"
+        },
+        "warning.svg": {
+          "name": "warning.svg",
+          "blob": "a7abd7cfb730768a3dae5b9afa916295",
+          "size": 251,
+          "type": "image/svg+xml"
+        },
+        "lock.svg": {
+          "name": "lock.svg",
+          "blob": "f565cba8167173119c3a8f45e99cb7f2",
+          "size": 281,
+          "type": "image/svg+xml"
+        },
+        "star.svg": {
+          "name": "star.svg",
+          "blob": "f9eb5f000cd86a32e2a37ce5d822365c",
+          "size": 272,
+          "type": "image/svg+xml"
+        },
+        "drone.svg": {
+          "name": "drone.svg",
+          "blob": "7e534ac0a59e4af382afd219dc232dee",
+          "size": 448,
+          "type": "image/svg+xml"
+        },
+        "cup.svg": {
+          "name": "cup.svg",
+          "blob": "4ab807273beb14d83b5cd9531f7242c4",
+          "size": 304,
+          "type": "image/svg+xml"
+        },
+        "seal.svg": {
+          "name": "seal.svg",
+          "blob": "fb8178486a52b2bf4bc60b6f218904ec",
+          "size": 264,
+          "type": "image/svg+xml"
+        }
+      }
+    }
+  },
+  "blobs": {},
+  "docs": {
+    "readme": "project/README.md",
+    "sections": []
+  },
+  "lastChange": {
+    "by": "Dmytro",
+    "at": "2026-10-08T22:44:10Z",
+    "via": "Claude Code",
+    "note": "Перша версія: токени з 11 мокапів і арт-біблії, 20 компонентів з прев'ю, іконки, TT2020."
+  }
+}

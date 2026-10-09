@@ -1,0 +1,46 @@
+<!-- @dsCard group="Події" height=330 width=760 -->
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Рядок чекліста</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+</head>
+<body>
+<div class="st-pv">
+<section class="st-spec"><h3 class="st-spec-label">Виконано</h3><button class="st-check" role="checkbox" aria-checked="true">
+  <span class="st-check-box"><svg class="st-ico " width="14" height="14" viewBox="0 0 24 24" style="stroke-width:3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
+  <span class="st-check-txt"><span class="st-check-title">Пофарбувати бордюри</span><span class="st-check-meta">Білим, під лінійку</span></span>
+  <span class="st-check-cost">40 тис.</span>
+</button></section>
+<section class="st-spec"><h3 class="st-spec-label">Можна виконати</h3><button class="st-check" role="checkbox" aria-checked="false">
+  <span class="st-check-box"></span>
+  <span class="st-check-txt"><span class="st-check-title">Відкрити буржуйку</span><span class="st-check-meta">Комісія дивиться навіть улітку</span></span>
+  <span class="st-check-cost">12 тис.</span>
+</button></section>
+<section class="st-spec"><h3 class="st-spec-label">Не вистачає підписів · скільки бракує</h3><button class="st-check is-short" role="checkbox" aria-checked="false">
+  <span class="st-check-box"></span>
+  <span class="st-check-txt"><span class="st-check-title">Підшити журнали</span><span class="st-check-meta">Суровою ниткою, з написом</span></span>
+  <span class="st-check-cost">186 тис.<br>бракує 62 тис.</span>
+</button></section>
+<section class="st-spec"><h3 class="st-spec-label">Перемикається тапом</h3><div class="st-col" id="list"><button class="st-check" role="checkbox" aria-checked="false">
+  <span class="st-check-box"></span>
+  <span class="st-check-txt"><span class="st-check-title">Перевірити кегль</span><span class="st-check-meta">Чотирнадцятий, без винятків</span></span>
+  <span class="st-check-cost">8 тис.</span>
+</button><button class="st-check" role="checkbox" aria-checked="true">
+  <span class="st-check-box"><svg class="st-ico " width="14" height="14" viewBox="0 0 24 24" style="stroke-width:3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
+  <span class="st-check-txt"><span class="st-check-title">Вирівняти тумбочки</span><span class="st-check-meta">По шнурку</span></span>
+  <span class="st-check-cost">24 тис.</span>
+</button></div></section>
+</div>
+<script>
+document.getElementById("list").addEventListener("click", function (e) {
+  var b = e.target.closest(".st-check"); if (!b) return;
+  var on = b.getAttribute("aria-checked") !== "true";
+  b.setAttribute("aria-checked", on ? "true" : "false");
+  b.querySelector(".st-check-box").innerHTML = on ? '<svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width:3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>' : "";
+});
+</script>
+</body>
+</html>

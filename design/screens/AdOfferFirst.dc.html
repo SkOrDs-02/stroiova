@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Перша пропозиція реклами</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-family: var(--font-display); font-weight: 700; font-size: 20px">Стройова</span>
+    <div style="height: 64px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div class="st-scrim"></div>
+
+  <div class="st-modal-wrap">
+    <div class="st-modal" role="dialog" aria-modal="true" aria-labelledby="ad-title" style="gap: 14px">
+      <div style="display: flex; align-items: center; gap: 14px">
+        <div aria-hidden="true" style="width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); line-height: 1.1">
+          <b style="font-size: 22px; font-weight: 600">×2</b>
+          <span style="font-size: 12px">4 год</span>
+        </div>
+        <h2 class="st-h2" id="ad-title" style="font-size: 20px; line-height: 1.35">×2 до підписів на 4 години</h2>
+      </div>
+      <p class="st-sub" style="font-size: 14px">{{sub}}</p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
+        <sc-if value="{{s.ready}}" hint-placeholder-val="{{true}}">
+          <a href="PushPreprompt.dc.html" class="st-btn st-btn--primary st-btn--l" aria-label="Дивитися рекламу, 30 секунд. Нагорода: ×2 до підписів на 4 години">
+            <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+            Дивитися рекламу
+          </a>
+        </sc-if>
+        <sc-if value="{{s.na}}" hint-placeholder-val="{{false}}">
+          <button class="st-btn st-btn--off st-btn--l" aria-disabled="true">
+            <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+            Ролика немає
+          </button>
+          <span class="st-btn-note">Немає зв'язку. Гра працює далі, спробуй пізніше.</span>
+        </sc-if>
+        <sc-if value="{{s.noads}}" hint-placeholder-val="{{false}}">
+          <a href="PushPreprompt.dc.html" class="st-btn st-btn--primary st-btn--l" aria-label="Забрати ×2 до підписів на 4 години без ролика">
+            <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+            Забрати
+          </a>
+        </sc-if>
+        <a href="PushPreprompt.dc.html" class="st-btn st-btn--neutral st-btn--m">Не зараз</a>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["ролик готовий","ролик недоступний","куплено «Без реклами»"],"default":"ролик готовий","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "ролик готовий";
+    var na = st === "ролик недоступний";
+    var noads = st === "куплено «Без реклами»";
+    return {
+      s: { ready: !na && !noads, na: na, noads: noads },
+      sub: noads ? "Ролика не буде. Бонус той самий." : "Реклама на 30 секунд. Дивитись не обов'язково."
+    };
+  }
+}
+</script>
+</body>
+</html>

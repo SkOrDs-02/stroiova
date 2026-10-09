@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Репутація</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: flex-start; gap: 8px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 12px; color: var(--muted)">1-й батальйон · бліндаж</span>
+        <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">186 412</span>
+      </div>
+      <span style="width: 64px; height: 44px; border-radius: var(--radius-8); border: 1px solid var(--accent)"></span>
+      <span style="width: 44px; height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="rp-title" style="max-height: 90%">
+    <div class="st-sheet-grab" aria-hidden="true"></div>
+    <div class="st-sheet-head">
+      <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17a8 8 0 0 1 16 0"></path><path d="{{gauge}}"></path><circle cx="12" cy="17" r="1.4"></circle></svg></div>
+      <div class="st-sheet-title">
+        <h2 class="st-h2" id="rp-title">Репутація: {{word}}</h2>
+        <p class="st-sub" style="font-size: 12px">Що про стройову думають нагорі</p>
+      </div>
+      <a class="st-iconbtn st-iconbtn--bare" href="Main.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    </div>
+
+    <div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px">
+      <div role="img" aria-label="Шкала репутації: низька, норма, висока. Зараз {{word}}" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center">
+          <i style="display: block; width: 100%; height: 8px; border-radius: var(--radius-4); background: {{z.lowBg}}"></i>
+          <span style="font-size: 12px; {{z.lowTxt}}">низька</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center">
+          <i style="display: block; width: 100%; height: 8px; border-radius: var(--radius-4); background: {{z.midBg}}"></i>
+          <span style="font-size: 12px; {{z.midTxt}}">норма</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; align-items: center">
+          <i style="display: block; width: 100%; height: 8px; border-radius: var(--radius-4); background: {{z.highBg}}"></i>
+          <span style="font-size: 12px; {{z.highTxt}}">висока</span>
+        </div>
+      </div>
+
+      <p class="st-sub" style="color: var(--text); font-size: 14px">Що вища, то рідше планові перевірки.</p>
+
+      <sc-for list="{{levels}}" as="lv" hint-placeholder-count="3">
+        <div style="{{lv.box}}">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="{{lv.icoStyle}}" aria-hidden="true"><path d="M4 17a8 8 0 0 1 16 0"></path><path d="{{lv.gauge}}"></path><circle cx="12" cy="17" r="1.4"></circle></svg>
+            <span style="flex: 1; font-size: 14px; font-weight: 600">{{lv.name}}</span>
+            <sc-if value="{{lv.now}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">зараз</span></sc-if>
+          </div>
+          <div class="st-kv"><span>Перевірки</span><b style="font-family: var(--font-sans); font-weight: 500">{{lv.insp}}</b></div>
+          <div class="st-kv"><span>Відписки</span><b style="font-family: var(--font-sans); font-weight: 500">{{lv.otp}}</b></div>
+        </div>
+      </sc-for>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">Останні зміни</span>
+        <sc-for list="{{log}}" as="l" hint-placeholder-count="2">
+          <div style="display: flex; align-items: baseline; gap: 8px; font-size: 13px; line-height: 1.4">
+            <span style="flex: 1; min-width: 0">{{l.what}}</span>
+            <b style="font: 600 13px/1.3 var(--font-mono); white-space: nowrap; {{l.color}}">{{l.d}}</b>
+          </div>
+        </sc-for>
+      </div>
+      <p class="st-sub" style="font-size: 12px">Відписка швидша, але псує репутацію. Перевірка репутацію не змінює.</p>
+    </div>
+
+    <a href="TgList.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">До телеграм</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["низька","норма","висока"],"default":"норма","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'норма';
+    var G = { 'низька': 'M12 17L7.8 12.8', 'норма': 'M12 17v-6', 'висока': 'M12 17l4.2-4.2' };
+    var D = [
+      { name: 'Низька', key: 'низька', insp: 'частіше: раз на 24–30 год', otp: 'помічають швидше' },
+      { name: 'Норма', key: 'норма', insp: 'раз на 24–48 год', otp: 'іноді помічають' },
+      { name: 'Висока', key: 'висока', insp: 'рідше: раз на 36–48 год', otp: 'помічають рідко' }
+    ];
+    var levels = D.map(function (d) {
+      var now = d.key === st;
+      return {
+        name: d.name, gauge: G[d.key], now: now, insp: d.insp, otp: d.otp,
+        icoStyle: now ? 'color: var(--accent)' : 'color: var(--muted)',
+        box: 'display: flex; flex-direction: column; gap: 6px; padding: ' + (now ? '10.5px 12.5px' : '11px 13px') + '; border-radius: var(--radius-10); background: ' + (now ? 'var(--surface)' : 'var(--surface-2)') + '; border: ' + (now ? '1.5px solid var(--accent)' : '1px solid var(--border)')
+      };
+    });
+    var on = 'var(--accent)', off = 'var(--surface)';
+    var LOG = {
+      'низька': [
+        { what: '«Про двигуни»: відписка', d: '−5', color: 'color: var(--text)' },
+        { what: '«Про фотозвіт»: відписка', d: '−5', color: 'color: var(--text)' },
+        { what: '«Про терміновість»: відписка', d: '−5', color: 'color: var(--text)' }
+      ],
+      'норма': [
+        { what: '«Про Excel»: виконано сумлінно', d: '+5', color: 'color: var(--accent)' },
+        { what: '«Про сержантів»: відписка', d: '−5', color: 'color: var(--text)' }
+      ],
+      'висока': [
+        { what: '«Про бобіни»: виконано сумлінно', d: '+10', color: 'color: var(--accent)' },
+        { what: '«Про Excel»: виконано сумлінно', d: '+5', color: 'color: var(--accent)' }
+      ]
+    };
+    var lvl = st === 'низька' ? 0 : (st === 'висока' ? 2 : 1);
+    var bold = 'color: var(--text); font-weight: 600', dim = 'color: var(--muted)';
+    return {
+      word: st, gauge: G[st] || G['норма'],
+      z: {
+        lowBg: lvl === 0 ? on : off, midBg: lvl === 1 ? on : off, highBg: lvl === 2 ? on : off,
+        lowTxt: lvl === 0 ? bold : dim, midTxt: lvl === 1 ? bold : dim, highTxt: lvl === 2 ? bold : dim
+      },
+      levels: levels,
+      log: LOG[st] || LOG['норма']
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Стартовий набір</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+    <div style="height: 44px; width: 190px; border-radius: var(--radius-8); background: var(--surface-2)"></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <div style="height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+      <div style="height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+      <div style="height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    </div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div class="st-scrim"></div>
+
+  <div class="st-modal-wrap">
+    <section class="st-modal" role="dialog" aria-modal="true" aria-labelledby="so-title" style="padding-top: 12px; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <h2 class="st-h2" id="so-title" style="flex: 1">Стартовий набір</h2>
+        <a href="Main.dc.html" class="st-iconbtn st-iconbtn--bare" aria-label="Закрити" style="border: 0; color: var(--text)"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+      </div>
+      <p class="st-sub" style="margin-top: -6px">Купується один раз. Пропозиція не згорає: набір лежить у магазині, поки його не купиш.</p>
+
+      <article class="st-paper st-paper--card" aria-label="Накладна на стартовий набір" style="gap: 8px; box-shadow: var(--shadow-stack)">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span class="st-doc-meta">Накладна № 1 · стартовий набір</span>
+          <span class="st-doc-title st-doc-title--mono">Що надійде в стройову</span>
+        </div>
+        <hr class="st-doc-rule">
+        <div class="st-doc-row"><span>Підписи</span><i class="st-doc-dots"></i><span class="st-doc-val">50 000</span></div>
+        <div class="st-doc-row"><span>Бак генератора</span><i class="st-doc-dots"></i><span class="st-doc-val">12 год замість 6</span></div>
+        <span class="st-doc-meta">Повний бак дає ×1,25 до підписів. Більший бак тримає бонус удвічі довше, і заправляти його треба вдвічі рідше.</span>
+        <hr class="st-doc-rule">
+        <div class="st-doc-row"><span>Разом</span><i class="st-doc-dots"></i><span class="st-doc-val">79 ₴</span></div>
+      </article>
+
+      <sc-if value="{{s.normal}}" hint-placeholder-val="{{true}}">
+        <a href="IapSuccess.dc.html" class="st-btn st-btn--primary st-btn--l" aria-label="Купити стартовий набір за 79 гривень" style="color: var(--accent-ink)">Купити · <span class="st-btn-num">79 ₴</span></a>
+        <a href="Main.dc.html" class="st-btn st-btn--neutral st-btn--m" style="color: var(--text)">Не зараз</a>
+      </sc-if>
+      <sc-if value="{{s.busy}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--l" aria-disabled="true" aria-busy="true"><span class="st-dots" aria-hidden="true"><i></i><i></i><i></i></span>Чекаємо оплату</button>
+        <span class="st-btn-note">Підтвердь оплату в системному вікні. Гроші списує App Store.</span>
+      </sc-if>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","покупка в процесі"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "звичайний";
+    return { s: { normal: st === "звичайний", busy: st === "покупка в процесі" } };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!-- @dsCard group="Дії" height=126 width=760 -->
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сегменти</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+</head>
+<body>
+<div class="st-pv">
+<section class="st-spec"><h3 class="st-spec-label">Кількість покупки в шторці</h3><div class="st-seg st-seg--fill" role="group" aria-label="Скільки рівнів купити"><button aria-pressed="true">×1</button><button aria-pressed="false">×10</button><button aria-pressed="false">до віхи</button></div></section>
+<section class="st-spec"><h3 class="st-spec-label">Фільтр музею</h3><div class="st-seg" role="group" aria-label="Фільтр журналів"><button aria-pressed="true">Усі</button><button aria-pressed="false">Майно</button><button aria-pressed="false">Особовий склад</button></div></section>
+</div>
+<script>
+document.querySelectorAll(".st-seg").forEach(function (g) {
+  g.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    g.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+  });
+});
+</script>
+</body>
+</html>

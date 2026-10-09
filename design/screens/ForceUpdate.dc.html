@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Потрібне оновлення</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <main style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; padding: 18px 20px 20px">
+
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px">
+      <div style="position: relative; isolation: isolate; padding: 6px 8px 10px 4px">
+        <div class="st-paper-under" style="background: var(--paper-4); transform: rotate(-3.5deg); inset: 12px 12px 4px 8px"></div>
+        <div class="st-paper-under" style="background: var(--paper-2); transform: rotate(2deg); inset: 6px 4px 8px 12px"></div>
+        <article class="st-paper" aria-label="Телеграма про оновлення гри">
+          <span class="st-paper-num" aria-hidden="true">1</span>
+          <div style="position: absolute; top: 46px; right: 14px"><span class="st-stamp" style="--st-rot: 6deg; --st-edge: 80deg">Терміново</span></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 24px">
+            <span class="st-doc-title">Телеграма № 1100</span>
+            <span class="st-doc-meta">вх. 1/1100 від {{today}}</span>
+          </div>
+          <div class="st-doc-meta" style="padding-right: 116px">Від: служба оновлень<br>Кому: начальнику стройової частини</div>
+          <hr class="st-doc-rule">
+          <p class="st-doc-body">Версію {{installed}} знято з обліку. Службу продовжити після оновлення гри.</p>
+          <hr class="st-doc-rule">
+          <div class="st-doc-row"><span>Строк виконання</span><i class="st-doc-dots"></i><span class="st-doc-val">до наступного запуску</span></div>
+        </article>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h1 style="margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.25">Потрібне оновлення</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted)">Ця версія гри застаріла. Прогрес лежить на телефоні, після оновлення він на місці.</p>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; color: var(--muted)"><span>Встановлено</span><b style="font-family: var(--font-mono); font-weight: 600; color: var(--text)">{{installed}}</b></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; color: var(--muted)"><span>Потрібно щонайменше</span><b style="font-family: var(--font-mono); font-weight: 600; color: var(--text)">{{required}}</b></div>
+      </div>
+    </div>
+
+    <button class="st-btn st-btn--primary st-btn--l">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12"></path><path d="M7 11l5 5 5-5"></path><path d="M5 20h14"></path></svg>
+      {{cta}}
+    </button>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний"],"default":"звичайний","section":"Стан"},"platform":{"editor":"enum","options":["iOS","Android"],"default":"iOS","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var android = (this.props.platform ?? 'iOS') === 'Android';
+    return {
+      installed: '1.0.3',
+      required: '1.1.0',
+      today: '09.10.2026',
+      cta: android ? 'Оновити в Google Play' : 'Оновити в App Store'
+    };
+  }
+}
+</script>
+</body>
+</html>

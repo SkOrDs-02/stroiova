@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Музей</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+  <main style="flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">
+
+    <h1 style="margin: 0; min-height: 44px; display: flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.3">Музей</h1>
+
+    <div role="tablist" aria-label="Розділи музею" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: var(--radius-12); background: var(--bg-deep); border: 1px solid var(--border)">
+      <span role="tab" aria-selected="true" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-8); background: var(--surface); border: 1px solid var(--border-strong); font-size: 14px; font-weight: 600; color: var(--text)">Журнали</span>
+      <a href="Curios.dc.html" role="tab" aria-selected="false" style="min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-8); font-size: 14px; font-weight: 500; color: var(--muted)">Курйози</a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+        <span style="font-size: 13px; color: var(--muted)">Скасованих журналів у колекції</span>
+        <span style="font: 600 15px/1.2 var(--font-mono); color: var(--text); white-space: nowrap">{{countText}}</span>
+      </div>
+      <div role="progressbar" aria-label="Журналів у колекції" aria-valuemin="0" aria-valuemax="8" aria-valuenow="{{count}}" style="display: flex; gap: 4px">
+        <sc-for list="{{steps}}" as="x" hint-placeholder-count="8">
+          <i style="flex: 1; height: 4px; border-radius: 2px; background: {{x.bg}}"></i>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{s.complete}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-10); border: 1.5px solid var(--accent); background: var(--surface)">
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 14px; font-weight: 600">Серію зібрано</span>
+          <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">Книга обліку експонатів подвоїла бонуси всіх інших журналів. <span style="font-family: var(--font-mono); font-weight: 600; color: var(--text)">×2</span> уже діє.</span>
+        </div>
+        <span class="st-stamp st-stamp--dark" style="--st-rot: 6deg; --st-edge: 80deg; flex: none">Виконано</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.empty}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)">
+        <div style="display: flex; gap: 12px; align-items: flex-start">
+          <div class="st-unit-plate" aria-hidden="true">
+            <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; font-weight: 600">Музей порожній</span>
+            <span style="font-size: 13px; line-height: 1.5; color: var(--muted)">Усі журнали поки ведуть. Перші три скасує перша цифровізація, і кожен дасть вічний бонус.</span>
+          </div>
+        </div>
+        <a href="Digital.dc.html" class="st-btn st-btn--secondary st-btn--m" style="color: var(--accent)">До цифровізації</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.some}}" hint-placeholder-val="{{true}}">
+      <div class="st-seg" role="group" aria-label="Фільтр журналів">
+        <button aria-pressed="{{f.all}}" onClick="{{setAll}}">Усі</button>
+        <button aria-pressed="{{f.prop}}" onClick="{{setProp}}">Майно</button>
+        <button aria-pressed="{{f.people}}" onClick="{{setPeople}}">Особовий склад</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.hasRes}}" hint-placeholder-val="{{true}}">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{cards}}" as="it" hint-placeholder-count="8">
+          <sc-if value="{{it.plain}}" hint-placeholder-val="{{true}}">
+            <a href="JournalDetail.dc.html" class="st-jr" aria-label="{{it.aria}}" style="color: var(--text)">
+              <span class="st-jr-cover" style="background: {{it.bg}}">
+                <span class="st-jr-label"><b>{{it.head}}</b><span>{{it.name}}</span></span>
+                <span class="st-stamp st-stamp--s st-stamp--dark" style="transform: rotate({{it.rot}})">Скасовано</span>
+              </span>
+              <span class="st-jr-txt"><span class="st-jr-rar" style="color: {{it.rc}}">{{it.rar}}</span><span class="st-jr-bonus">{{it.bonus}}</span></span>
+            </a>
+          </sc-if>
+          <sc-if value="{{it.legend}}" hint-placeholder-val="{{false}}">
+            <a href="JournalDetail.dc.html" class="st-jr st-jr--legend" aria-label="{{it.aria}}" style="color: var(--text)">
+              <span class="st-jr-cover" style="background: {{it.bg}}; padding: 10px 26px 20px 20px">
+                <span class="st-jr-label"><b>{{it.head}}</b><span>{{it.name}}</span></span>
+                <span class="st-jr-star"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+              </span>
+              <span class="st-jr-txt"><span class="st-jr-rar" style="color: var(--rarity-legend)">Легендарний</span><span class="st-jr-bonus">{{it.bonus}}</span></span>
+            </a>
+          </sc-if>
+          <sc-if value="{{it.locked}}" hint-placeholder-val="{{false}}">
+            <a href="JournalDetail.dc.html" class="st-jr st-jr--locked" aria-label="{{it.aria}}" style="color: var(--text)">
+              <span class="st-jr-cover">
+                <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="font: 500 13px/1 var(--font-mono)">???</span>
+              </span>
+              <span class="st-jr-txt"><span class="st-jr-rar" style="color: var(--muted); font-weight: 500">Не знайдено</span><span class="st-jr-bonus">{{it.src}}</span></span>
+            </a>
+          </sc-if>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.noRes}}" hint-placeholder-val="{{false}}">
+      <div style="padding: 28px 12px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
+        <div aria-hidden="true" style="width: 56px; height: 56px; border-radius: var(--radius-10); border: 1px dashed var(--border-strong); color: var(--muted); display: flex; align-items: center; justify-content: center">
+          <svg class="st-ico" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M5 17a3 3 0 0 1 3-3h11"></path></svg>
+        </div>
+        <span style="font-size: 15px; font-weight: 600; line-height: 1.4">{{noResTitle}}</span>
+        <span style="font-size: 13px; line-height: 1.5; color: var(--muted)">Їх ще ведуть. Незнайдені журнали — у розділі «Усі».</span>
+        <button class="st-btn st-btn--neutral st-btn--s" onClick="{{setAll}}" style="margin-top: 4px">Показати всі</button>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <nav aria-label="Розділи" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg-deep); border-top: 1px solid var(--border); padding: 6px 4px 10px">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>
+      <span>Стройова</span>
+    </a>
+    <a href="TgList.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+      <span>Телеграми</span>
+      <span aria-label="нових: 3" style="position: absolute; top: 2px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--alert); color: var(--on-alert); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center">3</span>
+    </a>
+    <a href="Digital.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
+      <span>Цифра</span>
+    </a>
+    <a href="Museum.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--accent); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
+      <span>Музей</span>
+    </a>
+    <a href="Shop.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+      <span>Магазин</span>
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["частково","порожньо","серію зібрано","фільтр без результатів"],"default":"частково","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.props.state ?? "частково";
+    var J = [
+      { n: 1, head: "Книга", name: "обліку видавання мила, миття в лазні та заміни білизни", cat: "property", r: "common", bonus: "+5% до швидкості Стройової частини", src: "Перша цифровізація", bg: "var(--cover-olive)", rot: "-8deg" },
+      { n: 2, head: "Стелажні", name: "(штабельні) ярлики", cat: "property", r: "common", bonus: "+5% до місткості сховища", src: "Перша цифровізація", bg: "var(--cover-navy)", rot: "6deg" },
+      { n: 3, head: "Книга", name: "обліку руху осіб, що харчуються", cat: "property", r: "rare", bonus: "+10% паперу з будь-якого джерела", src: "Перша цифровізація", bg: "var(--cover-brown)", rot: "-5deg" },
+      { n: 4, head: "Книга", name: "обліку посуду, обладнання та інвентарю", cat: "property", r: "common", bonus: "+5% до потоку «Накладні»", src: "Друга цифровізація", bg: "var(--cover-earth)", rot: "4deg" },
+      { n: 5, head: "Книга", name: "обліку особового складу", cat: "people", r: "common", bonus: "+5% до потоку «Рапорти»", src: "Друга цифровізація", bg: "var(--cover-navy)", rot: "-7deg" },
+      { n: 6, head: "Книга", name: "обліку призів і подарунків", cat: "property", r: "rare", bonus: "Акти на подарунки йдуть на 10% швидше", src: "Випадає з телеграм", bg: "var(--cover-olive)", rot: "3deg" },
+      { n: 7, head: "Журнал", name: "результатів звірки обліку військового майна", cat: "property", r: "rare", bonus: "−10% часу кроку Фінслужби в гонці", src: "Перевірка без зауважень", bg: "var(--cover-brown)", rot: "-4deg" },
+      { n: 8, head: "Книга", name: "обліку експонатів музеїв, кімнат бойової слави", cat: "property", r: "legend", bonus: "×2 до бонусу всіх інших журналів", src: "Зібрати сім інших", bg: "var(--cover-black)", rot: "0deg" }
+    ];
+    var R = {
+      common: ["Звичайний", "var(--rarity-common)"],
+      rare: ["Рідкісний", "var(--rarity-rare)"],
+      legend: ["Легендарний", "var(--rarity-legend)"]
+    };
+    var foundIds = st === "порожньо" ? [] : (st === "серію зібрано" ? [1, 2, 3, 4, 5, 6, 7, 8] : [1, 2, 3, 6]);
+    var fs = this.state && this.state.f;
+    var filter = (fs && fs.st === st) ? fs.v : (st === "фільтр без результатів" ? "people" : "all");
+    function setF(v) { return function () { self.setState({ f: { st: st, v: v } }); }; }
+    var cards = [];
+    J.forEach(function (j) {
+      var found = foundIds.indexOf(j.n) >= 0;
+      if (filter !== "all" && (!found || j.cat !== filter)) return;
+      cards.push({
+        plain: found && j.r !== "legend",
+        legend: found && j.r === "legend",
+        locked: !found,
+        head: j.head, name: j.name, bg: j.bg, rot: j.rot,
+        rar: R[j.r][0], rc: R[j.r][1], bonus: j.bonus, src: j.src,
+        aria: found ? (j.head + " " + j.name + ". " + R[j.r][0] + ". " + j.bonus) : ("Не знайдено. " + j.src)
+      });
+    });
+    var count = foundIds.length;
+    var steps = [];
+    for (var i = 0; i < 8; i++) steps.push({ bg: i < count ? "var(--accent)" : "var(--border)" });
+    var noRes = cards.length === 0;
+    function p(on) { return on ? "true" : "false"; }
+    return {
+      s: { empty: count === 0, some: count > 0, complete: count === 8, noRes: noRes, hasRes: !noRes },
+      cards: cards,
+      steps: steps,
+      count: count,
+      countText: count + " з 8",
+      f: { all: p(filter === "all"), prop: p(filter === "property"), people: p(filter === "people") },
+      setAll: setF("all"),
+      setProp: setF("property"),
+      setPeople: setF("people"),
+      noResTitle: filter === "people" ? "Журналів особового складу в музеї поки немає" : "Журналів обліку майна в музеї поки немає"
+    };
+  }
+}
+</script>
+</body>
+</html>

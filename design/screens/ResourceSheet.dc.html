@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Папір і генератор</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: flex-start; gap: 8px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 12px; color: var(--muted)">1-й батальйон · бліндаж</span>
+        <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">186 412</span>
+      </div>
+      <span style="width: 64px; height: 44px; border-radius: var(--radius-8); border: 1px solid var(--accent)"></span>
+      <span style="width: 44px; height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="rs-title" style="max-height: 90%">
+    <div class="st-sheet-grab" aria-hidden="true"></div>
+    <div class="st-sheet-head">
+      <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6"></path><rect x="3" y="9" width="18" height="8" rx="1"></rect><path d="M7 14h10v7H7z"></path></svg></div>
+      <div class="st-sheet-title">
+        <h2 class="st-h2" id="rs-title">Папір і генератор</h2>
+        <p class="st-sub" style="font-size: 12px">Принтер «Дід» · {{didStatus}}</p>
+      </div>
+      <a class="st-iconbtn st-iconbtn--bare" href="Main.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    </div>
+
+    <div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px">
+      <section aria-labelledby="rs-gen" style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="color: {{g.icoColor}}" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"></path></svg>
+          <h3 class="st-h4" id="rs-gen" style="flex: 1">Генератор</h3>
+          <sc-if value="{{g.bonus}}" hint-placeholder-val="{{true}}"><span class="st-tag st-tag--fill">×1,25 діє</span></sc-if>
+          <sc-if value="{{g.noBonus}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--muted">без бонусу</span></sc-if>
+        </div>
+        <div class="st-progress">
+          <div class="st-progress-head"><span class="st-progress-label">Пальне</span><span class="st-progress-val">{{g.pct}}% · {{g.left}}</span></div>
+          <div class="st-track st-track--l" role="progressbar" aria-label="Пальне: {{g.pct}} відсотків, {{g.left}}" aria-valuenow="{{g.pct}}" aria-valuemin="0" aria-valuemax="100" style="position: relative"><i style="{{g.p}}"></i><span aria-hidden="true" style="position: absolute; left: 20%; top: -3px; bottom: -3px; width: 2px; background: var(--border-strong)"></span></div>
+          <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">Позначка — 20%. Вище неї бак дає ×1,25.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div class="st-kv"><span>Бака вистачає на</span><b>{{g.tank}}</b></div>
+          <div class="st-kv"><span>Бонус повного бака</span><b>{{g.bonusTxt}}</b></div>
+        </div>
+        <p class="st-sub" style="color: var(--text)">«{{g.did}}»</p>
+        <p class="st-sub" style="font-size: 12px">Повний бак дає ×1,25 до підписів. Порожній — звичайна швидкість, нічого не ламається.</p>
+      </section>
+
+      <hr style="border: 0; border-top: 1px solid var(--border); margin: 0">
+
+      <section aria-labelledby="rs-paper" style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="color: var(--muted)" aria-hidden="true"><path d="M4 7l8-4 8 4-8 4z"></path><path d="M4 12l8 4 8-4M4 17l8 4 8-4"></path></svg>
+          <h3 class="st-h4" id="rs-paper" style="flex: 1">Папір</h3>
+          <b style="font: 600 15px/1.2 var(--font-mono)">{{pp.val}}</b>
+        </div>
+        <sc-if value="{{pp.zero}}" hint-placeholder-val="{{false}}">
+          <div class="st-banner st-banner--neutral" role="status"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6"></path><rect x="3" y="9" width="18" height="8" rx="1"></rect><path d="M7 14h10v7H7z"></path></svg><span class="st-banner-txt">«Дід стоїть. Паперу немає, він не винен.» Конвеєр працює, чекають лише телеграми з аркушами.</span></div>
+        </sc-if>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+          <div class="st-card" style="padding: 10px 12px; display: flex; flex-direction: column; gap: 4px">
+            <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">Звідки</span>
+            <span style="font-size: 13px; line-height: 1.4">Поставки за Накладними</span>
+            <span style="font-size: 13px; line-height: 1.4">Подарунки Ліни</span>
+          </div>
+          <div class="st-card" style="padding: 10px 12px; display: flex; flex-direction: column; gap: 4px">
+            <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">Куди</span>
+            <span style="font-size: 13px; line-height: 1.4">Телеграми й спецдокументи</span>
+            <span style="font-size: 13px; line-height: 1.4; color: var(--muted)">Конвеєр папір не їсть</span>
+          </div>
+        </div>
+        <div class="st-kv"><span>{{pp.lastLabel}}</span><b>{{pp.last}}</b></div>
+        <a href="UnitSheet.dc.html" class="st-btn st-btn--quiet" style="align-self: flex-start">Більше паперу — покращити Накладні</a>
+      </section>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-if value="{{btn.on}}" hint-placeholder-val="{{true}}">
+        <button class="st-btn st-btn--primary st-btn--l"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"></path></svg>Заправити безкоштовно</button>
+      </sc-if>
+      <sc-if value="{{btn.off}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--l" aria-disabled="true"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Бак повний</button>
+      </sc-if>
+      <span class="st-btn-note">{{btn.note}}</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["бонус діє","пальне менше 20%","бак порожній","щойно заправлено","бак 12 год: стартовий набір","папір 0"],"default":"бонус діє","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'бонус діє';
+    var NB = ' ';
+    function nb(s) {
+      return String(s == null ? '' : s).replace(/(\d) (?=\d)/g, '$1' + NB).replace(/ (тис\.|млн|хв|год|дн)/g, NB + '$1');
+    }
+    var ON = 'Генератор гуде, Дід гріє фарбу. ×1,25 до підписів.';
+    var OFF = 'Дід не гріє фарбу. Друкує як звичайний принтер.';
+    var P = {
+      'бонус діє': { pct: 82, left: '≈ 5 год', tank: '≈ 6 год', bonus: true, did: ON, didStatus: 'гріє фарбу', paper: '4 120', btn: 'on', note: 'Долити до повного. Пальне не коштує нічого.' },
+      'пальне менше 20%': { pct: 18, left: '≈ 65 хв', tank: '≈ 6 год', bonus: false, did: OFF, didStatus: 'не гріє фарбу', paper: '4 120', btn: 'on', note: 'Після заправки ×1,25 повернеться одразу.' },
+      'бак порожній': { pct: 0, left: 'порожньо', tank: '≈ 6 год', bonus: false, did: OFF, didStatus: 'не гріє фарбу', paper: '4 120', btn: 'on', note: 'Без пального конвеєр працює у звичайному темпі.' },
+      'щойно заправлено': { pct: 100, left: '6 год', tank: '≈ 6 год', bonus: true, did: ON, didStatus: 'гріє фарбу', paper: '4 120', btn: 'off', note: 'Заправити можна, коли бак почне пустіти.' },
+      'бак 12 год: стартовий набір': { pct: 64, left: '≈ 7 год 40 хв', tank: '≈ 12 год · стартовий набір', bonus: true, did: ON, didStatus: 'гріє фарбу', paper: '4 120', btn: 'on', note: 'Більший бак — зі стартового набору. Заправка та сама, безкоштовна.' },
+      'папір 0': { pct: 82, left: '≈ 5 год', tank: '≈ 6 год', bonus: true, did: ON, didStatus: 'стоїть без паперу', paper: '0', zero: true, btn: 'on', note: 'Долити до повного. Пальне не коштує нічого.' }
+    };
+    var S = P[st] || P['бонус діє'];
+    return {
+      didStatus: S.didStatus,
+      g: {
+        bonus: S.bonus, noBonus: !S.bonus,
+        icoColor: S.bonus ? 'var(--accent)' : 'var(--muted)',
+        pct: S.pct, p: '--p:' + S.pct + '%', left: nb(S.left), tank: nb(S.tank),
+        bonusTxt: S.bonus ? '×1,25 діє' : 'вимкнено, нижче 20%',
+        did: S.did
+      },
+      pp: {
+        val: S.paper + (S.paper === '0' ? ' аркушів' : NB + 'аркушів'), zero: !!S.zero,
+        lastLabel: S.zero ? 'Чекає паперу' : 'Останнє списання',
+        last: S.zero ? nb('«Про Excel» · 40 аркушів') : nb('«Про скорочення паперу» · 5 аркушів')
+      },
+      btn: { on: S.btn === 'on', off: S.btn === 'off', note: nb(S.note) }
+    };
+  }
+}
+</script>
+</body>
+</html>

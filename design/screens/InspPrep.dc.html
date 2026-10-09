@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Перевірка</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="flex-shrink: 0; height: 52px; margin-top: 18px; padding: 0 20px 0 12px; display: flex; align-items: center; gap: 6px">
+    <a href="Main.dc.html" aria-label="Назад до стройової" style="height: 44px; padding: 0 8px; border-radius: var(--radius-10); display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 15px">
+      <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      <span>Назад</span>
+    </a>
+    <h1 style="flex: 1; margin: 0; text-align: center; font-family: var(--font-display); font-weight: 500; font-size: 17px; line-height: 1.3; padding-right: 72px">Перевірка</h1>
+  </div>
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 6px 20px 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <div role="timer" aria-label="До приїзду комісії 2 години 14 хвилин" style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: var(--radius-12); background: var(--alert-bg); border: 1px solid var(--alert-line); color: var(--alert-text)">
+      <span style="display: flex; align-items: center; gap: 6px; font-size: 12px">
+        <svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        До приїзду комісії
+      </span>
+      <span style="font: 600 34px/1.1 var(--font-mono); color: var(--on-alert)">02:14:37</span>
+      <span style="font-size: 13px; line-height: 1.45"><b style="font-weight: 600">{{d.boss}}.</b> {{d.scope}}</span>
+    </div>
+
+    <div class="st-progress">
+      <div class="st-progress-head">
+        <span class="st-progress-label">Готовність до перевірки</span>
+        <span class="st-progress-val" style="display: inline-flex; align-items: center; gap: 4px">
+          <sc-if value="{{v.ready}}" hint-placeholder-val="{{false}}">
+            <svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+          </sc-if>
+          {{v.pctText}}
+        </span>
+      </div>
+      <div class="st-track st-track--l" role="progressbar" aria-label="Готовність до перевірки" aria-valuenow="{{v.pct}}" aria-valuemin="0" aria-valuemax="100"><i style="--p:{{v.pct}}%"></i></div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; color: var(--muted)">
+      <span>Чекліст за підписи</span>
+      <span>Є <b style="font: 600 13px/1.3 var(--font-mono); color: var(--text)">{{d.balance}}</b> · <span style="font-family: var(--font-mono)">{{d.rate}}</span></span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-for list="{{v.items}}" as="it" hint-placeholder-count="5">
+        <button class="st-check {{it.cls}}" role="checkbox" aria-checked="{{it.checked}}" aria-disabled="{{it.off}}" onClick="{{it.toggle}}">
+          <span class="st-check-box">
+            <sc-if value="{{it.done}}" hint-placeholder-val="{{false}}">
+              <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+            </sc-if>
+          </span>
+          <span class="st-check-txt"><span class="st-check-title">{{it.title}}</span><span class="st-check-meta">{{it.meta}}</span></span>
+          <span class="st-check-cost">{{it.cost}}<sc-if value="{{it.short}}" hint-placeholder-val="{{false}}"><span style="display: block">бракує {{it.lack}}</span><span style="display: block; color: var(--muted)">ще {{it.eta}}</span></sc-if></span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.4">
+      <div style="display: flex; gap: 8px; align-items: baseline"><b style="color: var(--accent); font-weight: 600">Пройшли</b><span style="color: var(--muted)"><span style="font-family: var(--font-mono)">×3</span> до підписів на 2 год</span></div>
+      <div style="display: flex; gap: 8px; align-items: baseline"><b style="color: var(--fail); font-weight: 600">Провалили</b><span style="color: var(--muted)">Стройова частина <span style="font-family: var(--font-mono)">×0,5</span> на 1 год</span></div>
+    </div>
+  </div>
+
+  <div style="flex-shrink: 0; padding: 12px 20px 20px; border-top: 1px solid var(--border); background: var(--bg); display: flex; flex-direction: column; gap: 8px">
+    <sc-if value="{{v.ready}}" hint-placeholder-val="{{false}}">
+      <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius-10); border: 1.5px solid var(--accent); font-size: 14px; font-weight: 500">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="color: var(--accent); stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+        <span>{{d.readyLine}}</span>
+      </div>
+      <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l">До стройової</a>
+    </sc-if>
+    <sc-if value="{{v.adReady}}" hint-placeholder-val="{{true}}">
+      <button class="st-btn st-btn--primary st-btn--l" onClick="{{v.doAll}}" aria-label="Усе за рекламу: виконати весь чекліст, ролик 30 секунд">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+        Усе за рекламу
+      </button>
+      <span class="st-btn-note">Реклама 30 секунд · 1 раз на перевірку</span>
+    </sc-if>
+    <sc-if value="{{v.adNoAds}}" hint-placeholder-val="{{false}}">
+      <button class="st-btn st-btn--primary st-btn--l" onClick="{{v.doAll}}" aria-label="Забрати все: виконати весь чекліст без реклами">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+        Забрати все
+      </button>
+      <span class="st-btn-note">Без реклами: без перегляду · 1 раз на перевірку</span>
+    </sc-if>
+    <sc-if value="{{v.adUsed}}" hint-placeholder-val="{{false}}">
+      <button class="st-btn st-btn--off st-btn--l" aria-disabled="true">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        Ліміт на перевірку
+      </button>
+      <span class="st-btn-note">Ролик уже використано на цій перевірці. Новий пункт — за підписи.</span>
+    </sc-if>
+    <sc-if value="{{v.adNa}}" hint-placeholder-val="{{false}}">
+      <button class="st-btn st-btn--off st-btn--l" aria-disabled="true">
+        <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+        Ролика немає
+      </button>
+      <span class="st-btn-note">Немає зв’язку. Гра працює далі, спробуй пізніше.</span>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["частково","0%","100%","не вистачає підписів","реклама використана","реклама недоступна","Без реклами: Забрати","Р2: Комісія командування"],"default":"частково","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.props.state ?? 'частково';
+    var R1 = [
+      { id: 'kerb', title: 'Пофарбувати бордюри', meta: 'Білим, під лінійку', cost: '40 тис.' },
+      { id: 'lock', title: 'Прибрати цивільне з тумбочок', meta: 'Комісія перевіряє особисто', cost: '12 тис.' },
+      { id: 'stove', title: 'Відкрити буржуйку', meta: 'Комісія дивиться навіть улітку', cost: '8 тис.' },
+      { id: 'font', title: 'Перевірити кегль', meta: 'Чотирнадцятий, без винятків', cost: '24 тис.' },
+      { id: 'books', title: 'Підшити журнали', meta: 'Суровою ниткою, з написом', cost: '186 тис.' }
+    ];
+    var R1extra = { id: 'sgt', title: 'Перерахувати сержантів десятьма формулами', meta: 'Додано після відписки на № 4471', cost: '32 тис.' };
+    var R2 = [
+      { id: 'dust', title: 'Перевірити пил білою рукавичкою', meta: 'Шафи, підвіконня, сейф', cost: '2,4 млн' },
+      { id: 'tape', title: 'Переміряти коридор рулеткою', meta: 'Доріжка має лежати посередині', cost: '1,1 млн' },
+      { id: 'sign', title: 'Перевісити табличку «Гурток крою та шиття»', meta: 'Знімати не можна: інвентарна', cost: '640 тис.' },
+      { id: 'where', title: 'А де журнал?', meta: 'Після відписки на № 4608', cost: '3,8 млн' },
+      { id: 'orders', title: 'Підшити накази по частині', meta: 'Кожен рівень у свій журнал', cost: '5,2 млн' }
+    ];
+    var r1d = { boss: 'Комісія бригади · полковник Тумбочкін', scope: 'Перевіряє бордюри, тумбочки й кегль. Бойову підготовку не перевіряє.', balance: '312 тис.', rate: '+2,1 тис./хв', readyLine: 'Бордюри білі. Комісія буде задоволена.' };
+    var S = {
+      'частково': { d: r1d, list: R1, done: { kerb: true, stove: true }, ad: 'ready' },
+      '0%': { d: r1d, list: R1, done: {}, ad: 'ready' },
+      '100%': { d: r1d, list: R1, done: { kerb: true, lock: true, stove: true, font: true, books: true }, ad: 'ready' },
+      'не вистачає підписів': { d: { boss: r1d.boss, scope: r1d.scope, balance: '124 тис.', rate: '+2,1 тис./хв', readyLine: r1d.readyLine }, list: R1, done: { kerb: true, lock: true, stove: true }, ad: 'ready', short: { books: { lack: '62 тис.', eta: '30 хв' } } },
+      'реклама використана': { d: r1d, list: R1.concat([R1extra]), done: { kerb: true, lock: true, stove: true, font: true, books: true }, ad: 'used' },
+      'реклама недоступна': { d: r1d, list: R1, done: { kerb: true, stove: true }, ad: 'na' },
+      'Без реклами: Забрати': { d: r1d, list: R1, done: { kerb: true, stove: true }, ad: 'noads' },
+      'Р2: Комісія командування': { d: { boss: 'Комісія командування · полковник Тумбочкін', scope: 'Міряє коридор рулеткою, пил — білою рукавичкою. Бойову підготовку не перевіряє.', balance: '9,6 млн', rate: '+184 тис./хв', readyLine: 'Пилу немає. Рукавичка лишилась білою.' }, list: R2, done: { dust: true, sign: true }, ad: 'ready' }
+    };
+    var cfg = S[st] ?? S['частково'];
+    var allOv = (this.state && this.state.ov) || {};
+    var done = allOv[st] || cfg.done;
+    var shortMap = cfg.short || {};
+    function save(nd) {
+      var next = Object.assign({}, allOv);
+      next[st] = nd;
+      self.setState({ ov: next });
+    }
+    var items = cfg.list.map(function (b) {
+      var d = !!done[b.id];
+      var sh = !d && !!shortMap[b.id];
+      return {
+        title: b.title, meta: b.meta, cost: b.cost,
+        done: d,
+        checked: d ? 'true' : 'false',
+        short: sh,
+        off: sh || d ? 'true' : 'false',
+        lack: sh ? shortMap[b.id].lack : '',
+        eta: sh ? shortMap[b.id].eta : '',
+        cls: sh ? 'is-short' : '',
+        toggle: function () {
+          if (sh || d) { return; }
+          var nd = Object.assign({}, done);
+          nd[b.id] = true;
+          save(nd);
+        }
+      };
+    });
+    var count = items.filter(function (i) { return i.done; }).length;
+    var pct = Math.round(count / items.length * 100);
+    var ready = pct === 100;
+    return {
+      d: cfg.d,
+      v: {
+        items: items,
+        pct: pct,
+        pctText: ready ? '100% · готово' : pct + '%',
+        ready: ready,
+        adReady: !ready && cfg.ad === 'ready',
+        adNoAds: !ready && cfg.ad === 'noads',
+        adUsed: !ready && cfg.ad === 'used',
+        adNa: !ready && cfg.ad === 'na',
+        doAll: function () {
+          var all = {};
+          cfg.list.forEach(function (b) { all[b.id] = true; });
+          save(all);
+        }
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Довідка за час відсутності</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 12px; color: var(--muted)">{{place}}</span>
+      <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">{{balBefore}}</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div role="dialog" aria-modal="true" aria-labelledby="or-title" style="position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 20px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 13px; color: var(--muted)">{{place}} · тебе не було {{away}}</span>
+      <h1 id="or-title" style="margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.25">{{title}}</h1>
+    </div>
+
+    <div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; margin: 0 -6px; padding: 0 6px">
+      <div style="position: relative; padding: 4px 8px 10px 2px; flex: none">
+        <div class="st-paper-under" style="background: var(--paper-3); transform: rotate(2.5deg); inset: 12px 2px 2px 12px"></div>
+        <article class="st-paper" aria-label="Довідка № {{docNo}} про роботу за час відсутності" style="box-shadow: var(--shadow-stack)">
+          <span class="st-paper-num" aria-hidden="true">1</span>
+          <div style="text-align: center; display: flex; flex-direction: column; gap: 4px">
+            <span class="st-doc-title">Довідка № {{docNo}}</span>
+            <span class="st-doc-meta">{{docSub}}</span>
+          </div>
+          <hr class="st-doc-rule">
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+            <div class="{{r.cls}}"><span>{{r.k}}</span><i class="st-doc-dots" style="{{r.dots}}"></i><span class="st-doc-val">{{r.v}}</span></div>
+          </sc-for>
+          <sc-if value="{{storage}}" hint-placeholder-val="{{false}}">
+            <div class="st-doc-meta" style="display: flex; flex-direction: column; gap: 2px">
+              <span>Сховище тримає 8 год: за решту 5 год підписи не зараховано.</span>
+              <a href="Shop.dc.html" style="align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px">Розширити до 24 год</a>
+            </div>
+          </sc-if>
+          <sc-if value="{{noClerk}}" hint-placeholder-val="{{false}}">
+            <p class="st-doc-body" style="font-size: 13px">Стройова стояла. Без діловодів ланки працюють, лише поки ти в грі.</p>
+          </sc-if>
+          <div class="st-doc-foot">
+            <div class="st-doc-sign"><svg width="120" height="36" viewBox="0 0 120 36" aria-hidden="true"><path d="{{signPath}}"></path></svg><span>{{signer}}</span></div>
+            <sc-if value="{{stamp}}" hint-placeholder-val="{{true}}"><span class="st-stamp" style="--st-rot: -8deg; --st-edge: 120deg">Виконано<span class="st-stamp-date">09.10.2026</span></span></sc-if>
+          </div>
+        </article>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 2px">
+        <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">Щоденник стройовика · 09.10</span>
+        <span style="font-size: 14px; line-height: 1.45">{{diary}}</span>
+      </div>
+    </div>
+
+    <div style="flex: none; display: flex; flex-direction: column; gap: 8px">
+      <sc-if value="{{b.ad}}" hint-placeholder-val="{{true}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)" aria-label="Забрати вдвічі більше, {{x2}} підписів. Реклама 30 секунд"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>Забрати ×2 · <span class="st-btn-num">{{x2}}</span></a>
+        <span class="st-btn-note" style="margin-top: -4px">Реклама 30 секунд · сьогодні ще 3 з 3</span>
+        <a href="Main.dc.html" class="st-btn st-btn--neutral st-btn--m">Забрати <span class="st-btn-num" style="font-weight: 500">{{x1}}</span></a>
+      </sc-if>
+      <sc-if value="{{b.take}}" hint-placeholder-val="{{false}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)" aria-label="Забрати вдвічі більше, {{x2}} підписів, без реклами"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Забрати ×2 · <span class="st-btn-num">{{x2}}</span></a>
+        <span class="st-btn-note" style="margin-top: -4px">Без реклами: без перегляду · сьогодні ще 2 з 3</span>
+      </sc-if>
+      <sc-if value="{{b.off}}" hint-placeholder-val="{{false}}">
+        <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">Забрати <span class="st-btn-num">{{x1}}</span></a>
+        <button class="st-btn st-btn--off st-btn--m" aria-disabled="true"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="{{b.offIcon}}"></path></svg>{{b.offLabel}}</button>
+        <span class="st-btn-note" style="margin-top: -4px">{{b.offNote}}</span>
+      </sc-if>
+      <sc-if value="{{b.hire}}" hint-placeholder-val="{{false}}">
+        <a href="UnitSheet.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">Найняти діловода</a>
+        <a href="Main.dc.html" class="st-btn st-btn--neutral st-btn--m">До стройової</a>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","Без реклами","ліміт 3 з 3","реклама недоступна","сховище переповнене","без діловодів","події: пройдено, введено","події: провалено, списано","Р2: Бригада"],"default":"звичайний","section":"Стан"},"gender":{"editor":"enum","options":["він","вона"],"default":"він","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'звичайний';
+    var she = (this.props.gender ?? 'він') === 'вона';
+    var NB = ' ';
+    function nb(s) {
+      return String(s == null ? '' : s).replace(/(\d) (?=\d)/g, '$1' + NB).replace(/ (тис\.|млн|хв|год|дн)/g, NB + '$1');
+    }
+    var ROW = 'st-doc-row', ALERT = 'st-doc-row st-doc-alert';
+    function row(k, v, alert) { return { k: k, v: nb(v), cls: alert ? ALERT : ROW, dots: alert ? 'border-color: var(--alert-paper)' : '' }; }
+    var SIGN = 'M4 26C14 6 22 30 30 14S44 8 48 22 64 30 70 12 86 20 92 18L116 14';
+    var NOSIGN = 'M6 30h108';
+    var L1 = '1-й батальйон · бліндаж', L2 = 'Бригада · будинок культури';
+    var diaryBack = she ? 'Повернулася. Довідка вже на столі. Хто писав, не питаю.' : 'Повернувся. Довідка вже на столі. Хто писав, не питаю.';
+    var base = {
+      place: L1, balBefore: '24 310', away: '7 год 42 хв', title: 'Стройова працювала без тебе',
+      docNo: '318', docSub: 'про роботу стройової частини за час відсутності',
+      rows: [row('Час відсутності', '7 год 42 хв'), row('Оброблено рапортів', '412'), row('Бонус повного бака', '×1,25 · 6 год'), row('Зібрано підписів', '186 400')],
+      storage: false, noClerk: false, stamp: true, signer: 'Діловод стройової частини', sign: SIGN,
+      diary: diaryBack, x1: '186 400', x2: '372 800', b: 'ad'
+    };
+    function over(o) { var r = {}, k; for (k in base) r[k] = base[k]; for (k in o) r[k] = o[k]; return r; }
+    var P = {
+      'звичайний': base,
+      'Без реклами': over({ b: 'take' }),
+      'ліміт 3 з 3': over({ b: 'limit' }),
+      'реклама недоступна': over({ b: 'na' }),
+      'сховище переповнене': over({
+        away: '13 год 5 хв',
+        rows: [row('Час відсутності', '13 год 5 хв'), row('Зараховано', '8 год з 13'), row('Оброблено рапортів', '428'), row('Зібрано підписів', '193 600')],
+        storage: true, x1: '193 600', x2: '387 200',
+        diary: 'Оля склала зайві аркуші на мій стілець. Сідати нікуди.'
+      }),
+      'без діловодів': over({
+        balBefore: '1 120', away: '2 год 10 хв', title: 'Стройова стояла',
+        rows: [row('Час відсутності', '2 год 10 хв'), row('Діловодів на посадах', '0'), row('Зібрано підписів', '0')],
+        noClerk: true, stamp: false, signer: 'Діловод стройової частини · вакантно', sign: NOSIGN,
+        diary: she ? 'Стройова стояла. Я теж стояла: без діловода нічого не рухається.' : 'Стройова стояла. Я теж стояв: без діловода нічого не рухається.',
+        b: 'hire'
+      }),
+      'події: пройдено, введено': over({
+        rows: [row('Час відсутності', '7 год 42 хв'), row('Зібрано підписів', '186 400'), row('Перевірка Тумбочкіна', 'без зауважень'), row('Множник за перевірку', '×3 ще 1 год 12 хв'), row('Введено квадрокоптерів', '1'), row('Нових телеграм', '3')],
+        diary: 'Тумбочкін перевірив тумбочку. Тумбочка пройшла.'
+      }),
+      'події: провалено, списано': over({
+        rows: [row('Час відсутності', '7 год 42 хв'), row('Зібрано підписів', '171 900'), row('Перевірку провалено', 'Стройова ×0,5 на 1 год', true), row('Списано раніше, ніж поставлено на облік', '1 пташка', true), row('Нових телеграм', '2')],
+        x1: '171 900', x2: '343 800',
+        diary: 'Тумбочкін поміряв відступ лінійкою. Пишу пояснювальну.'
+      }),
+      'Р2: Бригада': over({
+        place: L2, balBefore: '2 140 600', away: '6 год 10 хв', title: 'Бригада працювала без тебе',
+        docNo: '1 027', docSub: 'про роботу стройової частини штабу бригади за час відсутності',
+        rows: [row('Час відсутності', '6 год 10 хв'), row('Оброблено наказів по частині', '96'), row('Через Казначейство', '214 інструкцій'), row('Зібрано підписів', '11 748 240')],
+        x1: '11,74 млн', x2: '23,49 млн',
+        diary: 'Перший ранок у бригаді. На дверях досі «Гурток крою та шиття».'
+      })
+    };
+    var S = P[st] || base;
+    var kind = S.b;
+    var PLAY = 'M8 5v14l11-7z', CLOCK = 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 7v5l3 2';
+    return {
+      place: S.place, balBefore: nb(S.balBefore), away: nb(S.away), title: S.title,
+      docNo: S.docNo, docSub: S.docSub, rows: S.rows,
+      storage: S.storage, noClerk: S.noClerk, stamp: S.stamp, signer: S.signer, signPath: S.sign,
+      diary: S.diary, x1: nb(S.x1), x2: nb(S.x2),
+      b: {
+        ad: kind === 'ad', take: kind === 'take', off: kind === 'limit' || kind === 'na', hire: kind === 'hire',
+        offIcon: kind === 'limit' ? CLOCK : PLAY,
+        offLabel: kind === 'limit' ? 'Ліміт ×2 на сьогодні' : 'Ролика немає',
+        offNote: kind === 'limit' ? '3 з 3 використано. Нові спроби завтра.' : 'Немає звʼязку. Гра працює далі, спробуй пізніше.'
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

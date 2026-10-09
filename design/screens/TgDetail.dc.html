@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Телеграма</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="flex-shrink: 0; height: 52px; margin-top: 18px; padding: 0 20px 0 12px; display: flex; align-items: center; gap: 6px">
+    <a href="TgList.dc.html" aria-label="Назад до телеграм" style="height: 44px; padding: 0 8px; border-radius: var(--radius-10); display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 15px">
+      <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      <span>Назад</span>
+    </a>
+    <h1 style="flex: 1; margin: 0; text-align: center; font-family: var(--font-display); font-weight: 500; font-size: 17px; line-height: 1.3; padding-right: 72px">{{d.screen}}</h1>
+  </div>
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 6px 20px {{s.padB}}; display: flex; flex-direction: column; gap: 14px">
+
+    <sc-if value="{{d.hasKicker}}" hint-placeholder-val="{{false}}">
+      <span class="st-tag st-tag--line" style="align-self: flex-start">{{d.kicker}}</span>
+    </sc-if>
+
+    <article class="st-paper" aria-label="{{d.title}}" style="flex-shrink: 0">
+      <span class="st-paper-num" aria-hidden="true">1</span>
+      <sc-if value="{{d.hasStamp}}" hint-placeholder-val="{{true}}">
+        <div style="position: absolute; top: 58px; right: 14px"><span class="st-stamp" style="--st-rot:7deg;--st-edge:80deg;">{{d.stamp}}</span></div>
+      </sc-if>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 24px">
+        <span class="st-doc-title">{{d.title}}</span>
+        <span class="st-doc-meta">{{d.reg}}</span>
+      </div>
+      <div class="st-doc-meta" style="padding-right: 118px; display: flex; flex-direction: column">
+        <span>Від: {{d.from}}</span>
+        <span>Кому: {{d.to}}</span>
+      </div>
+      <hr class="st-doc-rule">
+      <p class="st-doc-body">{{d.body}}</p>
+      <sc-if value="{{d.hasAppx}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span class="st-doc-meta">Додаток 1. Облік носіїв стройової частини (заповнити)</span>
+          <sc-for list="{{d.appx}}" as="a" hint-placeholder-count="5">
+            <div class="st-doc-row"><span>{{a.name}}</span><i class="st-doc-dots"></i><span class="st-doc-val">{{a.val}}</span></div>
+          </sc-for>
+          <span class="st-doc-meta">На ноутбуці етикетку клеїти на кришку над диском. Кришки над диском немає.</span>
+        </div>
+      </sc-if>
+      <hr class="st-doc-rule">
+      <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; line-height: 1.45">
+        <span class="st-doc-meta">{{d.rowsLabel}}</span>
+        <sc-for list="{{d.rows}}" as="r" hint-placeholder-count="4">
+          <div style="display: flex; justify-content: space-between; gap: 8px; color: {{r.color}}; font-weight: {{r.weight}}"><span>{{r.who}}</span><span style="text-decoration: {{r.deco}}; white-space: nowrap">{{r.val}}</span></div>
+        </sc-for>
+      </div>
+      <sc-if value="{{s.done}}" hint-placeholder-val="{{false}}">
+        <div class="st-doc-foot">
+          <div class="st-doc-sign"><svg width="112" height="34" viewBox="0 0 120 36" aria-hidden="true"><path d="M4 26C14 6 22 30 30 14S44 8 48 22 64 30 70 12 86 20 92 18L116 14"></path></svg><span>Начальник стройової</span></div>
+          <span class="st-stamp" style="--st-rot:-8deg;--st-edge:120deg;">Виконано<span class="st-stamp-date">08.10.2026</span></span>
+        </div>
+      </sc-if>
+    </article>
+
+    <sc-if value="{{s.choose}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <a href="ReputationSheet.dc.html" aria-label="Репутація: норма. Відкрити пояснення" style="display: flex; align-items: center; min-height: 44px">
+          <span class="st-chip"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16a8 8 0 0 1 16 0"></path><path d="M12 16l3-5"></path></svg>Репутація: норма</span>
+        </a>
+        <a href="ResourceSheet.dc.html" aria-label="{{d.paperLabel}}" style="display: flex; align-items: center; min-height: 44px">
+          <span class="st-chip" style="border-color: {{d.paperBorder}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>{{d.paper}}</span>
+        </a>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 14px; line-height: 1.3">Як реагуємо?</h2>
+        <sc-for list="{{d.options}}" as="it" hint-placeholder-count="3">
+          <sc-if value="{{it.enabled}}" hint-placeholder-val="{{true}}">
+            <a href="TgResult.dc.html" style="display: flex; flex-direction: column; gap: 4px; min-height: 44px; padding: 12px 14px; box-sizing: border-box; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-10); color: var(--text)">
+              <span style="display: flex; align-items: flex-start; gap: 8px">
+                <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 500; line-height: 1.35">{{it.title}}</span>
+                <sc-if value="{{it.isNew}}" hint-placeholder-val="{{false}}">
+                  <span class="st-tag st-tag--fill" style="flex-shrink: 0">новий варіант</span>
+                </sc-if>
+              </span>
+              <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">{{it.effect}}</span>
+            </a>
+          </sc-if>
+          <sc-if value="{{it.disabled}}" hint-placeholder-val="{{false}}">
+            <div aria-disabled="true" style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; box-sizing: border-box; background: transparent; border: 1px dashed var(--border-strong); border-radius: var(--radius-10); color: var(--muted)">
+              <span style="display: flex; align-items: flex-start; gap: 8px">
+                <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 500; line-height: 1.35">{{it.title}}</span>
+                <span class="st-tag st-tag--muted" style="flex-shrink: 0">{{it.tag}}</span>
+              </span>
+              <span style="font-size: 12px; line-height: 1.4">{{it.effect}}</span>
+              <span style="display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.4; color: var(--text)">
+                <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="margin-top: 2px" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span>{{it.reason}}</span>
+              </span>
+            </div>
+          </sc-if>
+        </sc-for>
+        <sc-if value="{{d.hasNote}}" hint-placeholder-val="{{false}}">
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted)">{{d.note}}</p>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.work}}" hint-placeholder-val="{{false}}">
+      <div class="st-card" style="padding: 14px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+          <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">На виконанні</span>
+          <span class="st-chip" aria-label="ще 42 хвилини"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>ще 42 хв</span>
+        </div>
+        <span style="font-size: 15px; font-weight: 500">Дописати два рядки</span>
+        <div class="st-track" role="progressbar" aria-label="Виконано" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"><i style="--p:30%"></i></div>
+        <div class="st-kv"><span>Стройова частина</span><b>×0,5 · ще 42 хв</b></div>
+        <div class="st-kv"><span>Репутація</span><b>+5 · норма</b></div>
+        <p class="st-sub" style="font-size: 12px">Решта конвеєра йде як звичайно. Відповідь піде нагору сама.</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s.done}}" hint-placeholder-val="{{false}}">
+      <div class="st-card" style="padding: 14px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">Відповідь · 08.10, 14:32</span>
+        <span style="font-size: 15px; font-weight: 500">Написати відписку</span>
+        <div class="st-kv"><span>Репутація</span><b>−5 · норма</b></div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <div aria-hidden="true" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font: 600 13px/1 var(--font-mono); color: var(--muted)">КВ</div>
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-size: 12px; color: var(--muted)">Начштабу «Кава»</span>
+          <span style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; padding: 10px 12px; font-size: 14px; line-height: 1.45">Відповідь пішла нагору. Там її зареєстрували. Більшого не буває.</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; gap: 8px; padding-top: 4px">
+      <sc-if value="{{s.notFlagged}}" hint-placeholder-val="{{true}}">
+        <a href="TgFlag.dc.html" class="st-btn st-btn--neutral" style="flex: 1">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 21V4h11l-2 4 2 4H5"></path></svg>
+          Це не смішно
+        </a>
+      </sc-if>
+      <sc-if value="{{s.flagged}}" hint-placeholder-val="{{false}}">
+        <span class="st-btn st-btn--off" aria-disabled="true" style="flex: 1">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+          Позначено
+        </span>
+      </sc-if>
+      <a href="ShareCard.dc.html" class="st-btn st-btn--neutral" style="flex: 1">
+        <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"></path><path d="M5 13v7h14v-7"></path></svg>
+        Поділитися
+      </a>
+    </div>
+    <sc-if value="{{s.flagged}}" hint-placeholder-val="{{false}}">
+      <p style="margin: -6px 0 0; font-size: 12px; line-height: 1.4; color: var(--muted)">Позначку зареєстровано. Телеграму перечитаємо.</p>
+    </sc-if>
+
+  </div>
+
+  <sc-if value="{{s.long}}" hint-placeholder-val="{{false}}">
+    <div aria-hidden="true" style="position: absolute; right: 4px; top: 82px; bottom: 12px; width: 3px; border-radius: 2px; background: var(--surface)">
+      <div style="height: 46%; border-radius: 2px; background: var(--border-strong)"></div>
+    </div>
+    <button class="st-btn st-btn--secondary st-btn--s" style="position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--bg); padding: 0 14px">
+      До відповідей
+      <svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
+    </button>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["3 відповіді","2 відповіді","4 відповіді","бракує паперу","на виконанні","уже відповіли","новий наказ скасовує старий","довгий текст","позначено: не смішно","Р2: повідомлення Казначейства"],"default":"3 відповіді","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? '3 відповіді';
+    var INK2 = 'var(--ink-2)', ALERT = 'var(--alert-paper)', INK = 'var(--ink)';
+    function row(who, val, kind) {
+      return {
+        who: who, val: val,
+        color: kind === 'alert' ? ALERT : (kind === 'now' ? INK : INK2),
+        weight: kind === 'alert' || kind === 'now' ? '600' : '400',
+        deco: kind === 'old' ? 'line-through' : 'none'
+      };
+    }
+    function opt(title, effect) { return { title: title, effect: effect, enabled: true, disabled: false, isNew: false, tag: '', reason: '' }; }
+    function optNew(title, effect) { var o = opt(title, effect); o.isNew = true; return o; }
+    function optOff(title, effect, tag, reason) { return { title: title, effect: effect, enabled: false, disabled: true, isNew: false, tag: tag, reason: reason }; }
+    var stdRows = [row('Командування', '10 діб', 'old'), row('Оперативне командування', '7 діб', 'old'), row('Бригада', '2 доби', 'old'), row('Ви', 'минув учора', 'alert')];
+    var base = {
+      screen: 'Телеграма', kicker: '', stamp: '', note: '', rowsLabel: 'Строк виконання на кожному рівні',
+      paper: 'Папір: 48 арк.', paperLabel: 'Папір: 48 аркушів. Відкрити', paperBorder: 'var(--border)',
+      appx: [], options: [], rows: stdRows
+    };
+    var D = {
+      '3 відповіді': {
+        title: 'Телеграма № 4471', reg: 'вх. 12/318 від 08.10.2026', stamp: 'Негайно',
+        from: 'вищестоящий штаб', to: 'командиру батальйону',
+        body: 'Доповісти кількість сержантів, розраховану за десятьма формулами. Електронний вигляд роздрукувати й підшити.',
+        options: [
+          opt('Виконати сумлінно', 'Стройова ×0,5 на 1 год · +10 до репутації'),
+          opt('Написати відписку', '2 хвилини · −5 до репутації · 30% шанс перевірки'),
+          opt('Зареєструвати й покласти в шухляду', 'Чорною пастою у вхідних. Нічого не станеться. Мабуть.')
+        ]
+      },
+      '2 відповіді': {
+        title: 'Телеграма № 4534', reg: 'вх. 12/402 від 09.10.2026', stamp: 'Невідкладно',
+        from: 'начальник штабу батальйону', to: 'начальнику стройової частини',
+        body: 'Рапорт командира батальйону на щорічну відпустку подано 13 діб тому, зареєстровано сьогодні. Строк розгляду обчислюється з дня подання, а не з дня реєстрації. Залишок строку: одна доба.',
+        rowsLabel: 'Строк розгляду рапорту',
+        rows: [row('З дня подання', '14 діб', 'plain'), row('Минуло', '13 діб', 'plain'), row('Лишилось', 'одна доба', 'alert')],
+        options: [
+          opt('Провести поза чергою', 'Рапорти ×0,5 на 1 год · +10 до репутації'),
+          opt('Покласти комбату на стіл', 'Якщо комбат на позиціях, резолюції ×0,25 до 30 хв')
+        ],
+        note: 'Рапорт комбата в шухляду не кладуть.'
+      },
+      '4 відповіді': {
+        title: 'Телеграма № 4509', reg: 'вх. 12/377 від 09.10.2026',
+        from: 'вищестоящий штаб', to: 'командиру батальйону',
+        body: 'Надати фотозвіт про фарбування бордюрів. Бордюрів на позиції немає.',
+        rows: [row('Командування', '10 діб', 'old'), row('Бригада', '2 доби', 'old'), row('Ви', 'минув учора', 'alert')],
+        options: [
+          opt('Викласти бордюр і пофарбувати', 'Стройова ×0,5 на 1 год · +10 до репутації'),
+          opt('Доповісти, що бордюрів немає', '1 хвилина · −5 до репутації · 20% шанс перевірки'),
+          opt('Покласти в шухляду', 'Фарба стоїть. Бордюрів так і немає.'),
+          optNew('Сфотографувати бордюр у сусідів', '5 хвилин · +5 до репутації')
+        ]
+      },
+      'бракує паперу': {
+        title: 'Телеграма № 4474', reg: 'вх. 12/341 від 09.10.2026', stamp: 'Терміново',
+        from: 'вищестоящий штаб', to: 'командиру батальйону',
+        body: 'Подати план заходів щодо зменшення паперового документообігу у п’яти примірниках на паперовому носії.',
+        rows: [row('Командування', '10 діб', 'old'), row('Бригада', '3 доби', 'old'), row('Ви', '1 доба', 'now')],
+        paper: 'Папір: 3 арк. · мало', paperLabel: 'Папір: 3 аркуші, мало. Відкрити', paperBorder: 'var(--border-strong)',
+        options: [
+          optOff('Надрукувати п’ять примірників', '−5 аркушів · Стройова ×0,5 на 1 год · +10 до репутації', 'недоступно', 'Бракує 2 аркушів: є 3 з 5. Папір везуть Накладні й Ліна.'),
+          opt('Подати план в електронному вигляді', '2 хвилини · −5 до репутації · 20% шанс перевірки'),
+          opt('Покласти в шухляду', 'План лежить у шухляді. Паперовий.')
+        ]
+      },
+      'на виконанні': {
+        title: 'Телеграма № 4523', reg: 'вх. 12/389 від 09.10.2026',
+        from: 'начальник штабу батальйону', to: 'начальнику стройової частини',
+        body: 'Доповідь повернуто. На другій сторінці лише підпис. Переносити підпис на наступну сторінку дозволено, якщо на ній не менше двох рядків тексту.',
+        rows: [row('Штаб батальйону', '1 доба', 'old'), row('Ви', 'виконується', 'now')]
+      },
+      'уже відповіли': {
+        title: 'Телеграма № 4471', reg: 'вх. 12/318 від 08.10.2026', stamp: 'Негайно',
+        from: 'вищестоящий штаб', to: 'командиру батальйону',
+        body: 'Доповісти кількість сержантів, розраховану за десятьма формулами. Електронний вигляд роздрукувати й підшити.',
+        rows: [row('Командування', '10 діб', 'old'), row('Оперативне командування', '7 діб', 'old'), row('Бригада', '2 доби', 'old'), row('Ви', 'виконано 08.10', 'now')]
+      },
+      'новий наказ скасовує старий': {
+        title: 'Телеграма № 4549', reg: 'вх. 12/420 від 09.10.2026', stamp: 'Невідкладно', kicker: 'Новий наказ скасовує старий',
+        from: 'вищестоящий штаб', to: 'командиру батальйону',
+        body: 'Наказ № 118 вважати таким, що втратив чинність. Документи, оформлені згідно з ним, переоформити згідно з наказом № 119. Наказ № 119 буде доведено додатково.',
+        rows: [row('Командування', '2 доби', 'old'), row('Ви', 'минув учора', 'alert')],
+        options: [
+          opt('Переоформити три документи', '−3 аркуші · Стройова ×0,5 на 1 год'),
+          optOff('Послатися на цифровий облік', 'Захист за цифрові бали: без наслідків', 'за цифру', 'Немає цифрових балів. Їх дає перша цифровізація.'),
+          opt('Покласти в шухляду', 'Скасований наказ лежить. Нового ще немає.')
+        ]
+      },
+      'довгий текст': {
+        title: 'Телеграма № 4563', reg: 'вх. 12/436 від 09.10.2026',
+        from: 'служба захисту інформації', to: 'начальнику стройової частини',
+        body: 'Облікувати електронні носії стройової частини: гнучкі магнітні диски, касети та бобіни з магнітною стрічкою, модулі флеш-пам’яті. На ноутбуці етикетку наклеїти на кришку корпусу, що закриває жорсткий магнітний диск.',
+        appx: [
+          { name: 'Гнучкі магнітні диски', val: '___ шт.' },
+          { name: 'Касети з магнітною стрічкою', val: '___ шт.' },
+          { name: 'Бобіни з магнітною стрічкою', val: '___ шт.' },
+          { name: 'Модулі флеш-пам’яті', val: '___ шт.' },
+          { name: 'Ноутбуки з етикеткою на кришці', val: '___ шт.' }
+        ],
+        rows: [row('Служба захисту інформації', '10 діб', 'old'), row('Бригада', '5 діб', 'old'), row('Батальйон', '2 доби', 'old'), row('Ви', 'минув учора', 'alert')],
+        options: [
+          opt('Облікувати все, що є', 'Стройова ×0,5 на 1 год · +10 до репутації'),
+          opt('Доповісти: бобін немає', '1 хвилина · 10% шанс перевірки'),
+          opt('Покласти в шухляду', 'Флешка лежить у шухляді. Необлікована.')
+        ]
+      },
+      'позначено: не смішно': {
+        title: 'Телеграма № 4516', reg: 'вх. 12/352 від 09.10.2026', stamp: 'Терміново',
+        from: 'вищестоящий штаб', to: 'командиру батальйону',
+        body: 'Усі телеграми вважати терміновими. Цю — особливо.',
+        rows: [row('Командування', 'терміново', 'old'), row('Бригада', 'терміново', 'old'), row('Ви', 'особливо', 'alert')],
+        options: [
+          opt('Проставити «терміново» на всіх вхідних', '−1 аркуш · Стройова ×0,5 на 1 год · +5 до репутації'),
+          opt('Відписати: прийнято до відома', '1 хвилина · −5 до репутації · 10% шанс перевірки'),
+          opt('Покласти в шухляду', 'Лежить у шухляді. Терміново.')
+        ]
+      },
+      'Р2: повідомлення Казначейства': {
+        screen: 'Повідомлення', kicker: 'Бригада · Казначейство',
+        title: 'Повідомлення № К-0412', reg: 'вх. 3/1187 від 09.10.2026',
+        from: 'Казначейство', to: 'фінансовій службі бригади',
+        body: 'Платіжну інструкцію повернуто без виконання. Сума в реєстрі бюджетних фінансових зобов’язань відрізняється від суми платіжної інструкції на 0,01 грн. За зміст підтвердних документів Казначейство не відповідає.',
+        rowsLabel: 'Строк виправлення на кожному рівні',
+        rows: [row('Казначейство', '3 робочі дні', 'old'), row('Фінслужба бригади', '1 доба', 'old'), row('Ви', 'минув учора', 'alert')],
+        paper: 'Папір: 212 арк.', paperLabel: 'Папір: 212 аркушів. Відкрити',
+        options: [
+          opt('Переробити реєстр і платіжку', 'Казначейство ×0,5 на 1 год · +10 до репутації'),
+          opt('Виправити суму ручкою', '1 хвилина · ризик повернення'),
+          opt('Покласти в шухляду', 'Копійка в шухляді. Документ теж.')
+        ]
+      }
+    };
+    var src = D[st] ?? D['3 відповіді'];
+    var d = {};
+    var k;
+    for (k in base) { d[k] = base[k]; }
+    for (k in src) { d[k] = src[k]; }
+    d.hasStamp = d.stamp !== '';
+    d.hasKicker = d.kicker !== '';
+    d.hasNote = d.note !== '';
+    d.hasAppx = d.appx.length > 0;
+    var work = st === 'на виконанні';
+    var done = st === 'уже відповіли';
+    var flagged = st === 'позначено: не смішно';
+    return {
+      d: d,
+      s: {
+        choose: !work && !done,
+        work: work,
+        done: done,
+        long: st === 'довгий текст',
+        padB: st === 'довгий текст' ? '88px' : '24px',
+        flagged: flagged,
+        notFlagged: !flagged
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

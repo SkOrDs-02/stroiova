@@ -1,0 +1,6 @@
+node_modules/
+.expo/
+dist/
+*.log
+.DS_Store
+balance/sandbox/index.html

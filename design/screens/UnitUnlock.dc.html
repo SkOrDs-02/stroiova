@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Новий потік або ланка</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 12px; color: var(--muted)">{{place}}</span>
+      <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">{{bal}}</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div class="st-modal-wrap">
+    <div class="st-modal" role="dialog" aria-modal="true" aria-labelledby="uu-title" style="gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div aria-hidden="true" style="width: 44px; height: 44px; flex: none; border-radius: var(--radius-10); background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center"><svg class="st-ico" width="22" height="22" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="{{d1}}"></path><path d="{{d2}}"></path></svg></div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; color: var(--accent); font-weight: 600">{{kicker}}</span>
+          <h2 class="st-h2" id="uu-title" style="font-size: 20px">{{title}}</h2>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: flex-start">
+        <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: {{avBg}}; color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">{{avInit}}</div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; color: var(--muted)">{{who}}</span>
+          <sc-for list="{{lines}}" as="ln" hint-placeholder-count="1">
+            <div style="padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; font-size: 15px; line-height: 1.45">{{ln.t}}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <article class="st-paper st-paper--card" aria-label="Що проходить: {{docTitle}}" style="gap: 6px">
+        <span class="st-doc-meta" style="display: flex; justify-content: space-between; gap: 8px"><span>{{docNo}}</span><span>{{docIn}}</span></span>
+        <span class="st-doc-title st-doc-title--mono">{{docTitle}}</span>
+        <p class="st-doc-body" style="font-size: 13px">{{docBody}}</p>
+      </article>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div class="st-kv"><span>{{rateLabel}}</span><b>{{rate}}</b></div>
+        <div class="st-kv"><span>Діловод</span><b style="font-family: var(--font-sans); font-weight: 500">{{clerk}}</b></div>
+        <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">{{why}}</span>
+        <sc-if value="{{hasTip}}" hint-placeholder-val="{{false}}">
+          <span style="display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.45; color: var(--text)"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="color: var(--accent); margin-top: 2px" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{tip}}</span>
+        </sc-if>
+      </div>
+
+      <a href="Main.dc.html" class="st-btn st-btn--primary st-btn--l" style="color: var(--accent-ink)">{{cta}}</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["потік Р1: Акти на майно","потік Р1: Довідки","потік Р1: Накладні","Р2: Казначейство","Р2: Накази по частині"],"default":"потік Р1: Акти на майно","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'потік Р1: Акти на майно';
+    var NB = ' ';
+    function nb(s) {
+      return String(s == null ? '' : s).replace(/(\d) (?=\d)/g, '$1' + NB).replace(/ (тис\.|млн|хв|год|дн)/g, NB + '$1');
+    }
+    var L1 = { place: '1-й батальйон · бліндаж' };
+    var P = {
+      'потік Р1: Акти на майно': {
+        place: L1.place, bal: '262', ic: ['M7 3h7l5 5v13H7z', 'M14 3v5h5M10 15l2 2 4-4'],
+        kicker: 'Новий потік документів', title: 'Акти на майно',
+        avBg: 'var(--scene-l1-wood)', avInit: 'Л', who: 'Волонтерка Ліна',
+        lines: [{ t: 'Я вожу, ти оформлюєш. Без акта пташка стоїть у коробці.' }],
+        docNo: 'Акт № 2', docIn: 'вх. 12/431', docTitle: 'Введення в експлуатацію', docBody: 'Лопата штикова, 1 шт. Подарунок волонтерів. Інвентарний номер присвоїти.',
+        rateLabel: 'Перший рівень', rate: '+60/хв', clerk: 'Петро «Швидкозшивач» · 700',
+        why: 'Дрони й майно від волонтерів. Сюди йдуть акти на подарунки Ліни, і з ними гонка з часом.',
+        cta: 'Відкрити потік'
+      },
+      'потік Р1: Довідки': {
+        place: L1.place, bal: '840', ic: ['M5 4h14v16H5z', 'M8 8h8M8 12h8M8 16h4'],
+        kicker: 'Новий потік документів', title: 'Довідки',
+        avBg: 'var(--cover-navy)', avInit: 'К', who: 'Начштабу «Кава»',
+        lines: [{ t: 'Довідки просять усі: про склад, про стан, про видану довідку.' }],
+        docNo: 'Довідка № 319', docIn: 'вих. 12/77', docTitle: 'Про проходження служби', docBody: 'Видана для подання за місцем вимоги. Вимога надійшла усно.',
+        rateLabel: 'Перший рівень', rate: '+600/хв', clerk: 'Ганна «Вихідна» · 20 тис.',
+        why: 'Швидкі документи великими обсягами. Потік наздоганяє погодження за кілька рівнів.',
+        cta: 'Відкрити потік'
+      },
+      'потік Р1: Накладні': {
+        place: L1.place, bal: '1 240', ic: ['M3 7h11v9H3zM14 10h4l3 3v3h-7z', 'M5 18a2 2 0 1 0 4 0a2 2 0 1 0-4 0M15 18a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+        kicker: 'Новий потік документів', title: 'Накладні',
+        avBg: 'var(--cover-brown)', avInit: 'С', who: 'Начфін «Сальдо»',
+        lines: [{ t: 'Папір і пальне — за накладною. Без накладної це просто подарунок.' }],
+        docNo: 'Накладна № 412', docIn: 'вх. 12/502', docTitle: 'На поставку паперу', docBody: 'Папір А4, 10 пачок. Пальне для генератора, 40 л. Первинка є.',
+        rateLabel: 'Перший рівень', rate: '+6 000/хв', clerk: 'Тарас «Діркопробивач» · 600 тис.',
+        why: 'Останній потік перед цифровізацією. Поставки поповнюють папір для телеграм.',
+        cta: 'Відкрити потік'
+      },
+      'Р2: Казначейство': {
+        place: 'Бригада · будинок культури', bal: '1 260', ic: ['M3 9l9-5 9 5z', 'M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18'],
+        kicker: 'Четверта ланка погоджень', title: 'Казначейство',
+        avBg: 'var(--cover-brown)', avInit: 'С', who: 'Начфін «Сальдо»',
+        lines: [{ t: 'Далі Казначейство. Зміст документів воно не читає. Воно звіряє суми.' }, { t: 'Не зійдеться копійка, і платіжну інструкцію повернуть без виконання.' }],
+        docNo: 'Платіжна інструкція № 27', docIn: 'вх. 3/118', docTitle: 'Що проходить ланку', docBody: 'Колишнє платіжне доручення. Зміст той самий, назва нова.',
+        rateLabel: 'Пропускає на 1-му рівні', rate: '21/хв', clerk: 'Богдан «Копійка» · 400',
+        why: 'Ланка стає в погодження після Фінслужби. Маршрут акта тепер з пʼяти етапів.',
+        hasTip: true, tip: 'Казначейство — нова ланка погодження. Вузькою стане, щойно Комбат її пережене.',
+        cta: 'Відкрити ланку'
+      },
+      'Р2: Накази по частині': {
+        place: 'Бригада · будинок культури', bal: '2 140', ic: ['M6 3h12v18H6z', 'M9 7h6M9 11h6M13 16.5a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+        kicker: 'Пʼятий потік документів', title: 'Накази по частині',
+        avBg: 'var(--scene-l2-panel)', avInit: 'С', who: 'Діловод Світлана «Гриф»',
+        lines: [{ t: 'Документи з грифом у відрядження не беру. Надсилаю.' }],
+        docNo: 'Наказ по частині № 214', docIn: 'вх. 3/240', docTitle: 'Переписати в журнали', docBody: 'Один наказ, кілька журналів, кілька рівнів управління. Кожен переписує сам.',
+        rateLabel: 'Перший рівень', rate: '+60 тис./хв', clerk: 'Світлана «Гриф» · 20 млн',
+        why: 'Наймасовіший потік бригади. Погодження за ним не встигають, тож дивись на найвужчу ланку.',
+        cta: 'Відкрити потік'
+      }
+    };
+    var S = P[st] || P['потік Р1: Акти на майно'];
+    var bal = S.bal;
+    return {
+      place: S.place, bal: nb(bal),
+      d1: S.ic[0], d2: S.ic[1],
+      kicker: S.kicker, title: S.title,
+      avBg: S.avBg, avInit: S.avInit, who: S.who, lines: S.lines,
+      docNo: S.docNo, docIn: S.docIn, docTitle: S.docTitle, docBody: S.docBody,
+      rateLabel: S.rateLabel, rate: nb(S.rate), clerk: nb(S.clerk), why: S.why,
+      hasTip: !!S.hasTip, tip: S.tip || '', cta: S.cta
+    };
+  }
+}
+</script>
+</body>
+</html>

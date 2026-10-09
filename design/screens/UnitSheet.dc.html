@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Потік або ланка</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: flex-start; gap: 8px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 12px; color: var(--muted)">{{place}}</span>
+        <span style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15">{{bal}}</span>
+      </div>
+      <span style="width: 64px; height: 44px; border-radius: var(--radius-8); border: 1px solid var(--accent)"></span>
+      <span style="width: 44px; height: 44px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span><span style="height: 46px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></span></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <div class="st-sheet" role="dialog" aria-modal="true" aria-labelledby="us-title" style="max-height: 90%; overflow-y: auto">
+    <div class="st-sheet-grab" aria-hidden="true"></div>
+    <div class="st-sheet-head">
+      <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{u.d1}}"></path><path d="{{u.d2}}"></path></svg></div>
+      <div class="st-sheet-title">
+        <h2 class="st-h2" id="us-title">{{u.name}}</h2>
+        <p class="st-sub" style="font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span>{{u.sub}}</span><sc-if value="{{u.narrow}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">вузько</span></sc-if><sc-if value="{{u.preMs}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line">×2 на 25-му</span></sc-if></p>
+      </div>
+      <a class="st-iconbtn st-iconbtn--bare" href="Main.dc.html" aria-label="Закрити"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    </div>
+
+    <p class="st-sub" style="color: var(--text); font-size: 14px">{{u.desc}}</p>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div class="st-progress-head"><span class="st-progress-label">{{u.msLabel}}</span><span style="font: 500 12px/1.35 var(--font-mono); color: var(--muted)">{{u.msLeft}}</span></div>
+      <div class="st-track st-track--l" role="progressbar" aria-label="{{u.msLabel}}" aria-valuenow="{{u.msNow}}" aria-valuemin="0" aria-valuemax="100"><i style="{{u.msP}}"></i></div>
+    </div>
+
+    <div class="st-seg st-seg--fill" role="radiogroup" aria-label="Скільки рівнів купити">
+      <button role="radio" aria-pressed="{{q.p1}}" aria-checked="{{q.p1}}" onClick="{{setQ1}}">×1</button>
+      <button role="radio" aria-pressed="{{q.p10}}" aria-checked="{{q.p10}}" onClick="{{setQ10}}">×10</button>
+      <button role="radio" aria-pressed="{{q.pM}}" aria-checked="{{q.pM}}" onClick="{{setQM}}">до віхи</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div class="st-kv"><span>{{u.outLabel}}</span><b>{{q.out}}</b></div>
+      <div class="st-kv"><span>Дохід стройової</span><b>{{q.inc}}</b></div>
+      <div class="st-kv"><span>Підписів є</span><b>{{u.bal}}</b></div>
+      <sc-if value="{{q.hasHint}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 1.4; color: var(--accent)">{{q.hint}}</span></sc-if>
+    </div>
+
+    <div class="st-flow" role="group" aria-label="{{fl.aria}}">
+      <div class="st-flow-nums"><span class="{{fl.sCls}}">Потоки <b>{{fl.s}}</b></span><span class="st-flow-arrow"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span><span class="{{fl.pCls}}">Погодження <b>{{fl.p}}</b></span></div>
+      <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">Дохід — менше з двох: сума потоків або найвужча ланка. <span style="color: var(--text)">{{fl.verdict}}</span></span>
+    </div>
+
+    <sc-if value="{{u.hired}}" hint-placeholder-val="{{true}}">
+      <div class="st-card" style="padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start">
+        <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--scene-l1-wood); color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">{{u.clerkInit}}</div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; color: var(--muted)">{{u.clerkRole}}</span>
+          <span style="font-size: 14px; font-weight: 500">{{u.clerk}}</span>
+          <p style="margin: 4px 0 0; font-size: 13px; line-height: 1.45">{{u.clerkLine}}</p>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{u.notHired}}" hint-placeholder-val="{{false}}">
+      <div class="st-card" style="padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface-2); border-style: dashed">
+        <div style="display: flex; gap: 12px; align-items: flex-start">
+          <div aria-hidden="true" style="width: 40px; height: 40px; flex: none; border-radius: 50%; border: 1px dashed var(--border-strong); color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">{{u.clerkInit}}</div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 12px; color: var(--muted)">Діловода немає · кандидат</span>
+            <span style="font-size: 14px; font-weight: 500">{{u.clerk}}</span>
+            <p style="margin: 4px 0 0; font-size: 13px; line-height: 1.45">{{u.clerkLine}}</p>
+          </div>
+        </div>
+        <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">Без діловода ланка працює, лише поки ти в грі.</span>
+        <button class="st-btn st-btn--secondary st-btn--m" aria-label="Найняти діловода за {{u.hirePrice}} підписів">Найняти діловода · <span class="st-btn-num">{{u.hirePrice}}</span></button>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-if value="{{q.ok}}" hint-placeholder-val="{{true}}">
+        <button class="st-btn st-btn--primary st-btn--l"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{q.label}} · <span class="st-btn-num">{{q.price}}</span></button>
+      </sc-if>
+      <sc-if value="{{q.no}}" hint-placeholder-val="{{false}}">
+        <button class="st-btn st-btn--off st-btn--l" aria-disabled="true" aria-label="{{q.label}} за {{q.price}}. Не вистачає підписів, {{q.wait}}">{{q.label}} · <span class="st-btn-num">{{q.price}}</span></button>
+        <span class="st-btn-note">Не вистачає підписів: {{q.wait}}</span>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["потік","ланка — вузьке місце","не вистачає підписів","перед віхою","діловод не найнятий","Р2: Казначейство"],"default":"потік","section":"Стан"},"qty":{"editor":"enum","options":["×1","×10","до віхи"],"default":"×1","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.props.state ?? 'потік';
+    var qty = (this.state && this.state.qty) || this.props.qty || '×1';
+    var NB = ' ';
+    function nb(s) {
+      return String(s == null ? '' : s).replace(/(\d) (?=\d)/g, '$1' + NB).replace(/ (тис\.|млн|хв|год|дн)/g, NB + '$1');
+    }
+    var IC = {
+      rap: ['M7 3h7l5 5v13H7z', 'M14 3v5h5M10 13h6M10 17h4'],
+      akt: ['M7 3h7l5 5v13H7z', 'M14 3v5h5M10 15l2 2 4-4'],
+      dov: ['M5 4h14v16H5z', 'M8 8h8M8 12h8M8 16h4'],
+      kom: ['M4 20h4L19 9l-4-4L4 16z', 'M13 7l4 4'],
+      fin: ['M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM9.5 12a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0', 'M6 9v.01M18 15v.01'],
+      kaz: ['M3 9l9-5 9 5z', 'M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18']
+    };
+    var P = {
+      'потік': {
+        ic: 'rap', name: 'Рапорти', sub: 'Потік документів · рів. 46', place: '1-й батальйон · бліндаж', bal: '186 412',
+        desc: 'Рапорт іде на резолюцію комбату, потім до тебе.',
+        msLabel: 'До віхи ×2 на 50-му рівні', msLeft: 'ще 4 рівні', ms: 84, outLabel: 'Виробіток потоку',
+        hired: true, clerkInit: 'І', clerk: 'Іван «Чорна паста»', clerkRole: 'Діловод потоку',
+        clerkLine: 'Журнал заповнено. Жодного виправлення. Одне є, але завірене.',
+        flow: { s: '4 392/хв', p: '2 880/хв', side: 'p', verdict: 'Зараз вузько в погодженнях, тож потік дохід не підніме.' },
+        q: {
+          '×1': { out: '552/хв → 564/хв', inc: '7 200/хв, без змін', price: '1,32 тис.' },
+          '×10': { out: '552/хв → 1 344/хв', inc: '7 200/хв, без змін', price: '23,1 тис.', hint: 'Дорогою — віха на 50-му: виробіток ×2.' },
+          'до віхи': { out: '552/хв → 1 200/хв', inc: '7 200/хв, без змін', price: '6,27 тис.' }
+        }
+      },
+      'ланка — вузьке місце': {
+        ic: 'kom', name: 'Резолюції комбата', sub: 'Ланка погоджень · рів. 60', narrow: true, place: '1-й батальйон · бліндаж', bal: '186 412',
+        desc: 'Резолюції ставить комбат «Граніт». Буває на позиціях, тоді ланка йде в чверть сили.',
+        msLabel: 'До віхи ×2 на 75-му рівні', msLeft: 'ще 15 рівнів', ms: 40, outLabel: 'Пропускає ланка',
+        hired: true, clerkInit: 'М', clerk: 'Микола «Вхідний»', clerkRole: 'Діловод ланки',
+        clerkLine: 'Реєструю все, що заходить. Тебе теж зареєстрував.',
+        flow: { s: '4 392/хв', p: '2 880/хв', side: 'p', verdict: 'Зараз найвужча — ця.' },
+        q: {
+          '×1': { out: '2 880/хв → 2 928/хв', inc: '7 200/хв → 7 320/хв', price: '12,1 тис.' },
+          '×10': { out: '2 880/хв → 3 360/хв', inc: '7 200/хв → 8 400/хв', price: '212 тис.', wait: 'ще 4 хв' },
+          'до віхи': { out: '2 880/хв → 7 200/хв', inc: '7 200/хв → 9 000/хв', price: '449 тис.', wait: 'ще 37 хв', hint: 'Після віхи вузько стане Стройова частина.' }
+        }
+      },
+      'не вистачає підписів': {
+        ic: 'dov', name: 'Довідки', sub: 'Потік документів · рів. 12', place: '1-й батальйон · бліндаж', bal: '1 200',
+        desc: 'Швидкі документи великими обсягами.',
+        msLabel: 'До віхи ×2 на 25-му рівні', msLeft: 'ще 13 рівнів', ms: 48, outLabel: 'Виробіток потоку',
+        hired: true, clerkInit: 'Г', clerk: 'Ганна «Вихідна»', clerkRole: 'Діловод потоку',
+        clerkLine: 'Реєструю вихідні документи. Своїх вихідних не маю.',
+        flow: { s: '9 840/хв', p: '12 400/хв', side: 's', verdict: 'Зараз вузько в потоках: кожен рівень Довідок додає до доходу.' },
+        q: {
+          '×1': { out: '7 200/хв → 7 800/хв', inc: '12 300/хв → 13 050/хв', price: '25,4 тис.', wait: 'ще 2 хв' },
+          '×10': { out: '7 200/хв → 13 200/хв', inc: '12 300/хв → 19 800/хв', price: '491 тис.', wait: 'ще 40 хв' },
+          'до віхи': { out: '7 200/хв → 30 тис./хв', inc: '12 300/хв → 15 500/хв', price: '814 тис.', wait: 'ще 1 год 6 хв', hint: 'Після віхи вузько стануть погодження.' }
+        }
+      },
+      'перед віхою': {
+        ic: 'akt', name: 'Акти на майно', sub: 'Потік документів · рів. 24', preMs: true, place: '1-й батальйон · бліндаж', bal: '312 480',
+        desc: 'Дрони й майно від волонтерів. Сюди йдуть акти на подарунки Ліни.',
+        msLabel: 'Наступний рівень — віха: виробіток ×2', msLeft: 'ще 1 рівень', ms: 96, outLabel: 'Виробіток потоку',
+        hired: true, clerkInit: 'П', clerk: 'Петро «Швидкозшивач»', clerkRole: 'Діловод потоку',
+        clerkLine: 'Усього пронумеровано, прошнуровано та скріплено печаткою.',
+        flow: { s: '2 592/хв', p: '3 168/хв', side: 's', verdict: 'Зараз вузько в потоках. Після віхи вузько стануть погодження.' },
+        q: {
+          '×1': { out: '1 440/хв → 3 000/хв', inc: '6 480/хв → 7 920/хв', price: '2 тис.', hint: 'Віха на 25-му: виробіток ×2.' },
+          '×10': { out: '1 440/хв → 4 080/хв', inc: '6 480/хв → 7 920/хв', price: '36,8 тис.' },
+          'до віхи': { out: '1 440/хв → 3 000/хв', inc: '6 480/хв → 7 920/хв', price: '2 тис.', hint: 'До віхи — один рівень.' }
+        }
+      },
+      'діловод не найнятий': {
+        ic: 'fin', name: 'Фінслужба', sub: 'Ланка погоджень · рів. 13', place: '1-й батальйон · бліндаж', bal: '1 840',
+        desc: 'Начфін «Сальдо» проводить документи. Перше питання завжди одне: «Первинка є?»',
+        msLabel: 'До віхи ×2 на 25-му рівні', msLeft: 'ще 12 рівнів', ms: 52, outLabel: 'Пропускає ланка',
+        hired: false, clerkInit: 'Н', clerk: 'Наталя «Лінійка»', hirePrice: '300',
+        clerkLine: 'Ліве поле тридцять міліметрів. Міряю двічі.',
+        flow: { s: '264/хв', p: '144/хв', side: 'p', verdict: 'Зараз найвужча — Резолюції комбата.' },
+        q: {
+          '×1': { out: '234/хв → 252/хв', inc: '360/хв, без змін', price: '117' },
+          '×10': { out: '234/хв → 414/хв', inc: '360/хв, без змін', price: '2,06 тис.', wait: 'ще 1 хв' },
+          'до віхи': { out: '234/хв → 900/хв', inc: '360/хв, без змін', price: '2,83 тис.', wait: 'ще 3 хв' }
+        }
+      },
+      'Р2: Казначейство': {
+        ic: 'kaz', name: 'Казначейство', sub: 'Четверта ланка погоджень · рів. 72', narrow: true, place: 'Бригада · будинок культури', bal: '8 460 000',
+        desc: 'Що проходить ланку: колишнє платіжне доручення. Зміст той самий, назва нова.',
+        msLabel: 'До віхи ×2 на 75-му рівні', msLeft: 'ще 3 рівні', ms: 88, outLabel: 'Пропускає ланка',
+        hired: true, clerkInit: 'Б', clerk: 'Богдан «Копійка»', clerkRole: 'Діловод ланки',
+        clerkLine: 'Звіряю суми до копійки. Казначейство звіряє після мене.',
+        flow: { s: '24,8 тис./хв', p: '6 048/хв', side: 'p', verdict: 'Зараз найвужча — ця.' },
+        q: {
+          '×1': { out: '6 048/хв → 6 132/хв', inc: '31,8 тис./хв → 32,2 тис./хв', price: '125 тис.' },
+          '×10': { out: '6 048/хв → 13,8 тис./хв', inc: '31,8 тис./хв → 40,3 тис./хв', price: '2,2 млн', hint: 'Далі вузько стануть Резолюції комбата.' },
+          'до віхи': { out: '6 048/хв → 12,6 тис./хв', inc: '31,8 тис./хв → 40,3 тис./хв', price: '422 тис.', hint: 'Після віхи вузько стануть Резолюції комбата.' }
+        }
+      }
+    };
+    var S = P[st] || P['потік'];
+    var Q = S.q[qty] || S.q['×1'];
+    var ic = IC[S.ic];
+    var F = S.flow;
+    var label = qty === '×10' ? 'Покращити ×10' : (qty === 'до віхи' ? 'Покращити до віхи' : 'Покращити');
+    return {
+      place: S.place, bal: nb(S.bal),
+      u: {
+        d1: ic[0], d2: ic[1], name: S.name, sub: nb(S.sub), narrow: !!S.narrow, preMs: !!S.preMs,
+        desc: S.desc, msLabel: S.msLabel, msLeft: S.msLeft, msNow: S.ms, msP: '--p:' + S.ms + '%',
+        outLabel: S.outLabel, bal: nb(S.bal),
+        hired: !!S.hired, notHired: !S.hired, clerkInit: S.clerkInit, clerk: S.clerk, clerkRole: S.clerkRole || '',
+        clerkLine: '«' + S.clerkLine + '»', hirePrice: S.hirePrice || ''
+      },
+      q: {
+        p1: qty === '×1' ? 'true' : 'false', p10: qty === '×10' ? 'true' : 'false', pM: qty === 'до віхи' ? 'true' : 'false',
+        out: nb(Q.out), inc: nb(Q.inc), price: nb(Q.price), label: label,
+        ok: !Q.wait, no: !!Q.wait, wait: nb(Q.wait || ''),
+        hasHint: !!Q.hint, hint: Q.hint || ''
+      },
+      fl: {
+        s: nb(F.s), p: nb(F.p),
+        sCls: 'st-flow-part' + (F.side === 's' ? ' is-narrow' : ''),
+        pCls: 'st-flow-part' + (F.side === 'p' ? ' is-narrow' : ''),
+        verdict: F.verdict,
+        aria: 'Потоки ' + F.s.replace('/хв', '') + ' за хвилину, погодження ' + F.p.replace('/хв', '') + ' за хвилину. ' + F.verdict
+      },
+      setQ1: function () { self.setState({ qty: '×1' }); },
+      setQ10: function () { self.setState({ qty: '×10' }); },
+      setQM: function () { self.setState({ qty: 'до віхи' }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

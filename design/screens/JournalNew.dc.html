@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Новий експонат</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+    <div style="height: 44px; width: 150px; border-radius: var(--radius-8); background: var(--surface-2)"></div>
+    <div style="height: 120px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 260px; border-radius: var(--radius-6); background: var(--surface); border: 1px solid var(--border)"></div>
+    <div style="height: 58px; border-radius: var(--radius-10); background: var(--surface); border: 1px solid var(--border)"></div>
+  </div>
+  <div class="st-scrim"></div>
+
+  <div class="st-modal-wrap">
+    <section class="st-modal" role="dialog" aria-modal="true" aria-labelledby="jn-title" style="gap: 14px; padding-top: 18px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--accent)">
+          <svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
+          Новий експонат
+        </span>
+        <span style="font: 500 12px/1.3 var(--font-mono); color: var(--muted)">{{j.counter}}</span>
+      </div>
+
+      <div style="align-self: center; width: 176px; padding: 2px; border-radius: var(--radius-6); border: {{j.frame}}">
+        <span class="st-jr-cover" style="height: 216px; background: {{j.bg}}; padding: 16px {{j.padR}} 44px 26px">
+          <span class="st-jr-label" style="font-size: 13px; padding: 7px 10px"><b>{{j.head}}</b><span>{{j.name}}</span></span>
+          <sc-if value="{{s.legend}}" hint-placeholder-val="{{false}}">
+            <span class="st-jr-star"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+          </sc-if>
+          <span class="st-stamp st-stamp--dark st-stamp--hit" style="--st-rot: -7deg; --st-edge: 100deg; right: 8px; bottom: 8px">Скасовано</span>
+        </span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center">
+        <h2 id="jn-title" style="margin: 0; font-size: 16px; font-weight: 600; line-height: 1.35">{{j.full}}</h2>
+        <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: {{j.rc}}">
+          <sc-if value="{{s.legend}}" hint-placeholder-val="{{false}}">
+            <svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.2" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>
+          </sc-if>
+          {{j.rar}}
+        </span>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted)">{{j.flavor}}</p>
+      </div>
+
+      <div class="st-card" style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-color: var(--accent)">
+        <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" style="stroke-width: 2.2; color: var(--accent)" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+          <span style="font-size: 14px; font-weight: 500; line-height: 1.4">{{j.bonus}}</span>
+          <span style="font-size: 12px; color: var(--muted)">{{j.bonusNote}}</span>
+        </div>
+      </div>
+
+      <span style="font-size: 12px; line-height: 1.4; color: var(--muted); text-align: center">{{j.from}}</span>
+
+      <button class="st-btn st-btn--primary st-btn--l">{{j.cta}}</button>
+      <a href="JournalDetail.dc.html" class="st-btn st-btn--neutral st-btn--m" style="color: var(--text)">Деталі експоната</a>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","рідкісний","легендарний"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "звичайний";
+    var D = {
+      "звичайний": {
+        counter: "1 з 3 нових · у музеї 1 з 8",
+        head: "Книга", name: "обліку видавання мила, миття в лазні та заміни білизни",
+        full: "Книга обліку видавання мила, миття в лазні та заміни білизни",
+        bg: "var(--cover-olive)", frame: "0", padR: "12px",
+        rar: "Звичайний", rc: "var(--rarity-common)",
+        flavor: "Мило видавали на одну лазню на тиждень. Кожен шматок записували.",
+        bonus: "+5% до швидкості Стройової частини", bonusNote: "Уже діє. Назавжди.",
+        from: "Скасовано першою цифровізацією",
+        cta: "Наступний експонат"
+      },
+      "рідкісний": {
+        counter: "У музеї 4 з 8",
+        head: "Книга", name: "обліку призів і подарунків",
+        full: "Книга обліку призів і подарунків",
+        bg: "var(--cover-olive)", frame: "0", padR: "12px",
+        rar: "Рідкісний", rc: "var(--rarity-rare)",
+        flavor: "Скасована разом з актом передачі перехідного призу. Приз нікому не передали.",
+        bonus: "Акти на подарунки волонтерів ідуть конвеєром на 10% швидше", bonusNote: "Уже діє. Назавжди.",
+        from: "Скасовано телеграмою згори",
+        cta: "Добре"
+      },
+      "легендарний": {
+        counter: "У музеї 8 з 8",
+        head: "Книга", name: "обліку експонатів музеїв, кімнат бойової слави",
+        full: "Книга обліку експонатів музеїв, кімнат бойової слави",
+        bg: "var(--cover-black)", frame: "2px solid var(--accent)", padR: "30px",
+        rar: "Легендарний", rc: "var(--rarity-legend)",
+        flavor: "Скасована в одному переліку з книгою обліку мила. Тепер сама експонат.",
+        bonus: "×2 до бонусу всіх інших журналів", bonusNote: "Серію зібрано. Уже діє.",
+        from: "Зібрано сім інших журналів",
+        cta: "Добре"
+      }
+    };
+    var j = D[st] || D["звичайний"];
+    return { j: j, s: { legend: st === "легендарний" } };
+  }
+}
+</script>
+</body>
+</html>

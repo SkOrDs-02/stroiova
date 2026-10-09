@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Стройова: конвеєр</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <header style="flex-shrink: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: flex-start; gap: 8px">
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">{{h.place}}</span>
+        <span role="status" aria-label="Підписи: {{bal}}" style="font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.15; white-space: nowrap">{{bal}}</span>
+        <span style="font-family: var(--font-mono); font-size: 13px; line-height: 1.3; color: var(--accent); white-space: nowrap">{{h.inc}}<span style="font-family: var(--font-sans); color: var(--muted)">{{h.incNote}}</span></span>
+      </div>
+      <a href="BoostsSheet.dc.html" class="st-mult" aria-label="{{h.multAria}}" style="color: var(--accent)"><b>{{h.mult}}</b><span>{{h.multSub}}</span></a>
+      <a href="Menu.dc.html" class="st-iconbtn" aria-label="Меню"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></a>
+    </div>
+
+    <div class="st-tiles">
+      <a href="ResourceSheet.dc.html" class="st-tile" aria-label="Папір: {{h.paper}} аркушів"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l8-4 8 4-8 4z"></path><path d="M4 12l8 4 8-4M4 17l8 4 8-4"></path></svg><span class="st-tile-txt"><span class="st-tile-val">{{h.paper}}</span><span class="st-tile-cap">аркушів</span></span></a>
+      <a href="ResourceSheet.dc.html" class="{{h.genCls}}" aria-label="{{h.genAria}}"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"></path></svg><span class="st-tile-txt"><span class="st-tile-val">{{h.genVal}}</span><span class="{{h.genCapCls}}">{{h.genCap}}</span></span></a>
+      <a href="ReputationSheet.dc.html" class="st-tile" aria-label="Репутація: {{h.repWord}}"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17a8 8 0 0 1 16 0"></path><path d="{{h.repPath}}"></path><circle cx="12" cy="17" r="1.4"></circle></svg><span class="st-tile-txt"><span class="st-tile-val">{{h.repWord}}</span><span class="st-tile-cap">репутація</span></span></a>
+    </div>
+  </header>
+
+  <main style="flex: 1; min-height: 0; overflow-y: auto; padding: 12px 20px 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <sc-if value="{{bn.insp}}" hint-placeholder-val="{{false}}">
+      <a href="InspPrep.dc.html" class="st-banner st-banner--alert" aria-label="Перевірка через 2 години 14 хвилин. Готуватися" style="color: var(--alert-text)"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span class="st-banner-txt">Перевірка через <span class="st-num">02:14:37</span></span><span class="st-banner-act">Готуватися<svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+    </sc-if>
+    <sc-if value="{{bn.digit}}" hint-placeholder-val="{{false}}">
+      <a href="Digital.dc.html" class="st-banner st-banner--accent"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg><span class="st-banner-txt">Наступна покупка — через 6 год. Час цифровізуватися.</span><span class="st-banner-act">Цифра<svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+    </sc-if>
+    <sc-if value="{{bn.fuel}}" hint-placeholder-val="{{false}}">
+      <a href="ResourceSheet.dc.html" class="st-banner st-banner--neutral"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"></path></svg><span class="st-banner-txt">Пальне нижче 20%: бонус ×1,25 вимкнено</span><span class="st-banner-act">Заправити<svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+    </sc-if>
+    <sc-if value="{{bn.kombat}}" hint-placeholder-val="{{false}}">
+      <a href="KombatSheet.dc.html" class="st-banner st-banner--neutral" aria-label="Комбата шукають. Резолюції в чверть сили ще 18 хвилин. Вирішити"><svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg><span class="st-banner-txt">Комбата шукають. Резолюції <span class="st-num">×0,25</span> ще <span class="st-num">18 хв</span>.</span><span class="st-banner-act">Вирішити<svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+    </sc-if>
+
+    <sc-if value="{{rc.on}}" hint-placeholder-val="{{false}}">
+      <a href="RaceSheet.dc.html" class="st-paper st-paper--card" aria-label="{{rc.aria}}" style="gap: 8px; color: var(--ink)">
+        <div style="position: absolute; top: 12px; right: 12px"><span class="st-stamp st-stamp--s" style="--st-rot: -6deg; --st-edge: 110deg">Терміново</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 96px">
+          <span class="st-doc-meta">Акт № 17 · квадрокоптер</span>
+          <span class="st-doc-title st-doc-title--mono" style="font-size: 14px">Введення в експлуатацію</span>
+        </div>
+        <ol class="st-route" style="--n: 4; margin: 0; padding: 0; list-style: none" aria-hidden="true">
+          <li class="st-route-step is-done"><b><svg class="st-ico" width="11" height="11" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Рапорт</b></li>
+          <li class="st-route-step is-done"><b><svg class="st-ico" width="11" height="11" viewBox="0 0 24 24" style="stroke-width: 3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Комбат</b></li>
+          <li class="{{rc.nowCls}}"><b>Стройова</b></li>
+          <li class="st-route-step"><b>Фін.</b></li>
+        </ol>
+        <div style="display: flex; flex-direction: column; gap: 4px; font: 400 12px/1.4 var(--font-mono)">
+          <div style="display: flex; align-items: center; gap: 8px"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span style="flex: 1">Документ дійде через</span><b>{{rc.doc}}</b></div>
+          <div style="display: flex; align-items: center; gap: 8px"><svg class="st-ico" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="5" r="2.5"></circle><circle cx="19" cy="5" r="2.5"></circle><circle cx="5" cy="19" r="2.5"></circle><circle cx="19" cy="19" r="2.5"></circle><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"></path><rect x="10" y="10" width="4" height="4"></rect></svg><span style="flex: 1">Пташка прослужить ще</span><b class="{{rc.lifeCls}}">{{rc.life}}</b></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span class="{{rc.noteCls}}" style="flex: 1; min-width: 0; font: 400 12px/1.4 var(--font-mono)">{{rc.note}}</span>
+          <span class="{{rc.btnCls}}">Прискорити</span>
+        </div>
+      </a>
+    </sc-if>
+
+    <section aria-labelledby="h-streams" style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; gap: 8px; min-height: 20px">
+        <h2 id="h-streams" style="margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 14px; line-height: 1.3">Потоки</h2>
+        <sc-if value="{{streamsNarrow}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">вузько</span></sc-if>
+        <span style="margin-left: auto; font-size: 12px; color: var(--muted)">{{streamsNote}}</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{streams}}" as="it" hint-placeholder-count="4">
+          <div class="{{it.cls}}">
+            <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{it.d1}}"></path><path d="{{it.d2}}"></path></svg></div>
+            <a href="{{it.href}}" class="st-unit-main">
+              <span class="st-unit-head"><span class="st-unit-name">{{it.name}}</span><sc-if value="{{it.hasLvl}}" hint-placeholder-val="{{true}}"><span class="st-unit-lvl">{{it.lvl}}</span></sc-if></span>
+              <sc-if value="{{it.track}}" hint-placeholder-val="{{true}}"><div class="st-track" aria-hidden="true"><i style="{{it.p}}"></i></div></sc-if>
+              <span class="{{it.metaCls}}"><sc-if value="{{it.tagFill}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">{{it.tag}}</span></sc-if><sc-if value="{{it.tagLine}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line">{{it.tag}}</span></sc-if><sc-if value="{{it.tagClock}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line"><svg class="st-ico" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{it.tag}}</span></sc-if>{{it.meta}}</span>
+            </a>
+            <sc-if value="{{it.bUp}}" hint-placeholder-val="{{true}}"><button class="st-buy" aria-label="{{it.aria}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{it.price}}</button></sc-if>
+            <sc-if value="{{it.bHire}}" hint-placeholder-val="{{false}}"><button class="st-buy st-buy--hire" aria-label="{{it.aria}}"><small>найняти</small>{{it.price}}</button></sc-if>
+            <sc-if value="{{it.bOff}}" hint-placeholder-val="{{false}}"><button class="st-buy st-buy--off" aria-disabled="true" aria-label="{{it.aria}}">{{it.price}}<sc-if value="{{it.hasSub}}" hint-placeholder-val="{{true}}"><small>{{it.sub}}</small></sc-if></button></sc-if>
+            <sc-if value="{{it.bOpen}}" hint-placeholder-val="{{false}}"><button class="st-buy" aria-label="{{it.aria}}"><span class="st-btn-stack"><small>відкрити</small>{{it.price}}</span></button></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div class="st-flow" role="group" aria-label="{{f.aria}}">
+      <div class="st-flow-nums"><span class="{{f.sCls}}">Потоки <b>{{f.s}}</b></span><span class="st-flow-arrow"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span><span class="{{f.pCls}}">Погодження <b>{{f.p}}</b></span></div>
+      <span class="st-flow-verdict"><sc-if value="{{f.stop}}" hint-placeholder-val="{{false}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></sc-if>{{f.pre}}<b>{{f.b}}</b>{{f.post}}</span>
+    </div>
+
+    <section aria-labelledby="h-stages" style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; gap: 8px; min-height: 20px">
+        <h2 id="h-stages" style="margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 14px; line-height: 1.3">Погодження</h2>
+        <span style="margin-left: auto; font-size: 12px; color: var(--muted)">{{stagesNote}}</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{stA}}" as="it" hint-placeholder-count="1">
+          <div class="{{it.cls}}">
+            <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{it.d1}}"></path><path d="{{it.d2}}"></path></svg></div>
+            <a href="{{it.href}}" class="st-unit-main">
+              <span class="st-unit-head"><span class="st-unit-name">{{it.name}}</span><sc-if value="{{it.hasLvl}}" hint-placeholder-val="{{true}}"><span class="st-unit-lvl">{{it.lvl}}</span></sc-if></span>
+              <sc-if value="{{it.track}}" hint-placeholder-val="{{true}}"><div class="st-track" aria-hidden="true"><i style="{{it.p}}"></i></div></sc-if>
+              <span class="{{it.metaCls}}"><sc-if value="{{it.tagFill}}" hint-placeholder-val="{{true}}"><span class="st-tag st-tag--fill">{{it.tag}}</span></sc-if><sc-if value="{{it.tagLine}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line">{{it.tag}}</span></sc-if><sc-if value="{{it.tagClock}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line"><svg class="st-ico" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{it.tag}}</span></sc-if>{{it.meta}}</span>
+            </a>
+            <sc-if value="{{it.bUp}}" hint-placeholder-val="{{true}}"><button class="st-buy" aria-label="{{it.aria}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{it.price}}</button></sc-if>
+            <sc-if value="{{it.bHire}}" hint-placeholder-val="{{false}}"><button class="st-buy st-buy--hire" aria-label="{{it.aria}}"><small>найняти</small>{{it.price}}</button></sc-if>
+            <sc-if value="{{it.bOff}}" hint-placeholder-val="{{false}}"><button class="st-buy st-buy--off" aria-disabled="true" aria-label="{{it.aria}}">{{it.price}}<sc-if value="{{it.hasSub}}" hint-placeholder-val="{{true}}"><small>{{it.sub}}</small></sc-if></button></sc-if>
+          </div>
+        </sc-for>
+
+        <div class="{{sr.cls}}">
+          <button class="st-unit-seal" onClick="{{tap}}" aria-label="Поставити печатку: +{{tapVal}} підписів">
+            <sc-if value="{{t0}}" hint-placeholder-val="{{true}}"><svg class="st-seal st-seal--dark" width="40" height="40" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle></svg></sc-if>
+            <sc-if value="{{tA}}" hint-placeholder-val="{{false}}"><svg class="st-seal st-seal--dark" width="40" height="40" viewBox="0 0 64 64" aria-hidden="true" style="--st-rot: -8deg; --st-op: 1; animation: st-hit var(--dur-stamp) both"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle></svg><span class="st-pop" aria-hidden="true">+{{tapVal}}</span></sc-if>
+            <sc-if value="{{tB}}" hint-placeholder-val="{{false}}"><svg class="st-seal st-seal--dark" width="40" height="40" viewBox="0 0 64 64" aria-hidden="true" style="--st-rot: 7deg; --st-op: 1; animation: st-hit var(--dur-stamp) both"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle></svg><span class="st-pop" aria-hidden="true">+{{tapVal}}</span></sc-if>
+          </button>
+          <a href="UnitSheet.dc.html" class="st-unit-main">
+            <span class="st-unit-head"><span class="st-unit-name">Стройова частина</span><span class="st-unit-lvl">{{sr.lvl}}</span></span>
+            <div class="st-track" aria-hidden="true"><i style="{{sr.p}}"></i></div>
+            <span class="{{sr.metaCls}}"><sc-if value="{{sr.tagFill}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">{{sr.tag}}</span></sc-if>{{sr.meta}}</span>
+          </a>
+          <sc-if value="{{sr.bUp}}" hint-placeholder-val="{{true}}"><button class="st-buy" aria-label="{{sr.aria}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{sr.price}}</button></sc-if>
+          <sc-if value="{{sr.bHire}}" hint-placeholder-val="{{false}}"><button class="st-buy st-buy--hire" aria-label="{{sr.aria}}"><small>найняти</small>{{sr.price}}</button></sc-if>
+          <sc-if value="{{sr.bOff}}" hint-placeholder-val="{{false}}"><button class="st-buy st-buy--off" aria-disabled="true" aria-label="{{sr.aria}}">{{sr.price}}<small>{{sr.sub}}</small></button></sc-if>
+        </div>
+
+        <sc-for list="{{stB}}" as="it" hint-placeholder-count="1">
+          <div class="{{it.cls}}">
+            <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="{{it.d1}}"></path><path d="{{it.d2}}"></path></svg></div>
+            <a href="{{it.href}}" class="st-unit-main">
+              <span class="st-unit-head"><span class="st-unit-name">{{it.name}}</span><sc-if value="{{it.hasLvl}}" hint-placeholder-val="{{true}}"><span class="st-unit-lvl">{{it.lvl}}</span></sc-if></span>
+              <sc-if value="{{it.track}}" hint-placeholder-val="{{true}}"><div class="st-track" aria-hidden="true"><i style="{{it.p}}"></i></div></sc-if>
+              <span class="{{it.metaCls}}"><sc-if value="{{it.tagFill}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">{{it.tag}}</span></sc-if><sc-if value="{{it.tagLine}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line">{{it.tag}}</span></sc-if><sc-if value="{{it.tagClock}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--line"><svg class="st-ico" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{it.tag}}</span></sc-if>{{it.meta}}</span>
+            </a>
+            <sc-if value="{{it.bUp}}" hint-placeholder-val="{{true}}"><button class="st-buy" aria-label="{{it.aria}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{it.price}}</button></sc-if>
+            <sc-if value="{{it.bHire}}" hint-placeholder-val="{{false}}"><button class="st-buy st-buy--hire" aria-label="{{it.aria}}"><small>найняти</small>{{it.price}}</button></sc-if>
+            <sc-if value="{{it.bOff}}" hint-placeholder-val="{{false}}"><button class="st-buy st-buy--off" aria-disabled="true" aria-label="{{it.aria}}">{{it.price}}<sc-if value="{{it.hasSub}}" hint-placeholder-val="{{true}}"><small>{{it.sub}}</small></sc-if></button></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+
+  <nav aria-label="Розділи" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg-deep); border-top: 1px solid var(--border); padding: 6px 4px 10px">
+    <a href="Main.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--accent); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>
+      <span>Стройова</span>
+    </a>
+    <a href="TgList.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+      <span>Телеграми</span>
+      <sc-if value="{{tab.tg}}" hint-placeholder-val="{{true}}"><span aria-label="нових: {{tab.tgN}}" style="position: absolute; top: 2px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--alert); color: var(--on-alert); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center">{{tab.tgN}}</span></sc-if>
+    </a>
+    <a href="Digital.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
+      <span>Цифра</span>
+      <sc-if value="{{tab.dot}}" hint-placeholder-val="{{false}}"><span aria-label="рекомендовано" style="position: absolute; top: 6px; left: 50%; margin-left: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg-deep)"></span></sc-if>
+    </a>
+    <a href="Museum.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
+      <span>Музей</span>
+    </a>
+    <a href="Shop.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+      <span>Магазин</span>
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","перша сесія","вузько в потоках","ланка без діловода","сповільнено телеграмою","комбата шукають","порожній бак","гонка йде","гонка: не встигаєте","перевірка","кілька множників","час цифровізуватися","Р2: Бригада"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.props.state ?? 'звичайний';
+    var taps = (this.state && this.state.taps) || 0;
+    var NB = ' ';
+    function nb(s) {
+      return String(s == null ? '' : s).replace(/(\d) (?=\d)/g, '$1' + NB).replace(/ (тис\.|млн|хв|год|дн)/g, NB + '$1');
+    }
+    function fmt(n) {
+      n = Math.floor(n);
+      if (n < 10000000) return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+      return (Math.floor(n / 10000) / 100).toFixed(2).replace('.', ',') + NB + 'млн';
+    }
+    var IC = {
+      rap: ['M7 3h7l5 5v13H7z', 'M14 3v5h5M10 13h6M10 17h4'],
+      akt: ['M7 3h7l5 5v13H7z', 'M14 3v5h5M10 15l2 2 4-4'],
+      dov: ['M5 4h14v16H5z', 'M8 8h8M8 12h8M8 16h4'],
+      nak: ['M3 7h11v9H3zM14 10h4l3 3v3h-7z', 'M5 18a2 2 0 1 0 4 0a2 2 0 1 0-4 0M15 18a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+      naz: ['M6 3h12v18H6z', 'M9 7h6M9 11h6M13 16.5a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+      kom: ['M4 20h4L19 9l-4-4L4 16z', 'M13 7l4 4'],
+      fin: ['M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM9.5 12a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0', 'M6 9v.01M18 15v.01'],
+      kaz: ['M3 9l9-5 9 5z', 'M5 9v9M10 9v9M14 9v9M19 9v9M3 20h18'],
+      lock: ['M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z', 'M8 11V7a4 4 0 0 1 8 0v4']
+    };
+    function U(o) {
+      var ic = IC[o.locked ? 'lock' : o.ic] || IC.rap;
+      var b = o.b || ['none'];
+      var price = nb(b[1] || ''), sub = nb(b[2] || '');
+      var aria = '';
+      if (b[0] === 'up') aria = 'Покращити: ' + o.n + ' за ' + price;
+      if (b[0] === 'hire') aria = 'Найняти діловода: ' + o.n + ' за ' + price;
+      if (b[0] === 'off') aria = o.n + ': ' + price + ', не вистачає підписів' + (sub ? ', ' + sub : '');
+      if (b[0] === 'open') aria = 'Відкрити потік ' + o.n + ' за ' + price;
+      return {
+        name: o.n, lvl: o.l ? 'рів. ' + o.l : '', hasLvl: !!o.l,
+        d1: ic[0], d2: ic[1],
+        cls: 'st-card st-unit' + (o.narrow ? ' is-narrow' : '') + (o.locked ? ' is-locked' : ''),
+        track: !o.locked, p: '--p:' + (o.p || 0) + '%',
+        meta: nb(o.m), metaCls: 'st-unit-meta' + (o.acc ? ' st-unit-meta--accent' : ''),
+        tag: nb(o.t || ''), tagFill: o.tk === 'fill', tagLine: o.tk === 'line', tagClock: o.tk === 'clock',
+        bUp: b[0] === 'up', bHire: b[0] === 'hire', bOff: b[0] === 'off', bOpen: b[0] === 'open',
+        price: price, sub: sub, hasSub: !!sub, aria: aria,
+        href: o.href || 'UnitSheet.dc.html'
+      };
+    }
+
+    var RAP = { ic: 'rap', n: 'Рапорти', l: 46, p: 84, m: '+552/хв · Іван «Чорна паста»', b: ['up', '1,32 тис.'] };
+    var AKT = { ic: 'akt', n: 'Акти на майно', l: 24, p: 96, t: '×2 на 25-му', tk: 'line', m: '+1 440/хв', b: ['up', '2 тис.'] };
+    var KOM = { ic: 'kom', n: 'Резолюції комбата', l: 60, p: 40, narrow: true, t: 'вузько', tk: 'fill', m: '2 880/хв · найвужча ланка', b: ['up', '12,1 тис.'] };
+    var FIN = { ic: 'fin', n: 'Фінслужба', l: 62, p: 48, m: '4 464/хв · Наталя «Лінійка»', b: ['up', '30,2 тис.'] };
+    var NAK_LOCK = { n: 'Накладні', locked: true, m: 'Поставки паперу й пального', b: ['off', '300 тис.', 'ще 16 хв'] };
+
+    var base = {
+      place: '1-й батальйон · бліндаж', bal: 186412, inc: '+7 200/хв', incNote: '',
+      mult: '×2,5', multSub: '2 джерела', multAria: 'Разом ×2,5 з двох джерел. Відкрити множники',
+      paper: '4 120', gen: 'bonus', genVal: '5 год', rep: 'mid', tap: 5, tg: '2', dot: false,
+      streamsNote: '3 з 4 відкрито', streamsNarrow: false, stagesNote: '3 ланки',
+      streams: [RAP, AKT, { ic: 'dov', n: 'Довідки', l: 4, p: 16, m: '+2 400/хв · Ганна «Вихідна»', b: ['up', '8 890'] }, NAK_LOCK],
+      flow: { s: '4 392/хв', p: '2 880/хв', side: 'p', pre: 'Вузько: ', b: 'Резолюції комбата', post: '' },
+      stA: [KOM],
+      stroy: { l: 60, p: 40, m: '3 600/хв · Оля «Штамп»', b: ['up', '16,1 тис.'] },
+      stB: [FIN],
+      banner: '', race: ''
+    };
+    function over(o) { var r = {}, k; for (k in base) r[k] = base[k]; for (k in o) r[k] = o[k]; return r; }
+
+    var P = {
+      'звичайний': base,
+      'перша сесія': over({
+        bal: 46, inc: '+30/хв', paper: '200', genVal: '6 год', tg: '', streamsNote: '1 з 4 відкрито',
+        streams: [
+          { ic: 'rap', n: 'Рапорти', l: 3, p: 12, m: '+18/хв · лише поки ти в грі', b: ['up', '10'] },
+          { n: 'Акти на майно', locked: true, m: 'Дрони й майно від волонтерів', b: ['off', '300', 'ще 9 хв'] },
+          { n: 'Довідки', locked: true, m: 'Швидкі документи великими обсягами', b: ['off', '10 тис.'] },
+          { n: 'Накладні', locked: true, m: 'Поставки паперу й пального', b: ['off', '300 тис.'] }
+        ],
+        flow: { s: '18/хв', p: '12/хв', side: 'p', pre: 'Вузько: ', b: 'Резолюції комбата', post: '' },
+        stA: [{ ic: 'kom', n: 'Резолюції комбата', l: 1, p: 4, narrow: true, t: 'вузько', tk: 'fill', m: '12/хв · найвужча ланка', b: ['up', '15'] }],
+        stroy: { l: 1, p: 4, m: '15/хв · вручну · тапай печатку', b: ['up', '20'] },
+        stB: [{ ic: 'fin', n: 'Фінслужба', l: 1, p: 4, m: '18/хв · лише поки ти в грі', b: ['up', '30'] }]
+      }),
+      'вузько в потоках': over({
+        bal: 312480, inc: '+6 480/хв', streamsNarrow: true,
+        streams: [RAP, AKT, { ic: 'dov', n: 'Довідки', l: 1, p: 4, m: '+600/хв · Ганна «Вихідна»', b: ['up', '6 840'] }, { n: 'Накладні', locked: true, m: 'Поставки паперу й пального', b: ['open', '300 тис.'] }],
+        flow: { s: '2 592/хв', p: '3 168/хв', side: 's', pre: 'Вузько: ', b: 'потоки', post: ' — відкрий або покращ потік' },
+        stA: [{ ic: 'kom', n: 'Резолюції комбата', l: 66, p: 64, m: '3 168/хв · Микола «Вхідний»', b: ['up', '23,8 тис.'] }],
+        stroy: { l: 64, p: 56, m: '3 840/хв · Оля «Штамп»', b: ['up', '25,3 тис.'] }
+      }),
+      'ланка без діловода': over({
+        bal: 1840, inc: '+360/хв', paper: '640', genVal: '4 год', tg: '1', streamsNote: '2 з 4 відкрито',
+        streams: [
+          { ic: 'rap', n: 'Рапорти', l: 14, p: 56, m: '+84/хв · Іван «Чорна паста»', b: ['up', '35'] },
+          { ic: 'akt', n: 'Акти на майно', l: 3, p: 12, m: '+180/хв · лише поки ти в грі', b: ['hire', '700'] },
+          { n: 'Довідки', locked: true, m: 'Швидкі документи великими обсягами', b: ['off', '10 тис.', 'ще 23 хв'] },
+          { n: 'Накладні', locked: true, m: 'Поставки паперу й пального', b: ['off', '300 тис.'] }
+        ],
+        flow: { s: '264/хв', p: '144/хв', side: 'p', pre: 'Вузько: ', b: 'Резолюції комбата', post: '' },
+        stA: [{ ic: 'kom', n: 'Резолюції комбата', l: 12, p: 48, narrow: true, t: 'вузько', tk: 'fill', m: '144/хв · найвужча ланка', b: ['up', '53'] }],
+        stroy: { l: 14, p: 56, m: '210/хв · Оля «Штамп»', b: ['up', '88'] },
+        stB: [{ ic: 'fin', n: 'Фінслужба', l: 13, p: 52, m: '234/хв · лише поки ти в грі', b: ['hire', '300'] }]
+      }),
+      'сповільнено телеграмою': over({
+        inc: '+5 580/хв',
+        flow: { s: '4 392/хв', p: '2 232/хв', side: 'p', pre: 'Вузько: ', b: 'Фінслужба', post: ', ×0,5 ще 52 хв' },
+        stA: [{ ic: 'kom', n: 'Резолюції комбата', l: 60, p: 40, m: '2 880/хв · Микола «Вхідний»', b: ['up', '12,1 тис.'] }],
+        stB: [{ ic: 'fin', n: 'Фінслужба', l: 62, p: 48, narrow: true, t: '×0,5', tk: 'line', acc: true, m: '2 232/хв · ще 52 хв · виконуємо телеграму', b: ['up', '30,2 тис.'] }]
+      }),
+      'комбата шукають': over({
+        inc: '+1 800/хв', incNote: ' · резолюції ×0,25', banner: 'kombat',
+        flow: { s: '4 392/хв', p: '720/хв', side: 'p', pre: 'Вузько: ', b: 'Резолюції комбата', post: ', ×0,25 ще 18 хв', stop: true },
+        stA: [{ ic: 'kom', n: 'Резолюції комбата', l: 60, p: 40, t: '×0,25', tk: 'clock', acc: true, m: '720/хв · ще 18 хв · комбат на позиціях', b: ['up', '12,1 тис.'], href: 'KombatSheet.dc.html' }]
+      }),
+      'порожній бак': over({
+        inc: '+5 760/хв', mult: '×2', multSub: 'ще 3:41:12', multAria: 'Множник ×2, ще 3 години 41 хвилина. Відкрити множники',
+        gen: 'empty', genVal: 'порожньо', tap: 4, banner: 'fuel'
+      }),
+      'гонка йде': over({ race: 'ok' }),
+      'гонка: не встигаєте': over({ race: 'late', tg: '3' }),
+      'перевірка': over({ banner: 'insp' }),
+      'кілька множників': over({
+        bal: 412940, inc: '+23 040/хв', mult: '×8', multSub: '4 джерела', multAria: 'Разом ×8 з чотирьох джерел. Відкрити множники', tap: 16
+      }),
+      'час цифровізуватися': over({
+        bal: 19243560, inc: '+131 тис./хв', paper: '9 860', banner: 'digit', dot: true, tg: '1', streamsNote: '4 з 4 відкрито',
+        streams: [
+          { ic: 'rap', n: 'Рапорти', l: 51, p: 4, m: '+1 224/хв · Іван «Чорна паста»', b: ['up', '2,32 тис.'] },
+          { ic: 'akt', n: 'Акти на майно', l: 38, p: 52, m: '+4 560/хв · Петро «Швидкозшивач»', b: ['up', '11,1 тис.'] },
+          { ic: 'dov', n: 'Довідки', l: 18, p: 72, m: '+10,8 тис./хв · Ганна «Вихідна»', b: ['up', '55,7 тис.'] },
+          { ic: 'nak', n: 'Накладні', l: 6, p: 24, m: '+36 тис./хв · Тарас «Діркопробивач»', b: ['up', '604 тис.'] }
+        ],
+        flow: { s: '52,6 тис./хв', p: '52,2 тис./хв', side: 'p', pre: 'Вузько: ', b: 'Резолюції комбата', post: '' },
+        stA: [{ ic: 'kom', n: 'Резолюції комбата', l: 136, p: 44, narrow: true, t: 'вузько', tk: 'fill', m: '52,2 тис./хв · найвужча ланка', b: ['off', '66,2 млн', 'ще 6 год'] }],
+        stroy: { l: 140, p: 60, m: '67,2 тис./хв · Оля «Штамп»', b: ['off', '139 млн', 'ще 15 год'] },
+        stB: [{ ic: 'fin', n: 'Фінслужба', l: 140, p: 60, m: '80,6 тис./хв · Наталя «Лінійка»', b: ['off', '209 млн', 'ще 23 год'] }]
+      }),
+      'Р2: Бригада': over({
+        place: 'Бригада · будинок культури', bal: 8460000, inc: '+31,8 тис./хв',
+        mult: '×5,25', multSub: '2 джерела', multAria: 'Разом ×5,25 з двох джерел. Відкрити множники',
+        paper: '12 400', rep: 'high', tap: 10, streamsNote: '4 з 5 відкрито', stagesNote: '4 ланки',
+        streams: [RAP, AKT,
+          { ic: 'dov', n: 'Довідки', l: 8, p: 32, m: '+4 800/хв · Ганна «Вихідна»', b: ['up', '15,1 тис.'] },
+          { ic: 'nak', n: 'Накладні', l: 3, p: 12, m: '+18 тис./хв · Тарас «Діркопробивач»', b: ['up', '397 тис.'] },
+          { n: 'Накази по частині', locked: true, m: 'Пʼятий потік документів', b: ['off', '10 млн', 'ще 49 хв'] }
+        ],
+        flow: { s: '24,8 тис./хв', p: '6 048/хв', side: 'p', pre: 'Вузько: ', b: 'Казначейство', post: '' },
+        stA: [{ ic: 'kom', n: 'Резолюції комбата', l: 80, p: 20, m: '7 680/хв · Микола «Вхідний»', b: ['up', '117 тис.'] }],
+        stroy: { l: 80, p: 20, m: '9 600/хв · Оля «Штамп»', b: ['up', '155 тис.'] },
+        stB: [
+          { ic: 'fin', n: 'Фінслужба', l: 80, p: 20, m: '11,5 тис./хв · Наталя «Лінійка»', b: ['up', '233 тис.'] },
+          { ic: 'kaz', n: 'Казначейство', l: 72, p: 88, narrow: true, t: 'вузько', tk: 'fill', m: '6 048/хв · найвужча ланка', b: ['up', '125 тис.'] }
+        ]
+      })
+    };
+    var S = P[st] || base;
+
+    var tapVal = S.tap;
+    var srU = U({ ic: 'kom', n: 'Стройова частина', l: S.stroy.l, p: S.stroy.p, m: S.stroy.m, b: S.stroy.b, narrow: S.stroy.narrow, t: S.stroy.t, tk: S.stroy.tk });
+    var genAria = S.gen === 'empty' ? 'Генератор порожній. Заправити безкоштовно' : 'Генератор: ще ' + S.genVal + ', бонус ×1,25';
+    var repWord = { low: 'низька', mid: 'норма', high: 'висока' }[S.rep];
+    var repPath = { low: 'M12 17L7.8 12.8', mid: 'M12 17v-6', high: 'M12 17l4.2-4.2' }[S.rep];
+    var F = S.flow;
+    var late = S.race === 'late';
+
+    return {
+      bal: fmt(S.bal + taps * tapVal),
+      tapVal: tapVal,
+      t0: taps === 0, tA: taps > 0 && taps % 2 === 1, tB: taps > 0 && taps % 2 === 0,
+      tap: function () { self.setState({ taps: taps + 1 }); },
+      h: {
+        place: S.place, inc: nb(S.inc), incNote: S.incNote,
+        mult: S.mult, multSub: nb(S.multSub), multAria: S.multAria,
+        paper: nb(S.paper),
+        genCls: 'st-tile' + (S.gen === 'bonus' ? ' is-bonus' : ''),
+        genVal: nb(S.genVal),
+        genCap: S.gen === 'empty' ? 'заправити' : '×1,25',
+        genCapCls: 'st-tile-cap st-tile-cap--accent',
+        genAria: genAria,
+        repWord: repWord, repPath: repPath
+      },
+      bn: { insp: S.banner === 'insp', digit: S.banner === 'digit', fuel: S.banner === 'fuel', kombat: S.banner === 'kombat' },
+      rc: {
+        on: !!S.race,
+        aria: late ? 'Акт № 17 у дорозі. Не встигаєш: документ дійде через 5 годин 12 хвилин, пташка прослужить ще 3 години 40 хвилин. Прискорити' : 'Акт № 17 у дорозі. Документ дійде через 2 години 40 хвилин, пташка прослужить ще 4 години 10 хвилин. Відкрити',
+        nowCls: 'st-route-step ' + (late ? 'is-late' : 'is-now'),
+        doc: nb(late ? '5 год 12 хв' : '2 год 40 хв'),
+        life: nb(late ? '3 год 40 хв' : '4 год 10 хв'),
+        lifeCls: late ? 'st-doc-alert' : '',
+        note: late ? 'Не встигаєш: її спишуть раніше, ніж поставлять на облік.' : nb('Встигаєш із запасом 1 год 30 хв.'),
+        noteCls: late ? 'st-doc-alert' : 'st-doc-meta',
+        btnCls: 'st-btn st-btn--s ' + (late ? 'st-btn--primary' : 'st-btn--paper')
+      },
+      streamsNarrow: S.streamsNarrow, streamsNote: S.streamsNote, stagesNote: S.stagesNote,
+      streams: S.streams.map(U),
+      f: {
+        s: nb(F.s), p: nb(F.p),
+        sCls: 'st-flow-part' + (F.side === 's' ? ' is-narrow' : ''),
+        pCls: 'st-flow-part' + (F.side === 'p' ? ' is-narrow' : ''),
+        pre: F.pre, b: F.b, post: nb(F.post), stop: !!F.stop,
+        aria: 'Потоки ' + F.s.replace('/хв', '') + ' за хвилину, погодження ' + F.p.replace('/хв', '') + ' за хвилину. ' + F.pre + F.b + F.post
+      },
+      stA: S.stA.map(U),
+      sr: srU,
+      stB: S.stB.map(U),
+      tab: { tg: !!S.tg, tgN: S.tg, dot: S.dot }
+    };
+  }
+}
+</script>
+</body>
+</html>

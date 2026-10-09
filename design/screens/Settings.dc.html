@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Налаштування</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <header style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 52px; margin-top: 18px; padding: 0 20px 0 8px">
+    <a href="Menu.dc.html" aria-label="Назад до меню" style="width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: var(--text)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.25">Налаштування</h1>
+  </header>
+
+  <main style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 4px 20px 20px">
+
+    <section aria-labelledby="g-sound" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 id="g-sound" style="margin: 0; font-size: 13px; font-weight: 500; line-height: 1.5; color: var(--muted)">Звук і вібрація</h2>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden">
+        <button role="switch" aria-checked="{{sw.sound.aria}}" onClick="{{sw.sound.tap}}" style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 12px; border: 0; background: transparent; color: var(--text); text-align: left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M11 5L6 9H3v6h3l5 4z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></svg>
+          <span style="flex: 1; min-width: 0; font-size: 15px">Звук</span>
+          <span aria-hidden="true" style="position: relative; flex: none; width: 48px; height: 28px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid {{sw.sound.border}}; background: {{sw.sound.track}}">
+            <span style="position: absolute; top: 2px; left: {{sw.sound.knobX}}; width: 21px; height: 21px; border-radius: 50%; background: {{sw.sound.knob}}; color: var(--accent); display: flex; align-items: center; justify-content: center">
+              <sc-if value="{{sw.sound.on}}" hint-placeholder-val="{{true}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg></sc-if>
+            </span>
+          </span>
+        </button>
+        <button role="switch" aria-checked="{{sw.vibro.aria}}" onClick="{{sw.vibro.tap}}" style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 12px; border: 0; border-top: 1px solid var(--border); background: transparent; color: var(--text); text-align: left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><rect x="8" y="3" width="8" height="18" rx="2"></rect><path d="M4 8v8"></path><path d="M20 8v8"></path></svg>
+          <span style="flex: 1; min-width: 0; font-size: 15px">Вібрація</span>
+          <span aria-hidden="true" style="position: relative; flex: none; width: 48px; height: 28px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid {{sw.vibro.border}}; background: {{sw.vibro.track}}">
+            <span style="position: absolute; top: 2px; left: {{sw.vibro.knobX}}; width: 21px; height: 21px; border-radius: 50%; background: {{sw.vibro.knob}}; color: var(--accent); display: flex; align-items: center; justify-content: center">
+              <sc-if value="{{sw.vibro.on}}" hint-placeholder-val="{{true}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg></sc-if>
+            </span>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <section aria-labelledby="g-push" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 id="g-push" style="margin: 0; font-size: 13px; font-weight: 500; line-height: 1.5; color: var(--muted)">Сповіщення</h2>
+
+      <sc-if value="{{s.allowed}}" hint-placeholder-val="{{true}}">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden">
+          <sc-for list="{{pushes}}" as="p" hint-placeholder-count="5">
+            <button role="switch" aria-checked="{{p.sw.aria}}" onClick="{{p.sw.tap}}" style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 46px; padding: 5px 12px; border: 0; border-top: {{p.divider}}; background: transparent; color: var(--text); text-align: left">
+              <span style="flex: 1; min-width: 0; font-size: 15px">{{p.label}}</span>
+              <span aria-hidden="true" style="position: relative; flex: none; width: 48px; height: 28px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid {{p.sw.border}}; background: {{p.sw.track}}">
+                <span style="position: absolute; top: 2px; left: {{p.sw.knobX}}; width: 21px; height: 21px; border-radius: 50%; background: {{p.sw.knob}}; color: var(--accent); display: flex; align-items: center; justify-content: center">
+                  <sc-if value="{{p.sw.on}}" hint-placeholder-val="{{true}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg></sc-if>
+                </span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+        <p style="margin: 0; font-size: 12px; line-height: 1.4; color: var(--muted)">Не частіше двох разів на день.</p>
+      </sc-if>
+
+      <sc-if value="{{s.denied}}" hint-placeholder-val="{{false}}">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden">
+          <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M6 16v-5a6 6 0 0 1 9.5-4.9"></path><path d="M18 11v5l2 2H6"></path><path d="M10 20a2 2 0 0 0 4 0"></path><path d="M3 3l18 18"></path></svg>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+              <span style="font-size: 15px; font-weight: 500; line-height: 1.35">Сповіщення вимкнено в телефоні</span>
+              <span style="font-size: 13px; line-height: 1.45; color: var(--muted)">Телефон не пускає сповіщення від гри. Про комісію дізнаєшся, лише коли відкриєш гру.</span>
+            </div>
+          </div>
+          <button style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 48px; padding: 0 12px; border: 0; border-top: 1px solid var(--border); background: transparent; color: var(--accent); font-size: 15px; font-weight: 600; text-align: left">
+            <span>Відкрити налаштування телефону</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M14 4h6v6"></path><path d="M20 4l-9 9"></path><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path></svg>
+          </button>
+        </div>
+        <p style="margin: 0; font-size: 12px; line-height: 1.4; color: var(--muted)">Типи сповіщень з’являться тут, коли телефон дозволить.</p>
+      </sc-if>
+    </section>
+
+    <section aria-labelledby="g-privacy" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 id="g-privacy" style="margin: 0; font-size: 13px; font-weight: 500; line-height: 1.5; color: var(--muted)">Приватність</h2>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden">
+        <button role="switch" aria-checked="{{sw.stats.aria}}" onClick="{{sw.stats.tap}}" style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 8px 12px; border: 0; background: transparent; color: var(--text); text-align: left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M5 20V11"></path><path d="M12 20V5"></path><path d="M19 20v-6"></path></svg>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; line-height: 1.3">Анонімна статистика</span>
+            <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">Без імені й IP. Показує, де гра заїдає.</span>
+          </span>
+          <span aria-hidden="true" style="position: relative; flex: none; width: 48px; height: 28px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid {{sw.stats.border}}; background: {{sw.stats.track}}">
+            <span style="position: absolute; top: 2px; left: {{sw.stats.knobX}}; width: 21px; height: 21px; border-radius: 50%; background: {{sw.stats.knob}}; color: var(--accent); display: flex; align-items: center; justify-content: center">
+              <sc-if value="{{sw.stats.on}}" hint-placeholder-val="{{true}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg></sc-if>
+            </span>
+          </span>
+        </button>
+        <sc-if value="{{s.ump}}" hint-placeholder-val="{{false}}">
+          <button style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 8px 12px; border: 0; border-top: 1px solid var(--border); background: transparent; color: var(--text); text-align: left">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"></path></svg>
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 15px; line-height: 1.3">Налаштування реклами</span>
+              <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">Згода на рекламу, форма Google</span>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+        </sc-if>
+      </div>
+    </section>
+
+    <section aria-labelledby="g-progress" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 id="g-progress" style="margin: 0; font-size: 13px; font-weight: 500; line-height: 1.5; color: var(--muted)">Покупки й прогрес</h2>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden">
+        <button style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 8px 12px; border: 0; background: transparent; color: var(--text); text-align: left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; line-height: 1.3">Відновити покупки</span>
+            <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">Після перевстановлення гри чи на новому телефоні</span>
+          </span>
+        </button>
+        <a href="ResetConfirm.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 12px; border-top: 1px solid var(--border); color: var(--text)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 15px; line-height: 1.3">Скинути прогрес</span>
+            <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">Почати з наказу № 1. Покупки лишаються.</span>
+          </span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M9 6l6 6-6 6"></path></svg>
+        </a>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","сповіщення заборонені","з пунктом UMP"],"default":"звичайний","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.props.state ?? 'звичайний';
+    var S = this.state || {};
+    function sw(key, def) {
+      var on = S[key] === undefined ? def : S[key];
+      return {
+        on: on,
+        aria: on ? 'true' : 'false',
+        track: on ? 'var(--accent)' : 'var(--surface-2)',
+        border: on ? 'var(--accent)' : 'var(--border-strong)',
+        knobX: on ? '22px' : '2px',
+        knob: on ? 'var(--accent-ink)' : 'var(--muted)',
+        tap: function () { var o = {}; o[key] = !on; self.setState(o); }
+      };
+    }
+    var list = [
+      { key: 'p_store', label: 'Склад і генератор', def: true },
+      { key: 'p_tg', label: 'Нові телеграми', def: true },
+      { key: 'p_insp', label: 'Перевірки', def: true },
+      { key: 'p_gift', label: 'Подарунки Ліни', def: true },
+      { key: 'p_boost', label: 'Бусти й комбат', def: false }
+    ];
+    var pushes = list.map(function (it, i) {
+      return { label: it.label, sw: sw(it.key, it.def), divider: i === 0 ? '0' : '1px solid var(--border)' };
+    });
+    return {
+      s: { allowed: st !== 'сповіщення заборонені', denied: st === 'сповіщення заборонені', ump: st === 'з пунктом UMP' },
+      sw: { sound: sw('sound', true), vibro: sw('vibro', true), stats: sw('stats', true) },
+      pushes: pushes
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Особова справа</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <header style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; height: 52px; margin-top: 18px; padding: 0 20px 0 8px">
+    <a href="Menu.dc.html" aria-label="Назад до меню" style="width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: var(--text)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.25">Особова справа</h1>
+  </header>
+
+  <main style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; padding: 6px 20px 20px">
+
+    <div style="position: relative; isolation: isolate; padding: 2px 6px 8px 2px">
+      <div class="st-paper-under" style="background: var(--paper-3); transform: rotate(1.8deg); inset: 8px 2px 2px 10px"></div>
+      <article class="st-paper" aria-label="Особова справа, аркуш 47" style="gap: 12px; padding-bottom: 18px">
+        <span class="st-paper-num" aria-hidden="true">47</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 26px">
+          <span class="st-doc-title">Особова справа</span>
+          <span class="st-doc-meta">Книга обліку особового складу · арк. 47</span>
+        </div>
+        <hr class="st-doc-rule">
+        <div style="display: grid; grid-template-columns: 100px minmax(0, 1fr); column-gap: 8px; row-gap: 7px; align-items: baseline; font-family: var(--font-mono); font-size: 13px; line-height: 1.4; color: var(--ink)">
+          <span style="font-size: 12px; color: var(--ink-2)">Позивний</span>
+          <span style="font-family: var(--font-hand); font-weight: 600; font-size: 26px; line-height: 1.15; color: var(--pen); border-bottom: 1px solid var(--ink); overflow-wrap: anywhere">{{callsign}}</span>
+
+          <span style="font-size: 12px; color: var(--ink-2)">У наказах</span>
+          <span>{{genderForm}}</span>
+
+          <span style="font-size: 12px; color: var(--ink-2)">Посада</span>
+          <span>начальник стройової частини</span>
+
+          <span style="font-size: 12px; color: var(--ink-2)">Рівень</span>
+          <span>1 · Батальйон</span>
+
+          <span style="font-size: 12px; color: var(--ink-2)">Цифровізацій</span>
+          <span>{{digitizations}}</span>
+
+          <span style="font-size: 12px; color: var(--ink-2)">Дата прибуття</span>
+          <span>{{arrival}}</span>
+
+          <span style="font-size: 12px; color: var(--ink-2)">Навички</span>
+          <span style="display: flex; flex-direction: column; gap: 2px">
+            <span>«з комп’ютерами»</span>
+            <sc-if value="{{s.grown}}" hint-placeholder-val="{{true}}">
+              <span style="font-family: var(--font-hand); font-weight: 600; font-size: 20px; line-height: 1.15; color: var(--pen); transform: rotate(-3deg); transform-origin: left center; display: inline-block">+ кутовий штамп</span>
+            </sc-if>
+          </span>
+        </div>
+        <svg class="st-seal" width="58" height="58" viewBox="0 0 64 64" style="position: absolute; right: 14px; bottom: 12px; transform: rotate(-12deg)" aria-hidden="true"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle><defs><path id="arc-profile" d="M32 32m-22.5 0a22.5 22.5 0 1 1 45 0a22.5 22.5 0 1 1-45 0"></path></defs><text font-size="6.4" letter-spacing=".5"><textPath href="#arc-profile">СТРОЙОВА ЧАСТИНА · ВИХ. № 000 ·</textPath></text><text x="32" y="31" text-anchor="middle" font-size="6.2">ДЛЯ</text><text x="32" y="38.5" text-anchor="middle" font-size="6.2">ПАКЕТІВ</text></svg>
+      </article>
+    </div>
+
+    <section aria-label="Лічильники" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; display: flex; flex-direction: column; gap: 1px">
+        <span style="font-family: var(--font-mono); font-weight: 600; font-size: 18px; line-height: 1.25; color: var(--accent)">{{points}}</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--text)">цифрових балів</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">{{pointsNote}}</span>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; display: flex; flex-direction: column; gap: 1px">
+        <span style="font-family: var(--font-mono); font-weight: 600; font-size: 18px; line-height: 1.25">{{telegrams}}</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--text)">телеграми закрито</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">{{telegramsNote}}</span>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; display: flex; flex-direction: column; gap: 1px">
+        <span style="font-family: var(--font-mono); font-weight: 600; font-size: 18px; line-height: 1.25">{{inspections}}</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--text)">{{inspectionsLabel}}</span>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; display: flex; flex-direction: column; gap: 1px">
+        <span style="font-family: var(--font-mono); font-weight: 600; font-size: 18px; line-height: 1.25">{{drones}}</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--text)">{{dronesLabel}}</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="diary-h" style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+        <h2 id="diary-h" style="margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 15px; line-height: 1.3">Щоденник стройовика</h2>
+        <span style="font-size: 12px; color: var(--muted)">рядок між сесіями</span>
+      </div>
+      <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{diary}}" as="d" hint-placeholder-count="3">
+          <li style="display: grid; grid-template-columns: 54px minmax(0, 1fr); column-gap: 8px; align-items: baseline">
+            <span style="font-family: var(--font-mono); font-size: 12px; color: var(--muted); white-space: nowrap">{{d.day}}</span>
+            <span style="font-size: 14px; line-height: 1.45">{{d.text}}</span>
+          </li>
+        </sc-for>
+      </ol>
+    </section>
+
+    <a href="OnbCallsign.dc.html" style="margin-top: auto; display: flex; align-items: center; gap: 12px; min-height: 56px; box-sizing: border-box; padding: 8px 10px 8px 14px; border: 1.5px solid var(--accent); border-radius: 10px; color: var(--text)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 15px; font-weight: 600; line-height: 1.25; color: var(--accent)">Рапорт на зміну позивного</span>
+        <span style="font-size: 12px; line-height: 1.35; color: var(--muted)">Позивний і форму в наказах міняють лише рапортом</span>
+      </span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["звичайний","до першої цифровізації","довгий позивний"],"default":"звичайний","section":"Стан"},"gender":{"editor":"enum","options":["він","вона"],"default":"він","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? 'звичайний';
+    var she = (this.props.gender ?? 'він') === 'вона';
+    var first = st === 'до першої цифровізації';
+    var long = st === 'довгий позивний';
+    function g(m, f) { return she ? f : m; }
+    var diaryLater = [
+      { day: 'День 14', text: 'Прізвища тепер пишу великими літерами. Навіть у месенджері.' },
+      { day: 'День 9', text: 'Книгу обліку мила здали в музей. Я ' + g('встиг', 'встигла') + ' до неї звикнути.' },
+      { day: 'День 4', text: g('Пронумерував', 'Пронумерувала') + ' олівцем аркуші в правому верхньому куті. Це був лист додому.' }
+    ];
+    var diaryFirst = [
+      { day: 'День 2', text: g('Навчився', 'Навчилася') + ' відрізняти рапорт від довідки. За шапкою, не за змістом.' },
+      { day: 'День 1', text: g('Прибув', 'Прибула') + '. Записали з навичками «з комп’ютерами». Комп’ютера не видали.' }
+    ];
+    return {
+      s: { normal: st === 'звичайний', first: first, long: long, grown: !first },
+      callsign: long ? 'Ексель-на-папері' : 'Ексель',
+      genderForm: she ? 'Вона · прибула' : 'Він · прибув',
+      digitizations: first ? '0 з 3' : '2 з 3',
+      arrival: first ? '08.10.2026, 06:40' : '25.09.2026, 06:40',
+      points: first ? '0' : '112',
+      pointsNote: first ? 'нарахують на цифровізації' : '+224% до підписів',
+      telegrams: first ? '4' : '34',
+      telegramsNote: first ? 'з них 1 у шухляді' : 'з них 6 у шухляді',
+      inspections: first ? '—' : '3 з 4',
+      inspectionsLabel: first ? 'перевірок ще не було' : 'перевірки пройдено',
+      drones: first ? '1' : '5',
+      dronesLabel: first ? 'дрон введено' : 'дронів введено',
+      diary: first ? diaryFirst : diaryLater
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Стройова — Підказки першої години</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/stroyova/tokens.css">
+<link rel="stylesheet" href="ds/stroyova/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Unbounded:wght@500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: var(--font-sans); display: flex; flex-direction: column; overflow: hidden">
+
+  <sc-if value="{{s.main}}" hint-placeholder-val="{{true}}">
+    <div style="flex: 1; min-height: 0; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 12px">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.25; letter-spacing: 0.5px">Стройова</span>
+          <span style="font-size: 12px; color: var(--muted)">{{m.place}}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span class="st-chip">{{m.chip}}</span>
+          <button class="st-iconbtn" aria-label="Меню">
+            <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; color: var(--muted)">Підписи</span>
+          <span style="font-family: var(--font-display); font-weight: 500; font-size: 28px; line-height: 1.15">{{m.sig}}</span>
+          <span style="font-family: var(--font-mono); font-size: 13px; color: var(--accent)">{{m.rate}}</span>
+        </div>
+        <sc-if value="{{s.plainMult}}" hint-placeholder-val="{{true}}">
+          <button class="st-mult" aria-label="Множник {{m.mult}}, {{m.multSrc}}. Відкрити множники"><b>{{m.mult}}</b><span>{{m.multSrc}}</span></button>
+        </sc-if>
+        <sc-if value="{{s.hl10}}" hint-placeholder-val="{{false}}">
+          <div style="position: relative; z-index: 70; flex: none; border-radius: var(--radius-8); outline: 2px solid var(--accent); outline-offset: 4px; box-shadow: 0 0 0 1400px var(--scrim)">
+            <a href="AdOfferFirst.dc.html" class="st-mult" style="background: var(--bg)" aria-label="Множник {{m.mult}}, {{m.multSrc}}. Відкрити множники"><b>{{m.mult}}</b><span>{{m.multSrc}}</span></a>
+            <div role="note" style="position: absolute; top: calc(100% + 18px); right: -6px; width: 300px; box-sizing: border-box; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--radius-10); font-size: 14px; line-height: 1.45; color: var(--text)">
+              <span aria-hidden="true" style="position: absolute; top: -7.5px; right: 34px; width: 12px; height: 12px; background: var(--surface); border-left: 1.5px solid var(--accent); border-top: 1.5px solid var(--accent); transform: rotate(45deg)"></span>
+              Усі множники тут. Ще ×2 на 4 години можна взяти за рекламу.
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div class="st-tiles">
+        <div class="st-tile">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l8-4 8 4-8 4z"></path><path d="M4 12l8 4 8-4M4 17l8 4 8-4"></path></svg>
+          <span class="st-tile-txt"><span class="st-tile-val">{{m.paper}}</span><span class="st-tile-cap">аркушів</span></span>
+        </div>
+        <div class="st-tile is-bonus">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6z"></path></svg>
+          <span class="st-tile-txt"><span class="st-tile-val">6 год</span><span class="st-tile-cap st-tile-cap--accent">×1,25</span></span>
+        </div>
+        <div class="st-tile">
+          <svg class="st-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17a8 8 0 0 1 16 0"></path><path d="M12 17v-6"></path><circle cx="12" cy="17" r="1.4"></circle></svg>
+          <span class="st-tile-txt"><span class="st-tile-val">норма</span><span class="st-tile-cap">репутація</span></span>
+        </div>
+      </div>
+
+      <div class="st-flow" role="group" aria-label="Потоки {{f.p}}, погодження {{f.a}}. Вузько: {{f.v}}">
+        <div class="st-flow-nums">
+          <span class="st-flow-part {{f.pCls}}">Потоки <b>{{f.p}}</b></span>
+          <span class="st-flow-arrow"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+          <span class="st-flow-part {{f.aCls}}">Погодження <b>{{f.a}}</b></span>
+        </div>
+        <span class="st-flow-verdict">Вузько: <b>{{f.v}}</b></span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 500; color: var(--muted)">Потоки</span>
+
+        <div class="st-card st-unit">
+          <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5M10 13h6M10 17h4"></path></svg></div>
+          <div class="st-unit-main">
+            <div class="st-unit-head"><span class="st-unit-name">Рапорти</span></div>
+            <div class="st-track" aria-hidden="true"><i style="--p: {{u.repPct}}%"></i></div>
+            <span class="st-unit-meta"><span class="st-unit-lvl">{{u.repLvl}}</span> · {{u.repRate}}</span>
+          </div>
+          <sc-if value="{{s.plainRep}}" hint-placeholder-val="{{true}}">
+            <button class="st-buy" aria-label="Покращити за {{u.repPrice}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{u.repPrice}}</button>
+          </sc-if>
+          <sc-if value="{{s.hl6}}" hint-placeholder-val="{{false}}">
+            <div style="position: relative; z-index: 70; flex: none; border-radius: var(--radius-8); outline: 2px solid var(--accent); outline-offset: 4px; box-shadow: 0 0 0 1400px var(--scrim)">
+              <button class="st-buy" aria-label="Покращити за {{u.repPrice}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{u.repPrice}}</button>
+              <div role="note" style="position: absolute; top: calc(100% + 18px); right: -6px; width: 300px; box-sizing: border-box; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--radius-10); font-size: 14px; line-height: 1.45; color: var(--text)">
+                <span aria-hidden="true" style="position: absolute; top: -7.5px; right: 34px; width: 12px; height: 12px; background: var(--surface); border-left: 1.5px solid var(--accent); border-top: 1.5px solid var(--accent); transform: rotate(45deg)"></span>
+                Покращ рапорти. Перша віха — за хвилину.
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{s.r1}}" hint-placeholder-val="{{true}}">
+          <div class="st-card st-unit is-locked">
+            <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+            <div class="st-unit-main">
+              <div class="st-unit-head"><span class="st-unit-name">Акти на майно</span></div>
+              <span class="st-unit-meta">Дрони й майно від волонтерів</span>
+            </div>
+            <button class="st-buy st-buy--off" aria-disabled="true" aria-label="Відкрити за 4,8 тис., ще 6 хв">4,8 тис.<small>ще 6 хв</small></button>
+          </div>
+        </sc-if>
+        <sc-if value="{{s.r2}}" hint-placeholder-val="{{false}}">
+          <div class="st-card st-unit">
+            <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5M10 13h6M10 17h4"></path></svg></div>
+            <div class="st-unit-main">
+              <div class="st-unit-head"><span class="st-unit-name">Накази по частині</span></div>
+              <div class="st-track" aria-hidden="true"><i style="--p: 8%"></i></div>
+              <span class="st-unit-meta"><span class="st-unit-lvl">рів. 2</span> · +160/хв · вручну</span>
+            </div>
+            <button class="st-buy" aria-label="Покращити за 3,1 тис."><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>3,1 тис.</button>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 500; color: var(--muted)">Погодження</span>
+
+        <div class="st-card st-unit {{u.rezCls}}">
+          <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg></div>
+          <div class="st-unit-main">
+            <div class="st-unit-head"><span class="st-unit-name">Резолюції комбата</span></div>
+            <div class="st-track" aria-hidden="true"><i style="--p: 30%"></i></div>
+            <span class="st-unit-meta"><sc-if value="{{s.rezNarrow}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">вузько</span></sc-if><span class="st-unit-lvl">{{u.rezLvl}}</span> · {{u.rezRate}}</span>
+          </div>
+          <button class="st-buy" aria-label="Покращити за {{u.rezPrice}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{u.rezPrice}}</button>
+        </div>
+
+        <div class="st-card st-unit">
+          <button class="st-unit-seal" aria-label="Поставити печатку: плюс підписи"><svg class="st-seal st-seal--dark" width="40" height="40" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" stroke-width="2.2"></circle><circle cx="32" cy="32" r="16" stroke-width="1.4"></circle></svg></button>
+          <div class="st-unit-main">
+            <div class="st-unit-head"><span class="st-unit-name">Стройова частина</span></div>
+            <div class="st-track" aria-hidden="true"><i style="--p: 20%"></i></div>
+            <span class="st-unit-meta"><span class="st-unit-lvl">{{u.stLvl}}</span> · {{u.stMeta}}</span>
+          </div>
+          <sc-if value="{{s.stOff}}" hint-placeholder-val="{{true}}">
+            <button class="st-buy st-buy--off" aria-disabled="true" aria-label="Найняти діловода за 1,2 тис., ще 3 хв">1,2 тис.<small>ще 3 хв</small></button>
+          </sc-if>
+          <sc-if value="{{s.hl7}}" hint-placeholder-val="{{false}}">
+            <div style="position: relative; z-index: 70; flex: none; border-radius: var(--radius-8); outline: 2px solid var(--accent); outline-offset: 4px; box-shadow: 0 0 0 1400px var(--scrim)">
+              <a href="ClerkFirst.dc.html" class="st-buy st-buy--hire" style="background: var(--surface)" aria-label="Найняти діловода за 1,2 тис."><small>найняти</small>1,2 тис.</a>
+              <div role="note" style="position: absolute; bottom: calc(100% + 18px); right: -6px; width: 300px; box-sizing: border-box; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--radius-10); font-size: 14px; line-height: 1.45; color: var(--text)">
+                <span aria-hidden="true" style="position: absolute; bottom: -7.5px; right: 34px; width: 12px; height: 12px; background: var(--surface); border-right: 1.5px solid var(--accent); border-bottom: 1.5px solid var(--accent); transform: rotate(45deg)"></span>
+                Без діловода ланка працює, лише поки ти в грі.
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{s.stClerk}}" hint-placeholder-val="{{false}}">
+            <button class="st-buy" aria-label="Покращити за {{u.stPrice}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{u.stPrice}}</button>
+          </sc-if>
+        </div>
+
+        <div class="st-card st-unit">
+          <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle><path d="M6 9v.01M18 15v.01"></path></svg></div>
+          <div class="st-unit-main">
+            <div class="st-unit-head"><span class="st-unit-name">Фінслужба</span></div>
+            <div class="st-track" aria-hidden="true"><i style="--p: 45%"></i></div>
+            <span class="st-unit-meta"><span class="st-unit-lvl">{{u.finLvl}}</span> · {{u.finRate}}</span>
+          </div>
+          <button class="st-buy" aria-label="Покращити за {{u.finPrice}}"><svg class="st-ico" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 2.4" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>{{u.finPrice}}</button>
+        </div>
+
+        <sc-if value="{{s.r2}}" hint-placeholder-val="{{false}}">
+          <div style="position: relative; z-index: 70; border-radius: var(--radius-10); outline: 2px solid var(--accent); outline-offset: 4px; box-shadow: 0 0 0 1400px var(--scrim)">
+            <div class="st-card st-unit is-narrow">
+              <div class="st-unit-plate"><svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6"></path><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"></path></svg></div>
+              <div class="st-unit-main">
+                <div class="st-unit-head"><span class="st-unit-name">Казначейство</span></div>
+                <div class="st-track" aria-hidden="true"><i style="--p: 4%"></i></div>
+                <span class="st-unit-meta"><span class="st-tag st-tag--fill">вузько</span><span class="st-unit-lvl">рів. 1</span> · 620/хв · вручну</span>
+              </div>
+              <button class="st-buy st-buy--hire" aria-label="Найняти діловода за 9,6 тис."><small>найняти</small>9,6 тис.</button>
+            </div>
+            <div role="note" style="position: absolute; bottom: calc(100% + 18px); left: 0; right: 0; box-sizing: border-box; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--radius-10); font-size: 14px; line-height: 1.45; color: var(--text)">
+              <span aria-hidden="true" style="position: absolute; bottom: -7.5px; left: 40px; width: 12px; height: 12px; background: var(--surface); border-right: 1.5px solid var(--accent); border-bottom: 1.5px solid var(--accent); transform: rotate(45deg)"></span>
+              Казначейство — нова ланка погодження. Вузькою стане, щойно Комбат її пережене.
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <nav aria-label="Розділи" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg-deep); border-top: 1px solid var(--border); padding: 6px 4px 10px">
+      <a href="Main.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--accent); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"></path><path d="M14 3v5h5"></path></svg>
+        <span>Стройова</span>
+      </a>
+      <a href="TgList.dc.html" aria-label="{{m.tgLabel}}" style="position: relative; z-index: {{m.tgZ}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; border-radius: var(--radius-10); color: var(--muted); font-size: 11px; font-weight: 500; background: var(--bg-deep); outline: {{m.tgOutline}}; outline-offset: 2px; box-shadow: {{m.tgShadow}}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+        <span>Телеграми</span>
+        <sc-if value="{{s.badge}}" hint-placeholder-val="{{false}}">
+          <span aria-hidden="true" style="position: absolute; top: 2px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: var(--alert); color: var(--on-alert); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center">1</span>
+        </sc-if>
+      </a>
+      <a href="Digital.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"></path></svg>
+        <span>Цифра</span>
+      </a>
+      <a href="Museum.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1"></rect><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"></path></svg>
+        <span>Музей</span>
+      </a>
+      <a href="Shop.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 56px; color: var(--muted); font-size: 11px; font-weight: 500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+        <span>Магазин</span>
+      </a>
+    </nav>
+
+    <sc-if value="{{s.hl8}}" hint-placeholder-val="{{false}}">
+      <div role="note" style="position: absolute; z-index: 71; left: 20px; bottom: 88px; width: 300px; box-sizing: border-box; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--radius-10); font-size: 14px; line-height: 1.45; color: var(--text)">
+        <span aria-hidden="true" style="position: absolute; bottom: -7.5px; left: 92px; width: 12px; height: 12px; background: var(--surface); border-right: 1.5px solid var(--accent); border-bottom: 1.5px solid var(--accent); transform: rotate(45deg)"></span>
+        Телеграма згори. Строк виконання — учора.
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <sc-if value="{{s.tg}}" hint-placeholder-val="{{false}}">
+    <div style="flex: 1; min-height: 0; padding: 18px 20px 24px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 44px">
+        <a href="TgList.dc.html" class="st-iconbtn" aria-label="Назад до телеграм">
+          <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+        </a>
+        <span style="flex: 1; font-family: var(--font-display); font-weight: 500; font-size: 18px">Телеграма</span>
+      </div>
+
+      <article class="st-paper" aria-label="Телеграма № 4471, терміново">
+        <span class="st-paper-num" aria-hidden="true">1</span>
+        <div style="position: absolute; top: 54px; right: 14px"><span class="st-stamp" style="--st-rot: 6deg; --st-edge: 80deg">ТЕРМІНОВО</span></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 24px">
+          <span class="st-doc-title">ТЕЛЕГРАМА № 4471</span>
+          <span class="st-doc-meta">вх. 12/318</span>
+        </div>
+        <div class="st-doc-meta" style="padding-right: 120px">Від: вищестоящий штаб<br>Кому: командиру батальйону</div>
+        <hr class="st-doc-rule">
+        <p class="st-doc-body">Доповісти кількість сержантів, розраховану за десятьма формулами. Електронний вигляд роздрукувати й підшити.</p>
+        <hr class="st-doc-rule">
+        <div class="st-doc-alert" style="display: flex; justify-content: space-between; font-size: 13px"><span>Строк виконання</span><span>минув учора</span></div>
+      </article>
+
+      <span class="st-h4">Як реагуємо?</span>
+      <div style="position: relative; z-index: 70; border-radius: var(--radius-10); outline: 2px solid var(--accent); outline-offset: 4px; box-shadow: 0 0 0 1400px var(--scrim); display: flex; flex-direction: column; gap: 8px">
+        <a href="TgResult.dc.html" class="st-card" style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; color: var(--text)">
+          <span style="font-size: 15px; font-weight: 500">Виконати сумлінно</span>
+          <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">Стройова ×0,5 на 1 год · +5 до репутації</span>
+        </a>
+        <a href="TgResult.dc.html" class="st-card" style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; color: var(--text)">
+          <span style="font-size: 15px; font-weight: 500">Написати відписку</span>
+          <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">2 хвилини · −5 до репутації · 15% шанс перевірки</span>
+        </a>
+        <a href="TgResult.dc.html" class="st-card" style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; color: var(--text)">
+          <span style="font-size: 15px; font-weight: 500">Зареєструвати й покласти в шухляду</span>
+          <span style="font-size: 12px; line-height: 1.4; color: var(--muted)">У журналі вхідних, чорною пастою. Нічого не станеться. Мабуть.</span>
+        </a>
+        <div role="note" style="position: absolute; bottom: calc(100% + 18px); left: 0; right: 0; box-sizing: border-box; padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: var(--radius-10); font-size: 14px; line-height: 1.45; color: var(--text)">
+          <span aria-hidden="true" style="position: absolute; bottom: -7.5px; left: 40px; width: 12px; height: 12px; background: var(--surface); border-right: 1.5px solid var(--accent); border-bottom: 1.5px solid var(--accent); transform: rotate(45deg)"></span>
+          Відписка швидша, але псує репутацію. Низька репутація кличе комісію.
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["крок 6: покращення","крок 7: найм","крок 8: вкладка Телеграми","крок 8: вибір відповіді","крок 10: буст","Р2: Казначейство"],"default":"крок 6: покращення","section":"Стан"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var st = this.props.state ?? "крок 6: покращення";
+    var k = {
+      "крок 6: покращення": 6,
+      "крок 7: найм": 7,
+      "крок 8: вкладка Телеграми": 8,
+      "крок 8: вибір відповіді": 81,
+      "крок 10: буст": 10,
+      "Р2: Казначейство": 20
+    }[st] || 6;
+    var r2 = k === 20;
+    var hasClerk = k === 8 || k === 10 || r2;
+    var sig = { 6: "1 240", 7: "3 610", 8: "4 980", 10: "8 120", 20: "48 200" }[k] || "1 240";
+    var rate = { 6: "+24/хв", 7: "+60/хв", 8: "+60/хв", 10: "+60/хв", 20: "+1 240/хв" }[k] || "+24/хв";
+    var f = k === 6
+      ? { p: "12/хв", a: "30/хв", v: "потоки", pCls: "is-narrow", aCls: "" }
+      : (r2
+        ? { p: "1 900/хв", a: "620/хв", v: "Казначейство", pCls: "", aCls: "is-narrow" }
+        : { p: "40/хв", a: "30/хв", v: "Резолюції комбата", pCls: "", aCls: "is-narrow" });
+    var tgHl = k === 8;
+    return {
+      s: {
+        main: k !== 81,
+        tg: k === 81,
+        r1: !r2,
+        r2: r2,
+        hl6: k === 6,
+        plainRep: k !== 6,
+        hl7: k === 7,
+        stOff: k === 6,
+        stClerk: hasClerk,
+        hl8: tgHl,
+        badge: tgHl,
+        hl10: k === 10,
+        plainMult: k !== 10,
+        rezNarrow: k !== 6 && !r2
+      },
+      m: {
+        place: r2 ? "Бригада · будинок культури" : "1-й батальйон · бліндаж",
+        chip: r2 ? "Бригада" : "Батальйон",
+        sig: sig,
+        rate: rate,
+        mult: r2 ? "×1,6" : "×2",
+        multSrc: r2 ? "цифра" : "Пташка",
+        paper: r2 ? "2 310" : "500",
+        tgLabel: tgHl ? "Телеграми, нових: 1" : "Телеграми",
+        tgZ: tgHl ? "70" : "auto",
+        tgOutline: tgHl ? "2px solid var(--accent)" : "none",
+        tgShadow: tgHl ? "0 0 0 1400px var(--scrim)" : "none"
+      },
+      f: f,
+      u: {
+        repLvl: k === 6 ? "рів. 1" : (r2 ? "рів. 41" : "рів. 25"),
+        repRate: k === 6 ? "+12/хв" : (r2 ? "+960/хв · діловод Іван" : "+40/хв · віху взято"),
+        repPrice: k === 6 ? "50" : (r2 ? "38 тис." : "620"),
+        repPct: k === 6 ? "4" : (r2 ? "64" : "100"),
+        rezCls: f.aCls === "is-narrow" && !r2 ? "is-narrow" : "",
+        rezLvl: k === 6 ? "рів. 1" : (r2 ? "рів. 30" : "рів. 3"),
+        rezRate: k === 6 ? "30/хв" : (r2 ? "1 100/хв" : "30/хв"),
+        rezPrice: k === 6 ? "180" : (r2 ? "52 тис." : "240"),
+        stLvl: k === 6 ? "рів. 1" : (r2 ? "рів. 28" : "рів. 2"),
+        stMeta: hasClerk ? "діловод Оля «Штамп»" : "вручну · тапай печатку",
+        stPrice: r2 ? "44 тис." : "310",
+        finLvl: r2 ? "рів. 26" : "рів. 2",
+        finRate: r2 ? "980/хв" : "36/хв",
+        finPrice: r2 ? "61 тис." : "290"
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
