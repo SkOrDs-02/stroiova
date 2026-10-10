@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Пул телеграм «Стройової»",
-  "description": "Файл пулу телеграм: content/telegrams.json (масив) або content/tg/*.json (масив чи об'єкт з packs[] і telegrams[]). Поля — за специфікаціями 03, 011–014 і фактичними даними. Перевірка: python3 tools/gen_tg.py --check.",
+  "description": "Файл пулу телеграм: content/telegrams.json (масив) або content/tg/*.json (масив чи об'єкт з packs[] і telegrams[]). Поля - за специфікаціями 03, 011–014 і фактичними даними. Перевірка: python3 tools/gen_tg.py --check.",
   "oneOf": [
     {"type": "array", "items": {"$ref": "#/$defs/telegram"}},
     {"$ref": "#/$defs/poolObject"}
@@ -21,7 +21,7 @@
     },
 
     "pack": {
-      "description": "Пачка «Зведення № N» (011 FR-17–FR-22, FR-30). Кількість телеграм = pack.size з balance/preset-*.json — перевіряє gen_tg.py.",
+      "description": "Пачка «Зведення № N» (011 FR-17–FR-22, FR-30). Кількість телеграм = pack.size з balance/preset-*.json, перевіряє gen_tg.py.",
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "level", "order", "packDetail", "telegrams"],
@@ -68,9 +68,9 @@
         "rev": {"type": "integer", "minimum": 1, "description": "Версія тексту; за замовчуванням 1"},
         "no": {"type": "string", "minLength": 1, "description": "Номер на документі"},
         "level": {"$ref": "#/$defs/level"},
-        "kind": {"enum": ["standard", "notice", "override", "event"], "description": "За замовчуванням standard; event — документ події поза квотою (012 FR-17)"},
+        "kind": {"enum": ["standard", "notice", "override", "event"], "description": "За замовчуванням standard; event: документ події поза квотою (012 FR-17)"},
         "eventType": {"type": "string", "description": "Лише для kind = event: event_type з random_event_resolve"},
-        "docType": {"enum": ["telegram", "message"], "description": "За замовчуванням telegram; message — «Повідомлення» Казначейства"},
+        "docType": {"enum": ["telegram", "message"], "description": "За замовчуванням telegram; message: «Повідомлення» Казначейства"},
         "stamp": {"enum": ["ТЕРМІНОВО", "НЕВІДКЛАДНО", "НЕГАЙНО", "СКАСОВАНО"]},
         "kicker": {"type": "string"},
         "from": {"$ref": "#/$defs/sender"},
@@ -368,7 +368,7 @@
       "enum": ["raporty", "akty", "dovidky", "nakladni", "nakazy", "zvedennia", "zpz", "kombat", "stroy", "fin", "kazna", "narada", "dopovid"]
     },
     "sender": {
-      "description": "Відправник (03; cmd_hq — штаб командування, 011). Має збігатися з SENDERS у tools/gen_tg.py",
+      "description": "Відправник (03; cmd_hq: штаб командування, 011). Має збігатися з SENDERS у tools/gen_tg.py",
       "enum": ["higher_hq", "bn_chief_of_staff", "bde_support", "fin_chief", "info_security", "treasury", "bde_chief_of_staff", "cmd_hq"]
     },
     "recipient": {"enum": ["bn_commander", "stroy_chief", "bde_fin"]},
