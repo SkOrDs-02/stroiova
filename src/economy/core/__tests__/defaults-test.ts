@@ -1,0 +1,34 @@
+// Порт withDefaults/levelItems дає те саме, що sim.js до рефакторингу (знімок balance/golden/core.json).
+import core from '../../../../balance/golden/core.json';
+import { DEFAULTS, SCENARIOS, levelItems, reachableLevels, withDefaults } from '..';
+
+const presets = {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  'preset-v5': require('../../../../balance/preset-v5.json'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  'preset-v6': require('../../../../balance/preset-v6.json'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  'preset-v7': require('../../../../balance/preset-v7.json'),
+};
+type Name = keyof typeof presets;
+
+const strip = <T extends object>(x: T) => {
+  const { tapRateMax: _drop, ...rest } = x as T & { tapRateMax?: number };
+  return rest;
+};
+
+describe('параметри', () => {
+  test('DEFAULTS і SCENARIOS як у sim.js; новий лише tapRateMax = 10 (FR-16)', () => {
+    expect(strip(DEFAULTS)).toEqual(core.DEFAULTS);
+    expect(DEFAULTS.tapRateMax).toBe(10);
+    expect(SCENARIOS).toEqual(core.SCENARIOS);
+  });
+
+  test.each(Object.keys(presets) as Name[])('%s: withDefaults і levelItems як у sim.js', (name) => {
+    const p = withDefaults(presets[name].params);
+    expect(strip(p)).toEqual(core.withDefaults[name]);
+    const items = [];
+    for (let l = 1; l <= reachableLevels(p); l++) items.push(levelItems(p, l));
+    expect(items).toEqual(core.levelItems[name]);
+  });
+});

@@ -28,10 +28,10 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 
 **Purpose**: залежності, скрипти, каталоги
 
-- [ ] T001 Встановити zustand (`npx expo install zustand`) і esbuild (`npm i -D esbuild`), прогнати `npx expo-doctor`; `package.json`
-- [ ] T002 Створити каталоги `src/economy/core/`, `src/economy/game/`, `src/economy/__tests__/`, `src/features/conveyor/`, `balance/golden/` згідно з plan.md
-- [ ] T003 [P] ESLint: для `src/economy/**` заборонити імпорти `react`, `react-native`, `react-native-mmkv`, `zustand` і виклики `Date.now`, `Math.random` (`no-restricted-imports`, `no-restricted-properties`) у `eslint.config.js`
-- [ ] T004 [P] Скрипти в `package.json`: `build:economy` (`node tools/build_economy.mjs`), `golden` (`node tools/golden.mjs`); `check` доповнити `npm run build:economy -- --check`
+- [X] T001 Встановити zustand (`npx expo install zustand`) і esbuild (`npm i -D esbuild`), прогнати `npx expo-doctor`; `package.json`
+- [X] T002 Створити каталоги `src/economy/core/`, `src/economy/game/`, `src/economy/__tests__/`, `src/features/conveyor/`, `balance/golden/` згідно з plan.md
+- [X] T003 [P] ESLint: для `src/economy/**` заборонити імпорти `react`, `react-native`, `react-native-mmkv`, `zustand` і виклики `Date.now`, `Math.random` (`no-restricted-imports`, `no-restricted-properties`) у `eslint.config.js`
+- [X] T004 [P] Скрипти в `package.json`: `build:economy` (`node tools/build_economy.mjs`), `golden` (`node tools/golden.mjs`); `check` доповнити `npm run build:economy -- --check`
 
 ---
 
@@ -41,10 +41,10 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 
 **⚠️ CRITICAL**: T005–T006 виконати до першої правки `balance/sim.js`
 
-- [ ] T005 Скрипт `tools/golden.mjs`: для `preset-v5`, `preset-v6`, `preset-v7` × зерна 1–3 × `SCENARIOS` (3) запускає `simulate(withDefaults(P.params) з seed)` і пише SHA-1 від `JSON.stringify({ simulate, levelStats, eventStats })` у `balance/golden/fingerprints.json`; режим `--check` порівнює й виходить з 1 при розбіжності; заміряти час (ціль ≤ 60 с)
-- [ ] T006 Запустити `node tools/golden.mjs` на незміненому sim.js і закомітити `balance/golden/fingerprints.json`
-- [ ] T007 [P] `src/economy/core/big.ts`: `export type Big = number` з коментарем про рішення 53
-- [ ] T008 [P] `src/economy/game/types.ts`: `UnitDef`, `LevelDef`, `EconomyParams`, `EconomyConfig { version; source: 'bundled' | 'remote' | 'cached'; params }`, `EconomyState` (поля й правила з data-model.md: `streamLevels` «0 = замкнено. Новий цикл: [1, 0, 0, 0]», `stageLevels` «Новий цикл: усі 1», `signatures` «≥ 0», `prestigePoints` «ціле ≥ 0», `paper` «Дробове, на екрані ціле вниз»), `Effect { kind: 'mult' | 'factor'; source; value; target?; startMs; endMs }`, `UnitRef`, `DomainEvent`
+- [X] T005 Скрипт `tools/golden.mjs`: для `preset-v5`, `preset-v6`, `preset-v7` × зерна 1–3 × `SCENARIOS` (3) запускає `simulate(withDefaults(P.params) з seed)` і пише SHA-1 від `JSON.stringify({ simulate, levelStats, eventStats })` у `balance/golden/fingerprints.json`; режим `--check` порівнює й виходить з 1 при розбіжності; заміряти час (ціль ≤ 60 с)
+- [X] T006 Запустити `node tools/golden.mjs` на незміненому sim.js і закомітити `balance/golden/fingerprints.json`
+- [X] T007 [P] `src/economy/core/big.ts`: `export type Big = number` з коментарем про рішення 53
+- [X] T008 [P] `src/economy/game/types.ts`: `UnitDef`, `LevelDef`, `EconomyParams`, `EconomyConfig { version; source: 'bundled' | 'remote' | 'cached'; params }`, `EconomyState` (поля й правила з data-model.md: `streamLevels` «0 = замкнено. Новий цикл: [1, 0, 0, 0]», `stageLevels` «Новий цикл: усі 1», `signatures` «≥ 0», `prestigePoints` «ціле ≥ 0», `paper` «Дробове, на екрані ціле вниз»), `Effect { kind: 'mult' | 'factor'; source; value; target?; startMs; endMs }`, `UnitRef`, `DomainEvent`
 
 **Checkpoint**: відбитки зафіксовано, типи є
 
@@ -58,21 +58,21 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 
 ### Tests
 
-- [ ] T009 [P] [US1] `src/economy/__tests__/golden-test.ts`: (1) запускає `tools/golden.mjs --check` логікою в процесі й порівнює з `balance/golden/fingerprints.json`; (2) AC-1: preset-v5, сценарій `ads`, перший діловод 184 с (3,07 хв ±1%), перша цифровізація 3,13 дня ±1%, `level2At` 7 днів ±1%
-- [ ] T010 [P] [US1] `src/economy/core/__tests__/formulas-test.ts`: для всіх одиниць preset-v5 і preset-v7, рівнів 1–2 і L ∈ {0, 1, 24, 25, 50, 100}: `capAt`, `priceAt` з TS дорівнюють sim.js (`===`); контрольні значення spec: Рапорти 1→2 = 8, 24→25 = 108,42, ×10 з 1-го = 140,39, «до віхи» з 1-го = 945,24, Акти 10→11 = 360,49, виробіток 24/25/50 = 144/300/1 200
-- [ ] T011 [P] [US1] `src/economy/core/__tests__/defaults-test.ts`: `withDefaults` і `levelItems` з TS дають `toEqual` з sim.js для preset-v5/v6/v7 і рівнів 1…`reachableLevels`
+- [X] T009 [P] [US1] `src/economy/__tests__/golden-test.ts`: (1) запускає `tools/golden.mjs --check` логікою в процесі й порівнює з `balance/golden/fingerprints.json`; (2) AC-1: preset-v5, сценарій `ads`, перший діловод 184 с (3,07 хв ±1%), перша цифровізація 3,13 дня ±1%, `level2At` 7 днів ±1%
+- [X] T010 [P] [US1] `src/economy/core/__tests__/formulas-test.ts`: для всіх одиниць preset-v5 і preset-v7, рівнів 1–2 і L ∈ {0, 1, 24, 25, 50, 100}: `capAt`, `priceAt` з TS дорівнюють sim.js (`===`); контрольні значення spec: Рапорти 1→2 = 8, 24→25 = 108,42, ×10 з 1-го = 140,39, «до віхи» з 1-го = 945,24, Акти 10→11 = 360,49, виробіток 24/25/50 = 144/300/1 200
+- [X] T011 [P] [US1] `src/economy/core/__tests__/defaults-test.ts`: `withDefaults` і `levelItems` з TS дають `toEqual` з sim.js для preset-v5/v6/v7 і рівнів 1…`reachableLevels`
 
 ### Implementation
 
-- [ ] T012 [P] [US1] `src/economy/core/defaults.ts`: дослівний порт `DEFAULTS`, `SCENARIOS`, `LEGACY`, `copyInto`, `withDefaults`, `reachableLevels`, `levelItems` з `balance/sim.js` (ті самі гілки й порядок полів); додати `tapRateMax: 10` у `DEFAULTS` (на бота не впливає)
-- [ ] T013 [P] [US1] `src/economy/core/formulas.ts`: `capAt`, `priceAt` (дослівно), `packPrice(def, L, n)` (сума `priceAt` по рівнях, як цикл у sim.js `options()`), `milestoneTarget(L, p)`, `prestigeMult(P, p)`, `points(life, divisor, p)`
-- [ ] T014 [P] [US1] `src/economy/core/flow.ts`: `flow({ streams: { cap, on, share? }[], stages: { cap, on }[] })` → `{ sum, pipe, which, v }`; share: `z = base · sum`, далі `z *= f` для кожного з `factors` по черзі; pipe з `Infinity`, `which` — перша мінімальна ланка (`<`, не `≤`)
-- [ ] T015 [P] [US1] `src/economy/core/integrate.ts`: `integrate(cuts, rateAt)` = Σ `rateAt((x₀+x₁)/2) · (x₁ − x₀)` по відсортованих точках, пропуск x₁ ≤ x₀
-- [ ] T016 [US1] `src/economy/core/index.ts` — реекспорт; `tools/build_economy.mjs`: esbuild IIFE `globalName: 'StroiovaEconomy'`, `target: 'es2015'`, футер `if (typeof module !== 'undefined') module.exports = StroiovaEconomy;`, вихід `balance/economy.js` з шапкою «Згенеровано … руками не правити»; `--check` порівнює з файлом
-- [ ] T017 [US1] `balance/sim.js`: на початку `var E = typeof StroiovaEconomy !== 'undefined' ? StroiovaEconomy : require('./economy.js');`; замінити тіла `DEFAULTS`/`SCENARIOS`/`LEGACY`/`withDefaults`/`reachableLevels`/`levelItems`/`capAt`/`priceAt` на `E.*`; усередині `simulate` — `flow` через `E.flow` (збираючи `cap` через `capU` і `sfac` так само, як зараз), `points` через `E.points`, `1 + p.prestigeBonus * prestigeTotal` через `E.prestigeMult`, офлайн-цикл по `cuts` через `E.integrate`; `module.exports` без змін
-- [ ] T018 [US1] Прогнати `node tools/golden.mjs --check`; при розбіжності знайти зміну порядку операцій і виправити в core, не в відбитках
-- [ ] T019 [US1] `balance/sandbox/build.py`: читати `../economy.js` і вбудовувати перед sim.js в обох місцях (worker-текст і `<script>`); перевірити `python3 balance/sandbox/build.py` і що сторінка відкривається в Chromium без помилок консолі
-- [ ] T020 [US1] CI: у `.github/workflows/app.yml` крок `npm run build:economy -- --check`; у `.github/workflows/content.yml` крок `node tools/golden.mjs --check` (paths `balance/**`, `src/economy/core/**`)
+- [X] T012 [P] [US1] `src/economy/core/defaults.ts`: дослівний порт `DEFAULTS`, `SCENARIOS`, `LEGACY`, `copyInto`, `withDefaults`, `reachableLevels`, `levelItems` з `balance/sim.js` (ті самі гілки й порядок полів); додати `tapRateMax: 10` у `DEFAULTS` (на бота не впливає)
+- [X] T013 [P] [US1] `src/economy/core/formulas.ts`: `capAt`, `priceAt` (дослівно), `packPrice(def, L, n)` (сума `priceAt` по рівнях, як цикл у sim.js `options()`), `milestoneTarget(L, p)`, `prestigeMult(P, p)`, `points(life, divisor, p)`
+- [X] T014 [P] [US1] `src/economy/core/flow.ts`: `flow({ streams: { cap, on, share? }[], stages: { cap, on }[] })` → `{ sum, pipe, which, v }`; share: `z = base · sum`, далі `z *= f` для кожного з `factors` по черзі; pipe з `Infinity`, `which` — перша мінімальна ланка (`<`, не `≤`)
+- [X] T015 [P] [US1] `src/economy/core/integrate.ts`: `integrate(cuts, rateAt)` = Σ `rateAt((x₀+x₁)/2) · (x₁ − x₀)` по відсортованих точках, пропуск x₁ ≤ x₀
+- [X] T016 [US1] `src/economy/core/index.ts` — реекспорт; `tools/build_economy.mjs`: esbuild IIFE `globalName: 'StroiovaEconomy'`, `target: 'es2015'`, футер `if (typeof module !== 'undefined') module.exports = StroiovaEconomy;`, вихід `balance/economy.js` з шапкою «Згенеровано … руками не правити»; `--check` порівнює з файлом
+- [X] T017 [US1] `balance/sim.js`: на початку `var E = typeof StroiovaEconomy !== 'undefined' ? StroiovaEconomy : require('./economy.js');`; замінити тіла `DEFAULTS`/`SCENARIOS`/`LEGACY`/`withDefaults`/`reachableLevels`/`levelItems`/`capAt`/`priceAt` на `E.*`; усередині `simulate` — `flow` через `E.flow` (збираючи `cap` через `capU` і `sfac` так само, як зараз), `points` через `E.points`, `1 + p.prestigeBonus * prestigeTotal` через `E.prestigeMult`, офлайн-цикл по `cuts` через `E.integrate`; `module.exports` без змін
+- [X] T018 [US1] Прогнати `node tools/golden.mjs --check`; при розбіжності знайти зміну порядку операцій і виправити в core, не в відбитках
+- [X] T019 [US1] `balance/sandbox/build.py`: читати `../economy.js` і вбудовувати перед sim.js в обох місцях (worker-текст і `<script>`); перевірити `python3 balance/sandbox/build.py` і що сторінка відкривається в Chromium без помилок консолі
+- [X] T020 [US1] CI: у `.github/workflows/app.yml` крок `npm run build:economy -- --check`; у `.github/workflows/content.yml` крок `node tools/golden.mjs --check` (paths `balance/**`, `src/economy/core/**`)
 
 **Checkpoint**: один код формул для гри й симулятора, відбиток незмінний
 
