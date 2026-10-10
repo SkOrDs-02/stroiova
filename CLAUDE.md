@@ -30,7 +30,8 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 | `docs/texts.md`, `content/` | Тексти гри; `content/telegrams.json` — 40 телеграм (генератор `tools/gen_tg.py`) |
 | `docs/screens.md`, `design/screens/` | Карта екранів і 53 артборди (`.dc.html`, стани в `data-props`) |
 | `design/system/` | Дизайн-система: `tokens.json`, `README.md`, компоненти, `components/index.d.ts` (контракт пропсів), шрифт TT2020 |
-| `balance/` | Модель економіки `sim.js` (v6), пресети, пісочниця (`sandbox/build.py` → `sandbox/index.html`) |
+| `balance/` | Бот і події симулятора `sim.js` (формули — з `economy.js`), пресети, відбитки `golden/`, пісочниця (`sandbox/build.py` → `sandbox/index.html`) |
+| `src/economy/` | Модуль економіки: `core` (спільний із симулятором), `game` (стан і дії гри), `format.ts`; вбудований конфіг `econ-v7.2` |
 | `analytics/tracking-plan.yaml` | 60 подій аналітики; `docs/analytics.md` — пояснення |
 | `docs/art-and-sound.md`, `docs/stores.md`, `docs/playtest-and-launch.md` | Арт і звук, сторінки сторів, тестування й запуск |
 | `docs/research/` | Рев'ю й дослідження |
@@ -53,6 +54,7 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 - Телеграми: `python3 tools/gen_tg.py content/telegrams.json` (перегенерувати й перевірити JSON).
 - Перевірка контенту: `python3 tools/check_content.py` (усе) або `python3 tools/gen_tg.py --check` (пули телеграм за `content/schema/telegram.schema.json`); див. `content/README.md`.
 - Застосунок: `npm start` (Expo), `npm run check` (типи, лінтер, тести, тема, контент — перед кожним PR).
+- Економіка: формули й параметри — у `src/economy/core`; `npm run build:economy` збирає `balance/economy.js` для `sim.js` і пісочниці; `node tools/golden.mjs --check` — відбитки симулятора (27) не змінились.
 - Тема: `python3 tools/gen_theme.py` (`design/system/tokens.json` → `src/theme/tokens.ts`, руками не правити).
 
 ## Код

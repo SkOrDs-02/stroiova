@@ -1,0 +1,14 @@
+# 001: довідка повернення без діловодів — «Стройова стояла» (FR-28) і «Забрати» з діловодами.
+# debugAwayMin працює лише в development build (__DEV__). Справжній офлайн між запусками — після 009.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- openLink: "stroiova://?debugAwayMin=10"
+- assertVisible:
+    id: "offline-return"
+- assertVisible: "Стройова стояла.*"
+- tapOn:
+    id: "offline-claim"
+- assertNotVisible:
+    id: "offline-return"
