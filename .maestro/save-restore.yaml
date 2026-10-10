@@ -1,0 +1,20 @@
+# 009: прогрес переживає вбивство застосунку (FR-1, FR-2; аналог AC-2 для покупки рівня).
+# Запуск: development build, `APP_ID=<bundle id> maestro test .maestro/save-restore.yaml`.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- repeat:
+    times: 40
+    commands:
+      - tapOn:
+          id: "seal"
+- tapOn:
+    id: "buy-raporty"
+- assertVisible: "Рів. 2.*"
+# автозапис кожні 5 с
+- waitForAnimationToEnd:
+    timeout: 6000
+- stopApp
+- launchApp
+- assertVisible: "Рів. 2.*"

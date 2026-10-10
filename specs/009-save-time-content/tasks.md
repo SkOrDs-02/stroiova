@@ -75,10 +75,10 @@ description: "Задачі: 009 Збереження, час і оновленн
 
 ## Phase 9: Polish
 
-- [ ] T025 Web-сценарії quickstart § 3 у Chromium 375×667 (`page.clock`), скріншоти
-- [ ] T026 [P] `.maestro/save-restore.yaml` (покупка → `stopApp` → `launchApp` → рівень на місці)
+- [X] T025 Web-сценарії quickstart § 3 у Chromium 375×667 (`page.clock`), скріншоти
+- [X] T026 [P] `.maestro/save-restore.yaml` (покупка → `stopApp` → `launchApp` → рівень на місці)
 - [ ] T027 Агенти `content-reviewer` (тексти boot/save-error/force-update) і `spec-guardian`; виправлення
-- [ ] T028 Документація: CLAUDE.md (`src/save`), `npm run check`
+- [X] T028 Документація: CLAUDE.md (`src/save`), `npm run check`
 
 ## Поза етапом 1
 
