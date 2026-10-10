@@ -96,7 +96,7 @@ events:
       - {name: sec_since_last_session, type: integer, required: false, example: 11520, description: "Від кінця попередньої сесії; немає для першої"}
       - {name: local_hour, type: integer, required: true, example: 21, description: "Година 0–23 за локальним часом пристрою"}
       - {name: entry_point, type: string, required: true, enum: [icon, push, other], example: icon}
-      - {name: is_clock_skew_detected, type: boolean, required: true, example: false, description: "Годинник пристрою пішов назад від savedAt: офлайн не зараховано, таймери зсунуто (специфікація 09, FR-14)"}
+      - {name: is_clock_skew_detected, type: boolean, required: true, example: false, description: "Годинник пристрою пішов назад від savedAt (таймери зсунуто, FR-14) або поспішає більш ніж на 1 год від Date відповіді CDN (FR-39): офлайн не зараховано (специфікація 09)"}
 
   - name: session_end
     category: lifecycle
