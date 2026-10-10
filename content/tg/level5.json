@@ -68,7 +68,7 @@
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Переформатувати все", "effects": {"slow": [{"target": "zvedennia", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Переформатовано. Оновлення повернуло новий шрифт."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Чекати оновлення", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10, "inspExtraItem": "dashboard_font"}, "result": "Оновлення вийшло. Шрифт змінено ще раз."},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Шрифт змінився сам. Шухляда ні."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Шрифт змінився сам. Шухляда - ні."}
     ]
   },
   {
@@ -128,7 +128,7 @@
     "schedule": {"requires": {"conversionsMin": 1}},
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Друкувати поштучно", "effects": {"paper": 6, "slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пакет розпаковано. Третина рапортів на щорічну відпустку."},
+      {"id": "diligent", "kind": "diligent", "title": "Друкувати поштучно", "effects": {"paper": 6, "slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пакет розпаковано. Третина рапортів - на щорічну відпустку."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Позначка в системі", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10, "digitalShield": true}, "result": "Система пише «Підписано пакетом» сама. Від руки не вміє."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Пакет лежить цілий. Підписаний."}
     ]
@@ -236,7 +236,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Надіслати з поясненням", "effects": {"slow": [{"target": "dovidky", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пояснення надійшло. Документ утретє."},
+      {"id": "diligent", "kind": "diligent", "title": "Надіслати з поясненням", "effects": {"slow": [{"target": "dovidky", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пояснення надійшло. Документ - утретє."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Нічого не надсилати", "effects": {"durationMin": 1, "rep": -5, "inspPct": 5}, "result": "Тиша. Система вважає, що документ надійшов один раз."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Обидва примірники лежать. Однакові."}
     ]
@@ -322,7 +322,7 @@
     "review": true,
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Запросити дозвіл", "effects": {"slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Дозвіл надійшов знімком екрана. На знімок дозволу немає."},
-      {"id": "formal_reply", "kind": "formal_reply", "title": "Сфотографувати екран", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15, "inspExtraItem": "laptop_glove"}, "result": "Фото екрана не є знімком екрана. Формально."},
+      {"id": "formal_reply", "kind": "formal_reply", "title": "Сфотографувати екран", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15, "inspExtraItem": "laptop_glove"}, "result": "Фото екрана - не знімок екрана. Формально."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Екран на місці. Його ніхто не знімав."}
     ]
   },
@@ -513,7 +513,7 @@
     "id": "tg_0270_sunday_3am", "no": "5343", "level": 5,
     "from": "higher_hq", "to": "bn_commander", "title": "Про попередній розгляд",
     "body": "Телеграму, що надійшла о 03:00 в неділю, розглянути не пізніше 10:00 наступного робочого дня. Наступний робочий",
-    "deadline": [["Розглянути", "до 10:00", "now"], ["День", "не вказано", "plain"]],
+    "deadline": [["Розглянути", "до 10:00", "now"], ["День", "-", "plain"]],
     "schedule": {"requires": {"conversionsMin": 4}, "fading": true},
     "review": true,
     "choices": [
@@ -573,7 +573,7 @@
     "id": "tg_0275_report", "no": "5348", "level": 5,
     "from": "higher_hq", "to": "bn_commander", "title": "Про",
     "body": "Доповісти.",
-    "deadline": [["Строк", "не вказано", "plain"]],
+    "deadline": [["Строк", "-", "plain"]],
     "schedule": {"requires": {"conversionsMin": 4}, "fading": true},
     "review": true,
     "choices": [
@@ -597,7 +597,7 @@
     "id": "tg_0277_no_text", "no": "5350", "level": 5,
     "from": "higher_hq", "to": "bn_commander", "title": "Про …",
     "body": "ТЕКСТ ВІДСУТНІЙ. ВИКОНАТИ.",
-    "deadline": [["Строк", "не вказано", "plain"]],
+    "deadline": [["Строк", "-", "plain"]],
     "schedule": {"requires": {"conversionsMin": 4}, "fading": true},
     "review": true,
     "choices": [
@@ -699,7 +699,7 @@
   {
     "id": "tg_0280_sixteen_journals", "no": "5359", "level": 5,
     "from": "bde_support", "to": "bn_commander", "title": "Про шістнадцять журналів",
-    "body": "Шістнадцять скасованих книг і журналів обліку майна відновити. Почати з книги обліку руху осіб, що харчуються.",
+    "body": "Шістнадцять скасованих книг і журналів обліку майна відновити. Першою - книгу обліку руху осіб, що харчуються.",
     "deadline": "std",
     "schedule": {"endless": true, "requires": {"dubMin": 1}},
     "review": true,
@@ -751,7 +751,7 @@
   {
     "id": "tg_0284_two_originals", "no": "5363", "level": 5,
     "from": "higher_hq", "to": "bn_commander", "title": "Про два оригінали",
-    "body": "Відповіді на телеграми готувати у двох оригінальних примірниках. Перший на зберігання, другий на погодження першого.",
+    "body": "Відповіді на телеграми готувати у двох оригінальних примірниках. Перший - на зберігання, другий - на погодження першого.",
     "deadline": "std",
     "schedule": {"endless": true, "requires": {"dubMin": 1, "dubModifier": "two_copies"}},
     "review": true,

@@ -7,7 +7,7 @@
     "choicesNote": "Рапорт комбата в шухляду не кладуть.",
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Виправити на 10 мм", "effects": {"slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Відступ 10 мм. Граніт питає, чи це вже відпустка."},
-      {"id": "cite_4498", "kind": "formal_reply", "title": "Послатися на № 4498", "effects": {"durationMin": 1, "roll": {"pct": 50, "effects": {"returnsAfterHours": 1}, "text": "№ 4498: батальйонна. У бригаді 10 мм."}}, "note": "ризик повернення"},
+      {"id": "cite_4498", "kind": "formal_reply", "title": "Послатися на № 4498", "effects": {"durationMin": 1, "roll": {"pct": 50, "effects": {"returnsAfterHours": 1}, "text": "№ 4498 - батальйонна. У бригаді 10 мм."}}, "note": "ризик повернення"},
       {"id": "to_natalia", "kind": "special", "title": "Віддати Наталі", "effects": {"clerkAway": {"target": "fin", "hours": 4}}, "note": "Наталя міряє. Фінслужба 4 год без неї."}
     ]
   },
@@ -18,7 +18,7 @@
     "deadline": "std",
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Переписати дати", "effects": {"paper": 2, "slow": [{"target": "fin", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "«02 грудня». Довідку видали 03 грудня."},
-      {"id": "formal_reply", "kind": "formal_reply", "title": "Дописати нуль", "effects": {"durationMin": 1, "roll": {"pct": 30, "effects": {"returnsAfterHours": 1}, "text": "Повернуто: «02.12» є цифровим способом."}}, "note": "ризик повернення"},
+      {"id": "formal_reply", "kind": "formal_reply", "title": "Дописати нуль", "effects": {"durationMin": 1, "roll": {"pct": 30, "effects": {"returnsAfterHours": 1}, "text": "Повернуто: «02.12» - це цифровий спосіб."}}, "note": "ризик повернення"},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Довідка лежить. Від 2.12."}
     ]
   },
@@ -183,7 +183,7 @@
     "deadline": [["Командування", "не встановлено", "old"], ["Ви", "30 діб", "now"]],
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Доповідати щодня", "effects": {"paper": 1, "slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Доповідь № 1: лишилось 30 діб. Доповідь № 2 друкується."},
-      {"id": "formal_reply", "kind": "formal_reply", "title": "Доповісти на 30-ту", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Доповіли на тридцяту добу. Про двадцять дев'ять попередніх ні."},
+      {"id": "formal_reply", "kind": "formal_reply", "title": "Доповісти на 30-ту", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Доповіли на тридцяту добу. Про двадцять дев'ять попередніх - ні."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Лежить. До тридцятої доби ще далеко."}
     ]
   },
@@ -206,7 +206,7 @@
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Скласти акт", "effects": {"paper": 2, "slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Лицьовий бік конверта поїхав назад. Зворотний підшито до справи."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Повідомити телефоном", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Відправнику подзвонили. Додаток знайшовся в нього на столі."},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Пакет лежить. Додаток у відправника."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Пакет лежить. Додаток - у відправника."}
     ]
   },
   {
@@ -337,10 +337,10 @@
   {
     "id": "tg_0136_internal_inventory", "no": "5061", "level": 2, "kind": "standard", "docType": "telegram", "rev": 1, "review": true,
     "from": "info_security", "to": "stroy_chief", "title": "Про внутрішній опис",
-    "body": "Справу з грифом «Для службового користування» приймати, звіряючи кожен аркуш із внутрішнім описом. У справі 212 аркушів. В описі 211.",
+    "body": "Справу з грифом «Для службового користування» приймати, звіряючи кожен аркуш із внутрішнім описом. У справі 212 аркушів. В описі - 211.",
     "deadline": "std",
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Звірити всі 212", "effects": {"slow": [{"target": "nakazy", "mult": 0.5, "hours": 1}], "rep": 10}, "result": "Двісті дванадцятий аркуш і є внутрішній опис."},
+      {"id": "diligent", "kind": "diligent", "title": "Звірити всі 212", "effects": {"slow": [{"target": "nakazy", "mult": 0.5, "hours": 1}], "rep": 10}, "result": "Двісті дванадцятий аркуш - сам внутрішній опис."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Прийняти за описом", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15}, "result": "Прийнято 211 аркушів. Ще один лежить зайвий."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Справа лежить. Аркушів 211 або 212."}
     ]
@@ -359,7 +359,7 @@
   {
     "id": "tg_0138_cancelled_forms", "no": "5065", "level": 2, "kind": "standard", "docType": "telegram", "rev": 1, "review": true,
     "from": "higher_hq", "to": "stroy_chief", "title": "Про перелік скасованих форм",
-    "body": "Довести до виконавців перелік скасованих паперових форм: у частині 56, у службах забезпечення 28, на складах 12, у підрозділах 15. Перелік роздрукувати й підшити.",
+    "body": "Довести до виконавців перелік скасованих паперових форм: у частині - 56, у службах забезпечення - 28, на складах - 12, у підрозділах - 15. Перелік роздрукувати й підшити.",
     "deadline": "std",
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Роздрукувати", "effects": {"paper": 4, "slow": [{"target": "nakazy", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Перелік скасованих форм підшито окремою справою."},
@@ -381,11 +381,11 @@
   {
     "id": "tg_0140_two_stamps", "no": "5069", "level": 2, "kind": "standard", "docType": "telegram", "stamp": "НЕВІДКЛАДНО", "rev": 1, "review": true,
     "from": "higher_hq", "to": "stroy_chief", "title": "Про два штампи",
-    "body": "Документ із позначкою «ТЕРМІНОВО» виконується до 7 діб, із позначкою «НЕВІДКЛАДНО» за добу. На цьому документі стоять обидві. Котра головна, не встановлено.",
+    "body": "Документ із позначкою «ТЕРМІНОВО» виконується до 7 діб, із позначкою «НЕВІДКЛАДНО» - за добу. На цьому документі стоять обидві. Котра головна, не встановлено.",
     "deadline": [["«ТЕРМІНОВО»", "7 діб", "old"], ["«НЕВІДКЛАДНО»", "1 доба", "now"], ["Ви", "не встановлено", "alert"]],
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Виконати за добу", "effects": {"slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 10}, "result": "Виконано за добу. Шість діб «терміново» лишились невикористаними."},
-      {"id": "formal_reply", "kind": "formal_reply", "title": "Виконати за 7 діб", "effects": {"durationMin": 1, "rep": -5, "inspPct": 20}, "result": "Посилання на «ТЕРМІНОВО» прийнято. На «НЕВІДКЛАДНО» ні."},
+      {"id": "formal_reply", "kind": "formal_reply", "title": "Виконати за 7 діб", "effects": {"durationMin": 1, "rep": -5, "inspPct": 20}, "result": "Посилання на «ТЕРМІНОВО» прийнято. На «НЕВІДКЛАДНО» - ні."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Лежить. Між добою й тижнем."}
     ]
   },
@@ -408,7 +408,7 @@
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Віднести папером", "effects": {"paper": 4, "slow": [{"target": "kazna", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Папір прийняли. Повідомлення чекає, поки запрацює система."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Чекати систему", "effects": {"durationMin": 2, "roll": {"pct": 30, "effects": {"slow": [{"target": "kazna", "mult": 0.25, "hours": 1}]}, "text": "Система запрацювала ввечері. Казначейство ×0,25 на 1 год."}}, "note": "ризик затримки"},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {"returnsAfterHours": 4}, "note": "Повідомлення повернеться. Система: невідомо."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {"returnsAfterHours": 4}, "note": "Повідомлення повернеться. Система - невідомо."}
     ]
   },
   {
@@ -458,7 +458,7 @@
   {
     "id": "tg_0147_third_grif", "no": "5083", "level": 2, "kind": "standard", "docType": "telegram", "rev": 1, "review": true,
     "from": "bde_chief_of_staff", "to": "stroy_chief", "title": "Про третій гриф",
-    "body": "Якщо грифів затвердження два, перший ставити від лівого поля, другий через 104 міліметри від нього. Місця для третього не передбачено. Наказ затверджують троє.",
+    "body": "Якщо грифів затвердження два, перший ставити від лівого поля, другий - через 104 міліметри від нього. Місця для третього не передбачено. Наказ затверджують троє.",
     "deadline": "std",
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Новий аркуш під гриф", "effects": {"paper": 1, "slow": [{"target": "nakazy", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Третій гриф на окремому аркуші. Затверджено на двох аркушах."},

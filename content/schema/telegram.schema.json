@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Пул телеграм «Стройової»",
-  "description": "Файл пулу телеграм: content/telegrams.json (масив) або content/tg/*.json (масив чи об'єкт з packs[] і telegrams[]). Поля відповідають специфікаціям 03, 011–014 і фактичними даними. Перевірка: python3 tools/gen_tg.py --check.",
+  "description": "Файл пулу телеграм: content/telegrams.json (масив) або content/tg/*.json (масив чи об'єкт з packs[] і telegrams[]). Поля - за специфікаціями 03, 011–014 і фактичними даними. Перевірка: python3 tools/gen_tg.py --check.",
   "oneOf": [
     {"type": "array", "items": {"$ref": "#/$defs/telegram"}},
     {"$ref": "#/$defs/poolObject"}
