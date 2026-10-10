@@ -16,7 +16,7 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 - Скіли: `/feature-start NNN` (старт сесії над фічею), `/decision` (нове рішення → decisions + специфікації), `/balance-change` (формула чи число → sim.js, пресет, золоті тести), `/text-review` (червоні лінії й анти-слоп).
 - Агенти (`.claude/agents/`, лише читають): `spec-guardian` (дифф проти специфікації й конституції, перед кожним PR), `content-reviewer` (тексти), `balance-analyst` (прогони sim.js «було / стало»), `analytics-auditor` (tracking-plan проти коду й PostHog), `crash-triage` (Sentry, EAS, TestFlight, Play).
 - Хуки (`.claude/settings.json`): старт хмарної сесії ставить залежності; правка `content/` запускає `check_content.py`; `content/telegrams.json` руками не правиться.
-- CI: `.github/workflows/content.yml` (контент, генератор телеграм, симулятор).
+- CI: `.github/workflows/content.yml` (контент, генератор телеграм, симулятор), `.github/workflows/app.yml` (типи, лінтер, тести, тема, expo-doctor).
 
 ## Де що лежить
 
@@ -52,4 +52,16 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 - Пісочниця балансу: `python3 balance/sandbox/build.py` і відкрити `balance/sandbox/index.html`.
 - Телеграми: `python3 tools/gen_tg.py content/telegrams.json` (перегенерувати й перевірити JSON).
 - Перевірка контенту: `python3 tools/check_content.py` (усе) або `python3 tools/gen_tg.py --check` (пули телеграм за `content/schema/telegram.schema.json`); див. `content/README.md`.
-- Код ще не створено: перший крок — `/speckit-plan` для `specs/001-core-economy`.
+- Застосунок: `npm start` (Expo), `npm run check` (типи, лінтер, тести, тема, контент — перед кожним PR).
+- Тема: `python3 tools/gen_theme.py` (`design/system/tokens.json` → `src/theme/tokens.ts`, руками не правити).
+
+## Код
+
+Expo SDK 57, Expo Router (маршрути в `src/app/`, решта коду поза ним), TypeScript strict, імпорт `@/…` = `src/…`.
+
+- Expo змінюється з кожним SDK: перед кодом з API Expo/EAS/RN читай документацію (Expo MCP, Context7), не пиши з пам'яті.
+- Пакети лише через `npx expo install <пакет>` (сумісні версії); після — `npx expo-doctor`.
+- `ios/` і `android/` не створюємо (CNG): нативне — через `app.json` і config plugins.
+- Кольори, відступи, шрифти — лише з `@/theme` (принцип VI). Числа балансу — лише з `balance/` (принцип I).
+- Sentry вмикається змінною `EXPO_PUBLIC_SENTRY_DSN`; без неї вимкнений. `sendDefaultPii: false`.
+- Тести: `*-test.ts(x)` у `__tests__/` поруч із кодом, Jest + Testing Library.

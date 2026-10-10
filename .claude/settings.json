@@ -28,7 +28,12 @@
       "mcp__Expo__workflow_list",
       "mcp__Expo__workflow_info",
       "mcp__Expo__workflow_logs",
-      "mcp__Expo__workflow_validate"
+      "mcp__Expo__workflow_validate",
+      "Bash(npx expo-doctor:*)",
+      "Bash(npm install:*)",
+      "Bash(npm ci:*)",
+      "Bash(python3 tools/gen_theme.py:*)",
+      "Bash(npx expo export:*)"
     ],
     "deny": [
       "Edit(balance/sandbox/index.html)",
@@ -68,5 +73,8 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "expo@claude-plugins-official": true
   }
 }
