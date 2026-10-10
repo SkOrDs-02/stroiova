@@ -4,3 +4,5 @@ dist/
 *.log
 .DS_Store
 balance/sandbox/index.html
+__pycache__/
+*.pyc

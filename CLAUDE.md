@@ -11,6 +11,13 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 - Порядок реалізації: див. `docs/roadmap.md`.
 - Не вигадуй механік і чисел. Немає в специфікації чи `docs/decisions.md` — спитай або запиши відкрите питання.
 
+## Інструменти Claude в репо
+
+- Скіли: `/feature-start NNN` (старт сесії над фічею), `/decision` (нове рішення → decisions + специфікації), `/balance-change` (формула чи число → sim.js, пресет, золоті тести), `/text-review` (червоні лінії й анти-слоп).
+- Агенти (`.claude/agents/`, лише читають): `spec-guardian` (дифф проти специфікації й конституції, перед кожним PR), `content-reviewer` (тексти), `balance-analyst` (прогони sim.js «було / стало»), `analytics-auditor` (tracking-plan проти коду й PostHog), `crash-triage` (Sentry, EAS, TestFlight, Play).
+- Хуки (`.claude/settings.json`): старт хмарної сесії ставить залежності; правка `content/` запускає `check_content.py`; `content/telegrams.json` руками не правиться.
+- CI: `.github/workflows/content.yml` (контент, генератор телеграм, симулятор).
+
 ## Де що лежить
 
 | Шлях | Що там |
