@@ -31,6 +31,7 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 | `docs/screens.md`, `design/screens/` | Карта екранів і 53 артборди (`.dc.html`, стани в `data-props`) |
 | `design/system/` | Дизайн-система: `tokens.json`, `README.md`, компоненти, `components/index.d.ts` (контракт пропсів), шрифт TT2020 |
 | `balance/` | Бот і події симулятора `sim.js` (формули — з `economy.js`), пресети, відбитки `golden/`, пісочниця (`sandbox/build.py` → `sandbox/index.html`) |
+| `src/save/` | Збереження (009): MMKV (`mmkv.ts`), схема й міграції, знімки, контрольна сума; запуск і екрани — `src/features/boot/` |
 | `src/economy/` | Модуль економіки: `core` (спільний із симулятором), `game` (стан і дії гри), `format.ts`; вбудований конфіг `econ-v7.2` |
 | `analytics/tracking-plan.yaml` | 60 подій аналітики; `docs/analytics.md` — пояснення |
 | `docs/art-and-sound.md`, `docs/stores.md`, `docs/playtest-and-launch.md` | Арт і звук, сторінки сторів, тестування й запуск |
@@ -65,5 +66,6 @@ Expo SDK 57, Expo Router (маршрути в `src/app/`, решта коду п
 - Пакети лише через `npx expo install <пакет>` (сумісні версії); після — `npx expo-doctor`.
 - `ios/` і `android/` не створюємо (CNG): нативне — через `app.json` і config plugins.
 - Кольори, відступи, шрифти — лише з `@/theme` (принцип VI). Числа балансу — лише з `balance/` (принцип I).
+- Збереження: нова форма запису = `CURRENT_SCHEMA` + 1 і міграція в `src/save/migrations.ts` з тестом на фікстуру попередньої версії (принцип III). MMKV — лише через `src/save/mmkv.ts` (нативний модуль; потрібна development build).
 - Sentry вмикається змінною `EXPO_PUBLIC_SENTRY_DSN`; без неї вимкнений. `sendDefaultPii: false`.
 - Тести: `*-test.ts(x)` у `__tests__/` поруч із кодом, Jest + Testing Library.

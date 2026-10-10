@@ -2,13 +2,13 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
+import { createSessionClock } from './clock';
 import type { ConveyorStore } from './store';
 
 export function useGameLoop(store: ConveyorStore) {
   useEffect(() => {
-    let wall0 = Date.now();
-    let perf0 = performance.now();
-    const now = () => wall0 + (performance.now() - perf0);
+    const clock = createSessionClock(() => Date.now(), () => performance.now());
+    const now = clock.now;
     let raf = 0;
     const frame = () => {
       store.getState().tick(now());
@@ -23,8 +23,7 @@ export function useGameLoop(store: ConveyorStore) {
         if (leftAt == null) return;
         store.getState().away(leftAt, Date.now());
         leftAt = null;
-        wall0 = Date.now();
-        perf0 = performance.now();
+        clock.reset();
         raf = requestAnimationFrame(frame);
       } else if (leftAt == null) {
         store.getState().tick(now());

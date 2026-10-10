@@ -28,4 +28,5 @@ export const t = {
   offTake: (sum: string) => `Забрати ${sum}`,
   offBack: 'До стройової',
   offToast: (n: string) => `Поки тебе не було: +${n} підписів.`,
+  clockBack: 'Годинник переводили назад. Офлайн-підписи не зараховано.',
 };

@@ -1,18 +1,23 @@
 import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
 
+import { BootScreen } from '@/features/boot/BootScreen';
+import { ForceUpdateScreen } from '@/features/boot/ForceUpdateScreen';
+import { SaveErrorScreen } from '@/features/boot/SaveErrorScreen';
+import { useBoot } from '@/features/boot/useBoot';
 import { ConveyorScreen } from '@/features/conveyor/ConveyorScreen';
-import { createConveyorStore } from '@/features/conveyor/store';
+import { createStorage } from '@/save/mmkv';
 
-// Вертикальний зріз 001 (етап 1). Головний екран і онбординг — 002.
+// Запуск 009: boot → force-update / save-error / гра (онбординг — 002). Головний екран — 002.
 export default function Index() {
-  const [store] = useState(() => createConveyorStore(Date.now()));
+  const [kv] = useState(createStorage);
+  const boot = useBoot(kv);
   const url = Linking.useURL();
+  const store = boot.route.kind === 'game' ? boot.route.store : null;
 
   // Лише в розробці: stroiova://?debugAwayMin=10 імітує повернення після відсутності (Maestro, .maestro/offline-return.yaml).
-  // Справжній офлайн між запусками потребує збереження (009).
   useEffect(() => {
-    if (!__DEV__ || !url) return;
+    if (!__DEV__ || !url || !store) return;
     const min = Number(Linking.parse(url).queryParams?.debugAwayMin);
     if (min > 0) {
       const now = Date.now();
@@ -20,5 +25,11 @@ export default function Index() {
     }
   }, [url, store]);
 
-  return <ConveyorScreen store={store} />;
+  const r = boot.route;
+  if (r.kind === 'boot') return <BootScreen migrating={r.migrating} />;
+  if (r.kind === 'newer') return <ForceUpdateScreen installed={r.installed} required={r.required} nowMs={r.atMs} />;
+  if (r.kind === 'error') {
+    return <SaveErrorScreen backup={r.corrupt.backup} nowMs={r.atMs} onRestore={boot.restore} onNew={boot.startNew} onReport={boot.report} />;
+  }
+  return <ConveyorScreen store={r.store} />;
 }
