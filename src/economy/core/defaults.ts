@@ -185,7 +185,7 @@ export const LEGACY = {
     stage: { id: 'kazna', name: 'Казначейство', rate: 21, cost: 40, growth: 1.12, manager: 400 } }
 };
 // ---- функції, перенесені з sim.js дослівно (порядок гілок і операцій той самий) ----
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 
 function clone<T>(x: T): T {
   return JSON.parse(JSON.stringify(x));

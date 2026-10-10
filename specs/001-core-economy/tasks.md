@@ -86,13 +86,13 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 
 ### Tests
 
-- [ ] T021 [P] [US2] `src/economy/__tests__/ac-income-test.ts`: AC-2 (потоки 4 392, ланки 2 880/3 600/4 464, M ×2,5 → 7 200/хв, вузько «kombat»), AC-3 (виробіток 144/300/1 200 і доменна подія `milestone` з `level` 25, `rateMultiplier` 2), AC-19 (Р2: Рапорти 1-го рівня 60/хв, ціна 40; Казначейство 210/хв, діловод 400; відкриття Наказів 15 млн), сума потоків = ланці → вузько «потоки»
+- [X] T021 [P] [US2] `src/economy/__tests__/ac-income-test.ts`: AC-2 (потоки 4 392, ланки 2 880/3 600/4 464, M ×2,5 → 7 200/хв, вузько «kombat»), AC-3 (виробіток 144/300/1 200 і доменна подія `milestone` з `level` 25, `rateMultiplier` 2), AC-19 (Р2: Рапорти 1-го рівня 60/хв, ціна 40; Казначейство 210/хв, діловод 400; відкриття Наказів 15 млн), сума потоків = ланці → вузько «потоки»
 
 ### Implementation
 
-- [ ] T022 [US2] `src/economy/game/state.ts`: `newGame(cfg, nowMs)` («Новий цикл: [1, 0, 0, 0]», ланки 1, без діловодів, `paper` = `paperStart`, `fuelEndMs` null), `itemsFor(state, cfg)` через `levelItems`, `newCycle(state)` за `reset()` sim.js із рішенням 48 (бусти, бак, папір, `hasNoAds`, `seenUnlocks` лишаються)
-- [ ] T023 [US2] `src/economy/game/income.ts`: `income(state, cfg, nowMs, effects, { idle })` через `E.flow` (cap = `capAt` × музей × добуток `factor`-ефектів одиниці), `bottleneck` ('streams' або UnitRef), M у порядку FR-17; `baseIncomePerMin` (FR-31: без тимчасових множників і факторів)
-- [ ] T024 [US2] `src/economy/config.ts`: вбудований конфіг з `balance/preset-v7.json` → `{ version: 'econ-v7.2', source: 'bundled', params: withDefaults(P.params) }` (рішення 52)
+- [X] T022 [US2] `src/economy/game/state.ts`: `newGame(cfg, nowMs)` («Новий цикл: [1, 0, 0, 0]», ланки 1, без діловодів, `paper` = `paperStart`, `fuelEndMs` null), `itemsFor(state, cfg)` через `levelItems`, `newCycle(state)` за `reset()` sim.js із рішенням 48 (бусти, бак, папір, `hasNoAds`, `seenUnlocks` лишаються)
+- [X] T023 [US2] `src/economy/game/income.ts`: `income(state, cfg, nowMs, effects, { idle })` через `E.flow` (cap = `capAt` × музей × добуток `factor`-ефектів одиниці), `bottleneck` ('streams' або UnitRef), M у порядку FR-17; `baseIncomePerMin` (FR-31: без тимчасових множників і факторів)
+- [X] T024 [US2] `src/economy/config.ts`: вбудований конфіг з `balance/preset-v7.json` → `{ version: 'econ-v7.2', source: 'bundled', params: withDefaults(P.params) }` (рішення 52)
 - [ ] T025 [P] [US2] `src/features/conveyor/store.ts`: zustand-стор `{ state, cfg, effects }` + дії, що викликають game; `src/features/conveyor/useGameLoop.ts`: монотонний годинник `performance.now()`, `advance` раз на кадр (requestAnimationFrame), пауза у фоні
 - [ ] T026 [US2] `src/features/conveyor/ConveyorScreen.tsx`: шапка з балансом і доходом, блоки «Потоки» й «Погодження» (рівень, виробіток, замкнено/відкрито), рядок `main.flow` / `main.flow_s` зі специфікації; лише `@/theme`, цілі дотику ≥ `size.touchMin`; `src/app/index.tsx` показує екран
 
@@ -108,11 +108,11 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 
 ### Tests
 
-- [ ] T027 [P] [US3] `src/economy/__tests__/ac-purchase-test.ts`: AC-4 (ціна 8,96 → кнопка «9», баланс 8,99 → «8», покупка проходить; Акти закриті 300, 10→11 «361»), AC-5 (900 підписів: «до віхи» 946 неактивна з ETA; ×10 «141», 6 → 66/хв, після покупки рівень 11 і одна подія `purchase` з `mode` x10, `levelsBought` 10), AC-6 частина покупок (новий цикл: Довідки недоступні до Актів; повторне відкриття Актів без `unit-unlock`, `streamUnlock.unlockIndex` 2), AC-17 (дохід 1 000/хв, баланс 0, покупка 60 000 → `nextPurchaseEtaSec` 3 600)
+- [X] T027 [P] [US3] `src/economy/__tests__/ac-purchase-test.ts`: AC-4 (ціна 8,96 → кнопка «9», баланс 8,99 → «8», покупка проходить; Акти закриті 300, 10→11 «361»), AC-5 (900 підписів: «до віхи» 946 неактивна з ETA; ×10 «141», 6 → 66/хв, після покупки рівень 11 і одна подія `purchase` з `mode` x10, `levelsBought` 10), AC-6 частина покупок (новий цикл: Довідки недоступні до Актів; повторне відкриття Актів без `unit-unlock`, `streamUnlock.unlockIndex` 2), AC-17 (дохід 1 000/хв, баланс 0, покупка 60 000 → `nextPurchaseEtaSec` 3 600)
 
 ### Implementation
 
-- [ ] T028 [US3] `src/economy/game/purchase.ts`: `quote(state, cfg, target, mode)` (`levels`, `price` через `packPrice`, `affordable` за точним порівнянням, `etaSec`, «до → після» для одиниці й доходу), `buy(...)` атомарно (новий стан або `{ error }`; потік відкривається лише після попереднього, FR-12), доменні події `purchase`, `streamUnlock`, `milestone`, `unitUnlockSeen` (FR-13 через `seenUnlocks`), `nextPurchaseEtaSec` (FR-29)
+- [X] T028 [US3] `src/economy/game/purchase.ts`: `quote(state, cfg, target, mode)` (`levels`, `price` через `packPrice`, `affordable` за точним порівнянням, `etaSec`, «до → після» для одиниці й доходу), `buy(...)` атомарно (новий стан або `{ error }`; потік відкривається лише після попереднього, FR-12), доменні події `purchase`, `streamUnlock`, `milestone`, `unitUnlockSeen` (FR-13 через `seenUnlocks`), `nextPurchaseEtaSec` (FR-29)
 - [ ] T029 [US3] `src/features/conveyor/UnitRow.tsx`: перемикач ×1 / ×10 / до віхи, ціна (`formatBig` price), неактивна кнопка з `unit.wait`, «до → після»; підключити до `ConveyorScreen.tsx`
 
 **Checkpoint**: покупки працюють
@@ -127,11 +127,11 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 
 ### Tests
 
-- [ ] T030 [P] [US4] `src/economy/__tests__/ac-clerk-test.ts`: найм списує `manager`, повторно не можна; `clerkHire.isFirstClerk` true лише першого разу за встановлення (AC-6: після нового циклу false); `income(idle)` = 0, поки немає діловода хоча б на одній ланці; діловоди на Рапортах і трьох ланках коштують 710 (preset-v5)
+- [X] T030 [P] [US4] `src/economy/__tests__/ac-clerk-test.ts`: найм списує `manager`, повторно не можна; `clerkHire.isFirstClerk` true лише першого разу за встановлення (AC-6: після нового циклу false); `income(idle)` = 0, поки немає діловода хоча б на одній ланці; діловоди на Рапортах і трьох ланках коштують 710 (preset-v5)
 
 ### Implementation
 
-- [ ] T031 [US4] `src/economy/game/purchase.ts`: `hire(state, cfg, target, nowMs)` з подією `clerkHire { isFirstClerk, clerksCountAfter }`; стан «ручної» одиниці для UI
+- [X] T031 [US4] `src/economy/game/purchase.ts`: `hire(state, cfg, target, nowMs)` з подією `clerkHire { isFirstClerk, clerksCountAfter }`; стан «ручної» одиниці для UI
 - [ ] T032 [US4] `src/features/conveyor/UnitRow.tsx`: кнопка «Найняти діловода · ціна», позначка «вручну» на одиниці без діловода
 
 **Checkpoint**: діловоди наймаються
@@ -146,12 +146,12 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 
 ### Tests
 
-- [ ] T033 [P] [US7] `src/economy/__tests__/ac-offline-test.ts`: AC-7 (10 год, 6/хв, M 1, порожній бак → 2 880, «8 год з 10», `cappedMs` 7 200 000), AC-8 (діловод лише на Стройовій → 0, `idle: true`), AC-14 (1 000/хв, буст ×2 ще 1 год, 3 год → 240 000; онлайн `advance` кроками 1/60 с і 1/15 с дає те саме число ±1e-9 відносно), AC-16 (13 год 5 хв, сховище 8 год → `cappedMs` 5 год 5 хв), відрізок ділиться в момент, коли бак доходить до 20% (бак на 6 год, повний на виході, відсутність 6 год → 4 год 48 хв з ×1,25)
+- [X] T033 [P] [US7] `src/economy/__tests__/ac-offline-test.ts`: AC-7 (10 год, 6/хв, M 1, порожній бак → 2 880, «8 год з 10», `cappedMs` 7 200 000), AC-8 (діловод лише на Стройовій → 0, `idle: true`), AC-14 (1 000/хв, буст ×2 ще 1 год, 3 год → 240 000; онлайн `advance` кроками 1/60 с і 1/15 с дає те саме число ±1e-9 відносно), AC-16 (13 год 5 хв, сховище 8 год → `cappedMs` 5 год 5 хв), відрізок ділиться в момент, коли бак доходить до 20% (бак на 6 год, повний на виході, відсутність 6 год → 4 год 48 хв з ×1,25)
 
 ### Implementation
 
-- [ ] T034 [US7] `src/economy/game/advance.ts`: `advance(state, cfg, fromMs, toMs, effects)` (онлайн: інтеграл через `E.integrate` по точках зміни ефектів і бака, без проміжного округлення); `offline(state, cfg, leftAtMs, backAtMs, effects)` → `{ earned, awayMs, creditedMs, cappedMs, fuelBonusMs, idle, paper }` за FR-23/FR-24 (idle-flow, сховище × журнал № 2 якщо є, точки: ефекти, 20% бака, кінець сховища)
-- [ ] T034a [US7] `src/economy/game/advance.ts`: `claimOffline(state, cfg, result, k, localDate)` — зараховує `earned × k` (k = 1 або `offlineAdMult`); лічильник ×2 за місцевою датою пристрою (`offlineDoubles { date, count }` у стані), ×2 доступне, поки `count < offlineAdPerDay`; повернення з ×1 лічильник не змінює (FR-26). Тест AC-15 (без реклами: 3 нагороди ×2 → стан «ліміт 3 з 3»; ×1 і новий день) у `src/economy/__tests__/ac-offline-test.ts`. Ролик і «Без реклами» — 008
+- [X] T034 [US7] `src/economy/game/advance.ts`: `advance(state, cfg, fromMs, toMs, effects)` (онлайн: інтеграл через `E.integrate` по точках зміни ефектів і бака, без проміжного округлення); `offline(state, cfg, leftAtMs, backAtMs, effects)` → `{ earned, awayMs, creditedMs, cappedMs, fuelBonusMs, idle, paper }` за FR-23/FR-24 (idle-flow, сховище × журнал № 2 якщо є, точки: ефекти, 20% бака, кінець сховища)
+- [X] T034a [US7] `src/economy/game/advance.ts`: `claimOffline(state, cfg, result, k, localDate)` — зараховує `earned × k` (k = 1 або `offlineAdMult`); лічильник ×2 за місцевою датою пристрою (`offlineDoubles { date, count }` у стані), ×2 доступне, поки `count < offlineAdPerDay`; повернення з ×1 лічильник не змінює (FR-26). Тест AC-15 (без реклами: 3 нагороди ×2 → стан «ліміт 3 з 3»; ×1 і новий день) у `src/economy/__tests__/ac-offline-test.ts`. Ролик і «Без реклами» — 008
 - [ ] T035 [US7] `src/features/conveyor/OfflineReturn.tsx` + AppState у `useGameLoop.ts`: при поверненні після ≥ 5 хв — модалка з сумою, «зараховано 8 год з N», «Забрати»; стан «Стройова стояла» з `off.idle`; < 5 хв — тост `off.toast` і зарахування без модалки
 
 **Checkpoint**: зріз «тап → покупка → діловод → офлайн» закрито (разом з US5)

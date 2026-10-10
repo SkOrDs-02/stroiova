@@ -3,11 +3,11 @@ import core from '../../../../balance/golden/core.json';
 import { DEFAULTS, SCENARIOS, levelItems, reachableLevels, withDefaults } from '..';
 
 const presets = {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   'preset-v5': require('../../../../balance/preset-v5.json'),
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   'preset-v6': require('../../../../balance/preset-v6.json'),
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   'preset-v7': require('../../../../balance/preset-v7.json'),
 };
 type Name = keyof typeof presets;
