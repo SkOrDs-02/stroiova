@@ -24,7 +24,7 @@ export function newGame(cfg: EconomyConfig, nowMs: number): EconomyState {
     seenUnlocks: [],
     hiredEver: false,
     catBonusAtMs: null,
-    tapWindow: { startMs: nowMs, count: 0 },
+    tapTimes: [],
     offlineDoubles: { date: '', count: 0 },
     museum: { unit: {}, storage: 1, paper: 1 },
   };

@@ -29,6 +29,12 @@ export function fuelBonusEndMs(state: EconomyState, cfg: EconomyConfig): number 
   return state.fuelEndMs - state.fuelCapacityMs * cfg.params.fuelBonusThreshold;
 }
 
+/** Рівень бака в момент t, 0–100 (resource-sheet, generator_refuel). */
+export function tankPct(state: EconomyState, t: number): number {
+  if (state.fuelEndMs == null) return 0;
+  return Math.max(0, Math.min(100, Math.round(((state.fuelEndMs - t) / state.fuelCapacityMs) * 100)));
+}
+
 export interface MultRow {
   source: 'prestige' | 'no_ads' | Effect['source'] | 'fuel';
   value: number;

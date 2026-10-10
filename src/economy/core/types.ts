@@ -36,7 +36,8 @@ export interface EconomyParams {
   milestoneEvery: number;
   milestoneMult: number;
   tapValue: number;
-  tapRateMax?: number;
+  tapRateMax: number;
+  offlineReturnMin: number;
   storageHours: number;
   offlineAdMult: number;
   offlineAdPerDay: number;

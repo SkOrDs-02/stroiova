@@ -13,14 +13,15 @@ const presets = {
 type Name = keyof typeof presets;
 
 const strip = <T extends object>(x: T) => {
-  const { tapRateMax: _drop, ...rest } = x as T & { tapRateMax?: number };
+  const { tapRateMax: _t, offlineReturnMin: _o, ...rest } = x as T & { tapRateMax?: number; offlineReturnMin?: number };
   return rest;
 };
 
 describe('параметри', () => {
-  test('DEFAULTS і SCENARIOS як у sim.js; новий лише tapRateMax = 10 (FR-16)', () => {
+  test('DEFAULTS і SCENARIOS як у sim.js; нові лише tapRateMax = 10 (FR-16) і offlineReturnMin = 5 (FR-25)', () => {
     expect(strip(DEFAULTS)).toEqual(core.DEFAULTS);
     expect(DEFAULTS.tapRateMax).toBe(10);
+    expect(DEFAULTS.offlineReturnMin).toBe(5);
     expect(SCENARIOS).toEqual(core.SCENARIOS);
   });
 

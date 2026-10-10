@@ -2,7 +2,7 @@
 // Результат не залежить від частоти кадрів: швидкість × тривалість без проміжного округлення.
 import { integrate } from '../core';
 import { paperPerMin } from './actions';
-import { fuelBonusEndMs, income } from './income';
+import { fuelBonusEndMs, fuelMult, income } from './income';
 import type { Big, EconomyConfig, EconomyState, Effect } from './types';
 
 const MIN = 60_000;
@@ -33,9 +33,6 @@ export function advance(state: EconomyState, cfg: EconomyConfig, fromMs: number,
   };
 }
 
-/** Поріг екрана повернення: коротша відсутність зараховується тостом без довідки (FR-25, карта екранів). */
-export const OFFLINE_RETURN_MIN_MS = 5 * MIN;
-
 export interface OfflineResult {
   /** Зароблено за зарахований час, без ×2 */
   earned: Big;
@@ -63,16 +60,22 @@ export function offline(state: EconomyState, cfg: EconomyConfig, leftAtMs: numbe
   const end = leftAtMs + creditedMs;
   const earned = earnedBetween(state, cfg, leftAtMs, end, effects, true);
   const idle = income(state, cfg, leftAtMs, [], { idle: true }).flow.v === 0;
-  const fuelEnd = fuelBonusEndMs(state, cfg);
-  const fuelBonusMs = Math.max(0, Math.min(fuelEnd, end) - leftAtMs);
+  // скільки зарахованого часу діяв ×fuelBonus — від бака понад поріг або від подарунка «генератор» (FR-21)
+  const fuelBonusMs = integrate(cutPoints(state, cfg, leftAtMs, end, effects), (t) => (fuelMult(state, cfg, t, effects) > 1 ? 1 : 0));
   const paper = (paperPerMin(state, cfg, true) * creditedMs) / MIN;
-  return { earned, awayMs, creditedMs, cappedMs: awayMs - creditedMs, storageMs, fuelBonusMs, idle, short: awayMs < OFFLINE_RETURN_MIN_MS, paper };
+  return { earned, awayMs, creditedMs, cappedMs: awayMs - creditedMs, storageMs, fuelBonusMs, idle, short: awayMs < cfg.params.offlineReturnMin * MIN, paper };
 }
 
-/** Скільки нагород ×2 лишилось на місцеву добу (FR-26); нова дата скидає лічильник (09 FR-15). */
+/**
+ * Нагород ×2, використаних на місцеву добу (FR-26). Лічильник скидається, лише коли дата пізніша за збережену
+ * (09 FR-15): переведений назад годинник ліміт не обнуляє. Дата — РРРР-ММ-ДД, тож рядки порівнюються як дати.
+ */
+function doublesUsed(state: EconomyState, localDate: string): number {
+  return localDate > state.offlineDoubles.date ? 0 : state.offlineDoubles.count;
+}
+
 export function offlineDoublesLeft(state: EconomyState, cfg: EconomyConfig, localDate: string): number {
-  const used = state.offlineDoubles.date === localDate ? state.offlineDoubles.count : 0;
-  return Math.max(0, cfg.params.offlineAdPerDay - used);
+  return Math.max(0, cfg.params.offlineAdPerDay - doublesUsed(state, localDate));
 }
 
 /**
@@ -88,7 +91,8 @@ export function claimOffline(
 ): { state: EconomyState; claimed: Big } | { error: 'limit' } {
   if (doubled && offlineDoublesLeft(state, cfg, localDate) === 0) return { error: 'limit' };
   const claimed = res.earned * (doubled ? cfg.params.offlineAdMult : 1);
-  const used = state.offlineDoubles.date === localDate ? state.offlineDoubles.count : 0;
+  const used = doublesUsed(state, localDate);
+  const date = localDate > state.offlineDoubles.date ? localDate : state.offlineDoubles.date;
   return {
     claimed,
     state: {
@@ -96,7 +100,7 @@ export function claimOffline(
       signatures: state.signatures + claimed,
       lifetimeCycle: state.lifetimeCycle + claimed,
       paper: state.paper + res.paper,
-      offlineDoubles: doubled ? { date: localDate, count: used + 1 } : state.offlineDoubles,
+      offlineDoubles: doubled ? { date, count: used + 1 } : state.offlineDoubles,
     },
   };
 }

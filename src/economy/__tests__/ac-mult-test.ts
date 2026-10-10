@@ -48,5 +48,9 @@ describe('множники й фактори', () => {
     });
     const s = game(cfg, { museum: { unit: { stroy: 1.05 }, storage: 1, paper: 1 } });
     expect(income(s, cfg, T0).perMin).toBe(2880);
+    // вузько саме в Стройовій (Комбат і Фін ширші): +5% змінює дохід
+    const fail: Effect = { kind: 'factor', source: 'inspection_fail', value: 0.5, target: { type: 'stage', id: 'stroy' }, startMs: T0, endMs: T0 + HOUR };
+    expect(income(game(cfg), cfg, T0, [fail]).perMin).toBe(1800);
+    expect(income(s, cfg, T0, [fail]).perMin).toBeCloseTo(1890, 9);
   });
 });

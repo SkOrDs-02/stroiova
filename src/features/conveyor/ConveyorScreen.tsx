@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from 'zustand';
 
 import { formatBig, formatMult, formatRate } from '@/economy/format';
-import { fuelBonusEndMs, income, multStack } from '@/economy/game/income';
+import { fuelMult, income, multStack, tankPct } from '@/economy/game/income';
 import { itemsFor } from '@/economy/game/state';
 import type { BuyMode } from '@/economy/game/types';
 import { color, duration, radius, size, space, typeScale } from '@/theme';
@@ -29,8 +29,8 @@ export function ConveyorScreen({ store }: { store: ConveyorStore }) {
   const it = itemsFor(s.state, s.cfg);
   const neck = inc.bottleneck;
   const neckName = neck === 'streams' ? null : it.stages.find((u) => u.id === neck.id)?.name ?? '';
-  const tankPct = s.state.fuelEndMs == null ? 0 : Math.max(0, Math.round(((s.state.fuelEndMs - now) / s.state.fuelCapacityMs) * 100));
-  const fuelOn = now < fuelBonusEndMs(s.state, s.cfg);
+  const tank = tankPct(s.state, now);
+  const fuelM = fuelMult(s.state, s.cfg, now, s.effects);
 
   const toast = s.toast;
   useEffect(() => {
@@ -49,7 +49,7 @@ export function ConveyorScreen({ store }: { store: ConveyorStore }) {
         </Text>
         <View style={styles.tiles}>
           <Pressable testID="refuel" accessibilityRole="button" onPress={() => s.refuel(Date.now())} style={styles.tile}>
-            <Text style={styles.tileText}>{`${t.fuel(tankPct)}${fuelOn ? ' · ×1,25' : ''} · ${t.refuel}`}</Text>
+            <Text style={styles.tileText}>{`${t.fuel(tank, fuelM > 1 ? formatMult(fuelM) : null)} · ${t.refuel}`}</Text>
           </Pressable>
           <View style={styles.tile}>
             <Text style={styles.tileText}>{t.paper(Math.floor(s.state.paper))}</Text>
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   mode: { flex: 1, minHeight: size.touchMin, borderRadius: radius[6], borderWidth: 1, borderColor: color.borderStrong, justifyContent: 'center', alignItems: 'center' },
   modeOn: { backgroundColor: color.surface, borderColor: color.accent },
   modeText: { color: color.muted, fontSize: typeScale.body.fontSize },
-  modeTextOn: { color: color.accent, fontWeight: '600' },
+  modeTextOn: { color: color.accent, fontWeight: typeScale.cta.fontWeight },
   h4: { color: color.muted, fontSize: typeScale.h4.fontSize, fontWeight: typeScale.h4.fontWeight, marginTop: space[8] },
   stageWrap: { gap: space[8] },
   note: { color: color.muted, fontSize: typeScale.caption.fontSize, marginTop: space[8] },

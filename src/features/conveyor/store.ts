@@ -16,6 +16,8 @@ interface Store {
   lastMs: number;
   mode: BuyMode;
   offline: OfflineResult | null;
+  /** Коли гравець повернувся: ліміт ×2 рахується за датою повернення (крайовий випадок «через північ») */
+  offlineBackAt: number | null;
   /** Сума короткої відсутності для тосту off.toast (FR-25) */
   toast: number | null;
   events: DomainEvent[];
@@ -31,10 +33,12 @@ interface Store {
   clearToast: () => void;
 }
 
-const localDate = (ms: number) => {
+/** Місцева дата пристрою РРРР-ММ-ДД: ліміти доби рахуються за нею (FR-26, 09 FR-15). */
+export function localDate(ms: number): string {
   const d = new Date(ms);
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-};
+  const p2 = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+}
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig) {
   return create<Store>((set, get) => ({
@@ -44,6 +48,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     lastMs: nowMs,
     mode: 'x1',
     offline: null,
+    offlineBackAt: null,
     toast: null,
     events: [],
     tick: (now) => {
@@ -76,15 +81,15 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         if ('error' in r) return;
         set({ state: r.state, lastMs: backAt, toast: r.claimed > 0 ? r.claimed : null });
       } else {
-        set({ offline: res, lastMs: backAt });
+        set({ offline: res, offlineBackAt: backAt, lastMs: backAt });
       }
     },
     claim: () => {
-      const { state, cfg: c, offline: res } = get();
-      if (!res) return;
-      const r = claimOffline(state, c, res, false, localDate(Date.now()));
+      const { state, cfg: c, offline: res, offlineBackAt } = get();
+      if (!res || offlineBackAt == null) return;
+      const r = claimOffline(state, c, res, false, localDate(offlineBackAt));
       if ('error' in r) return;
-      set({ state: r.state, offline: null });
+      set({ state: r.state, offline: null, offlineBackAt: null });
     },
     clearToast: () => set({ toast: null }),
   }));

@@ -28,14 +28,14 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
   const q = quote(state, cfg, unit, mode, nowMs, effects);
   const rate = capAt(def, level, cfg.params) * (state.museum.unit[def.id] ?? 1);
   const opened = level > 0;
+  const canHire = state.signatures >= def.manager;
   const label = opened ? `${t.upgrade} · ${formatBig(q.price, 'price')}` : `${t.open} · ${formatBig(q.price, 'price')}`;
   return (
     <View style={[styles.row, isNeck && styles.neck]} testID={`unit-${def.id}`}>
       <View style={styles.head}>
         <Text style={styles.name}>{def.name}</Text>
         <Text style={styles.meta}>
-          {opened ? `Рів. ${level} · ${formatRate(rate)}` : q.locked ? t.locked : `1-й рівень: ${formatRate(capAt(def, 1, cfg.params))}`}
-          {opened ? ` · ${hasClerk ? t.clerk : t.manual}` : ''}
+          {opened ? t.level(level, formatRate(rate), hasClerk ? t.clerk : t.manual) : q.locked ? t.locked : t.firstLevel(formatRate(capAt(def, 1, cfg.params)))}
         </Text>
         {opened && q.levels > 1 ? <Text style={styles.meta}>{`${formatRate(q.rateBefore)} → ${formatRate(q.rateAfter)}`}</Text> : null}
         {!q.affordable && !q.locked && q.etaSec != null ? <Text style={styles.wait}>{t.wait(formatDuration(q.etaSec))}</Text> : null}
@@ -55,11 +55,13 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
           <Pressable
             testID={`hire-${def.id}`}
             accessibilityRole="button"
-            disabled={state.signatures < def.manager}
+            accessibilityState={{ disabled: !canHire }}
+            disabled={!canHire}
             onPress={onHire}
-            style={[styles.btnGhost, state.signatures < def.manager && styles.btnOff]}
+            style={[styles.btnGhost, !canHire && styles.btnOff]}
           >
-            <Text style={styles.ghostText}>{`${t.hire} · ${formatBig(def.manager, 'price')}`}</Text>
+            <Text style={[styles.ghostText, !canHire && styles.btnTextOff]}>{`${t.hire} · ${formatBig(def.manager, 'price')}`}</Text>
+            {!canHire ? <Text style={styles.wait}>{t.short(formatBig(def.manager - state.signatures, 'price'))}</Text> : null}
           </Pressable>
         ) : null}
       </View>
@@ -83,9 +85,10 @@ const styles = StyleSheet.create({
   wait: { color: color.muted, fontSize: typeScale.caption.fontSize, lineHeight: typeScale.caption.lineHeight },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[8] },
   btn: { minHeight: size.touchMin, paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.accent, justifyContent: 'center' },
-  btnOff: { opacity: 0.45 },
+  // неактивно: заглиблена поверхня й приглушений текст, поряд — текст «Не вистачає» (колір не єдиний носій, принцип VI)
+  btnOff: { backgroundColor: color.surface2, borderColor: color.border },
   btnText: { color: color.accentInk, fontSize: typeScale.cta.fontSize, fontWeight: typeScale.cta.fontWeight },
-  btnTextOff: {},
-  btnGhost: { minHeight: size.touchMin, paddingHorizontal: space[12], borderRadius: radius[6], borderWidth: 1, borderColor: color.borderStrong, justifyContent: 'center' },
+  btnTextOff: { color: color.muted },
+  btnGhost: { minHeight: size.touchMin, paddingHorizontal: space[12], paddingVertical: space[4], borderRadius: radius[6], borderWidth: 1, borderColor: color.borderStrong, justifyContent: 'center' },
   ghostText: { color: color.text, fontSize: typeScale.body.fontSize },
 });

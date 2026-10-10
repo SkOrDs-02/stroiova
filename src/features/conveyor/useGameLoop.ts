@@ -19,7 +19,9 @@ export function useGameLoop(store: ConveyorStore) {
     let leftAt: number | null = null;
     const sub = AppState.addEventListener('change', (s) => {
       if (s === 'active') {
-        if (leftAt != null) store.getState().away(leftAt, Date.now());
+        // «active» без попереднього фону (напр. після inactive на iOS) не запускає другий ланцюг кадрів
+        if (leftAt == null) return;
+        store.getState().away(leftAt, Date.now());
         leftAt = null;
         wall0 = Date.now();
         perf0 = performance.now();

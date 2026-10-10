@@ -10,9 +10,9 @@ const MIN = 60_000;
  * разом із пальним). Зараховуємо не більше tapRateMax тапів за секунду, решту ігноруємо.
  */
 export function tap(state: EconomyState, cfg: EconomyConfig, t: number, effects: readonly Effect[] = []): { state: EconomyState; credited: boolean; gain: Big } {
-  const max = cfg.params.tapRateMax ?? 10;
-  const win = t - state.tapWindow.startMs >= SEC || t < state.tapWindow.startMs ? { startMs: t, count: 0 } : state.tapWindow;
-  if (win.count >= max) return { state: win === state.tapWindow ? state : { ...state, tapWindow: win }, credited: false, gain: 0 };
+  // ковзне вікно: у будь-якій секунді не більше tapRateMax зарахованих тапів
+  const recent = state.tapTimes.filter((x) => x > t - SEC && x <= t);
+  if (recent.length >= cfg.params.tapRateMax) return { state, credited: false, gain: 0 };
   const gain = cfg.params.tapValue * multStack(state, cfg, t, effects).total;
   return {
     credited: true,
@@ -21,7 +21,7 @@ export function tap(state: EconomyState, cfg: EconomyConfig, t: number, effects:
       ...state,
       signatures: state.signatures + gain,
       lifetimeCycle: state.lifetimeCycle + gain,
-      tapWindow: { startMs: win.startMs, count: win.count + 1 },
+      tapTimes: [...recent, t],
     },
   };
 }

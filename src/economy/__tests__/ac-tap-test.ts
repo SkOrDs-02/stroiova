@@ -21,6 +21,20 @@ describe('печатка', () => {
     }
     expect(credited).toBe(10);
     expect(s.signatures).toBeCloseTo(50, 9);
-    expect(tap(s, cfg, T0 + 1000, [boost]).credited).toBe(true); // нова секунда
+    expect(tap(s, cfg, T0 + 1000, [boost]).credited).toBe(true); // перший тап вийшов з вікна
+  });
+
+  test('ковзне вікно: на межі двох секунд не більше 10 тапів за будь-яку 1 с', () => {
+    const cfg = cfgV5();
+    let s: EconomyState = game(cfg);
+    let credited = 0;
+    // 10 тапів наприкінці першої секунди й 10 на початку другої — у вікні 1 с має пройти лише 10
+    const times = [...Array.from({ length: 10 }, (_, i) => T0 + 900 + i * 5), ...Array.from({ length: 10 }, (_, i) => T0 + 1000 + i * 5)];
+    for (const t of times) {
+      const r = tap(s, cfg, t);
+      s = r.state;
+      if (r.credited) credited++;
+    }
+    expect(credited).toBe(10);
   });
 });

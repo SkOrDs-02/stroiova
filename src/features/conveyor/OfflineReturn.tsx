@@ -18,9 +18,9 @@ export function OfflineReturn({ res, onClaim }: { res: OfflineResult; onClaim: (
             <>
               <Text style={styles.sum}>{`+${formatBig(res.earned, 'balance')}`}</Text>
               <Text style={styles.body}>
-                {`Зараховано ${formatDuration(res.creditedMs / 1000)} з ${formatDuration(res.awayMs / 1000)}`}
+                {t.offCredited(formatDuration(res.creditedMs / 1000), formatDuration(res.awayMs / 1000))}
               </Text>
-              {res.cappedMs > 0 ? <Text style={styles.body}>{t.offStorage(formatDuration(res.cappedMs / 1000))}</Text> : null}
+              {res.cappedMs > 0 ? <Text style={styles.body}>{t.offStorage(formatDuration(res.storageMs / 1000), formatDuration(res.cappedMs / 1000))}</Text> : null}
             </>
           )}
           <Pressable testID="offline-claim" accessibilityRole="button" onPress={onClaim} style={styles.btn}>

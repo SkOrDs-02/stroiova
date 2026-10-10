@@ -318,8 +318,10 @@ var StroiovaEconomy = (() => {
     // the paid scenario also buys the starter pack after the first inspection result (08 FR-17, FR-19)
     starterSignatures: 5e4,
     starterFuelHours: 12,
-    tapRateMax: 10
+    tapRateMax: 10,
     // 01 FR-16: зараховуємо не більше стількох тапів за секунду (гра; бот не читає)
+    offlineReturnMin: 5
+    // 01 FR-25: коротша відсутність — тост без довідки повернення (гра; бот не читає)
   };
   var SCENARIOS = [
     { id: "free", name: "Без реклами й покупок", ads: false, paid: false },

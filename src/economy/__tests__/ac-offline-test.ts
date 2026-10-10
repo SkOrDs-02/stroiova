@@ -83,5 +83,17 @@ describe('офлайн', () => {
     expect(offlineDoublesLeft(s, cfg, day)).toBe(0);
     expect(claimOffline(s, cfg, res, true, day)).toEqual({ error: 'limit' });
     expect(offlineDoublesLeft(s, cfg, '2026-10-11')).toBe(3);
+    // годинник переведено назад: ранніша дата ліміт не обнуляє й дату не перезаписує
+    expect(offlineDoublesLeft(s, cfg, '2026-10-09')).toBe(0);
+    expect(claimOffline(s, cfg, res, true, '2026-10-09')).toEqual({ error: 'limit' });
+  });
+
+  test('подарунок «генератор» тримає ×1,25 без пального — входить у fuelBonusMs (FR-21)', () => {
+    const cfg = cfgV5((p) => { p.fuelBonus = 1.25; });
+    const s = game(cfg, allClerks); // бак порожній
+    const gen: Effect = { kind: 'mult', source: 'gift_generator', value: 1, startMs: T0, endMs: T0 + 2 * HOUR };
+    const r = offline(s, cfg, T0, T0 + 3 * HOUR, [gen]);
+    expect(r.fuelBonusMs).toBe(2 * HOUR);
+    expect(r.earned).toBeCloseTo(6 * (120 * 1.25 + 60), 9);
   });
 });

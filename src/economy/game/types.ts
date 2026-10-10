@@ -47,8 +47,8 @@ export interface EconomyState {
   hiredEver: boolean;
   /** Останній бонус Кота Сейфа (FR-32) */
   catBonusAtMs: number | null;
-  /** Лічильник тапів поточної секунди (FR-16) */
-  tapWindow: { startMs: number; count: number };
+  /** Мітки останніх зарахованих тапів, не більше tapRateMax: ковзне вікно 1 с (FR-16) */
+  tapTimes: number[];
   /** Бонуси музею (07): множник виробітку одиниці за id, сховища (№ 2) і паперу (№ 3); без журналів — 1 */
   museum: { unit: Record<string, number>; storage: number; paper: number };
   /** Нагороди ×2 за місцеву добу пристрою; скидається, лише коли дата пізніша (FR-26, 09 FR-15) */

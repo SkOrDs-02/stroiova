@@ -19,7 +19,7 @@ function run(preset: { params: object }, seed: number, scenario: number) {
 describe('симулятор на модулі економіки', () => {
   test('AC-1: preset-v5, «Дивиться рекламу», 21 день — віхи summary ±1%', () => {
     const r = run(P5, 1, 1);
-    expect(r.out.firstClerk / 60).toBeCloseTo(P5.summary.firstClerkMin, 1); // 3,07 хв
+    expect(Math.abs(r.out.firstClerk / 60 - P5.summary.firstClerkMin)).toBeLessThan(P5.summary.firstClerkMin * 0.01); // 3,07 хв
     expect(Math.abs(r.out.prestiges[0].t / DAY - P5.summary.firstPrestigeDays)).toBeLessThan(P5.summary.firstPrestigeDays * 0.01);
     expect(Math.abs(r.out.level2At / DAY - P5.summary.level2Day)).toBeLessThan(P5.summary.level2Day * 0.01);
   });
