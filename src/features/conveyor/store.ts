@@ -76,6 +76,12 @@ interface Store {
   claimArchive: () => number;
 }
 
+/** Рішення 59: до закриття кроку 7 наймати можна лише діловода «Стройової частини». */
+export function canHireNow(o: OnboardingState, ref: UnitRef): boolean {
+  const before7 = o.step !== 'done' && o.step <= 7;
+  return !before7 || (ref.type === 'stage' && ref.id === 'stroy');
+}
+
 /** «Пташка» як тимчасовий множник від мітки a: діє ще birdLeftMs ігрового часу (002 R3). */
 export function birdEffect(cfg: EconomyConfig, o: OnboardingState, a: number): Effect[] {
   if (o.birdLeftMs <= 0) return [];
@@ -146,6 +152,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (purchased) get().onbComplete(6);
     },
     hire: (ref) => {
+      if (!canHireNow(get().onboarding, ref)) return;
       const { state, cfg: c } = get();
       const r = hire(state, c, ref);
       if (!isOk(r)) return;

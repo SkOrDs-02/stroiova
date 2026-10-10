@@ -25,15 +25,17 @@ interface Props {
   onHire: () => void;
   /** Коуч: ціль у цьому рядку з підказкою, або 'dim' — рядок затемнено й не тапається */
   coach?: { target: 'buy' | 'hire'; text: string } | 'dim';
+  /** Найм поки закрито (002, рішення 59) */
+  hireLocked?: boolean;
   /** Без діловода після першого найму (002 FR-17) */
   needsClerk?: boolean;
 }
 
-export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effects, mode, nowMs, onBuy, onHire, coach, needsClerk }: Props) {
+export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effects, mode, nowMs, onBuy, onHire, coach, needsClerk, hireLocked }: Props) {
   const q = quote(state, cfg, unit, mode, nowMs, effects);
   const rate = capAt(def, level, cfg.params) * (state.museum.unit[def.id] ?? 1);
   const opened = level > 0;
-  const canHire = state.signatures >= def.manager;
+  const canHire = state.signatures >= def.manager && !hireLocked;
   const label = opened ? `${t.upgrade} · ${formatBig(q.price, 'price')}` : `${t.open} · ${formatBig(q.price, 'price')}`;
   const dim = coach === 'dim';
   const target = typeof coach === 'object' ? coach : null;
@@ -82,7 +84,7 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
             style={[styles.btnGhost, !canHire && styles.btnOff, target?.target === 'hire' && styles.lit]}
           >
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.ghostText, !canHire && styles.btnTextOff]}>{`${t.hire} · ${formatBig(def.manager, 'price')}`}</Text>
-            {!canHire ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.wait}>{t.short(formatBig(def.manager - state.signatures, 'price'))}</Text> : null}
+            {!canHire && !hireLocked ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.wait}>{t.short(formatBig(def.manager - state.signatures, 'price'))}</Text> : null}
             {target && target.target !== 'hire' ? <View style={styles.scrim} /> : null}
           </Pressable>
         ) : null}

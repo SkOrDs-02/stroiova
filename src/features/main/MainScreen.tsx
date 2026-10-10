@@ -11,7 +11,7 @@ import { itemsFor } from '@/economy/game/state';
 import type { BuyMode } from '@/economy/game/types';
 import { OfflineReturn } from '@/features/conveyor/OfflineReturn';
 import { Seal } from '@/features/conveyor/Seal';
-import { birdEffect, type ConveyorStore, type Toast } from '@/features/conveyor/store';
+import { birdEffect, canHireNow, type ConveyorStore, type Toast } from '@/features/conveyor/store';
 import { t } from '@/features/conveyor/texts';
 import { UnitRow } from '@/features/conveyor/UnitRow';
 import { CallOverlay } from '@/features/onboarding/CallOverlay';
@@ -176,6 +176,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
             mode={s.mode}
             nowMs={now}
             coach={coachFor(def.id)}
+            hireLocked={!canHireNow(o, { type: 'stream', id: def.id })}
             onBuy={() => s.buy({ type: 'stream', id: def.id }, Date.now())}
             onHire={() => s.hire({ type: 'stream', id: def.id })}
           />
@@ -196,6 +197,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
               mode={s.mode}
               nowMs={now}
               coach={coachFor(def.id)}
+              hireLocked={!canHireNow(o, { type: 'stage', id: def.id })}
               onBuy={() => s.buy({ type: 'stage', id: def.id }, Date.now())}
               onHire={() => s.hire({ type: 'stage', id: def.id })}
             />

@@ -78,3 +78,19 @@ describe('черга тостів', () => {
     expect(screen.getByTestId('toast')).toHaveTextContent('Телеграма згори. Строк виконання: учора.');
   });
 });
+
+describe('рішення 59', () => {
+  test('до кроку 7 найм решти одиниць закрито, Оля — перший діловод; після кроку 7 найм вільний', async () => {
+    const store = storeAt(7);
+    await render(<MainScreen store={store} />);
+    await setSig(store, 1e6);
+    expect(screen.getByTestId('hire-raporty', hidden)).toBeDisabled();
+    store.getState().hire({ type: 'stream', id: 'raporty' });
+    expect(store.getState().state.streamClerks[0]).toBe(false);
+    await fireEvent.press(screen.getByTestId('hire-stroy'));
+    expect(store.getState().events.at(-1)).toMatchObject({ type: 'clerkHire', isFirstClerk: true });
+    await fireEvent.press(screen.getByTestId('clerk-first-next'));
+    await fireEvent.press(screen.getByTestId('hire-raporty'));
+    expect(store.getState().state.streamClerks[0]).toBe(true);
+  });
+});

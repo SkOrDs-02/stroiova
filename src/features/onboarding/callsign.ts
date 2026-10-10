@@ -5,6 +5,8 @@ import type { Gender } from './steps';
 
 export const CALLSIGN_MIN = 2;
 export const CALLSIGN_MAX = 16;
+/** Стоп-слова до стількох літер шукаються цілим словом (рішення 60). */
+const SHORT_WORD = 3;
 
 export type CallsignError = 'empty' | 'tooShort' | 'tooLong' | 'chars' | 'stopword';
 
@@ -39,7 +41,14 @@ export function validateCallsign(text: string, stopwords: readonly string[] = ST
   if (!ALLOWED.test(v)) return { ok: false, error: 'chars' };
   const plain = folded(v, false);
   const twin = folded(v, true);
-  if (stopwords.some((w) => plain.includes(w) || twin.includes(folded(w, true)))) return { ok: false, error: 'stopword' };
+  // слова до 3 літер — цілим словом між пробілами, дефісами й цифрами або весь позивний разом (рішення 60)
+  const tokens = v.split(/[\s-]+/).flatMap((tok) => [folded(tok, false).replace(/^\d+|\d+$/g, ''), folded(tok, true).replace(/^\d+|\d+$/g, '')]);
+  const hit = (w: string) => {
+    const fw = folded(w, true);
+    if ([...w].length <= SHORT_WORD) return plain === w || twin === fw || tokens.includes(w) || tokens.includes(fw);
+    return plain.includes(w) || twin.includes(fw);
+  };
+  if (stopwords.some(hit)) return { ok: false, error: 'stopword' };
   return { ok: true };
 }
 

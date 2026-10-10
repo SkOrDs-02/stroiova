@@ -25,7 +25,6 @@ describe('позивний', () => {
 
   test('FR-7, AC-4: стоп-слова за підрядком без регістру, з латинськими й цифровими двійниками', () => {
     expect(err('зсу-1')).toBe('stopword');
-    expect(err('ЗСУшник')).toBe('stopword');
     expect(err('ЗCУ')).toBe('stopword'); // C латинська
     expect(err('3СУ')).toBe('stopword'); // 3 цифра
     expect(err('З С У')).toBe('stopword');
@@ -38,6 +37,11 @@ describe('позивний', () => {
 
   test('рішення 58: основи не ловлять звичайні слова', () => {
     for (const ok of ['Дебаг', 'Кебаб', 'Мебляр', 'Підорожник', 'Себастьян', 'Вебадмін']) expect(err(ok)).toBe('ok');
+  });
+
+  test('рішення 60: короткі стоп-слова цілим словом', () => {
+    for (const ok of ['Тупак', 'Купа', 'Крупа', 'Розсуд', 'Tupac']) expect(err(ok)).toBe('ok');
+    for (const bad of ['У-П-А', 'Упа 2', 'ЗСУ1', 'Друг ЗСУ', '3СУ']) expect(err(bad)).toBe('stopword');
   });
 
   test('FR-9: шаблон {m:…|f:…}', () => {
