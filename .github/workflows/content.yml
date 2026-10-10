@@ -1,0 +1,30 @@
+name: content
+
+on:
+  pull_request:
+    paths: ["content/**", "tools/**", "balance/**"]
+  push:
+    branches: [main]
+    paths: ["content/**", "tools/**", "balance/**"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install jsonschema
+      - name: Перевірка контенту
+        run: python3 tools/check_content.py
+      - name: telegrams.json збігається з генератором
+        run: |
+          python3 tools/gen_tg.py content/telegrams.json
+          git diff --exit-code content/telegrams.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Симулятор балансу запускається на пресеті
+        run: node -e "var S=require('./balance/sim.js'),P=require('./balance/preset-v7.json');S.SCENARIOS.forEach(function(sc){var l=S.levelStats(S.simulate(S.withDefaults(P.params),sc));if(!l.finale)throw new Error(sc.id+'- немає фіналу');console.log(sc.id,l.finale.toFixed(1))})"

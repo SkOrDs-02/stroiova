@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(python3 tools/check_content.py:*)",
+      "Bash(python3 tools/gen_tg.py:*)",
+      "Bash(python3 balance/sandbox/build.py:*)",
+      "Bash(node -e:*)",
+      "Bash(node balance/:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx jest:*)",
+      "Bash(npx expo:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(.specify/scripts/:*)",
+      "mcp__Expo__search_documentation",
+      "mcp__Expo__read_documentation",
+      "mcp__Expo__learn",
+      "mcp__Expo__build_list",
+      "mcp__Expo__build_info",
+      "mcp__Expo__build_logs",
+      "mcp__Expo__workflow_list",
+      "mcp__Expo__workflow_info",
+      "mcp__Expo__workflow_logs",
+      "mcp__Expo__workflow_validate"
+    ],
+    "deny": [
+      "Edit(balance/sandbox/index.html)",
+      "Write(balance/sandbox/index.html)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/guard-generated.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/check-content.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
