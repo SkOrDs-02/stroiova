@@ -113,7 +113,7 @@ export function ConveyorScreen({ store }: { store: ConveyorStore }) {
       </ScrollView>
       {toast != null ? (
         <View style={[styles.toast, { bottom: insets.bottom + space[16] }]} testID="toast">
-          <Text style={styles.toastText}>{t.offToast(formatBig(toast, 'balance'))}</Text>
+          <Text style={styles.toastText}>{toast.kind === 'clockBack' ? t.clockBack : t.offToast(formatBig(toast.amount, 'balance'))}</Text>
         </View>
       ) : null}
       {s.offline ? <OfflineReturn res={s.offline} onClaim={s.claim} /> : null}

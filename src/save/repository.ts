@@ -161,6 +161,7 @@ export function installId(kv: KeyValue, uuid: () => string): { id: string; isNew
   const cur = kv.getString(KEY_INSTALL);
   if (cur) return { id: cur, isNew: false };
   const id = uuid();
+  if (typeof id !== 'string' || id.length === 0) throw new Error('install_id: генератор UUID повернув порожнє значення');
   kv.set(KEY_INSTALL, id);
   return { id, isNew: true };
 }
