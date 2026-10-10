@@ -151,6 +151,7 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 ### Implementation
 
 - [ ] T034 [US7] `src/economy/game/advance.ts`: `advance(state, cfg, fromMs, toMs, effects)` (онлайн: інтеграл через `E.integrate` по точках зміни ефектів і бака, без проміжного округлення); `offline(state, cfg, leftAtMs, backAtMs, effects)` → `{ earned, awayMs, creditedMs, cappedMs, fuelBonusMs, idle, paper }` за FR-23/FR-24 (idle-flow, сховище × журнал № 2 якщо є, точки: ефекти, 20% бака, кінець сховища)
+- [ ] T034a [US7] `src/economy/game/advance.ts`: `claimOffline(state, cfg, result, k, localDate)` — зараховує `earned × k` (k = 1 або `offlineAdMult`); лічильник ×2 за місцевою датою пристрою (`offlineDoubles { date, count }` у стані), ×2 доступне, поки `count < offlineAdPerDay`; повернення з ×1 лічильник не змінює (FR-26). Тест AC-15 (без реклами: 3 нагороди ×2 → стан «ліміт 3 з 3»; ×1 і новий день) у `src/economy/__tests__/ac-offline-test.ts`. Ролик і «Без реклами» — 008
 - [ ] T035 [US7] `src/features/conveyor/OfflineReturn.tsx` + AppState у `useGameLoop.ts`: при поверненні після ≥ 5 хв — модалка з сумою, «зараховано 8 год з N», «Забрати»; стан «Стройова стояла» з `off.idle`; < 5 хв — тост `off.toast` і зарахування без модалки
 
 **Checkpoint**: зріз «тап → покупка → діловод → офлайн» закрито (разом з US5)
@@ -164,7 +165,7 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 **Independent Test**: AC-9 зелений; швидкі тапи обрізаються
 
 - [ ] T036 [P] [US5] `src/economy/__tests__/ac-tap-test.ts`: AC-9 (M ×2,5 → +5 за тап; при «Комбата шукають» так само +5; 14 дотиків за 1 с → 10 тапів, +50)
-- [ ] T037 [US5] `src/economy/game/actions.ts`: `tap(state, cfg, nowMs, effects)` з вікном `tapWindow { startMs, count }` і `tapRateMax`
+- [ ] T037 [US5] `src/economy/game/actions.ts`: `tap(state, cfg, nowMs, effects)` з вікном `tapWindow { startMs, count }` і `tapRateMax`; лічильники сесії `tapsCount`, `tapSignatures` для `session_end`
 - [ ] T038 [US5] `src/features/conveyor/Seal.tsx`: печатка на картці «Стройова частина» (колір `color.stamp`, ціль ≥ 44 px), haptics не підключаємо до 002
 
 ---
@@ -178,7 +179,7 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 - [ ] T039 [P] [US6] `src/economy/__tests__/ac-mult-test.ts`: AC-10 (38 балів, «Без реклами», буст ×2, бак 82% → рядки ×1,76, ×1,3, ×2, ×1,25, «Разом ×5,72», музей окремо), AC-11 (сумлінно на Фін → 2 232 і вузько, через 1 год 4 464; «Комбата шукають» → 720/хв, не 0; провалена перевірка → Стройова 1 800 на 1 год)
 - [ ] T040 [P] [US6] `src/economy/__tests__/ac-fuel-paper-test.ts`: AC-12 (заправка порожнього: бак 6 год, ×1,25 діє 4 год 48 хв; `tank_capacity_sec` 21 600 / 43 200), AC-13 (папір 0 не впливає на дохід, тапи, офлайн), AC-20 (базовий 2 880, буст, бак 90%, «Комбата шукають» → посильний 4 хв = 11 520; кіт 14 400, потім 60 хв нічого), AC-21 (новий цикл: папір 30; Накладні 20-го рівня з діловодом, журнал № 3, 24 год → +5; подарунок Ліни +22)
 - [ ] T041 [US6] `src/economy/game/income.ts`: `multStack(...)` (рядки з джерелом, значенням, кінцем; «Разом»; музей окремо, FR-19); пальне `fuelMult(state, nowMs, effects)` за FR-21 (поріг `fuelBonusThreshold`, `gift_generator`)
-- [ ] T042 [US6] `src/economy/game/actions.ts`: `refuel` (FR-20), `catTap` (FR-32, раз на годину від `baseIncomePerMin`); папір у `advance`/`offline` (FR-22: Накладні × `paperPerMinPerLevel`, поза грою лише з діловодом і в межах сховища, журнал № 3 ×1,1, `paperGift`)
+- [ ] T042 [US6] `src/economy/game/actions.ts`: `refuel` (FR-20, повертає `{ tankPctBefore, tankCapacitySec, bonusOffSec }` для `generator_refuel`), `catTap` (FR-32, раз на годину від `baseIncomePerMin`); папір у `advance`/`offline` (FR-22: Накладні × `paperPerMinPerLevel`, поза грою лише з діловодом і в межах сховища, журнал № 3 ×1,1, `paperGift`)
 - [ ] T043 [US6] `src/features/conveyor/ConveyorScreen.tsx`: чип M із добутком і плитка бака з «Заправити» (тимчасово, без `boosts-sheet`)
 
 ---
@@ -188,10 +189,18 @@ description: "Задачі: 001 Економіка ядра й офлайн"
 - [ ] T044 [P] `src/economy/format.ts` + `src/economy/__tests__/format-test.ts`: AC-18 (`formatBig` 9 999 → «9 999», 186 400 → «186 тис.», 2 412 000 → «2,41 млн», 999 990 000 000 → «1 aa», 1,23·10¹⁶ → «12,3 ab»; counter 1 248 360 → «1 248 360», 12 480 000 → «12,48 млн»; price угору, balance униз; U+00A0), `formatRate`, `formatMult`, `formatDuration`, `formatCountdown`; замінити тимчасове форматування в зрізі
 - [ ] T045 [P] `src/features/conveyor/__tests__/conveyor-test.tsx`: рендер екрана, тап печатки збільшує баланс, покупка Рапортів ×1
 - [ ] T046 Документація: `balance/README.md` (бандл `economy.js`, `tools/golden.mjs`, правило «формули правимо в `src/economy/core`»), `CLAUDE.md` (команди `build:economy`, `golden`), `.claude/skills/balance-change/SKILL.md` (крок бандла й відбитків)
+- [ ] T046a [P] Maestro e2e (принцип III): `testID` на печатці, кнопках покупки й найму, «Забрати»; сценарії `.maestro/purchase.yaml` (тап печатки → покупка Рапортів ×1 → найм діловода) і `.maestro/offline-return.yaml` (фон ≥ 5 хв через `stopApp`/`launchApp` неможливий без збереження 009 — тут перевіряємо модалку через тестовий deeplink `stroiova://debug/offline?min=10`, лише в `__DEV__`); запуск — EAS Workflows або пристрій, у хмарній сесії симулятора немає. Інструкція в `quickstart.md`
 - [ ] T047 Агент `spec-guardian` по `git diff main...HEAD`; виправити знахідки
 - [ ] T048 `npm run check`, `node tools/golden.mjs --check`, `npx expo export --platform web` і ручний сценарій quickstart § 5 у Chromium 375×667 зі скріншотом
 
 ---
+
+## Поза зрізом 001 (свідомо)
+
+- Екрани `unit-unlock`, `clerk-first`, `boosts-sheet`, `resource-sheet` і повний `main`/`offline-return` зі станами й текстами — 002 (у 001 лише доменна логіка: `seenUnlocks`, `multStack`, `refuel`).
+- «Розширити до 24 год» → `shop` і `shop_view` (AC-16, друга половина) — 008; у 001 перевіряємо `cappedMs`.
+- Ролик і «Без реклами» для ×2 — 008; ліміт ×2 — T034a.
+- Відправка подій у PostHog — етап 5; ядро повертає доменні події.
 
 ## Dependencies & Execution Order
 

@@ -51,6 +51,7 @@
 | `seenUnlocks` | string[] | Одиниці, для яких уже показано `unit-unlock` за встановлення (FR-13) |
 | `catBonusAtMs` | number \| null | Останній бонус кота (FR-32) |
 | `tapWindow` | `{ startMs, count }` | Лічильник тапів поточної секунди (FR-16) |
+| `offlineDoubles` | `{ date, count }` | Нагороди ×2 за місцеву добу пристрою; скидається, лише коли дата пізніша (FR-26, 09 FR-15) |
 
 Переходи:
 - **Покупка рівня** `buy(state, target, mode)`: атомарно `signatures -= ціна пакета`, `level += n`; дозволено, коли точний баланс ≥ точної ціни (FR-10). Режими `x1`, `x10`, `toMilestone` (FR-8).
