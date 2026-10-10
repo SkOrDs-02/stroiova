@@ -15,6 +15,13 @@
 
 Старі пресети вантажаться через `withDefaults()`: нові механіки вимкнені, результат той самий, що й у версії, де пресет збережено (v3–v7 перевірено побітово на 3 зернах × 3 сценаріях: пресет v7 без `offlineFreeMult` і з `pack.merge: 1` дає ті самі віхи, що й до v7.1). v7.2: пресети v3, v4, v5, v6, v7, v7.1 × зерна 1–3 × 3 сценарії дають той самий відбиток (SHA-1 від `simulate`, `levelStats`, `eventStats`), що й sim v7.1: у них `museum: 1`, тобто лише № 1–8.
 
+## Модуль економіки (з 10.10, специфікація 001, рішення 52)
+
+Параметри (`DEFAULTS`, `SCENARIOS`, `LEGACY`) і формули (`withDefaults`, `levelItems`, `capAt`, `priceAt`, `flow`, `points`, `prestigeMult`, `integrate`) живуть у `src/economy/core` — тому самому модулі, яким рахує гра. `npm run build:economy` збирає його в `balance/economy.js`; `sim.js` бере все звідти, а сам тримає бота, сценарії й події. Пісочниця вбудовує `economy.js` перед `sim.js`.
+
+- Нове поле чи формула — у `src/economy/core`, далі `npm run build:economy`. `economy.js` руками не правимо.
+- `node tools/golden.mjs --check` — 27 відбитків (preset-v5/v6/v7 × зерна 1–3 × 3 сценарії) мають лишатися незмінними. Свідома зміна балансу: прогін «було / стало» (скіл `balance-change`), потім `node tools/golden.mjs` переписує відбитки в тому самому коміті.
+
 ## Як запустити
 
 ```sh

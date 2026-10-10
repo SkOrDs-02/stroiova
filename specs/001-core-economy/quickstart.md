@@ -50,7 +50,17 @@ npm start   # або npx expo export --platform web і відкрити в бр�
 4. Найняти діловодів на Рапорти й три ланки → застосунок у фон на ≥ 5 хв → повернення показує довідку з сумою; без діловодів — «Стройова стояла».
 5. Відкрити Акти → наступний потік стає доступним.
 
-## 6. Усе разом
+## 6. Maestro e2e (принцип III)
+
+Потрібні development build (`eas build --profile development`) на пристрої чи симуляторі й встановлений Maestro.
+
+```sh
+APP_ID=<bundle id> maestro test .maestro/purchase.yaml .maestro/offline-return.yaml
+```
+
+Очікувано: покупка Рапортів і найм діловода проходять; deeplink `stroiova://?debugAwayMin=10` відкриває довідку «Стройова стояла». У хмарній сесії симулятора немає; bundle id ще не вибрано.
+
+## 7. Усе разом
 
 ```sh
 npm run check

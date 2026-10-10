@@ -1,0 +1,2063 @@
+{
+ "DEFAULTS": {
+  "rev": "7.2",
+  "streams": [
+   {
+    "id": "raporty",
+    "name": "Рапорти",
+    "rate": 3.96,
+    "unlock": 0,
+    "cost": 8.8,
+    "growth": 1.12,
+    "manager": 165
+   },
+   {
+    "id": "akty",
+    "name": "Акти на майно",
+    "rate": 39.6,
+    "unlock": 330,
+    "cost": 132,
+    "growth": 1.13,
+    "manager": 770
+   },
+   {
+    "id": "dovidky",
+    "name": "Довідки",
+    "rate": 396,
+    "unlock": 11000,
+    "cost": 6600,
+    "growth": 1.14,
+    "manager": 22000
+   },
+   {
+    "id": "nakladni",
+    "name": "Накладні",
+    "rate": 3960,
+    "unlock": 990000,
+    "cost": 330000,
+    "growth": 1.15,
+    "manager": 1980000
+   }
+  ],
+  "stages": [
+   {
+    "id": "kombat",
+    "name": "Резолюції комбата",
+    "rate": 7.92,
+    "cost": 25.7,
+    "growth": 1.12,
+    "manager": 132
+   },
+   {
+    "id": "stroy",
+    "name": "Стройова частина",
+    "rate": 9.9,
+    "cost": 34.6,
+    "growth": 1.12,
+    "manager": 220
+   },
+   {
+    "id": "fin",
+    "name": "Фінслужба",
+    "rate": 11.9,
+    "cost": 51.5,
+    "growth": 1.12,
+    "manager": 330
+   }
+  ],
+  "levels": [
+   {
+    "id": "batalion",
+    "name": "Батальйон",
+    "rateMult": 1,
+    "costMult": 1,
+    "clerkMult": 1,
+    "stream": null,
+    "stage": null,
+    "prestigeDivisor": 75000,
+    "exitDigitizations": 3,
+    "boss": 0,
+    "inspChecklistMin": 129
+   },
+   {
+    "id": "bryhada",
+    "name": "Бригада",
+    "rateMult": 10,
+    "costMult": 5,
+    "clerkMult": 1,
+    "growthMult": 0.45,
+    "stream": {
+     "id": "nakazy",
+     "name": "Накази по частині",
+     "rate": 60000,
+     "unlock": 3000000,
+     "cost": 1000000,
+     "growth": 1.16,
+     "manager": 6000000
+    },
+    "stage": {
+     "id": "kazna",
+     "name": "Казначейство",
+     "rate": 21,
+     "cost": 40,
+     "growth": 1.12,
+     "manager": 400
+    },
+    "prestigeDivisor": 6270000000,
+    "exitDigitizations": 4,
+    "boss": 1,
+    "inspChecklistMin": 51
+   },
+   {
+    "id": "komanduvannia",
+    "name": "Командування",
+    "rateMult": 100,
+    "costMult": 25,
+    "clerkMult": 1,
+    "growthMult": 0.45,
+    "stream": {
+     "id": "zvedennia",
+     "name": "Зведення",
+     "rate": 600000,
+     "unlock": 30000000,
+     "cost": 10000000,
+     "growth": 1.17,
+     "manager": 60000000
+    },
+    "stage": {
+     "id": "narada",
+     "name": "Нарада",
+     "rate": 30,
+     "cost": 60,
+     "growth": 1.12,
+     "manager": 600
+    },
+    "prestigeDivisor": 676000000000,
+    "exitDigitizations": 6,
+    "boss": 1,
+    "bossMech": "pack",
+    "packs": 1,
+    "inspChecklistMin": 51
+   },
+   {
+    "id": "genshtab",
+    "name": "Генштаб",
+    "rateMult": 1000,
+    "costMult": 125,
+    "clerkMult": 1,
+    "growthMult": 0.45,
+    "stream": {
+     "id": "zpz",
+     "name": "Звіти про звіти",
+     "rate": 0,
+     "share": 1,
+     "unlock": 300000000,
+     "cost": 100000000,
+     "growth": 1.18,
+     "manager": 600000000
+    },
+    "stage": {
+     "id": "dopovid",
+     "name": "Доповідь",
+     "rate": 40,
+     "cost": 80,
+     "growth": 1.12,
+     "manager": 800
+    },
+    "prestigeDivisor": 22900000000000,
+    "exitDigitizations": 6,
+    "boss": 1,
+    "bossMech": "zpz",
+    "inspChecklistMin": 51
+   },
+   {
+    "id": "bez-paperu",
+    "name": "Армія без паперу",
+    "rateMult": 10000,
+    "costMult": 625,
+    "clerkMult": 1,
+    "growthMult": 0.35,
+    "stream": null,
+    "stage": null,
+    "prestigeDivisor": 9.01e+22,
+    "exitDigitizations": 0,
+    "boss": 0,
+    "convert": 1,
+    "inspChecklistMin": 51
+   }
+  ],
+  "boss": {
+   "warnH": 24,
+   "retryH": 24,
+   "checklistMin": 420,
+   "items": 6,
+   "adItems": 5,
+   "saveH": 12,
+   "zpzMin": 0.4
+  },
+  "pack": {
+   "size": 3,
+   "perDay": 1,
+   "singleChance": 0.5,
+   "merge": 2,
+   "slowMult": 0.4,
+   "slowHours": 1.75,
+   "summaryBuff": 1.5,
+   "summaryBuffHours": 2
+  },
+  "zpz": {
+   "shareMax": 1.5,
+   "K": 9
+  },
+  "convert": {
+   "order": [
+    "kombat",
+    "stroy",
+    "fin",
+    "kazna",
+    "narada",
+    "dopovid"
+   ],
+   "mult": 3,
+   "costMin": 120
+  },
+  "sedoFailChance": 0.1,
+  "sedoFailMult": 0.5,
+  "sedoFailMin": 30,
+  "sedoPrintPaper": 5,
+  "naradaChance": 0.2,
+  "naradaMult": 0.25,
+  "naradaMinMin": 10,
+  "naradaMaxMin": 30,
+  "milestoneEvery": 25,
+  "milestoneMult": 2,
+  "tapValue": 2,
+  "tapsPerSession": 60,
+  "sessionsPerDay": 5,
+  "sessionMin": 4,
+  "firstSessionMin": 10,
+  "storageHours": 8,
+  "adsPerDay": 3,
+  "adHours": 4,
+  "offlineAdMult": 2,
+  "offlineAdPerDay": 3,
+  "offlineFreeMult": 3,
+  "offlineFreePerDay": 1,
+  "paidMult": 1.3,
+  "fuelHours": 6,
+  "fuelBonus": 1.25,
+  "slowPerDayMin": 2,
+  "slowPerDayMax": 4,
+  "slowHours": 1,
+  "slowMult": 0.5,
+  "seed": 1,
+  "prestigeExponent": 0.5,
+  "prestigeBonus": 0.02,
+  "prestigeMinPoints": 30,
+  "prestigeGrowth": 1,
+  "prestigeStallHours": 4,
+  "prestigeStallShare": 0.2,
+  "days": 150,
+  "dayStartHour": 8,
+  "fuelBonusThreshold": 0.2,
+  "fuelOnTaps": 1,
+  "onboardingBirdMin": 20,
+  "onboardingBirdMult": 2,
+  "onboardingBirdStartSec": 80,
+  "archiveBonusMin": 60,
+  "archiveBonusAtSec": 420,
+  "catBonusMin": 5,
+  "catCooldownMin": 60,
+  "catFromSec": 600,
+  "kombatChance": 0.2,
+  "kombatMult": 0.25,
+  "kombatMinMin": 10,
+  "kombatMaxMin": 30,
+  "inspFirstAfterHours": 8,
+  "inspIntervalMinH": 24,
+  "inspIntervalMaxH": 48,
+  "inspWarnMinH": 2,
+  "inspWarnMaxH": 3,
+  "inspMult": 3,
+  "inspHours": 2,
+  "inspFailMult": 0.5,
+  "inspFailHours": 1,
+  "inspPushVisit": 1,
+  "gifts": {
+   "drone": {
+    "mult": 2,
+    "serviceH": 9,
+    "steps": [
+     1.5,
+     1.8333,
+     1.5,
+     2.6667
+    ]
+   },
+   "shovel": {
+    "mult": 1.5,
+    "serviceH": 12,
+    "steps": [
+     1.3333,
+     1.6667,
+     1.3333,
+     2.3333
+    ]
+   },
+   "generator": {
+    "mult": 1,
+    "fuel": 1,
+    "serviceH": 10,
+    "steps": [
+     2.3333,
+     2.8333,
+     2.1667,
+     4
+    ]
+   }
+  },
+  "giftOrder": [
+   "drone",
+   "shovel",
+   "drone",
+   "generator"
+  ],
+  "giftL2StepH": 2,
+  "giftFirstDay": 1,
+  "giftGapHours": 20,
+  "giftFromHour": 8,
+  "giftToHour": 22,
+  "raceAdPerDay": 3,
+  "raceAdPerSession": 1,
+  "raceAdCut": 0.5,
+  "raceDigitalCutH": 2,
+  "paperStart": 30,
+  "paperPerMinPerLevel": 0.0005,
+  "paperGift": 20,
+  "paperPerTelegram": 4,
+  "museum": 2,
+  "museumJ6DelayHours": 36,
+  "museumUnitPct": 5,
+  "museumStoragePct": 5,
+  "museumPaperPct": 10,
+  "museumRacePct": 10,
+  "museumUnitRarePct": 10,
+  "museumSlowCutPct": 10,
+  "museumChecklistCutPct": 10,
+  "museumGiftServicePct": 10,
+  "museumConvertCutPct": 10,
+  "museumSeriesPct": 1,
+  "museumLegendaryMult": 2,
+  "starterSignatures": 50000,
+  "starterFuelHours": 12
+ },
+ "SCENARIOS": [
+  {
+   "id": "free",
+   "name": "Без реклами й покупок",
+   "ads": false,
+   "paid": false
+  },
+  {
+   "id": "ads",
+   "name": "Дивиться рекламу",
+   "ads": true,
+   "paid": false
+  },
+  {
+   "id": "paid",
+   "name": "Купив «Без реклами» і набір",
+   "ads": true,
+   "paid": true,
+   "starter": true
+  }
+ ],
+ "withDefaults": {
+  "preset-v5": {
+   "rev": "7.2",
+   "streams": [
+    {
+     "id": "raporty",
+     "name": "Рапорти",
+     "rate": 6,
+     "unlock": 0,
+     "cost": 8,
+     "growth": 1.12,
+     "manager": 90
+    },
+    {
+     "id": "akty",
+     "name": "Акти на майно",
+     "rate": 60,
+     "unlock": 300,
+     "cost": 120,
+     "growth": 1.13,
+     "manager": 700
+    },
+    {
+     "id": "dovidky",
+     "name": "Довідки",
+     "rate": 600,
+     "unlock": 10000,
+     "cost": 6000,
+     "growth": 1.14,
+     "manager": 20000
+    },
+    {
+     "id": "nakladni",
+     "name": "Накладні",
+     "rate": 6000,
+     "unlock": 900000,
+     "cost": 300000,
+     "growth": 1.15,
+     "manager": 1800000
+    }
+   ],
+   "stages": [
+    {
+     "id": "kombat",
+     "name": "Резолюції комбата",
+     "rate": 12,
+     "cost": 26,
+     "growth": 1.12,
+     "manager": 120
+    },
+    {
+     "id": "stroy",
+     "name": "Стройова частина",
+     "rate": 15,
+     "cost": 35,
+     "growth": 1.12,
+     "manager": 200
+    },
+    {
+     "id": "fin",
+     "name": "Фінслужба",
+     "rate": 18,
+     "cost": 52,
+     "growth": 1.12,
+     "manager": 300
+    }
+   ],
+   "levels": [
+    {
+     "id": "batalion",
+     "name": "Батальйон",
+     "rateMult": 1,
+     "costMult": 1,
+     "clerkMult": 1,
+     "stream": null,
+     "stage": null,
+     "prestigeDivisor": 65000,
+     "exitDigitizations": 3,
+     "boss": 0,
+     "inspChecklistMin": 129
+    },
+    {
+     "id": "bryhada",
+     "name": "Бригада",
+     "rateMult": 10,
+     "costMult": 5,
+     "clerkMult": 1,
+     "stream": {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 60000,
+      "unlock": 3000000,
+      "cost": 1000000,
+      "growth": 1.16,
+      "manager": 6000000
+     },
+     "stage": {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 21,
+      "cost": 40,
+      "growth": 1.12,
+      "manager": 400
+     },
+     "prestigeDivisor": 65000,
+     "exitDigitizations": 0,
+     "boss": 0,
+     "inspChecklistMin": 51
+    }
+   ],
+   "boss": {
+    "warnH": 24,
+    "retryH": 24,
+    "checklistMin": 420,
+    "items": 6,
+    "adItems": 5,
+    "saveH": 12,
+    "zpzMin": 0.4
+   },
+   "pack": {
+    "size": 3,
+    "perDay": 1,
+    "singleChance": 0.5,
+    "merge": 2,
+    "slowMult": 0.4,
+    "slowHours": 1.75,
+    "summaryBuff": 1.5,
+    "summaryBuffHours": 2
+   },
+   "zpz": {
+    "shareMax": 1.5,
+    "K": 9
+   },
+   "convert": {
+    "order": [
+     "kombat",
+     "stroy",
+     "fin",
+     "kazna",
+     "narada",
+     "dopovid"
+    ],
+    "mult": 3,
+    "costMin": 120
+   },
+   "sedoFailChance": 0.1,
+   "sedoFailMult": 0.5,
+   "sedoFailMin": 30,
+   "sedoPrintPaper": 5,
+   "naradaChance": 0.2,
+   "naradaMult": 0.25,
+   "naradaMinMin": 10,
+   "naradaMaxMin": 30,
+   "milestoneEvery": 25,
+   "milestoneMult": 2,
+   "tapValue": 2,
+   "tapsPerSession": 60,
+   "sessionsPerDay": 5,
+   "sessionMin": 4,
+   "firstSessionMin": 10,
+   "storageHours": 8,
+   "adsPerDay": 3,
+   "adHours": 4,
+   "offlineAdMult": 2,
+   "offlineAdPerDay": 3,
+   "offlineFreeMult": 1,
+   "offlineFreePerDay": 0,
+   "paidMult": 1.3,
+   "fuelHours": 6,
+   "fuelBonus": 1.25,
+   "slowPerDayMin": 2,
+   "slowPerDayMax": 4,
+   "slowHours": 1,
+   "slowMult": 0.5,
+   "seed": 1,
+   "prestigeExponent": 0.5,
+   "prestigeBonus": 0.02,
+   "prestigeMinPoints": 30,
+   "prestigeGrowth": 0.8,
+   "prestigeStallHours": 4,
+   "prestigeStallShare": 0.2,
+   "days": 21,
+   "dayStartHour": 8,
+   "fuelBonusThreshold": 0,
+   "fuelOnTaps": 0,
+   "onboardingBirdMin": 0,
+   "onboardingBirdMult": 2,
+   "onboardingBirdStartSec": 80,
+   "archiveBonusMin": 0,
+   "archiveBonusAtSec": 420,
+   "catBonusMin": 0,
+   "catCooldownMin": 60,
+   "catFromSec": 600,
+   "kombatChance": 0,
+   "kombatMult": 0.25,
+   "kombatMinMin": 10,
+   "kombatMaxMin": 30,
+   "inspFirstAfterHours": 8,
+   "inspIntervalMinH": 24,
+   "inspIntervalMaxH": 0,
+   "inspWarnMinH": 2,
+   "inspWarnMaxH": 3,
+   "inspMult": 3,
+   "inspHours": 2,
+   "inspFailMult": 0.5,
+   "inspFailHours": 1,
+   "inspPushVisit": 1,
+   "gifts": {
+    "drone": {
+     "mult": 2,
+     "serviceH": 9,
+     "steps": [
+      1.5,
+      1.8333,
+      1.5,
+      2.6667
+     ]
+    },
+    "shovel": {
+     "mult": 1.5,
+     "serviceH": 12,
+     "steps": [
+      1.3333,
+      1.6667,
+      1.3333,
+      2.3333
+     ]
+    },
+    "generator": {
+     "mult": 1,
+     "fuel": 1,
+     "serviceH": 10,
+     "steps": [
+      2.3333,
+      2.8333,
+      2.1667,
+      4
+     ]
+    }
+   },
+   "giftOrder": [],
+   "giftL2StepH": 2,
+   "giftFirstDay": 1,
+   "giftGapHours": 20,
+   "giftFromHour": 8,
+   "giftToHour": 22,
+   "raceAdPerDay": 3,
+   "raceAdPerSession": 1,
+   "raceAdCut": 0.5,
+   "raceDigitalCutH": 2,
+   "paperStart": 30,
+   "paperPerMinPerLevel": 0.0005,
+   "paperGift": 20,
+   "paperPerTelegram": 4,
+   "museum": 0,
+   "museumJ6DelayHours": 36,
+   "museumUnitPct": 5,
+   "museumStoragePct": 5,
+   "museumPaperPct": 10,
+   "museumRacePct": 10,
+   "museumUnitRarePct": 10,
+   "museumSlowCutPct": 10,
+   "museumChecklistCutPct": 10,
+   "museumGiftServicePct": 10,
+   "museumConvertCutPct": 10,
+   "museumSeriesPct": 1,
+   "museumLegendaryMult": 2,
+   "starterSignatures": 0,
+   "starterFuelHours": 0
+  },
+  "preset-v6": {
+   "rev": "7.2",
+   "streams": [
+    {
+     "id": "raporty",
+     "name": "Рапорти",
+     "rate": 3.96,
+     "unlock": 0,
+     "cost": 8.8,
+     "growth": 1.12,
+     "manager": 165
+    },
+    {
+     "id": "akty",
+     "name": "Акти на майно",
+     "rate": 39.6,
+     "unlock": 330,
+     "cost": 132,
+     "growth": 1.13,
+     "manager": 770
+    },
+    {
+     "id": "dovidky",
+     "name": "Довідки",
+     "rate": 396,
+     "unlock": 11000,
+     "cost": 6600,
+     "growth": 1.14,
+     "manager": 22000
+    },
+    {
+     "id": "nakladni",
+     "name": "Накладні",
+     "rate": 3960,
+     "unlock": 990000,
+     "cost": 330000,
+     "growth": 1.15,
+     "manager": 1980000
+    }
+   ],
+   "stages": [
+    {
+     "id": "kombat",
+     "name": "Резолюції комбата",
+     "rate": 7.92,
+     "cost": 25.7,
+     "growth": 1.12,
+     "manager": 132
+    },
+    {
+     "id": "stroy",
+     "name": "Стройова частина",
+     "rate": 9.9,
+     "cost": 34.6,
+     "growth": 1.12,
+     "manager": 220
+    },
+    {
+     "id": "fin",
+     "name": "Фінслужба",
+     "rate": 11.9,
+     "cost": 51.5,
+     "growth": 1.12,
+     "manager": 330
+    }
+   ],
+   "levels": [
+    {
+     "id": "batalion",
+     "name": "Батальйон",
+     "rateMult": 1,
+     "costMult": 1,
+     "clerkMult": 1,
+     "stream": null,
+     "stage": null,
+     "prestigeDivisor": 75000,
+     "exitDigitizations": 3,
+     "boss": 0,
+     "inspChecklistMin": 129
+    },
+    {
+     "id": "bryhada",
+     "name": "Бригада",
+     "rateMult": 10,
+     "costMult": 5,
+     "clerkMult": 1,
+     "stream": {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 60000,
+      "unlock": 3000000,
+      "cost": 1000000,
+      "growth": 1.16,
+      "manager": 6000000
+     },
+     "stage": {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 21,
+      "cost": 40,
+      "growth": 1.12,
+      "manager": 400
+     },
+     "prestigeDivisor": 75000,
+     "exitDigitizations": 0,
+     "boss": 0,
+     "inspChecklistMin": 51
+    }
+   ],
+   "boss": {
+    "warnH": 24,
+    "retryH": 24,
+    "checklistMin": 420,
+    "items": 6,
+    "adItems": 5,
+    "saveH": 12,
+    "zpzMin": 0.4
+   },
+   "pack": {
+    "size": 3,
+    "perDay": 1,
+    "singleChance": 0.5,
+    "merge": 2,
+    "slowMult": 0.4,
+    "slowHours": 1.75,
+    "summaryBuff": 1.5,
+    "summaryBuffHours": 2
+   },
+   "zpz": {
+    "shareMax": 1.5,
+    "K": 9
+   },
+   "convert": {
+    "order": [
+     "kombat",
+     "stroy",
+     "fin",
+     "kazna",
+     "narada",
+     "dopovid"
+    ],
+    "mult": 3,
+    "costMin": 120
+   },
+   "sedoFailChance": 0.1,
+   "sedoFailMult": 0.5,
+   "sedoFailMin": 30,
+   "sedoPrintPaper": 5,
+   "naradaChance": 0.2,
+   "naradaMult": 0.25,
+   "naradaMinMin": 10,
+   "naradaMaxMin": 30,
+   "milestoneEvery": 25,
+   "milestoneMult": 2,
+   "tapValue": 2,
+   "tapsPerSession": 60,
+   "sessionsPerDay": 5,
+   "sessionMin": 4,
+   "firstSessionMin": 10,
+   "storageHours": 8,
+   "adsPerDay": 3,
+   "adHours": 4,
+   "offlineAdMult": 2,
+   "offlineAdPerDay": 3,
+   "offlineFreeMult": 1,
+   "offlineFreePerDay": 0,
+   "paidMult": 1.3,
+   "fuelHours": 6,
+   "fuelBonus": 1.25,
+   "slowPerDayMin": 2,
+   "slowPerDayMax": 4,
+   "slowHours": 1,
+   "slowMult": 0.5,
+   "seed": 1,
+   "prestigeExponent": 0.5,
+   "prestigeBonus": 0.02,
+   "prestigeMinPoints": 30,
+   "prestigeGrowth": 1,
+   "prestigeStallHours": 4,
+   "prestigeStallShare": 0.2,
+   "days": 21,
+   "dayStartHour": 8,
+   "fuelBonusThreshold": 0.2,
+   "fuelOnTaps": 1,
+   "onboardingBirdMin": 20,
+   "onboardingBirdMult": 2,
+   "onboardingBirdStartSec": 80,
+   "archiveBonusMin": 60,
+   "archiveBonusAtSec": 420,
+   "catBonusMin": 5,
+   "catCooldownMin": 60,
+   "catFromSec": 600,
+   "kombatChance": 0.2,
+   "kombatMult": 0.25,
+   "kombatMinMin": 10,
+   "kombatMaxMin": 30,
+   "inspFirstAfterHours": 8,
+   "inspIntervalMinH": 24,
+   "inspIntervalMaxH": 48,
+   "inspWarnMinH": 2,
+   "inspWarnMaxH": 3,
+   "inspMult": 3,
+   "inspHours": 2,
+   "inspFailMult": 0.5,
+   "inspFailHours": 1,
+   "inspPushVisit": 1,
+   "gifts": {
+    "drone": {
+     "mult": 2,
+     "serviceH": 9,
+     "steps": [
+      1.5,
+      1.8333,
+      1.5,
+      2.6667
+     ]
+    },
+    "shovel": {
+     "mult": 1.5,
+     "serviceH": 12,
+     "steps": [
+      1.3333,
+      1.6667,
+      1.3333,
+      2.3333
+     ]
+    },
+    "generator": {
+     "mult": 1,
+     "fuel": 1,
+     "serviceH": 10,
+     "steps": [
+      2.3333,
+      2.8333,
+      2.1667,
+      4
+     ]
+    }
+   },
+   "giftOrder": [
+    "drone",
+    "shovel",
+    "drone",
+    "generator"
+   ],
+   "giftL2StepH": 2,
+   "giftFirstDay": 1,
+   "giftGapHours": 20,
+   "giftFromHour": 8,
+   "giftToHour": 22,
+   "raceAdPerDay": 3,
+   "raceAdPerSession": 1,
+   "raceAdCut": 0.5,
+   "raceDigitalCutH": 2,
+   "paperStart": 30,
+   "paperPerMinPerLevel": 0.0005,
+   "paperGift": 20,
+   "paperPerTelegram": 4,
+   "museum": 1,
+   "museumJ6DelayHours": 36,
+   "museumUnitPct": 5,
+   "museumStoragePct": 5,
+   "museumPaperPct": 10,
+   "museumRacePct": 10,
+   "museumUnitRarePct": 10,
+   "museumSlowCutPct": 10,
+   "museumChecklistCutPct": 10,
+   "museumGiftServicePct": 10,
+   "museumConvertCutPct": 10,
+   "museumSeriesPct": 1,
+   "museumLegendaryMult": 2,
+   "starterSignatures": 50000,
+   "starterFuelHours": 12
+  },
+  "preset-v7": {
+   "rev": "7.2",
+   "streams": [
+    {
+     "id": "raporty",
+     "name": "Рапорти",
+     "rate": 3.96,
+     "unlock": 0,
+     "cost": 8.8,
+     "growth": 1.12,
+     "manager": 165
+    },
+    {
+     "id": "akty",
+     "name": "Акти на майно",
+     "rate": 39.6,
+     "unlock": 330,
+     "cost": 132,
+     "growth": 1.13,
+     "manager": 770
+    },
+    {
+     "id": "dovidky",
+     "name": "Довідки",
+     "rate": 396,
+     "unlock": 11000,
+     "cost": 6600,
+     "growth": 1.14,
+     "manager": 22000
+    },
+    {
+     "id": "nakladni",
+     "name": "Накладні",
+     "rate": 3960,
+     "unlock": 990000,
+     "cost": 330000,
+     "growth": 1.15,
+     "manager": 1980000
+    }
+   ],
+   "stages": [
+    {
+     "id": "kombat",
+     "name": "Резолюції комбата",
+     "rate": 7.92,
+     "cost": 25.7,
+     "growth": 1.12,
+     "manager": 132
+    },
+    {
+     "id": "stroy",
+     "name": "Стройова частина",
+     "rate": 9.9,
+     "cost": 34.6,
+     "growth": 1.12,
+     "manager": 220
+    },
+    {
+     "id": "fin",
+     "name": "Фінслужба",
+     "rate": 11.9,
+     "cost": 51.5,
+     "growth": 1.12,
+     "manager": 330
+    }
+   ],
+   "levels": [
+    {
+     "id": "batalion",
+     "name": "Батальйон",
+     "rateMult": 1,
+     "costMult": 1,
+     "clerkMult": 1,
+     "stream": null,
+     "stage": null,
+     "prestigeDivisor": 75000,
+     "exitDigitizations": 3,
+     "boss": 0,
+     "inspChecklistMin": 129
+    },
+    {
+     "id": "bryhada",
+     "name": "Бригада",
+     "rateMult": 10,
+     "costMult": 5,
+     "clerkMult": 1,
+     "growthMult": 0.45,
+     "stream": {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 60000,
+      "unlock": 3000000,
+      "cost": 1000000,
+      "growth": 1.16,
+      "manager": 6000000
+     },
+     "stage": {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 21,
+      "cost": 40,
+      "growth": 1.12,
+      "manager": 400
+     },
+     "prestigeDivisor": 6270000000,
+     "exitDigitizations": 4,
+     "boss": 1,
+     "inspChecklistMin": 51
+    },
+    {
+     "id": "komanduvannia",
+     "name": "Командування",
+     "rateMult": 100,
+     "costMult": 25,
+     "clerkMult": 1,
+     "growthMult": 0.45,
+     "stream": {
+      "id": "zvedennia",
+      "name": "Зведення",
+      "rate": 600000,
+      "unlock": 30000000,
+      "cost": 10000000,
+      "growth": 1.17,
+      "manager": 60000000
+     },
+     "stage": {
+      "id": "narada",
+      "name": "Нарада",
+      "rate": 30,
+      "cost": 60,
+      "growth": 1.12,
+      "manager": 600
+     },
+     "prestigeDivisor": 676000000000,
+     "exitDigitizations": 6,
+     "boss": 1,
+     "inspChecklistMin": 51,
+     "bossMech": "pack",
+     "packs": 1
+    },
+    {
+     "id": "genshtab",
+     "name": "Генштаб",
+     "rateMult": 1000,
+     "costMult": 125,
+     "clerkMult": 1,
+     "growthMult": 0.45,
+     "stream": {
+      "id": "zpz",
+      "name": "Звіти про звіти",
+      "rate": 0,
+      "share": 1,
+      "unlock": 300000000,
+      "cost": 100000000,
+      "growth": 1.18,
+      "manager": 600000000
+     },
+     "stage": {
+      "id": "dopovid",
+      "name": "Доповідь",
+      "rate": 40,
+      "cost": 80,
+      "growth": 1.12,
+      "manager": 800
+     },
+     "prestigeDivisor": 22900000000000,
+     "exitDigitizations": 6,
+     "boss": 1,
+     "inspChecklistMin": 51,
+     "bossMech": "zpz"
+    },
+    {
+     "id": "bez-paperu",
+     "name": "Армія без паперу",
+     "rateMult": 10000,
+     "costMult": 625,
+     "clerkMult": 1,
+     "growthMult": 0.35,
+     "stream": null,
+     "stage": null,
+     "prestigeDivisor": 9.01e+22,
+     "exitDigitizations": 0,
+     "boss": 0,
+     "inspChecklistMin": 51,
+     "convert": 1
+    }
+   ],
+   "boss": {
+    "warnH": 24,
+    "retryH": 24,
+    "checklistMin": 420,
+    "items": 6,
+    "adItems": 5,
+    "saveH": 12,
+    "zpzMin": 0.4
+   },
+   "pack": {
+    "size": 3,
+    "perDay": 1,
+    "singleChance": 0.5,
+    "merge": 2,
+    "slowMult": 0.4,
+    "slowHours": 1.75,
+    "summaryBuff": 1.5,
+    "summaryBuffHours": 2
+   },
+   "zpz": {
+    "shareMax": 1.5,
+    "K": 9
+   },
+   "convert": {
+    "order": [
+     "kombat",
+     "stroy",
+     "fin",
+     "kazna",
+     "narada",
+     "dopovid"
+    ],
+    "mult": 3,
+    "costMin": 120
+   },
+   "sedoFailChance": 0.1,
+   "sedoFailMult": 0.5,
+   "sedoFailMin": 30,
+   "sedoPrintPaper": 5,
+   "naradaChance": 0.2,
+   "naradaMult": 0.25,
+   "naradaMinMin": 10,
+   "naradaMaxMin": 30,
+   "milestoneEvery": 25,
+   "milestoneMult": 2,
+   "tapValue": 2,
+   "tapsPerSession": 60,
+   "sessionsPerDay": 5,
+   "sessionMin": 4,
+   "firstSessionMin": 10,
+   "storageHours": 8,
+   "adsPerDay": 3,
+   "adHours": 4,
+   "offlineAdMult": 2,
+   "offlineAdPerDay": 3,
+   "offlineFreeMult": 3,
+   "offlineFreePerDay": 1,
+   "paidMult": 1.3,
+   "fuelHours": 6,
+   "fuelBonus": 1.25,
+   "slowPerDayMin": 2,
+   "slowPerDayMax": 4,
+   "slowHours": 1,
+   "slowMult": 0.5,
+   "seed": 1,
+   "prestigeExponent": 0.5,
+   "prestigeBonus": 0.02,
+   "prestigeMinPoints": 30,
+   "prestigeGrowth": 1,
+   "prestigeStallHours": 4,
+   "prestigeStallShare": 0.2,
+   "days": 150,
+   "dayStartHour": 8,
+   "fuelBonusThreshold": 0.2,
+   "fuelOnTaps": 1,
+   "onboardingBirdMin": 20,
+   "onboardingBirdMult": 2,
+   "onboardingBirdStartSec": 80,
+   "archiveBonusMin": 60,
+   "archiveBonusAtSec": 420,
+   "catBonusMin": 5,
+   "catCooldownMin": 60,
+   "catFromSec": 600,
+   "kombatChance": 0.2,
+   "kombatMult": 0.25,
+   "kombatMinMin": 10,
+   "kombatMaxMin": 30,
+   "inspFirstAfterHours": 8,
+   "inspIntervalMinH": 24,
+   "inspIntervalMaxH": 48,
+   "inspWarnMinH": 2,
+   "inspWarnMaxH": 3,
+   "inspMult": 3,
+   "inspHours": 2,
+   "inspFailMult": 0.5,
+   "inspFailHours": 1,
+   "inspPushVisit": 1,
+   "gifts": {
+    "drone": {
+     "mult": 2,
+     "serviceH": 9,
+     "steps": [
+      1.5,
+      1.8333,
+      1.5,
+      2.6667
+     ]
+    },
+    "shovel": {
+     "mult": 1.5,
+     "serviceH": 12,
+     "steps": [
+      1.3333,
+      1.6667,
+      1.3333,
+      2.3333
+     ]
+    },
+    "generator": {
+     "mult": 1,
+     "fuel": 1,
+     "serviceH": 10,
+     "steps": [
+      2.3333,
+      2.8333,
+      2.1667,
+      4
+     ]
+    }
+   },
+   "giftOrder": [
+    "drone",
+    "shovel",
+    "drone",
+    "generator"
+   ],
+   "giftL2StepH": 2,
+   "giftFirstDay": 1,
+   "giftGapHours": 20,
+   "giftFromHour": 8,
+   "giftToHour": 22,
+   "raceAdPerDay": 3,
+   "raceAdPerSession": 1,
+   "raceAdCut": 0.5,
+   "raceDigitalCutH": 2,
+   "paperStart": 30,
+   "paperPerMinPerLevel": 0.0005,
+   "paperGift": 20,
+   "paperPerTelegram": 4,
+   "museum": 2,
+   "museumJ6DelayHours": 36,
+   "museumUnitPct": 5,
+   "museumStoragePct": 5,
+   "museumPaperPct": 10,
+   "museumRacePct": 10,
+   "museumUnitRarePct": 10,
+   "museumSlowCutPct": 10,
+   "museumChecklistCutPct": 10,
+   "museumGiftServicePct": 10,
+   "museumConvertCutPct": 10,
+   "museumSeriesPct": 1,
+   "museumLegendaryMult": 2,
+   "starterSignatures": 50000,
+   "starterFuelHours": 12
+  }
+ },
+ "levelItems": {
+  "preset-v5": [
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 6,
+      "unlock": 0,
+      "cost": 8,
+      "growth": 1.12,
+      "manager": 90
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 60,
+      "unlock": 300,
+      "cost": 120,
+      "growth": 1.13,
+      "manager": 700
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 600,
+      "unlock": 10000,
+      "cost": 6000,
+      "growth": 1.14,
+      "manager": 20000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 6000,
+      "unlock": 900000,
+      "cost": 300000,
+      "growth": 1.15,
+      "manager": 1800000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 12,
+      "cost": 26,
+      "growth": 1.12,
+      "manager": 120
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 15,
+      "cost": 35,
+      "growth": 1.12,
+      "manager": 200
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 18,
+      "cost": 52,
+      "growth": 1.12,
+      "manager": 300
+     }
+    ]
+   },
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 60,
+      "unlock": 0,
+      "cost": 40,
+      "growth": 1.12,
+      "manager": 90
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 600,
+      "unlock": 1500,
+      "cost": 600,
+      "growth": 1.13,
+      "manager": 700
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 6000,
+      "unlock": 50000,
+      "cost": 30000,
+      "growth": 1.14,
+      "manager": 20000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 60000,
+      "unlock": 4500000,
+      "cost": 1500000,
+      "growth": 1.15,
+      "manager": 1800000
+     },
+     {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 600000,
+      "unlock": 15000000,
+      "cost": 5000000,
+      "growth": 1.16,
+      "manager": 6000000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 120,
+      "cost": 130,
+      "growth": 1.12,
+      "manager": 120
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 150,
+      "cost": 175,
+      "growth": 1.12,
+      "manager": 200
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 180,
+      "cost": 260,
+      "growth": 1.12,
+      "manager": 300
+     },
+     {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 210,
+      "cost": 200,
+      "growth": 1.12,
+      "manager": 400
+     }
+    ]
+   }
+  ],
+  "preset-v6": [
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 3.96,
+      "unlock": 0,
+      "cost": 8.8,
+      "growth": 1.12,
+      "manager": 165
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 39.6,
+      "unlock": 330,
+      "cost": 132,
+      "growth": 1.13,
+      "manager": 770
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 396,
+      "unlock": 11000,
+      "cost": 6600,
+      "growth": 1.14,
+      "manager": 22000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 3960,
+      "unlock": 990000,
+      "cost": 330000,
+      "growth": 1.15,
+      "manager": 1980000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 7.92,
+      "cost": 25.7,
+      "growth": 1.12,
+      "manager": 132
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 9.9,
+      "cost": 34.6,
+      "growth": 1.12,
+      "manager": 220
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 11.9,
+      "cost": 51.5,
+      "growth": 1.12,
+      "manager": 330
+     }
+    ]
+   },
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 39.6,
+      "unlock": 0,
+      "cost": 44,
+      "growth": 1.12,
+      "manager": 165
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 396,
+      "unlock": 1650,
+      "cost": 660,
+      "growth": 1.13,
+      "manager": 770
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 3960,
+      "unlock": 55000,
+      "cost": 33000,
+      "growth": 1.14,
+      "manager": 22000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 39600,
+      "unlock": 4950000,
+      "cost": 1650000,
+      "growth": 1.15,
+      "manager": 1980000
+     },
+     {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 600000,
+      "unlock": 15000000,
+      "cost": 5000000,
+      "growth": 1.16,
+      "manager": 6000000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 79.2,
+      "cost": 128.5,
+      "growth": 1.12,
+      "manager": 132
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 99,
+      "cost": 173,
+      "growth": 1.12,
+      "manager": 220
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 119,
+      "cost": 257.5,
+      "growth": 1.12,
+      "manager": 330
+     },
+     {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 210,
+      "cost": 200,
+      "growth": 1.12,
+      "manager": 400
+     }
+    ]
+   }
+  ],
+  "preset-v7": [
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 3.96,
+      "unlock": 0,
+      "cost": 8.8,
+      "growth": 1.12,
+      "manager": 165
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 39.6,
+      "unlock": 330,
+      "cost": 132,
+      "growth": 1.13,
+      "manager": 770
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 396,
+      "unlock": 11000,
+      "cost": 6600,
+      "growth": 1.14,
+      "manager": 22000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 3960,
+      "unlock": 990000,
+      "cost": 330000,
+      "growth": 1.15,
+      "manager": 1980000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 7.92,
+      "cost": 25.7,
+      "growth": 1.12,
+      "manager": 132
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 9.9,
+      "cost": 34.6,
+      "growth": 1.12,
+      "manager": 220
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 11.9,
+      "cost": 51.5,
+      "growth": 1.12,
+      "manager": 330
+     }
+    ]
+   },
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 39.6,
+      "unlock": 0,
+      "cost": 44,
+      "growth": 1.054,
+      "manager": 165
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 396,
+      "unlock": 1650,
+      "cost": 660,
+      "growth": 1.0585,
+      "manager": 770
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 3960,
+      "unlock": 55000,
+      "cost": 33000,
+      "growth": 1.063,
+      "manager": 22000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 39600,
+      "unlock": 4950000,
+      "cost": 1650000,
+      "growth": 1.0675,
+      "manager": 1980000
+     },
+     {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 600000,
+      "unlock": 15000000,
+      "cost": 5000000,
+      "growth": 1.072,
+      "manager": 6000000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 79.2,
+      "cost": 128.5,
+      "growth": 1.054,
+      "manager": 132
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 99,
+      "cost": 173,
+      "growth": 1.054,
+      "manager": 220
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 119,
+      "cost": 257.5,
+      "growth": 1.054,
+      "manager": 330
+     },
+     {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 210,
+      "cost": 200,
+      "growth": 1.054,
+      "manager": 400
+     }
+    ]
+   },
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 396,
+      "unlock": 0,
+      "cost": 220.00000000000003,
+      "growth": 1.054,
+      "manager": 165
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 3960,
+      "unlock": 8250,
+      "cost": 3300,
+      "growth": 1.0585,
+      "manager": 770
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 39600,
+      "unlock": 275000,
+      "cost": 165000,
+      "growth": 1.063,
+      "manager": 22000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 396000,
+      "unlock": 24750000,
+      "cost": 8250000,
+      "growth": 1.0675,
+      "manager": 1980000
+     },
+     {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 6000000,
+      "unlock": 75000000,
+      "cost": 25000000,
+      "growth": 1.072,
+      "manager": 6000000
+     },
+     {
+      "id": "zvedennia",
+      "name": "Зведення",
+      "rate": 60000000,
+      "unlock": 750000000,
+      "cost": 250000000,
+      "growth": 1.0765,
+      "manager": 60000000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 792,
+      "cost": 642.5,
+      "growth": 1.054,
+      "manager": 132
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 990,
+      "cost": 865,
+      "growth": 1.054,
+      "manager": 220
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 1190,
+      "cost": 1287.5,
+      "growth": 1.054,
+      "manager": 330
+     },
+     {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 2100,
+      "cost": 1000,
+      "growth": 1.054,
+      "manager": 400
+     },
+     {
+      "id": "narada",
+      "name": "Нарада",
+      "rate": 3000,
+      "cost": 1500,
+      "growth": 1.054,
+      "manager": 600
+     }
+    ]
+   },
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 3960,
+      "unlock": 0,
+      "cost": 1100,
+      "growth": 1.054,
+      "manager": 165
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 39600,
+      "unlock": 41250,
+      "cost": 16500,
+      "growth": 1.0585,
+      "manager": 770
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 396000,
+      "unlock": 1375000,
+      "cost": 825000,
+      "growth": 1.063,
+      "manager": 22000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 3960000,
+      "unlock": 123750000,
+      "cost": 41250000,
+      "growth": 1.0675,
+      "manager": 1980000
+     },
+     {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 60000000,
+      "unlock": 375000000,
+      "cost": 125000000,
+      "growth": 1.072,
+      "manager": 6000000
+     },
+     {
+      "id": "zvedennia",
+      "name": "Зведення",
+      "rate": 600000000,
+      "unlock": 3750000000,
+      "cost": 1250000000,
+      "growth": 1.0765,
+      "manager": 60000000
+     },
+     {
+      "id": "zpz",
+      "name": "Звіти про звіти",
+      "rate": 0,
+      "share": 1,
+      "unlock": 37500000000,
+      "cost": 12500000000,
+      "growth": 1.081,
+      "manager": 600000000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 7920,
+      "cost": 3212.5,
+      "growth": 1.054,
+      "manager": 132
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 9900,
+      "cost": 4325,
+      "growth": 1.054,
+      "manager": 220
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 11900,
+      "cost": 6437.5,
+      "growth": 1.054,
+      "manager": 330
+     },
+     {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 21000,
+      "cost": 5000,
+      "growth": 1.054,
+      "manager": 400
+     },
+     {
+      "id": "narada",
+      "name": "Нарада",
+      "rate": 30000,
+      "cost": 7500,
+      "growth": 1.054,
+      "manager": 600
+     },
+     {
+      "id": "dopovid",
+      "name": "Доповідь",
+      "rate": 40000,
+      "cost": 10000,
+      "growth": 1.054,
+      "manager": 800
+     }
+    ]
+   },
+   {
+    "streams": [
+     {
+      "id": "raporty",
+      "name": "Рапорти",
+      "rate": 39600,
+      "unlock": 0,
+      "cost": 5500,
+      "growth": 1.042,
+      "manager": 165
+     },
+     {
+      "id": "akty",
+      "name": "Акти на майно",
+      "rate": 396000,
+      "unlock": 206250,
+      "cost": 82500,
+      "growth": 1.0454999999999999,
+      "manager": 770
+     },
+     {
+      "id": "dovidky",
+      "name": "Довідки",
+      "rate": 3960000,
+      "unlock": 6875000,
+      "cost": 4125000,
+      "growth": 1.049,
+      "manager": 22000
+     },
+     {
+      "id": "nakladni",
+      "name": "Накладні",
+      "rate": 39600000,
+      "unlock": 618750000,
+      "cost": 206250000,
+      "growth": 1.0525,
+      "manager": 1980000
+     },
+     {
+      "id": "nakazy",
+      "name": "Накази по частині",
+      "rate": 600000000,
+      "unlock": 1875000000,
+      "cost": 625000000,
+      "growth": 1.056,
+      "manager": 6000000
+     },
+     {
+      "id": "zvedennia",
+      "name": "Зведення",
+      "rate": 6000000000,
+      "unlock": 18750000000,
+      "cost": 6250000000,
+      "growth": 1.0594999999999999,
+      "manager": 60000000
+     },
+     {
+      "id": "zpz",
+      "name": "Звіти про звіти",
+      "rate": 0,
+      "share": 1,
+      "unlock": 187500000000,
+      "cost": 62500000000,
+      "growth": 1.063,
+      "manager": 600000000
+     }
+    ],
+    "stages": [
+     {
+      "id": "kombat",
+      "name": "Резолюції комбата",
+      "rate": 79200,
+      "cost": 16062.5,
+      "growth": 1.042,
+      "manager": 132
+     },
+     {
+      "id": "stroy",
+      "name": "Стройова частина",
+      "rate": 99000,
+      "cost": 21625,
+      "growth": 1.042,
+      "manager": 220
+     },
+     {
+      "id": "fin",
+      "name": "Фінслужба",
+      "rate": 119000,
+      "cost": 32187.5,
+      "growth": 1.042,
+      "manager": 330
+     },
+     {
+      "id": "kazna",
+      "name": "Казначейство",
+      "rate": 210000,
+      "cost": 25000,
+      "growth": 1.042,
+      "manager": 400
+     },
+     {
+      "id": "narada",
+      "name": "Нарада",
+      "rate": 300000,
+      "cost": 37500,
+      "growth": 1.042,
+      "manager": 600
+     },
+     {
+      "id": "dopovid",
+      "name": "Доповідь",
+      "rate": 400000,
+      "cost": 50000,
+      "growth": 1.042,
+      "manager": 800
+     }
+    ]
+   }
+  ]
+ }
+}

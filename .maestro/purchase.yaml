@@ -1,0 +1,25 @@
+# 001: тап печатки → покупка Рапортів ×1 → найм діловода (конституція, принцип III).
+# Запуск: development build на пристрої чи симуляторі, `APP_ID=<bundle id> maestro test .maestro/purchase.yaml`
+# (bundle id ще не вибрано, див. PR етапу 0). У хмарній сесії симулятора немає.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "flow-line"
+- repeat:
+    times: 40
+    commands:
+      - tapOn:
+          id: "seal"
+- tapOn:
+    id: "buy-raporty"
+- assertVisible: "Рів. 2.*"
+- repeat:
+    times: 90
+    commands:
+      - tapOn:
+          id: "seal"
+- tapOn:
+    id: "hire-raporty"
+- assertVisible: ".*діловод.*"

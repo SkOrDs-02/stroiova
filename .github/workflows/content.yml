@@ -2,10 +2,10 @@ name: content
 
 on:
   pull_request:
-    paths: ["content/**", "tools/**", "balance/**"]
+    paths: ["content/**", "tools/**", "balance/**", "src/economy/core/**"]
   push:
     branches: [main]
-    paths: ["content/**", "tools/**", "balance/**"]
+    paths: ["content/**", "tools/**", "balance/**", "src/economy/core/**"]
 
 jobs:
   check:
@@ -26,5 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Відбитки симулятора не змінились (001, принцип II)
+        run: node tools/golden.mjs --check
       - name: Симулятор балансу запускається на пресеті
         run: node -e "var S=require('./balance/sim.js'),P=require('./balance/preset-v7.json');S.SCENARIOS.forEach(function(sc){var l=S.levelStats(S.simulate(S.withDefaults(P.params),sc));if(!l.finale)throw new Error(sc.id+'- немає фіналу');console.log(sc.id,l.finale.toFixed(1))})"
