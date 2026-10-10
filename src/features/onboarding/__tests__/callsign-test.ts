@@ -31,6 +31,13 @@ describe('позивний', () => {
     expect(err('З С У')).toBe('stopword');
     expect(err('УПА')).toBe('stopword');
     expect(err('Сисадмін')).toBe('ok');
+    expect(err('СЗЧ')).toBe('stopword');
+    expect(err('єблан')).toBe('stopword');
+    expect(err('XYI')).toBe('stopword'); // латиниця, що читається як мат
+  });
+
+  test('рішення 58: основи не ловлять звичайні слова', () => {
+    for (const ok of ['Дебаг', 'Кебаб', 'Мебляр', 'Підорожник', 'Себастьян', 'Вебадмін']) expect(err(ok)).toBe('ok');
   });
 
   test('FR-9: шаблон {m:…|f:…}', () => {

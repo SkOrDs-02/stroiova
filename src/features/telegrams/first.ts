@@ -74,7 +74,7 @@ export function choiceEffects(c: TgChoice, cfg: EconomyConfig, nowMs: number): S
 export function resultRows(c: TgChoice, cfg: EconomyConfig): [string, string][] {
   const e = c.effects;
   const rows: [string, string][] = [[t.resDecision, t.kind[c.kind] ?? c.kind]];
-  for (const s of e.slow ?? []) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${s.hours} год`]);
+  for (const s of e.slow ?? []) rows.push([unitName(cfg, s.target), t.slowFor(formatMult(s.mult), s.hours)]);
   if (e.durationMin) rows.push([t.resSpent, t.minutes(e.durationMin)]);
   if (e.rep) rows.push([t.resRep, e.rep > 0 ? `+${e.rep}` : `−${Math.abs(e.rep)}`]);
   return rows;

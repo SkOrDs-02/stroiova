@@ -4,17 +4,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { color, radius, size, space } from '@/theme';
 
 import { MAX_FONT_SCALE } from './Button';
+import { t } from './texts';
 import { type } from './type';
 
 export type TabId = 'stroyova' | 'telegrams' | 'digital' | 'museum' | 'shop';
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'stroyova', label: 'Стройова' },
-  { id: 'telegrams', label: 'Телеграми' },
-  { id: 'digital', label: 'Цифра' },
-  { id: 'museum', label: 'Музей' },
-  { id: 'shop', label: 'Магазин' },
-];
+const TABS: { id: TabId; label: string }[] = (Object.keys(t.tabs) as TabId[]).map((id) => ({ id, label: t.tabs[id] }));
 
 interface Props {
   active: TabId;
@@ -40,7 +35,7 @@ export function TabBar({ active, telegramsNew = 0, coachTab, enabled, bottomInse
             testID={`tab-${tab.id}`}
             accessibilityRole="tab"
             accessibilityState={{ selected: on, disabled: off }}
-            accessibilityLabel={badge ? `${tab.label}, нових: ${badge}` : tab.label}
+            accessibilityLabel={badge ? t.tabNew(tab.label, badge) : tab.label}
             disabled={off}
             onPress={() => onChange(tab.id)}
             style={[styles.tab, coachTab === tab.id && styles.lit]}

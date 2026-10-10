@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { EconomyConfig } from '@/economy/game/types';
-import { color, radius, size, space } from '@/theme';
+import { color, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -81,8 +81,8 @@ const styles = StyleSheet.create({
   rowK: { ...type('docMeta'), color: color.ink2 },
   rowV: { ...type('docMeta'), color: color.ink },
   old: { textDecorationLine: 'line-through', color: color.ink2 },
-  alert: { color: color.alertPaper, fontWeight: '600' },
-  coach: { ...type('bodyS'), color: color.accent, fontWeight: '600' },
+  alert: { color: color.alertPaper, fontWeight: typeScale.cta.fontWeight },
+  coach: { ...type('bodyS'), color: color.accent, fontWeight: typeScale.cta.fontWeight },
   choice: { minHeight: size.touchMin, backgroundColor: color.surface, borderRadius: radius[8], borderWidth: 1, borderColor: color.border, padding: space[12], gap: space[2] },
   choiceTitle: { ...type('cta'), color: color.text },
   choiceSub: { ...type('caption'), color: color.muted },

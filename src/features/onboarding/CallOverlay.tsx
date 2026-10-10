@@ -34,6 +34,7 @@ export function CallOverlay({ onClaim, onClose }: { onClaim: () => number; onClo
               testID="call-end"
               label={t.b9End}
               onPress={() => {
+                if (phase !== 'talk') return; // подвійний тап в одному кадрі не перезаписує суму
                 setAmount(onClaim());
                 setPhase('bonus');
               }}

@@ -9,6 +9,7 @@ import { useBoot } from '@/features/boot/useBoot';
 import { MainScreen } from '@/features/main/MainScreen';
 import { OnboardingScreen } from '@/features/onboarding/OnboardingScreen';
 import type { ConveyorStore } from '@/features/conveyor/store';
+import { useGameLoop } from '@/features/conveyor/useGameLoop';
 import { isFullScreenStep } from '@/features/onboarding/steps';
 import { createStorage } from '@/save/mmkv';
 
@@ -39,6 +40,8 @@ export default function Index() {
 }
 
 function Game({ store }: { store: ConveyorStore }) {
+  // цикл на рівні гри: ігровий час іде й на кроках онбордингу 1–5 (002 FR-29), фон його не рахує
+  useGameLoop(store);
   const full = useStore(store, (s) => isFullScreenStep(s.onboarding.step) || s.actResultOpen);
   return full ? <OnboardingScreen store={store} /> : <MainScreen store={store} />;
 }

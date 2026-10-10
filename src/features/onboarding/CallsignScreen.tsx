@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { color, radius, size, space } from '@/theme';
+import { color, radius, size, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -112,12 +112,12 @@ const styles = StyleSheet.create({
   chip: { flex: 1, minHeight: size.touchMin, borderRadius: radius[6], borderWidth: 1, borderColor: color.border, backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space[6] },
   chipOn: { borderColor: color.accent, backgroundColor: color.accent },
   chipText: { ...type('body'), color: color.text },
-  chipTextOn: { color: color.accentInk, fontWeight: '600' },
+  chipTextOn: { color: color.accentInk, fontWeight: typeScale.cta.fontWeight },
   hint: { ...type('caption'), color: color.muted },
   custom: { minHeight: size.touchMin, borderRadius: radius[6], borderWidth: 1, borderStyle: 'dashed', borderColor: color.borderStrong, justifyContent: 'center', paddingHorizontal: space[12] },
   customOn: { borderColor: color.accent, borderStyle: 'solid' },
   customText: { ...type('body'), color: color.muted },
-  customTextOn: { color: color.accent, fontWeight: '600' },
+  customTextOn: { color: color.accent, fontWeight: typeScale.cta.fontWeight },
   gq: { ...type('label'), color: color.muted, marginTop: space[4] },
   bottom: { marginTop: 'auto', gap: space[8] },
   err: { ...type('bodyS'), color: color.fail },

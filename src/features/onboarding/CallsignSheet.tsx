@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { color, radius, space } from '@/theme';
+import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
-import { CALLSIGN_MAX, CALLSIGN_MIN, validateCallsign, type CallsignError } from './callsign';
+import { CALLSIGN_MAX, CALLSIGN_MIN, callsignLength, validateCallsign, type CallsignError } from './callsign';
 import { t } from './texts';
 
 const ERR: Record<CallsignError, string> = { empty: t.o3Err2, tooShort: t.o3Err5, tooLong: t.o3Err1, chars: t.o3Err4, stopword: t.o3Err4 };
@@ -14,7 +14,7 @@ const ERR: Record<CallsignError, string> = { empty: t.o3Err2, tooShort: t.o3Err5
 export function CallsignSheet({ initial, onDone, onClose }: { initial: string; onDone: (text: string) => void; onClose: () => void }) {
   const [value, setValue] = useState(initial);
   const [tapErr, setTapErr] = useState<CallsignError | null>(null);
-  const n = [...value.trim()].length;
+  const n = callsignLength(value);
   // довжину видно одразу; знаки й стоп-слова — на тап «Вписати в графу» (FR-7)
   const liveErr: CallsignError | null = n === 0 ? 'empty' : n < CALLSIGN_MIN ? 'tooShort' : n > CALLSIGN_MAX ? 'tooLong' : null;
   const err = liveErr ?? tapErr;
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   sub: { ...type('bodyS'), color: color.muted },
   field: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: color.borderStrong, borderRadius: radius[6], paddingHorizontal: space[12] },
   fieldBad: { borderColor: color.fail, borderWidth: 2 },
-  input: { flex: 1, minHeight: 48, color: color.text, ...type('bodyL') },
+  input: { flex: 1, minHeight: size.ctaHeightM, color: color.text, ...type('bodyL') },
   count: { ...type('numS'), color: color.muted },
   countOver: { color: color.fail },
   err: { ...type('bodyS'), color: color.fail },

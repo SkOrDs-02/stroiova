@@ -1,7 +1,7 @@
 // 002 AC-6 (без звуку), AC-7 (без звуку); FR-11, FR-12.
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Animated } from 'react-native';
 
 import { bundledConfig } from '@/economy/config';
 import { ACT_TAPS } from '@/features/conveyor/store';
@@ -36,6 +36,7 @@ async function tapToEnd(reduceMotion: boolean) {
 afterEach(() => {
   jest.useRealTimers();
   jest.clearAllMocks();
+  jest.restoreAllMocks();
 });
 
 describe('кроки 4–5: перший акт', () => {
@@ -54,11 +55,17 @@ describe('кроки 4–5: перший акт', () => {
     expect(store.getState().actResultOpen).toBe(false);
   });
 
-  test('AC-7: Reduce Motion — без тремтіння й хаптики, крок 5 закривається', async () => {
+  test('AC-7: Reduce Motion — без тремтіння екрана; хаптику вимикає лише перемикач вібрації (10)', async () => {
+    const seq = jest.spyOn(Animated, 'sequence');
     const store = await tapToEnd(true);
-    expect(Haptics.impactAsync).not.toHaveBeenCalled();
-    expect(Haptics.selectionAsync).not.toHaveBeenCalled();
-    expect(Haptics.notificationAsync).not.toHaveBeenCalled();
+    expect(seq).not.toHaveBeenCalled();
+    expect(Haptics.impactAsync).toHaveBeenCalledTimes(1);
     expect(store.getState().onboarding.step).toBe(6);
+  });
+
+  test('AC-6: без Reduce Motion екран тремтить', async () => {
+    const seq = jest.spyOn(Animated, 'sequence');
+    await tapToEnd(false);
+    expect(seq).toHaveBeenCalled();
   });
 });

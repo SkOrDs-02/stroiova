@@ -2,6 +2,8 @@
 import { cfgV5 } from '@/economy/test-fixtures';
 
 import { createSessionClock } from '../clock';
+import { onboardingDone } from '@/save/migrations';
+
 import { createConveyorStore } from '../store';
 
 describe('годинник сесії', () => {
@@ -11,6 +13,7 @@ describe('годинник сесії', () => {
     const clock = createSessionClock(() => wall, () => mono);
     const cfg = cfgV5((p) => { p.streams[0]!.rate = 1000; for (const g of p.stages) g.rate = 5000; });
     const store = createConveyorStore(clock.now(), cfg);
+    store.setState({ onboarding: onboardingDone() }); // гравець уже на конвеєрі (до кінця першого акта конвеєр стоїть, 002)
     for (let s = 1; s <= 60; s++) {
       mono += 1000;
       if (s === 20) wall += 2 * 3_600_000;

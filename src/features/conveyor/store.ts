@@ -9,7 +9,7 @@ import { buy, hire, isOk } from '@/economy/game/purchase';
 import { newGame } from '@/economy/game/state';
 import { absence, shiftTimers } from '@/economy/game/time';
 import type { BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, UnitRef } from '@/economy/game/types';
-import { complete, newOnboarding, receiveTg1, type CompleteExtra, type OnboardingState, type StepNo } from '@/features/onboarding/steps';
+import { complete, isFullScreenStep, newOnboarding, receiveTg1, type CompleteExtra, type OnboardingState, type StepNo } from '@/features/onboarding/steps';
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті (002 R3). */
 export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };
@@ -45,6 +45,8 @@ interface Store {
   /** Коли гравець повернувся: ліміт ×2 рахується за датою повернення (крайовий випадок «через північ») */
   offlineBackAt: number | null;
   toast: Toast | null;
+  /** Черга тостів: на екрані один, решта чекає (артборд Toasts) */
+  toastQueue: Toast[];
   events: DomainEvent[];
   tick: (nowMs: number) => void;
   tapSeal: (nowMs: number) => void;
@@ -103,7 +105,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     effects: init?.effects ?? [],
     playtimeMs: init?.playtimeMs ?? 0,
     onboarding: init?.onboarding ?? newOnboarding(0),
-    actTaps: 0,
+    // крок 5 закривається кінцем анімації ПОГОДЖЕНО; якщо застосунок вбито під час неї, акт уже підписано (FR-28)
+    actTaps: init?.onboarding?.step === 5 ? ACT_TAPS : 0,
     clerkFirstOpen: false,
     actResultOpen: false,
     lastMs: nowMs,
@@ -111,14 +114,17 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     offline: null,
     offlineBackAt: null,
     toast: null,
+    toastQueue: [],
     events: [],
     tick: (now) => {
       const { state, cfg: c, effects, lastMs, onboarding: o, playtimeMs } = get();
       if (now <= lastMs) return;
       const dt = now - lastMs;
-      // tick іде лише на передньому плані: ігровий час і «Пташка» не рахуються у фоні (FR-12, FR-29)
+      // tick іде лише на передньому плані: ігровий час і «Пташка» не рахуються у фоні (FR-12, FR-29).
+      // До кінця першого акта конвеєр стоїть (як у sim.js: дохід з onboardingBirdStartSec), іде лише ігровий час.
+      const idleConveyor = isFullScreenStep(o.step);
       set({
-        state: advance(state, c, lastMs, now, [...effects, ...birdEffect(c, o, lastMs)]).state,
+        state: idleConveyor ? state : advance(state, c, lastMs, now, [...effects, ...birdEffect(c, o, lastMs)]).state,
         lastMs: now,
         playtimeMs: playtimeMs + dt,
         ...(o.birdLeftMs > 0 ? { onboarding: { ...o, birdLeftMs: Math.max(0, o.birdLeftMs - dt) } } : {}),
@@ -175,8 +181,11 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if ('error' in r) return;
       set({ state: r.state, offline: null, offlineBackAt: null });
     },
-    clearToast: () => set({ toast: null }),
-    showToast: (toast) => set({ toast }),
+    clearToast: () => {
+      const [next, ...rest] = get().toastQueue;
+      set({ toast: next ?? null, toastQueue: rest });
+    },
+    showToast: (toast) => (get().toast ? set({ toastQueue: [...get().toastQueue, toast] }) : set({ toast })),
     onbComplete: (step, extra) => {
       const o = get().onboarding;
       const n = complete(o, step, get().playtimeMs, extra);
@@ -204,7 +213,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({ onboarding: { ...o, birdLeftMs: get().cfg.params.onboardingBirdMin * 60_000 }, actResultOpen: true });
     },
     toMain: () => set({ actResultOpen: false }),
-    closeClerkFirst: () => set({ clerkFirstOpen: false, toast: null }),
+    closeClerkFirst: () => set({ clerkFirstOpen: false }),
     receiveTg1: () => set({ onboarding: receiveTg1(get().onboarding, get().playtimeMs) }),
     answerTg1: (choiceId, eff) => {
       const o = get().onboarding;
@@ -219,8 +228,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({
         state: { ...state, signatures: state.signatures + amount, lifetimeCycle: state.lifetimeCycle + amount },
         onboarding: { ...o, archiveBonus: amount },
-        toast: { kind: 'archive', amount },
       });
+      get().showToast({ kind: 'archive', amount });
       get().onbComplete(9);
       return amount;
     },

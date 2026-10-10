@@ -6,6 +6,7 @@ import { formatBig, formatDuration, formatRate } from '@/economy/format';
 import { quote } from '@/economy/game/purchase';
 import type { BuyMode, EconomyConfig, EconomyState, Effect, UnitDef, UnitRef } from '@/economy/game/types';
 import { color, radius, size, space, typeScale } from '@/theme';
+import { MAX_FONT_SCALE } from '@/ui/Button';
 
 import { t } from './texts';
 
@@ -37,7 +38,7 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
   const dim = coach === 'dim';
   const target = typeof coach === 'object' ? coach : null;
   const coachText = target ? (
-    <Text style={styles.coach} testID="coach-text" accessibilityLiveRegion="polite">
+    <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.coach} testID="coach-text" accessibilityLiveRegion="polite">
       {target.text}
     </Text>
   ) : null;
@@ -49,12 +50,12 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
       testID={`unit-${def.id}`}
     >
       <View style={styles.head}>
-        <Text style={styles.name}>{def.name}</Text>
-        <Text style={styles.meta}>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.name}>{def.name}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>
           {opened ? t.level(level, formatRate(rate), hasClerk ? t.clerk : t.manual) : q.locked ? t.locked : t.firstLevel(formatRate(capAt(def, 1, cfg.params)))}
         </Text>
-        {opened && q.levels > 1 ? <Text style={styles.meta}>{`${formatRate(q.rateBefore)} → ${formatRate(q.rateAfter)}`}</Text> : null}
-        {!q.affordable && !q.locked && q.etaSec != null ? <Text style={styles.wait}>{t.wait(formatDuration(q.etaSec))}</Text> : null}
+        {opened && q.levels > 1 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{`${formatRate(q.rateBefore)} → ${formatRate(q.rateAfter)}`}</Text> : null}
+        {!q.affordable && !q.locked && q.etaSec != null ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.wait}>{t.wait(formatDuration(q.etaSec))}</Text> : null}
       </View>
       {target?.target === 'buy' ? coachText : null}
       <View style={styles.actions}>
@@ -67,7 +68,8 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
           onPress={onBuy}
           style={[styles.btn, !q.affordable && styles.btnOff, target?.target === 'buy' && styles.lit]}
         >
-          <Text style={[styles.btnText, !q.affordable && styles.btnTextOff]}>{label}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.btnText, !q.affordable && styles.btnTextOff]}>{label}</Text>
+          {target && target.target !== 'buy' ? <View style={styles.scrim} /> : null}
         </Pressable>
         {opened && !hasClerk ? (
           <Pressable
@@ -79,8 +81,9 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
             pointerEvents={target && target.target !== 'hire' ? 'none' : 'auto'}
             style={[styles.btnGhost, !canHire && styles.btnOff, target?.target === 'hire' && styles.lit]}
           >
-            <Text style={[styles.ghostText, !canHire && styles.btnTextOff]}>{`${t.hire} · ${formatBig(def.manager, 'price')}`}</Text>
-            {!canHire ? <Text style={styles.wait}>{t.short(formatBig(def.manager - state.signatures, 'price'))}</Text> : null}
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.ghostText, !canHire && styles.btnTextOff]}>{`${t.hire} · ${formatBig(def.manager, 'price')}`}</Text>
+            {!canHire ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.wait}>{t.short(formatBig(def.manager - state.signatures, 'price'))}</Text> : null}
+            {target && target.target !== 'hire' ? <View style={styles.scrim} /> : null}
           </Pressable>
         ) : null}
       </View>

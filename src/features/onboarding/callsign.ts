@@ -19,6 +19,11 @@ function folded(s: string, twins: boolean): string {
   return twins ? [...low].map((ch) => TWINS[ch] ?? ch).join('') : low;
 }
 
+/** Довжина в знаках (кодових точках), як на лічильнику «n/16». */
+export function callsignLength(text: string): number {
+  return [...text.trim()].length;
+}
+
 export const STOPWORDS: readonly string[] = stopwordsFile.words;
 
 /**
@@ -27,9 +32,10 @@ export const STOPWORDS: readonly string[] = stopwordsFile.words;
  */
 export function validateCallsign(text: string, stopwords: readonly string[] = STOPWORDS): { ok: true } | { ok: false; error: CallsignError } {
   const v = text.trim();
-  if (v.length === 0) return { ok: false, error: 'empty' };
-  if (v.length < CALLSIGN_MIN) return { ok: false, error: 'tooShort' };
-  if (v.length > CALLSIGN_MAX) return { ok: false, error: 'tooLong' };
+  const n = callsignLength(v);
+  if (n === 0) return { ok: false, error: 'empty' };
+  if (n < CALLSIGN_MIN) return { ok: false, error: 'tooShort' };
+  if (n > CALLSIGN_MAX) return { ok: false, error: 'tooLong' };
   if (!ALLOWED.test(v)) return { ok: false, error: 'chars' };
   const plain = folded(v, false);
   const twin = folded(v, true);

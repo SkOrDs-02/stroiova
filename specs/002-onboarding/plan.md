@@ -75,14 +75,15 @@ src/
 │   ├── callsign.ts                  # перевірка позивного, шаблони {m:…|f:…}
 │   ├── texts.ts                     # o1–o4, b6–b9, c7
 │   ├── TitleScreen.tsx · IntroScreen.tsx · CallsignScreen.tsx · CallsignSheet.tsx · FirstActScreen.tsx
-│   ├── Coach.tsx                    # затемнення з вікном під ціль
+│   ├── OnboardingScreen.tsx         # екран за кроком 1–5
 │   ├── ClerkFirst.tsx · CallOverlay.tsx
 │   ├── haptics.ts                   # expo-haptics + Reduce Motion + налаштування (10) пізніше
 │   └── __tests__/
 ├── features/telegrams/              # мінімум для кроку 8; 03 розширює
 │   ├── TelegramDetail.tsx · TelegramResult.tsx · first.ts
-├── features/main/                   # головний екран: стан «перша сесія», таббар
+├── features/main/                   # головний екран: коуч (R6), таббар, оверлеї кроків 7–9
 │   └── MainScreen.tsx
+├── ui/                              # Button, TabBar, type(), рядки компонентів
 ├── features/conveyor/store.ts       # ігровий час, «Пташка», актові тапи, онбординг у сторі
 └── app/index.tsx                    # game → онбординг (кроки 1–5) або main
 ```

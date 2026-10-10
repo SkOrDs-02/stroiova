@@ -58,7 +58,8 @@ describe('перший акт і «Пташка»', () => {
     const run = (withBird: boolean) => {
       const store = atAct();
       for (let i = 0; i < ACT_TAPS; i++) store.getState().actSign();
-      if (withBird) store.getState().stamp();
+      store.getState().stamp();
+      if (!withBird) store.setState({ onboarding: { ...store.getState().onboarding, birdLeftMs: 0 } });
       store.getState().tick(T0 + MIN);
       return store;
     };
@@ -69,5 +70,29 @@ describe('перший акт і «Пташка»', () => {
     expect(base).toBeGreaterThan(0);
     expect(bird).toBeCloseTo(base * bundledConfig.params.onboardingBirdMult, 9);
     expect(b.effects.some((e) => (e.source as string) === 'onboarding_bird')).toBe(false);
+  });
+});
+
+describe('ігровий час на кроках 1–5', () => {
+  test('FR-29: фон на вступі не рахується; конвеєр до першого акта стоїть', () => {
+    const store = createConveyorStore(T0, bundledConfig);
+    store.getState().onbComplete(1);
+    store.getState().tick(T0 + 30_000);
+    store.getState().away(T0 + 30_000, T0 + 30_000 + HOUR); // година у фоні
+    store.getState().claim();
+    store.getState().tick(T0 + 30_000 + HOUR + 10_000);
+    expect(store.getState().playtimeMs).toBe(40_000);
+    expect(store.getState().state.signatures).toBe(0);
+  });
+
+  test('FR-28: вбито під час анімації ПОГОДЖЕНО (крок 5) — акт уже підписано, штамп можна завершити', () => {
+    const a = atAct();
+    for (let i = 0; i < ACT_TAPS; i++) a.getState().actSign();
+    const st = a.getState();
+    const b = createConveyorStore(T0, bundledConfig, { state: st.state, effects: st.effects, pinned: null, playtimeMs: st.playtimeMs, onboarding: st.onboarding });
+    expect(b.getState().actTaps).toBe(ACT_TAPS);
+    b.getState().stamp();
+    expect(b.getState().onboarding.step).toBe(6);
+    expect(b.getState().state.signatures).toBe(ACT_TAPS * bundledConfig.params.tapValue);
   });
 });

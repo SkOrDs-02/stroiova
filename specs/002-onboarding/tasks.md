@@ -23,7 +23,7 @@ description: "Задачі: 002 Онбординг і перша сесія — 
 
 ## Phase 2: Foundational
 
-- [X] T004 `src/economy/game/types.ts`, `income.ts`: `Effect.source` + `'onboarding_bird'`, перший у порядку `multStack`; тест у `src/economy/__tests__/` (×2 у `multStack` і в `tap`)
+- [X] T004 `src/economy/game/types.ts`, `income.ts`: `Effect.source` + `'onboarding_bird'`, перший у порядку `multStack`; тест `src/economy/__tests__/bird-mult-test.ts` (×2 у `multStack` і в `tap`)
 - [X] T005 `src/features/onboarding/steps.ts`: `OnboardingState`, `newOnboarding`, `complete` (лише поточний крок; запис у `completed` з `atPlayMs`, `durationMs`, `skipped`), `ready` (coachUpgrade / coachHire / telegram ≥ 300 000 мс / call ≥ `archiveBonusAtSec`), `TELEGRAM_AT_MS`; тести `src/features/onboarding/__tests__/steps-test.ts`
 - [X] T006 `src/save/schema.ts`, `migrations.ts`: `CURRENT_SCHEMA = 2`; `game.playtimeMs` («≥ 0»), `game.onboarding` (поля data-model.md; `callsign.text` 2–16 знаків); міграція 1 → 2: `step: 'done'`, `playtimeMs: 0`, `callsign: null`; тест на фікстуру v1 у `src/save/__tests__/migration-test.ts`
 - [X] T007 `src/features/conveyor/store.ts`: `playtimeMs` і `onboarding` у сторі; `tick` додає ігровий час і тимчасовий ефект «Пташки», зменшує `birdLeftMs`; `away` не чіпає ні того, ні іншого; `gameSave`/`draftOf` пишуть їх; тест AC-6 (друга частина: 20 хв онлайн знімають ×2, 2 год фону — ні) у `src/features/conveyor/__tests__/bird-test.ts`
@@ -60,7 +60,7 @@ description: "Задачі: 002 Онбординг і перша сесія — 
 **Independent Test**: AC-8, AC-9, AC-10
 
 - [X] T020 [P] [US4] `src/features/main/__tests__/main-first-session-test.tsx`: AC-8 (лише Рапорти й 3 ланки, таббар видно); AC-9 (коуч кроку 6: тап поза ціллю нічого не робить, по цілі — покупка, крок 6 закрито, конфіг закріплено); AC-10 (150 → 200+ підписів → коуч найму Стройової → `clerk-first` → «Далі» → тост b7.toast, `clerkHire.isFirstClerk`)
-- [X] T021 [US4] `src/features/onboarding/Coach.tsx`: затемнення з вікном над ціллю (`measureInWindow`), текст ≤ 2 рядків не закриває ціль, тапи лише по цілі (FR-15)
+- [X] T021 [US4] Коуч (FR-15) вбудовано в `UnitRow` і `MainScreen`: решта приглушена токеном `scrim` і не тапається (`pointerEvents`), ціль обведено, текст ≤ 2 рядків поруч із ціллю; на вкладці — у `TabBar` (див. research R6)
 - [X] T022 [US4] `src/features/main/MainScreen.tsx`: стан «перша сесія» артборда `Main` (потоки, крім Рапортів, замкнені; ланки; печатка; чип множників з «Пташкою»; таббар `TabBar`; тости b6.toast1 на віху Рапортів і b6.toast2, коли вузьким місцем стали резолюції комбата; підсвітка одиниць без діловода після кроку 7, FR-17), замінює `ConveyorScreen` у `app/index.tsx`; offline-return 009 перед коучем
 - [X] T023 [US4] `src/features/onboarding/ClerkFirst.tsx` (артборд `ClerkFirst`: Оля, c7.role, c7.change, c7.offline, «Далі»)
 
@@ -76,7 +76,7 @@ description: "Задачі: 002 Онбординг і перша сесія — 
 ## Phase 8: Polish
 
 - [X] T028 `src/features/onboarding/__tests__/resume-test.tsx`: AC-19 (вбивство на кроці 4 з 5 тапами → «0 з 8», позивний і форма на місці, закриті кроки не повторюються)
-- [ ] T029 Web-сценарій quickstart у Chromium 375×667 (`page.clock`), скріншоти
+- [X] T029 Web-сценарій quickstart у Chromium 375×667 (`page.clock`), скріншоти
 - [ ] T030 Агенти `content-reviewer` (тексти онбордингу) і `spec-guardian`; виправлення
 - [ ] T031 Документація: CLAUDE.md (`src/features/onboarding`), `npm run check`
 

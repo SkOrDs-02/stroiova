@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { bundledConfig } from '@/economy/config';
 import { baseIncomePerMin } from '@/economy/game/income';
-import { HOUR, MIN, T0 } from '@/economy/test-fixtures';
+import { HOUR } from '@/economy/test-fixtures';
 import { storeAt } from '@/features/onboarding/test-utils';
 
 import { MainScreen } from '../MainScreen';
@@ -83,6 +83,10 @@ describe('кроки 8–9', () => {
     expect(screen.queryByTestId('archive')).toBeNull();
     await fireEvent.press(screen.getByTestId('call-close'));
     expect(screen.queryByTestId('call-bonus')).toBeNull();
+    // тости в черзі: b8.toast (телеграма) ще на екрані, b9.toast за ним
+    await act(async () => {
+      while (store.getState().toast?.kind === 'text') store.getState().clearToast();
+    });
     expect(screen.getByTestId('toast')).toHaveTextContent(/Архів попередника: \+/);
     expect(store.getState().claimArchive()).toBe(0);
   });

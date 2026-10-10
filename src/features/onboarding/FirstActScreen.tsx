@@ -1,9 +1,11 @@
-// Кроки 4–5, onb-first-act (002 FR-11, FR-12): 8 тапів «Підписати», ПОГОДЖЕНО з тремтінням, дрон, «Пташка» ×2.
+// Кроки 4–5, onb-first-act (002 FR-11, FR-12): 8 тапів «Підписати», ПОГОДЖЕНО з тремтінням, дрон, «Пташка».
+// Reduce Motion знімає лише тремтіння; хаптику вимикає перемикач вібрації (10).
 import { useEffect, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from 'zustand';
 
+import { formatMult } from '@/economy/format';
 import { ACT_TAPS, type ConveyorStore } from '@/features/conveyor/store';
 import { color, duration, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
@@ -19,6 +21,7 @@ export function FirstActScreen({ store }: { store: ConveyorStore }) {
   const step = useStore(store, (s) => s.onboarding.step);
   const gender = useStore(store, (s) => s.onboarding.gender);
   const reduceMotion = useReduceMotion();
+  const birdMult = useStore(store, (s) => s.cfg.params.onboardingBirdMult);
   const [shake] = useState(() => new Animated.Value(0));
   const [stampIn] = useState(() => new Animated.Value(0));
   const [stamped, setStamped] = useState(step !== 4 && step !== 5);
@@ -27,7 +30,7 @@ export function FirstActScreen({ store }: { store: ConveyorStore }) {
   useEffect(() => {
     if (n < ACT_TAPS || stamped) return;
     sfx('SFX-03');
-    if (!reduceMotion) stampHaptic();
+    stampHaptic();
     const anims = [Animated.timing(stampIn, { toValue: 1, duration: duration.stampBig, useNativeDriver: true })];
     if (!reduceMotion) {
       const d = duration.shake / 4;
@@ -52,17 +55,17 @@ export function FirstActScreen({ store }: { store: ConveyorStore }) {
     if (!hit) return;
     const id = setTimeout(() => {
       sfx('SFX-21');
-      if (!reduceMotion) successHaptic();
+      successHaptic();
     }, SUCCESS_DELAY_MS);
     return () => clearTimeout(id);
-  }, [hit, reduceMotion]);
+  }, [hit]);
 
   const onSign = () => {
     const before = store.getState().actTaps;
     const after = store.getState().actSign();
     if (after === before) return; // тапи після 8-го ігноруємо (FR-11)
     sfx('SFX-01');
-    if (!reduceMotion) tapHaptic(Date.now());
+    tapHaptic(Date.now());
   };
 
   const done = n >= ACT_TAPS || stamped;
@@ -108,7 +111,7 @@ export function FirstActScreen({ store }: { store: ConveyorStore }) {
       ) : (
         <View style={styles.bottom} testID="o4-result">
           <View style={styles.result}>
-            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.resTitle}>{`${t.o4ResTitle} ×2`}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.resTitle}>{`${t.o4ResTitle} ${formatMult(birdMult)}`}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.resSub}>{t.o4ResSub}</Text>
           </View>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.comment} testID="o4-comment">{gendered(t.o4Comment, gender)}</Text>
@@ -130,7 +133,7 @@ const styles = StyleSheet.create({
   docNo: { ...type('docMeta'), color: color.ink },
   docTitle: { ...type('docBody'), color: color.ink },
   docItem: { ...type('docBody'), color: color.ink2 },
-  stamp: { ...type('stampL'), color: color.stamp, borderWidth: 3, borderColor: color.stamp, alignSelf: 'center', paddingHorizontal: space[12], marginTop: space[8] },
+  stamp: { ...type('stampL'), color: color.stamp, borderWidth: 2, borderColor: color.stamp, alignSelf: 'center', paddingHorizontal: space[12], marginTop: space[8] },
   bottom: { marginTop: 'auto', gap: space[8] },
   progHead: { flexDirection: 'row', justifyContent: 'space-between' },
   progLabel: { ...type('label'), color: color.muted },

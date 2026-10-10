@@ -1,4 +1,4 @@
-// Головний екран (002 FR-13…FR-20): конвеєр 001, таббар, коуч онбордингу, clerk-first, телеграма № 1, дзвінок «Археологу».
+// Головний екран (002 FR-13…FR-20; ігровий цикл — у Game, app/index.tsx): конвеєр 001, таббар, коуч онбордингу, clerk-first, телеграма № 1, дзвінок «Археологу».
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +14,6 @@ import { Seal } from '@/features/conveyor/Seal';
 import { birdEffect, type ConveyorStore, type Toast } from '@/features/conveyor/store';
 import { t } from '@/features/conveyor/texts';
 import { UnitRow } from '@/features/conveyor/UnitRow';
-import { useGameLoop } from '@/features/conveyor/useGameLoop';
 import { CallOverlay } from '@/features/onboarding/CallOverlay';
 import { ClerkFirst } from '@/features/onboarding/ClerkFirst';
 import { ready } from '@/features/onboarding/steps';
@@ -22,7 +21,7 @@ import { t as onb } from '@/features/onboarding/texts';
 import { choiceEffects, firstTelegram, type TgChoice } from '@/features/telegrams/first';
 import { TelegramDetail } from '@/features/telegrams/TelegramDetail';
 import { TelegramResult } from '@/features/telegrams/TelegramResult';
-import { color, duration, radius, size, space } from '@/theme';
+import { color, duration, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
 import { TabBar, type TabId } from '@/ui/TabBar';
 import { type } from '@/ui/type';
@@ -45,7 +44,6 @@ function toastText(toast: Toast): string {
 }
 
 export function MainScreen({ store }: { store: ConveyorStore }) {
-  useGameLoop(store);
   const insets = useSafeAreaInsets();
   const s = useStore(store);
   const now = s.lastMs;
@@ -74,12 +72,14 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         callAtMs: s.cfg.params.archiveBonusAtSec * 1000,
       });
 
-  // крок 8: телеграма № 1 приходить — тост b8.toast, бейдж «1», коуч на вкладці (FR-18)
+  // крок 8: телеграма № 1 приходить — тост b8.toast, бейдж «1», коуч на вкладці (FR-18).
+  // Поки відкрита модалка чи шторка, телеграма чекає (крайовий випадок), тож b7.toast іде першим.
+  const blocked = s.offline != null || s.clerkFirstOpen;
   useEffect(() => {
-    if (rd !== 'telegramArrive') return;
+    if (rd !== 'telegramArrive' || blocked) return;
     store.getState().receiveTg1();
     store.getState().showToast({ kind: 'text', text: onb.b8Toast });
-  }, [rd, store]);
+  }, [rd, blocked, store]);
 
   // тости першої сесії: віха Рапортів (b6.toast1) і вузьке місце на резолюціях комбата (b6.toast2)
   const lastEvent = s.events.at(-1);
@@ -122,7 +122,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   };
 
   const onChoose = (c: TgChoice) => {
-    store.getState().answerTg1(c.id, choiceEffects(c, s.cfg, Date.now()));
+    store.getState().answerTg1(c.id, choiceEffects(c, s.cfg, store.getState().lastMs));
     setTg({ kind: 'result', choice: c });
   };
 
@@ -208,9 +208,6 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         ))}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note}>{t.formula}</Text>
       </ScrollView>
-      {coachTab ? (
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.coachTab} testID="coach-text">{onb.b8Toast}</Text>
-      ) : null}
       <TabBar
         active="stroyova"
         telegramsNew={o.step === 8 && o.tg1ReceivedAtPlayMs != null ? 1 : 0}
@@ -219,11 +216,17 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         bottomInset={insets.bottom}
         onChange={onTab}
       />
-      {toast != null && !coachTab ? (
-        <View style={[styles.toast, { bottom: insets.bottom + size.tabHeight + space[8] }]} testID="toast">
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.toastText}>{toastText(toast)}</Text>
-        </View>
-      ) : null}
+      {/* над таббаром: тост (один, решта в черзі) і під ним підказка коуча кроку 8 */}
+      <View style={[styles.bottomStack, { bottom: insets.bottom + size.tabHeight }]} pointerEvents="none">
+        {toast != null ? (
+          <View style={styles.toast} testID="toast">
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.toastText}>{toastText(toast)}</Text>
+          </View>
+        ) : null}
+        {coachTab ? (
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.coachTab} testID="coach-text">{onb.b8Toast}</Text>
+        ) : null}
+      </View>
       {s.clerkFirstOpen ? (
         <ClerkFirst
           onNext={() => {
@@ -264,12 +267,13 @@ const styles = StyleSheet.create({
   mode: { flex: 1, minHeight: size.touchMin, borderRadius: radius[6], borderWidth: 1, borderColor: color.borderStrong, justifyContent: 'center', alignItems: 'center' },
   modeOn: { backgroundColor: color.surface, borderColor: color.accent },
   modeText: { ...type('body'), color: color.muted },
-  modeTextOn: { color: color.accent, fontWeight: '600' },
+  modeTextOn: { color: color.accent, fontWeight: typeScale.cta.fontWeight },
   h4: { ...type('h4'), color: color.muted, marginTop: space[8] },
   stageWrap: { gap: space[8] },
   note: { ...type('caption'), color: color.muted, marginTop: space[8] },
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: color.scrim },
-  coachTab: { ...type('bodyS'), color: color.accent, fontWeight: '600', backgroundColor: color.bgDeep, paddingHorizontal: space[16], paddingVertical: space[8] },
-  toast: { position: 'absolute', left: space[16], right: space[16], backgroundColor: color.surface, borderRadius: radius[6], padding: space[12] },
+  coachTab: { ...type('bodyS'), color: color.accent, fontWeight: typeScale.cta.fontWeight, backgroundColor: color.bgDeep, paddingHorizontal: space[16], paddingVertical: space[8] },
+  bottomStack: { position: 'absolute', left: 0, right: 0, gap: space[8] },
+  toast: { marginHorizontal: space[16], backgroundColor: color.surface, borderRadius: radius[6], padding: space[12] },
   toastText: { ...type('body'), color: color.text },
 });

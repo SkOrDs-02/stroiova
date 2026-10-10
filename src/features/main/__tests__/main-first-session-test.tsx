@@ -61,3 +61,20 @@ describe('main першої сесії', () => {
     expect(screen.getByTestId('toast')).toHaveTextContent('Оля на місці. Ще 3 діловоди - і стройова піде без тебе.');
   });
 });
+
+describe('черга тостів', () => {
+  test('FR-17, FR-18: найм після 300 с гри — спершу clerk-first і b7.toast, потім телеграма й b8.toast', async () => {
+    const store = storeAt(7);
+    await act(async () => store.setState({ playtimeMs: 330_000 }));
+    await render(<MainScreen store={store} />);
+    await setSig(store, 1e6);
+    await fireEvent.press(screen.getByTestId('hire-stroy'));
+    expect(store.getState().onboarding.tg1ReceivedAtPlayMs).toBeNull();
+    await fireEvent.press(screen.getByTestId('clerk-first-next'));
+    expect(screen.getByTestId('toast')).toHaveTextContent(/Оля на місці/);
+    expect(store.getState().onboarding.tg1ReceivedAtPlayMs).toBe(330_000);
+    expect(store.getState().toastQueue).toEqual([{ kind: 'text', text: 'Телеграма згори. Строк виконання: учора.' }]);
+    await act(async () => store.getState().clearToast());
+    expect(screen.getByTestId('toast')).toHaveTextContent('Телеграма згори. Строк виконання: учора.');
+  });
+});

@@ -1,5 +1,5 @@
-// Хаптика й звуки першого акта (002 FR-11, FR-12). Reduce Motion вимикає тремтіння й хаптику (AC-7);
-// перемикач вібрації в налаштуваннях — 10. Звуків SFX-01/03/21 ще немає (етап 8): sfx() поки нічого не грає.
+// Хаптика й звуки першого акта (002 FR-11, FR-12). Reduce Motion вимикає лише тремтіння екрана (AC-7);
+// хаптику вимикає перемикач вібрації в налаштуваннях (10). Звуків SFX-01/03/21 ще немає (етап 8): sfx() поки нічого не грає.
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Platform } from 'react-native';
