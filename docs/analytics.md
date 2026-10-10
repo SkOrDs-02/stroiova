@@ -78,7 +78,7 @@
 
 | Властивість | Тип | Приклад | Що означає |
 | --- | --- | --- | --- |
-| `economy_config_version` | str | econ-v5.0 | Версія параметрів економіки, з якою зіграна подія. Для A/B — з суфіксом варіанта, напр. econ-v5.1+b |
+| `economy_config_version` | str | econ-v7.2 | Версія параметрів економіки, з якою зіграна подія. Для A/B — з суфіксом варіанта, напр. econ-v5.1+b |
 | `economy_config_source` | str | remote | Звідки взято конфіг. Значення: bundled, remote, cached |
 | `content_version` | str | content-2026.10.08 | Версія JSON-пакета телеграм, документів і журналів (expo-updates) |
 | `save_schema_version` | int | 3 | Версія схеми збереження в MMKV |
@@ -288,7 +288,7 @@
 | `install_date` | date | `$set_once` | 2026-11-20 | Дата першого запуску |
 | `install_week` | str | `$set_once` | 2026-W47 | ISO-тиждень встановлення, для когорт |
 | `install_app_version` | str | `$set_once` | 1.0.0 | Версія застосунку на першому запуску |
-| `install_economy_config_version` | str | `$set_once` | econ-v5.0 | З яким конфігом гравець почав; таргетинг змін економіки лише на нові встановлення |
+| `install_economy_config_version` | str | `$set_once` | econ-v7.2 | З яким конфігом гравець почав; таргетинг змін економіки лише на нові встановлення |
 | `install_build_channel` | str | `$set_once` | production | Канал збірки на першому запуску. Значення: development, preview, production |
 | `first_device_region` | str | `$set_once` | UA | Регіон пристрою на першому запуску |
 | `callsign_type` | str | `$set` | excel | Лише тип. Текст свого позивного ніколи не відправляємо. Значення: excel, skrepka, drukar, custom |
@@ -312,7 +312,7 @@
 | `push_permission` | str | `$set` | granted | Стан дозволу на пуші. Значення: granted, denied, provisional, not\_asked |
 | `ads_consent_status` | str | `$set` | not\_required | Статус згоди UMP. Значення: obtained, required, not\_required, unknown |
 | `is_ads_regulated_region` | bool | `$set` | false | UMP вимагає згоду (ЄЕЗ, Велика Британія, Швейцарія) |
-| `economy_config_version` | str | `$set` | econ-v5.0 | Поточна версія конфігу економіки |
+| `economy_config_version` | str | `$set` | econ-v7.2 | Поточна версія конфігу економіки |
 | `is_econ_detail_sampled` | bool | `$set` | true | Пристрій у вибірці upgrade\_purchase |
 | `is_test_user` | bool | `$set` | false | Тестер або розробник; виключаємо з дашбордів |
 
@@ -416,7 +416,7 @@ WHERE event = 'session_end' AND timestamp > now() - INTERVAL 7 DAY
 
 ### Віддалений конфіг
 
-- **Вбудована версія.** Базові параметри зашиті в застосунок (`economy.json`, `econ-v5.0`), тож гра працює офлайн і з першого запуску.
+- **Вбудована версія.** Базові параметри зашиті в застосунок (`economy.json`, `econ-v7.2`, рішення 52), тож гра працює офлайн і з першого запуску.
 - **Флаг.** Зміни приходять через feature flag PostHog `economy-config` з JSON-payload `{ "version": "econ-v5.1", "params": { … } }`. Формат `params` збігається з експортом пісочниці (`preset-v5.json`), тож пресет йде в payload без перетворень. Мультиваріантний флаг дає A/B, а варіант стабільний для `install_id`.
 - **Лише нові встановлення (рішення 23).** Флаг таргетуємо за `install_economy_config_version` або датою встановлення. Версія фіксується в збереженні до першої покупки рівня (крок онбордингу 6): флаг вже прийшов — remote, ще ні — вбудована. Далі почате збереження лишається на своїй версії, і нова крива цін на нього не падає.
 - **Кеш і перевірка.** Закріплений конфіг лежить у MMKV поруч зі збереженням (`economy_config_source = cached`). Перед застосуванням його перевіряє zod-схема й межі: ріст ціни 1,05–1,25, ліміти не нульові. Якщо щось не так, лишаємо вбудовану версію і шлемо `app_error_log` з `source = economy_config`.

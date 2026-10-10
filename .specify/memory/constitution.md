@@ -30,7 +30,7 @@
 
 ## Технічні обмеження
 
-Expo SDK (актуальний стабільний), TypeScript strict, react-native-skia + reanimated для графіки й анімацій, expo-haptics, zustand + MMKV, break_infinity.js для великих чисел, react-native-google-mobile-ads, RevenueCat, PostHog (EU), Sentry, expo-notifications (лише локальні), expo-updates. iOS: збірка Xcode 26 / SDK iOS 26; Android: target API 36. Мова — українська (рядки винесені, готові до локалізації).
+Expo SDK (актуальний стабільний), TypeScript strict, react-native-skia + reanimated для графіки й анімацій, expo-haptics, zustand + MMKV, великі числа — тип `Big` у модулі економіки (зараз `number`; break_infinity.js, коли нескінченний режим вийде за 10³⁰⁸, рішення 53), react-native-google-mobile-ads, RevenueCat, PostHog (EU), Sentry, expo-notifications (лише локальні), expo-updates. iOS: збірка Xcode 26 / SDK iOS 26; Android: target API 36. Мова — українська (рядки винесені, готові до локалізації).
 
 ## Робочий процес
 
@@ -43,4 +43,4 @@ Expo SDK (актуальний стабільний), TypeScript strict, react-n
 
 Конституція важить більше за будь-яку специфікацію чи план. Зміни — лише через правку цього файлу з новою версією й датою та записом у `docs/decisions.md`. `/speckit-analyze` перед кожною реалізацією перевіряє відповідність принципам I–VIII.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-09 | **Last Amended**: 2026-10-09
+**Version**: 1.1.0 | **Ratified**: 2026-10-09 | **Last Amended**: 2026-10-10

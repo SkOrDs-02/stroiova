@@ -52,7 +52,7 @@ sampling:
     fields: [taps_count, cat_taps_count, tap_signatures_share_pct, purchases_count, levels_bought, paper_empty_sec, fuel_bonus_sec]
 
 global_properties:
-  - {name: economy_config_version, type: string, required: true, example: "econ-v5.0", description: "Версія параметрів економіки, з якою зіграна подія. Для A/B — з суфіксом варіанта, напр. econ-v5.1+b"}
+  - {name: economy_config_version, type: string, required: true, example: "econ-v7.2", description: "Версія параметрів економіки, з якою зіграна подія. Для A/B — з суфіксом варіанта, напр. econ-v5.1+b"}
   - {name: economy_config_source, type: string, required: true, enum: [bundled, remote, cached], example: remote, description: "Звідки взято конфіг"}
   - {name: content_version, type: string, required: true, example: "content-2026.10.08", description: "Версія JSON-пакета телеграм, документів і журналів (expo-updates)"}
   - {name: save_schema_version, type: integer, required: true, example: 3, description: "Версія схеми збереження в MMKV"}
@@ -931,7 +931,7 @@ user_properties:
   - {name: install_date, type: date, set: set_once, example: "2026-11-20", description: "Дата першого запуску"}
   - {name: install_week, type: string, set: set_once, example: "2026-W47", description: "ISO-тиждень встановлення, для когорт"}
   - {name: install_app_version, type: string, set: set_once, example: "1.0.0", description: "Версія застосунку на першому запуску"}
-  - {name: install_economy_config_version, type: string, set: set_once, example: "econ-v5.0", description: "З яким конфігом гравець почав; таргетинг змін економіки лише на нові встановлення"}
+  - {name: install_economy_config_version, type: string, set: set_once, example: "econ-v7.2", description: "З яким конфігом гравець почав; таргетинг змін економіки лише на нові встановлення"}
   - {name: install_build_channel, type: string, set: set_once, enum: [development, preview, production], example: production, description: "Канал збірки на першому запуску"}
   - {name: first_device_region, type: string, set: set_once, example: "UA", description: "Регіон пристрою на першому запуску"}
   - {name: callsign_type, type: string, set: set, enum: [excel, skrepka, drukar, custom], example: excel, description: "Лише тип. Текст свого позивного ніколи не відправляємо"}
@@ -955,6 +955,6 @@ user_properties:
   - {name: push_permission, type: string, set: set, enum: [granted, denied, provisional, not_asked], example: granted, description: "Стан дозволу на пуші"}
   - {name: ads_consent_status, type: string, set: set, enum: [obtained, required, not_required, unknown], example: not_required, description: "Статус згоди UMP"}
   - {name: is_ads_regulated_region, type: boolean, set: set, example: false, description: "UMP вимагає згоду (ЄЕЗ, Велика Британія, Швейцарія)"}
-  - {name: economy_config_version, type: string, set: set, example: "econ-v5.0", description: "Поточна версія конфігу економіки"}
+  - {name: economy_config_version, type: string, set: set, example: "econ-v7.2", description: "Поточна версія конфігу економіки"}
   - {name: is_econ_detail_sampled, type: boolean, set: set, example: true, description: "Пристрій у вибірці upgrade_purchase"}
   - {name: is_test_user, type: boolean, set: set, example: false, description: "Тестер або розробник; виключаємо з дашбордів"}
