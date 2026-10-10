@@ -39,6 +39,7 @@ export const t = {
     { type: 'drukar', name: 'Друкар', hint: 'Знає, чому принтер не гріє фарбу' },
   ] as const,
   o3Custom: 'Вписати свій позивний',
+  o3Own: (name: string) => `Свій: ${name}`, // артборд OnbCallsign
   o3GQ: 'У наказах писати:',
   o3GM: 'Він · прибув',
   o3GF: 'Вона · прибула',

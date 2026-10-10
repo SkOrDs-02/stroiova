@@ -33,49 +33,49 @@ description: "Задачі: 002 Онбординг і перша сесія — 
 
 **Independent Test**: AC-1 (без PostHog), AC-2
 
-- [ ] T009 [P] [US1] `src/features/onboarding/__tests__/intro-test.tsx`: титул без системних вікон → тап → `onb-intro`; «Пропустити» → крок 2 `skipped: true`; «Далі» ×4 → o2.l2–o2.l4 по черзі, `skipped: false`; повторний тап «Прибути» закриває крок один раз
-- [ ] T010 [US1] `src/features/onboarding/TitleScreen.tsx` (артборд `OnbTitle`: наказ № 1, ТЕРМІНОВО, лого, o1.cta, o1.note)
-- [ ] T011 [US1] `src/features/onboarding/IntroScreen.tsx` (артборд `OnbIntro`: 4 репліки, «Далі», «Пропустити» на кожній)
-- [ ] T012 [US1] `src/app/index.tsx`: маршрут гри за `onboarding.step` (1–5 → екрани онбордингу, далі `MainScreen`); таббар прихований на 1–5 (FR-13)
+- [X] T009 [P] [US1] `src/features/onboarding/__tests__/intro-test.tsx`: титул без системних вікон → тап → `onb-intro`; «Пропустити» → крок 2 `skipped: true`; «Далі» ×4 → o2.l2–o2.l4 по черзі, `skipped: false`; повторний тап «Прибути» закриває крок один раз
+- [X] T010 [US1] `src/features/onboarding/TitleScreen.tsx` (артборд `OnbTitle`: наказ № 1, ТЕРМІНОВО, лого, o1.cta, o1.note)
+- [X] T011 [US1] `src/features/onboarding/IntroScreen.tsx` (артборд `OnbIntro`: 4 репліки, «Далі», «Пропустити» на кожній)
+- [X] T012 [US1] `src/app/index.tsx`: маршрут гри за `onboarding.step` (1–5 → екрани онбордингу, далі `MainScreen`); таббар прихований на 1–5 (FR-13)
 
 ## Phase 4: US2 — крок 3 (P1)
 
 **Independent Test**: AC-3, AC-4, AC-5 (Sentry-частина)
 
-- [ ] T013 [P] [US2] `src/features/onboarding/__tests__/callsign-test.ts`: `validateCallsign` (1 знак → tooShort, 17 → tooLong, порожньо → empty, «зсу-1», «ЗCУ» латиницею → stopword, «Ексель-на-папері» ok, емодзі → chars); `gendered`
-- [ ] T014 [US2] `src/features/onboarding/callsign.ts`: `validateCallsign`, `gendered` (contracts/onboarding-api.md)
-- [ ] T015 [P] [US2] `src/features/onboarding/__tests__/callsign-screen-test.tsx`: AC-3 (Ексель + o3.h1, стать порожня → o3.err3, крок не закрито); AC-4 (лічильник «17/16», o3.err5, o3.err4); AC-5 «Сисадмін» + «вона» → `callsign.type = custom`, `gender = f`; звіт Sentry (009 `report.ts`) не містить позивного
-- [ ] T016 [US2] `src/features/onboarding/CallsignScreen.tsx` + `CallsignSheet.tsx` (артборд `OnbCallsign`: книга обліку, 3 позивні з підказками, рядок «свій», перемикач статі, o3.cta; шторка з лічильником «n/16», кнопка над клавіатурою; SE без скролу)
+- [X] T013 [P] [US2] `src/features/onboarding/__tests__/callsign-test.ts`: `validateCallsign` (1 знак → tooShort, 17 → tooLong, порожньо → empty, «зсу-1», «ЗCУ» латиницею → stopword, «Ексель-на-папері» ok, емодзі → chars); `gendered`
+- [X] T014 [US2] `src/features/onboarding/callsign.ts`: `validateCallsign`, `gendered` (contracts/onboarding-api.md)
+- [X] T015 [P] [US2] `src/features/onboarding/__tests__/callsign-screen-test.tsx`: AC-3 (Ексель + o3.h1, стать порожня → o3.err3, крок не закрито); AC-4 (лічильник «17/16», o3.err5, o3.err4); AC-5 «Сисадмін» + «вона» → `callsign.type = custom`, `gender = f`; звіт Sentry (009 `report.ts`) не містить позивного
+- [X] T016 [US2] `src/features/onboarding/CallsignScreen.tsx` + `CallsignSheet.tsx` (артборд `OnbCallsign`: книга обліку, 3 позивні з підказками, рядок «свій», перемикач статі, o3.cta; шторка з лічильником «n/16», кнопка над клавіатурою; SE без скролу)
 
 ## Phase 5: US3 — кроки 4–5 (P1)
 
 **Independent Test**: AC-6 (без звуку), AC-7 (без звуку)
 
-- [ ] T017 [P] [US3] `src/features/onboarding/__tests__/first-act-test.tsx`: 7 з 8 + 3 тапи → рівно 8, + 8 × `tapValue` підписів, ПОГОДЖЕНО раз, кроки 4 і 5 по разу, `birdLeftMs` = `onboardingBirdMin` × 60 000; o4.comment у формі «вона»; Reduce Motion → без тремтіння й хаптики (мок `expo-haptics`, `AccessibilityInfo`)
-- [ ] T018 [US3] `src/features/onboarding/haptics.ts`: `tapHaptic` (не частіше 70 мс), `stampHaptic`, `successHaptic` (+300 мс), `useReduceMotion`; `sfx(id)` без звуку до етапу 8
-- [ ] T019 [US3] `src/features/onboarding/FirstActScreen.tsx` (артборд `OnbFirstAct`: Ліна, Акт № 1, смужка «n з 8», «Підписати», ПОГОДЖЕНО з тремтінням, дрон, «Пташка в небі», o4.comment, «До стройової»)
+- [X] T017 [P] [US3] `src/features/onboarding/__tests__/first-act-test.tsx`: 7 з 8 + 3 тапи → рівно 8, + 8 × `tapValue` підписів, ПОГОДЖЕНО раз, кроки 4 і 5 по разу, `birdLeftMs` = `onboardingBirdMin` × 60 000; o4.comment у формі «вона»; Reduce Motion → без тремтіння й хаптики (мок `expo-haptics`, `AccessibilityInfo`)
+- [X] T018 [US3] `src/features/onboarding/haptics.ts`: `tapHaptic` (не частіше 70 мс), `stampHaptic`, `successHaptic` (+300 мс), `useReduceMotion`; `sfx(id)` без звуку до етапу 8
+- [X] T019 [US3] `src/features/onboarding/FirstActScreen.tsx` (артборд `OnbFirstAct`: Ліна, Акт № 1, смужка «n з 8», «Підписати», ПОГОДЖЕНО з тремтінням, дрон, «Пташка в небі», o4.comment, «До стройової»)
 
 ## Phase 6: US4 — кроки 6–7 (P1)
 
 **Independent Test**: AC-8, AC-9, AC-10
 
-- [ ] T020 [P] [US4] `src/features/main/__tests__/main-first-session-test.tsx`: AC-8 (лише Рапорти й 3 ланки, таббар видно); AC-9 (коуч кроку 6: тап поза ціллю нічого не робить, по цілі — покупка, крок 6 закрито, конфіг закріплено); AC-10 (150 → 200+ підписів → коуч найму Стройової → `clerk-first` → «Далі» → тост b7.toast, `clerkHire.isFirstClerk`)
-- [ ] T021 [US4] `src/features/onboarding/Coach.tsx`: затемнення з вікном над ціллю (`measureInWindow`), текст ≤ 2 рядків не закриває ціль, тапи лише по цілі (FR-15)
-- [ ] T022 [US4] `src/features/main/MainScreen.tsx`: стан «перша сесія» артборда `Main` (потоки, крім Рапортів, замкнені; ланки; печатка; чип множників з «Пташкою»; таббар `TabBar`; тости b6.toast1 на віху Рапортів і b6.toast2, коли вузьким місцем стали резолюції комбата; підсвітка одиниць без діловода після кроку 7, FR-17), замінює `ConveyorScreen` у `app/index.tsx`; offline-return 009 перед коучем
-- [ ] T023 [US4] `src/features/onboarding/ClerkFirst.tsx` (артборд `ClerkFirst`: Оля, c7.role, c7.change, c7.offline, «Далі»)
+- [X] T020 [P] [US4] `src/features/main/__tests__/main-first-session-test.tsx`: AC-8 (лише Рапорти й 3 ланки, таббар видно); AC-9 (коуч кроку 6: тап поза ціллю нічого не робить, по цілі — покупка, крок 6 закрито, конфіг закріплено); AC-10 (150 → 200+ підписів → коуч найму Стройової → `clerk-first` → «Далі» → тост b7.toast, `clerkHire.isFirstClerk`)
+- [X] T021 [US4] `src/features/onboarding/Coach.tsx`: затемнення з вікном над ціллю (`measureInWindow`), текст ≤ 2 рядків не закриває ціль, тапи лише по цілі (FR-15)
+- [X] T022 [US4] `src/features/main/MainScreen.tsx`: стан «перша сесія» артборда `Main` (потоки, крім Рапортів, замкнені; ланки; печатка; чип множників з «Пташкою»; таббар `TabBar`; тости b6.toast1 на віху Рапортів і b6.toast2, коли вузьким місцем стали резолюції комбата; підсвітка одиниць без діловода після кроку 7, FR-17), замінює `ConveyorScreen` у `app/index.tsx`; offline-return 009 перед коучем
+- [X] T023 [US4] `src/features/onboarding/ClerkFirst.tsx` (артборд `ClerkFirst`: Оля, c7.role, c7.change, c7.offline, «Далі»)
 
 ## Phase 7: US5 — кроки 8–9 (P2)
 
 **Independent Test**: AC-11 (без PostHog), AC-12, AC-13
 
-- [ ] T024 [P] [US5] `src/features/onboarding/__tests__/telegram-call-test.tsx`: AC-11 (крок 7 на 3:40 гри → телеграма о 5:00 гри; +1 год годинника пристрою о 4:00 не прискорює); AC-12 (вкладка → `tg-detail` з b8.tip, вибір → `tg-result` «перший раз», крок 8, ефект `telegram_slow` на stroy для «сумлінно»); AC-13 (`tg-result` закрито на 6:10 → `call` о 7:00 гри, бонус = `archiveBonusMin` × базовий дохід один раз, b9.toast, екрана архіву немає)
-- [ ] T025 [US5] `src/features/telegrams/first.ts`: телеграма № 1 з `content/telegrams.json`, застосування `slow` як `Effect`
-- [ ] T026 [US5] `src/features/telegrams/TelegramDetail.tsx`, `TelegramResult.tsx` (артборди `TgDetail`, `TgResult`, стан «перший раз: що таке репутація»)
-- [ ] T027 [US5] `src/features/onboarding/CallOverlay.tsx` (артборд `Call`: виклик → репліки → бонус отримано; b9.*)
+- [X] T024 [P] [US5] `src/features/onboarding/__tests__/telegram-call-test.tsx`: AC-11 (крок 7 на 3:40 гри → телеграма о 5:00 гри; +1 год годинника пристрою о 4:00 не прискорює); AC-12 (вкладка → `tg-detail` з b8.tip, вибір → `tg-result` «перший раз», крок 8, ефект `telegram_slow` на stroy для «сумлінно»); AC-13 (`tg-result` закрито на 6:10 → `call` о 7:00 гри, бонус = `archiveBonusMin` × базовий дохід один раз, b9.toast, екрана архіву немає)
+- [X] T025 [US5] `src/features/telegrams/first.ts`: телеграма № 1 з `content/telegrams.json`, застосування `slow` як `Effect`
+- [X] T026 [US5] `src/features/telegrams/TelegramDetail.tsx`, `TelegramResult.tsx` (артборди `TgDetail`, `TgResult`, стан «перший раз: що таке репутація»)
+- [X] T027 [US5] `src/features/onboarding/CallOverlay.tsx` (артборд `Call`: виклик → репліки → бонус отримано; b9.*)
 
 ## Phase 8: Polish
 
-- [ ] T028 `src/features/onboarding/__tests__/resume-test.tsx`: AC-19 (вбивство на кроці 4 з 5 тапами → «0 з 8», позивний і форма на місці, закриті кроки не повторюються)
+- [X] T028 `src/features/onboarding/__tests__/resume-test.tsx`: AC-19 (вбивство на кроці 4 з 5 тапами → «0 з 8», позивний і форма на місці, закриті кроки не повторюються)
 - [ ] T029 Web-сценарій quickstart у Chromium 375×667 (`page.clock`), скріншоти
 - [ ] T030 Агенти `content-reviewer` (тексти онбордингу) і `spec-guardian`; виправлення
 - [ ] T031 Документація: CLAUDE.md (`src/features/onboarding`), `npm run check`

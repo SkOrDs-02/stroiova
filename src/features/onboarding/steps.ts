@@ -86,6 +86,11 @@ export function complete(o: OnboardingState, step: StepNo, playMs: number, extra
   };
 }
 
+/** Кроки 1–5 ідуть на окремих екранах, без таббара (FR-13). */
+export function isFullScreenStep(step: Step): boolean {
+  return step !== 'done' && step < FIRST_MAIN_STEP;
+}
+
 export function isDone(o: OnboardingState, step: StepNo): boolean {
   return o.step === 'done' || o.step > step;
 }

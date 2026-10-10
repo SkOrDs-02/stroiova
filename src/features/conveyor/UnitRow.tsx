@@ -1,4 +1,4 @@
-// Рядок потоку чи ланки на тимчасовому екрані «Конвеєр» (001 FR-8…FR-11, FR-14). Повний unit-sheet — 002.
+// Рядок потоку чи ланки на головному екрані (001 FR-8…FR-11, FR-14). Коуч онбордингу (002 FR-15) підсвічує одну кнопку й блокує решту.
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { capAt } from '@/economy/core';
@@ -22,16 +22,32 @@ interface Props {
   nowMs: number;
   onBuy: () => void;
   onHire: () => void;
+  /** Коуч: ціль у цьому рядку з підказкою, або 'dim' — рядок затемнено й не тапається */
+  coach?: { target: 'buy' | 'hire'; text: string } | 'dim';
+  /** Без діловода після першого найму (002 FR-17) */
+  needsClerk?: boolean;
 }
 
-export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effects, mode, nowMs, onBuy, onHire }: Props) {
+export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effects, mode, nowMs, onBuy, onHire, coach, needsClerk }: Props) {
   const q = quote(state, cfg, unit, mode, nowMs, effects);
   const rate = capAt(def, level, cfg.params) * (state.museum.unit[def.id] ?? 1);
   const opened = level > 0;
   const canHire = state.signatures >= def.manager;
   const label = opened ? `${t.upgrade} · ${formatBig(q.price, 'price')}` : `${t.open} · ${formatBig(q.price, 'price')}`;
+  const dim = coach === 'dim';
+  const target = typeof coach === 'object' ? coach : null;
+  const coachText = target ? (
+    <Text style={styles.coach} testID="coach-text" accessibilityLiveRegion="polite">
+      {target.text}
+    </Text>
+  ) : null;
   return (
-    <View style={[styles.row, isNeck && styles.neck]} testID={`unit-${def.id}`}>
+    <View
+      style={[styles.row, isNeck && styles.neck, needsClerk && styles.needsClerk]}
+      pointerEvents={dim ? 'none' : 'auto'}
+      importantForAccessibility={dim ? 'no-hide-descendants' : 'auto'}
+      testID={`unit-${def.id}`}
+    >
       <View style={styles.head}>
         <Text style={styles.name}>{def.name}</Text>
         <Text style={styles.meta}>
@@ -40,14 +56,16 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
         {opened && q.levels > 1 ? <Text style={styles.meta}>{`${formatRate(q.rateBefore)} → ${formatRate(q.rateAfter)}`}</Text> : null}
         {!q.affordable && !q.locked && q.etaSec != null ? <Text style={styles.wait}>{t.wait(formatDuration(q.etaSec))}</Text> : null}
       </View>
+      {target?.target === 'buy' ? coachText : null}
       <View style={styles.actions}>
         <Pressable
           testID={`buy-${def.id}`}
+          pointerEvents={target && target.target !== 'buy' ? 'none' : 'auto'}
           accessibilityRole="button"
           accessibilityState={{ disabled: !q.affordable }}
           disabled={!q.affordable}
           onPress={onBuy}
-          style={[styles.btn, !q.affordable && styles.btnOff]}
+          style={[styles.btn, !q.affordable && styles.btnOff, target?.target === 'buy' && styles.lit]}
         >
           <Text style={[styles.btnText, !q.affordable && styles.btnTextOff]}>{label}</Text>
         </Pressable>
@@ -58,13 +76,16 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
             accessibilityState={{ disabled: !canHire }}
             disabled={!canHire}
             onPress={onHire}
-            style={[styles.btnGhost, !canHire && styles.btnOff]}
+            pointerEvents={target && target.target !== 'hire' ? 'none' : 'auto'}
+            style={[styles.btnGhost, !canHire && styles.btnOff, target?.target === 'hire' && styles.lit]}
           >
             <Text style={[styles.ghostText, !canHire && styles.btnTextOff]}>{`${t.hire} · ${formatBig(def.manager, 'price')}`}</Text>
             {!canHire ? <Text style={styles.wait}>{t.short(formatBig(def.manager - state.signatures, 'price'))}</Text> : null}
           </Pressable>
         ) : null}
       </View>
+      {target?.target === 'hire' ? coachText : null}
+      {dim ? <View style={styles.scrim} /> : null}
     </View>
   );
 }
@@ -79,6 +100,11 @@ const styles = StyleSheet.create({
     gap: space[8],
   },
   neck: { borderColor: color.accent },
+  needsClerk: { borderStyle: 'dashed', borderColor: color.borderStrong },
+  // коуч (002 FR-15): решту приглушено, ціль обведено акцентом, текст ≤ 2 рядків поруч, не поверх
+  scrim: { ...StyleSheet.absoluteFill, backgroundColor: color.scrim, borderRadius: radius[8] },
+  lit: { borderWidth: 2, borderColor: color.accent },
+  coach: { color: color.accent, fontSize: typeScale.bodyS.fontSize, lineHeight: typeScale.bodyS.lineHeight, fontWeight: typeScale.cta.fontWeight },
   head: { gap: space[2] },
   name: { color: color.text, fontSize: typeScale.h3.fontSize, lineHeight: typeScale.h3.lineHeight, fontWeight: typeScale.h3.fontWeight },
   meta: { color: color.muted, fontSize: typeScale.bodyS.fontSize, lineHeight: typeScale.bodyS.lineHeight },

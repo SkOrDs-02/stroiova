@@ -36,6 +36,8 @@ interface Store {
   actTaps: number;
   /** Модалка clerk-first після найму на кроці 7 */
   clerkFirstOpen: boolean;
+  /** Результат першого акта («Пташка в небі», «До стройової») ще на екрані */
+  actResultOpen: boolean;
   /** Остання мітка часу, до якої нараховано дохід (мс, годинник пристрою) */
   lastMs: number;
   mode: BuyMode;
@@ -61,6 +63,8 @@ interface Store {
   actSign: () => number;
   /** Кінець анімації ПОГОДЖЕНО: крок 5, «Пташка» злітає (FR-12) */
   stamp: () => void;
+  /** «До стройової» з результату першого акта */
+  toMain: () => void;
   /** Закрити clerk-first (крок 7 уже закрито наймом) */
   closeClerkFirst: () => void;
   receiveTg1: () => void;
@@ -101,6 +105,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     onboarding: init?.onboarding ?? newOnboarding(0),
     actTaps: 0,
     clerkFirstOpen: false,
+    actResultOpen: false,
     lastMs: nowMs,
     mode: 'x1',
     offline: null,
@@ -196,8 +201,9 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     stamp: () => {
       if (!get().onbComplete(5)) return;
       const o = get().onboarding;
-      set({ onboarding: { ...o, birdLeftMs: get().cfg.params.onboardingBirdMin * 60_000 } });
+      set({ onboarding: { ...o, birdLeftMs: get().cfg.params.onboardingBirdMin * 60_000 }, actResultOpen: true });
     },
+    toMain: () => set({ actResultOpen: false }),
     closeClerkFirst: () => set({ clerkFirstOpen: false, toast: null }),
     receiveTg1: () => set({ onboarding: receiveTg1(get().onboarding, get().playtimeMs) }),
     answerTg1: (choiceId, eff) => {

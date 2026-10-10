@@ -1,14 +1,18 @@
 import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 
 import { BootScreen } from '@/features/boot/BootScreen';
 import { ForceUpdateScreen } from '@/features/boot/ForceUpdateScreen';
 import { SaveErrorScreen } from '@/features/boot/SaveErrorScreen';
 import { useBoot } from '@/features/boot/useBoot';
-import { ConveyorScreen } from '@/features/conveyor/ConveyorScreen';
+import { MainScreen } from '@/features/main/MainScreen';
+import { OnboardingScreen } from '@/features/onboarding/OnboardingScreen';
+import type { ConveyorStore } from '@/features/conveyor/store';
+import { isFullScreenStep } from '@/features/onboarding/steps';
 import { createStorage } from '@/save/mmkv';
 
-// Запуск 009: boot → force-update / save-error / гра (онбординг — 002). Головний екран — 002.
+// Запуск 009: boot → force-update / save-error / гра. Гра: кроки онбордингу 1–5 (002) або головний екран.
 export default function Index() {
   const [kv] = useState(createStorage);
   const boot = useBoot(kv);
@@ -31,5 +35,10 @@ export default function Index() {
   if (r.kind === 'error') {
     return <SaveErrorScreen backup={r.corrupt.backup} nowMs={r.atMs} onRestore={boot.restore} onNew={boot.startNew} onReport={boot.report} />;
   }
-  return <ConveyorScreen store={r.store} />;
+  return <Game store={r.store} />;
+}
+
+function Game({ store }: { store: ConveyorStore }) {
+  const full = useStore(store, (s) => isFullScreenStep(s.onboarding.step) || s.actResultOpen);
+  return full ? <OnboardingScreen store={store} /> : <MainScreen store={store} />;
 }
