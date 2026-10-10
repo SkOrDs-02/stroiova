@@ -1,0 +1,35 @@
+name: app
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: npm ci
+      - name: Типи
+        run: npm run typecheck
+      - name: Лінтер
+        run: npm run lint
+      - name: Тести
+        run: npm test -- --ci
+      - name: Тема збігається з дизайн-системою
+        run: python3 tools/gen_theme.py --check
+      - name: Expo Doctor
+        run: npx expo-doctor

@@ -6,3 +6,19 @@ dist/
 balance/sandbox/index.html
 __pycache__/
 *.pyc
+
+# Expo
+web-build/
+expo-env.d.ts
+.metro-health-check*
+*.tsbuildinfo
+.env*.local
+/ios
+/android
+# ключі підпису
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
