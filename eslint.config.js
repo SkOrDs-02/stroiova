@@ -5,7 +5,7 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*', 'balance/*', 'design/*', 'tools/*', '.expo/*'],
+    ignores: ['dist/*', 'balance/*', 'design/*', 'tools/*', '.expo/*', '.claude/*'],
   },
   {
     // Економіка — чистий модуль (конституція, принцип II; 001 FR-1, AC-1)
