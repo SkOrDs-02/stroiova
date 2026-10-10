@@ -12,9 +12,8 @@ appId: ${APP_ID}
 - tapOn:
     id: "buy-raporty"
 - assertVisible: "Рів. 2.*"
-# автозапис кожні 5 с
-- waitForAnimationToEnd:
-    timeout: 6000
+# перехід у фон пише save (FR-2); stopApp (force-stop) сам події background не шле
+- pressKey: Home
 - stopApp
 - launchApp
 - assertVisible: "Рів. 2.*"

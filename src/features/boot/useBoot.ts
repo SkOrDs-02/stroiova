@@ -38,11 +38,17 @@ function needsMigration(kv: KeyValue): boolean {
   }
 }
 
-export function draftOf(store: ConveyorStore, now: number): SaveDraft {
+/**
+ * Запис зі стану стору. savedAt — мітка, до якої дохід уже нараховано (lastMs, монотонна система відліку, FR-12).
+ * Поки довідка повернення не забрана, не пишемо: інакше після вбивства застосунку офлайн за відсутність пропав би.
+ */
+export function draftOf(store: ConveyorStore): SaveDraft | null {
+  const st = store.getState();
+  if (st.offline) return null;
   const g = gameSave(store);
   return {
     schemaVersion: CURRENT_SCHEMA,
-    savedAt: now,
+    savedAt: st.lastMs,
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
@@ -51,10 +57,11 @@ export function draftOf(store: ConveyorStore, now: number): SaveDraft {
 }
 
 /** Стан гри з запису: закріплений конфіг має пріоритет над вбудованим (FR-22, source cached). */
-function startGame(kv: KeyValue, save: SaveFile | null, now: number): ConveyorStore {
+function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
   if (!save) {
     const store = createConveyorStore(now, bundledConfig);
-    writeSave(kv, draftOf(store, now));
+    const d = draftOf(store);
+    if (d) writeSave(kv, d);
     return store;
   }
   const pinned = save.economyConfig as EconomyConfig | null;
@@ -64,7 +71,8 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number): ConveyorSt
     effects: save.game.effects as Effect[],
     pinned,
   });
-  snapshot(kv); // новий холодний старт — нова сесія (FR-4)
+  // новий холодний старт — нова сесія (FR-4); після міграції знімок уже зроблено в loadSave
+  if (!opts.snapshotted) snapshot(kv);
   store.getState().away(save.savedAt, now); // офлайн чи годинник назад (01, FR-13, FR-14)
   return store;
 }
@@ -76,10 +84,16 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
     installId(kv, Crypto.randomUUID);
     // на наступному тіку, щоб boot встиг показати «міграцію»
     const id = setTimeout(() => {
-      const r = loadSave(kv, opts());
+      let r: LoadResult;
+      try {
+        r = loadSave(kv, opts());
+      } catch {
+        // сховище недоступне: показуємо save-error без копії, щоб boot не завис
+        r = { kind: 'corrupt', reason: 'parse', schemaVersion: null, sizeChars: 0, backup: null };
+      }
       if (r.kind === 'newer') setRoute({ kind: 'newer', installed: APP_VERSION, required: r.appVersion, atMs: clock() });
       else if (r.kind === 'corrupt') setRoute({ kind: 'error', corrupt: r, atMs: clock() });
-      else setRoute({ kind: 'game', store: startGame(kv, r.kind === 'ok' ? r.save : null, clock()) });
+      else setRoute({ kind: 'game', store: startGame(kv, r.kind === 'ok' ? r.save : null, clock(), { snapshotted: r.kind === 'ok' && r.migratedFrom != null }) });
     }, 0);
     return () => clearTimeout(id);
   }, [kv, clock]);
@@ -88,7 +102,7 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
   const store = route.kind === 'game' ? route.store : null;
   useEffect(() => {
     if (!store) return;
-    const auto = createAutosave(kv, () => draftOf(store, clock()));
+    const auto = createAutosave(kv, () => draftOf(store));
     auto.start();
     let leftAt: number | null = null;
     const sub = AppState.addEventListener('change', (s) => {
@@ -119,7 +133,7 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
       report() {
         if (route.kind !== 'error') return;
         const c = route.corrupt;
-        reportCorruptSave({ reason: c.reason, schemaVersion: c.schemaVersion, sizeBytes: c.sizeBytes, hasBackup: c.backup != null });
+        reportCorruptSave({ reason: c.reason, schemaVersion: c.schemaVersion, sizeChars: c.sizeChars, hasBackup: c.backup != null, from: c.from, to: c.to });
       },
     }),
     [route, kv, clock],

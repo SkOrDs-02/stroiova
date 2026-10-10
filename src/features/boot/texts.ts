@@ -1,5 +1,6 @@
 // Рядки boot, save-error, force-update зі специфікації 009 (розділ «Тексти»; новий, на вичитку).
 export const t = {
+  logo: 'Стройова',
   truthH: (n: number) => `Неписана істина № ${n}`,
   truths: [
     { n: 14, text: 'Що не підшито, того не було.' },

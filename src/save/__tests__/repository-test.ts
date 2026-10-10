@@ -64,6 +64,25 @@ describe('збереження', () => {
     expect(JSON.parse(kv.getString(KEY_BAK2)!).game.economy.signatures).toBe(20); // початок 2-ї сесії
   });
 
+  test('той самий вміст не витісняє старішу копію (FR-4)', () => {
+    const kv = memoryStorage();
+    writeSave(kv, draft({ savedAt: 1 }));
+    snapshot(kv);
+    writeSave(kv, draft({ savedAt: 2 }));
+    snapshot(kv);
+    const before = { b1: kv.getString(KEY_BAK1), b2: kv.getString(KEY_BAK2) };
+    expect(snapshot(kv)).toBe(false);
+    expect({ b1: kv.getString(KEY_BAK1), b2: kv.getString(KEY_BAK2) }).toEqual(before);
+  });
+
+  test('знімок не падає, коли сховище не пише (місце скінчилося)', () => {
+    const kv = memoryStorage();
+    writeSave(kv, draft());
+    kv.set = () => { throw new Error('ENOSPC'); };
+    expect(snapshot(kv)).toBe(false);
+    expect(writeSave(kv, draft())).toBe(false);
+  });
+
   test('пошкоджений save знімком не стає', () => {
     const kv = memoryStorage({ [KEY_SAVE]: serialize(draft()).slice(0, 50) });
     expect(snapshot(kv)).toBe(false);

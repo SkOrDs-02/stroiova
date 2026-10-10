@@ -24,7 +24,7 @@ export type CorruptReason = 'parse' | 'checksum' | 'schema' | 'migration';
 export type LoadResult =
   | { kind: 'empty' }
   | { kind: 'ok'; save: SaveFile; migratedFrom?: number }
-  | { kind: 'corrupt'; reason: CorruptReason; schemaVersion: number | null; sizeBytes: number; from?: number; to?: number; backup: SaveFile | null }
+  | { kind: 'corrupt'; reason: CorruptReason; schemaVersion: number | null; sizeChars: number; from?: number; to?: number; backup: SaveFile | null }
   | { kind: 'newer'; schemaVersion: number; appVersion: string };
 
 /** Контрольна сума — від усіх полів, крім неї самої, у фіксованому порядку. */
@@ -76,6 +76,16 @@ function parse(text: string): Parsed {
   return { ok: true, raw: r, schemaVersion: v };
 }
 
+/** Версія схеми з запису без перевірки суми: новіша схема може мати інший конверт (FR-11). */
+function peekSchema(text: string): { version: number; appVersion: string } | null {
+  try {
+    const r = JSON.parse(text) as Record<string, unknown>;
+    return typeof r?.schemaVersion === 'number' ? { version: r.schemaVersion, appVersion: String(r.appVersion ?? '') } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Ланцюжок міграцій до поточної версії й zod-перевірка. */
 function upgrade(raw: Record<string, unknown>, from: number, opts: LoadOptions): { ok: true; save: SaveFile } | { ok: false; reason: CorruptReason } {
   let game: unknown = raw.game;
@@ -112,12 +122,18 @@ export function latestBackup(kv: KeyValue, opts: LoadOptions): SaveFile | null {
  * схему перевіряємо при читанні знімка, бо перед міграцією запис ще старої форми.
  */
 export function snapshot(kv: KeyValue): boolean {
-  const text = kv.getString(KEY_SAVE);
-  if (text == null || !parse(text).ok) return false;
-  const b1 = kv.getString(KEY_BAK1);
-  if (b1 != null) kv.set(KEY_BAK2, b1);
-  kv.set(KEY_BAK1, text);
-  return true;
+  try {
+    const text = kv.getString(KEY_SAVE);
+    if (text == null || !parse(text).ok) return false;
+    const b1 = kv.getString(KEY_BAK1);
+    // той самий вміст не витісняє старішу копію (повторний старт після збою міграції, відновлення)
+    if (b1 === text) return false;
+    if (b1 != null) kv.set(KEY_BAK2, b1);
+    kv.set(KEY_BAK1, text);
+    return true;
+  } catch {
+    return false; // місце скінчилося: гра йде без знімка
+  }
 }
 
 /**
@@ -127,24 +143,28 @@ export function snapshot(kv: KeyValue): boolean {
 export function loadSave(kv: KeyValue, opts: LoadOptions): LoadResult {
   const text = kv.getString(KEY_SAVE);
   if (text == null) return { kind: 'empty' };
-  const sizeBytes = text.length;
+  const sizeChars = text.length;
+  // новіша схема — до будь-яких перевірок: не читаємо й не пишемо (FR-11)
+  const peek = peekSchema(text);
+  if (peek && peek.version > opts.current) return { kind: 'newer', schemaVersion: peek.version, appVersion: peek.appVersion };
   const p = parse(text);
-  if (!p.ok) return { kind: 'corrupt', reason: p.reason, schemaVersion: p.schemaVersion, sizeBytes, backup: latestBackup(kv, opts) };
-  if (p.schemaVersion > opts.current) {
-    return { kind: 'newer', schemaVersion: p.schemaVersion, appVersion: String(p.raw.appVersion ?? '') };
-  }
+  if (!p.ok) return { kind: 'corrupt', reason: p.reason, schemaVersion: p.schemaVersion, sizeChars, backup: latestBackup(kv, opts) };
   if (p.schemaVersion < opts.current) {
     opts.onMigrating?.();
     snapshot(kv);
     const u = upgrade(p.raw, p.schemaVersion, opts);
     if (!u.ok) {
-      return { kind: 'corrupt', reason: 'migration', schemaVersion: p.schemaVersion, sizeBytes, from: p.schemaVersion, to: opts.current, backup: latestBackup(kv, opts) };
+      return { kind: 'corrupt', reason: 'migration', schemaVersion: p.schemaVersion, sizeChars, from: p.schemaVersion, to: opts.current, backup: latestBackup(kv, opts) };
     }
-    kv.set(KEY_SAVE, serialize(u.save));
+    try {
+      kv.set(KEY_SAVE, serialize(u.save));
+    } catch {
+      // запис мігрованого не вдався: гра йде з мігрованим станом у пам'яті, автозапис повторить
+    }
     return { kind: 'ok', save: u.save, migratedFrom: p.schemaVersion };
   }
   const u = upgrade(p.raw, p.schemaVersion, opts);
-  if (!u.ok) return { kind: 'corrupt', reason: u.reason, schemaVersion: p.schemaVersion, sizeBytes, backup: latestBackup(kv, opts) };
+  if (!u.ok) return { kind: 'corrupt', reason: u.reason, schemaVersion: p.schemaVersion, sizeChars, backup: latestBackup(kv, opts) };
   return { kind: 'ok', save: u.save };
 }
 
@@ -152,7 +172,11 @@ export function loadSave(kv: KeyValue, opts: LoadOptions): LoadResult {
 export function restoreFromBackup(kv: KeyValue, opts: LoadOptions): SaveFile | null {
   const b = latestBackup(kv, opts);
   if (!b) return null;
-  kv.set(KEY_SAVE, serialize(b));
+  try {
+    kv.set(KEY_SAVE, serialize(b));
+  } catch {
+    // гра відновиться в пам'яті, автозапис повторить запис
+  }
   return b;
 }
 

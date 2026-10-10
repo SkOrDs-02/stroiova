@@ -41,6 +41,15 @@ describe('запуск', () => {
     expect(await screen.findByTestId('offline-return')).toHaveTextContent(/Зараховано 3/);
   });
 
+  test('поки довідку не забрано, автозапис не пише: офлайн не губиться після вбивства (FR-2, FR-13)', async () => {
+    const savedAt = Date.now() - 3 * HOUR;
+    writeSave(mockKv, draft({ savedAt }, { streamClerks: [true, false, false, false], stageClerks: [true, true, true] }));
+    await boot();
+    await screen.findByTestId('offline-return');
+    await act(async () => { await new Promise((r) => setTimeout(r, 5200)); });
+    expect(JSON.parse(mockKv.getString(KEY_SAVE)!).savedAt).toBe(savedAt);
+  }, 15000);
+
   test('годинник назад → гра з тостом, без довідки (FR-14)', async () => {
     writeSave(mockKv, draft({ savedAt: Date.now() + 2 * HOUR }, { streamClerks: [true, false, false, false], stageClerks: [true, true, true] }));
     await boot();

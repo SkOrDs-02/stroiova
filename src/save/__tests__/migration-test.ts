@@ -47,4 +47,22 @@ describe('міграції', () => {
     expect(loadSave(kv, { current: 3, migrations })).toEqual({ kind: 'newer', schemaVersion: 4, appVersion: '1.2.0' });
     expect(JSON.stringify(kv.dump())).toBe(before);
   });
+
+  test('AC-8: новіша схема з іншим конвертом (сума не сходиться) — так само newer, не corrupt', () => {
+    const future = JSON.stringify({ schemaVersion: 5, appVersion: '2.0.0', envelope: 'new', checksum: 'deadbeef', data: {} });
+    const kv = memoryStorage({ [KEY_SAVE]: future });
+    expect(loadSave(kv, { current: 3, migrations })).toEqual({ kind: 'newer', schemaVersion: 5, appVersion: '2.0.0' });
+    expect(kv.getString(KEY_SAVE)).toBe(future);
+  });
+
+  test('FR-4/FR-10: збій міграції на двох стартах поспіль — стара валідна копія не витісняється', () => {
+    const kv = memoryStorage({ [KEY_SAVE]: serialize(v1()) });
+    kv.set('save.bak1', 'older-valid-placeholder');
+    const broken = { ...migrations, 2: () => { throw new Error('boom'); } };
+    loadSave(kv, { current: 3, migrations: broken });
+    const afterFirst = { b1: kv.getString(KEY_BAK1), b2: kv.getString('save.bak2') };
+    loadSave(kv, { current: 3, migrations: broken });
+    expect(kv.getString(KEY_BAK1)).toBe(afterFirst.b1);
+    expect(kv.getString('save.bak2')).toBe('older-valid-placeholder');
+  });
 });
