@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Перевірка контенту: унікальність телеграм, кількість за рівнями, червоні лінії,
-довге тире (рішення 55), а також пули телеграм за схемою (tools/gen_tg.py --check).
+довге тире (рішення 55), стоп-слова позивного за схемою (рішення 58), а також пули телеграм за схемою (tools/gen_tg.py --check).
 Запуск: python3 tools/check_content.py"""
 import json, re, sys, os, glob, collections
 
@@ -8,6 +8,7 @@ RED = re.compile(r"станці|(?-i:\bУПА\b|\bЗСУ\b)|загибл|пор�
 SKIP_KEYS = {"source", "sources", "url", "fact"}
 EM_DASH = "\u2014"  # довге тире: у content/ його немає зовсім, і в службових полях теж (рішення 55)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STOPWORDS = "content/callsign-stopwords.json"  # список заборонених слів: червоні лінії тут і мають бути
 
 def tgs(path):
     d = json.load(open(path))
@@ -26,6 +27,13 @@ def dash_errors(data, where):
     """Довге тире в будь-якому рядку, зокрема у fact, source і note (рішення 55)."""
     return ["%s: довге тире (рішення 55): %s" % (where, s[:70]) for s in strings(data, skip=()) if EM_DASH in s]
 
+def stopword_errors():
+    """Стоп-слова позивного за content/schema/callsign-stopwords.schema.json (002 FR-7)."""
+    import jsonschema
+    schema = json.load(open("content/schema/callsign-stopwords.schema.json"))
+    data = json.load(open(STOPWORDS))
+    return ["%s: %s" % (STOPWORDS, e.message) for e in jsonschema.Draft202012Validator(schema).iter_errors(data)]
+
 def main():
     os.chdir(ROOT)
     errors = []
@@ -40,10 +48,14 @@ def main():
     for f in sorted(glob.glob("content/**/*.json", recursive=True)):
         data = json.load(open(f))
         errors += dash_errors(data, f)
+        if f == STOPWORDS:
+            continue
         for s in strings(data):
             m = RED.search(s)
             if m and "Це не смішно" not in s:
                 errors.append(f"{f}: червона лінія «{m.group(0)}»: {s[:70]}")
+
+    errors += stopword_errors()
 
     per = collections.Counter(t.get("level", 1) for t in all_tg if not t.get("schedule", {}).get("scripted"))
     print("Телеграм усього:", len(all_tg), "| за рівнями (без сценарних):", dict(sorted(per.items())))

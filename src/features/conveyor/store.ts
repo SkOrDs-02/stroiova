@@ -3,20 +3,39 @@ import { create } from 'zustand';
 
 import { bundledConfig } from '@/economy/config';
 import { advance, claimOffline, offline, type OfflineResult } from '@/economy/game/advance';
+import { baseIncomePerMin } from '@/economy/game/income';
 import { catTap, refuel, tap } from '@/economy/game/actions';
 import { buy, hire, isOk } from '@/economy/game/purchase';
 import { newGame } from '@/economy/game/state';
 import { absence, shiftTimers } from '@/economy/game/time';
 import type { BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, UnitRef } from '@/economy/game/types';
+import { complete, newOnboarding, receiveTg1, type CompleteExtra, type OnboardingState, type StepNo } from '@/features/onboarding/steps';
 
-export type Toast = { kind: 'offline'; amount: number } | { kind: 'clockBack' };
+/** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті (002 R3). */
+export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };
+
+export type Toast =
+  | { kind: 'offline'; amount: number }
+  | { kind: 'clockBack' }
+  | { kind: 'text'; text: string }
+  | { kind: 'archive'; amount: number };
+
+/** Підписів за перший акт: 8 тапів × tapValue, на 8-му тапі (рішення 57). */
+export const ACT_TAPS = 8;
 
 interface Store {
   cfg: EconomyConfig;
   /** Закріплений конфіг (009 FR-22): null до першої покупки рівня */
   pinned: EconomyConfig | null;
   state: EconomyState;
-  effects: Effect[];
+  effects: StoredEffect[];
+  /** Ігровий час на передньому плані (002 FR-29) */
+  playtimeMs: number;
+  onboarding: OnboardingState;
+  /** Тапи першого акта; лише в пам'яті: після вбивства «0 з 8» (002 R4) */
+  actTaps: number;
+  /** Модалка clerk-first після найму на кроці 7 */
+  clerkFirstOpen: boolean;
   /** Остання мітка часу, до якої нараховано дохід (мс, годинник пристрою) */
   lastMs: number;
   mode: BuyMode;
@@ -35,6 +54,26 @@ interface Store {
   away: (leftAtMs: number, backAtMs: number) => void;
   claim: () => void;
   clearToast: () => void;
+  showToast: (toast: Toast) => void;
+  /** Закрити крок онбордингу (002 FR-1); false — крок не поточний */
+  onbComplete: (step: StepNo, extra?: CompleteExtra) => boolean;
+  /** Тап «Підписати» на першому акті; повертає n з 8 */
+  actSign: () => number;
+  /** Кінець анімації ПОГОДЖЕНО: крок 5, «Пташка» злітає (FR-12) */
+  stamp: () => void;
+  /** Закрити clerk-first (крок 7 уже закрито наймом) */
+  closeClerkFirst: () => void;
+  receiveTg1: () => void;
+  /** Відповідь на телеграму № 1 (крок 8); ефекти з контенту готує features/telegrams/first.ts */
+  answerTg1: (choiceId: string, effects: StoredEffect[]) => void;
+  /** Бонус архіву «Археолога» (крок 9, FR-20): archiveBonusMin × базовий дохід, один раз */
+  claimArchive: () => number;
+}
+
+/** «Пташка» як тимчасовий множник від мітки a: діє ще birdLeftMs ігрового часу (002 R3). */
+export function birdEffect(cfg: EconomyConfig, o: OnboardingState, a: number): Effect[] {
+  if (o.birdLeftMs <= 0) return [];
+  return [{ kind: 'mult', source: 'onboarding_bird', value: cfg.params.onboardingBirdMult, startMs: a, endMs: a + o.birdLeftMs }];
 }
 
 /** Місцева дата пристрою РРРР-ММ-ДД: ліміти доби рахуються за нею (001 FR-26, 009 FR-15). */
@@ -46,8 +85,10 @@ export function localDate(ms: number): string {
 
 export interface Initial {
   state: EconomyState;
-  effects: Effect[];
+  effects: StoredEffect[];
   pinned: EconomyConfig | null;
+  playtimeMs?: number;
+  onboarding?: OnboardingState;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -56,6 +97,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     pinned: init?.pinned ?? null,
     state: init?.state ?? newGame(cfg, nowMs),
     effects: init?.effects ?? [],
+    playtimeMs: init?.playtimeMs ?? 0,
+    onboarding: init?.onboarding ?? newOnboarding(0),
+    actTaps: 0,
+    clerkFirstOpen: false,
     lastMs: nowMs,
     mode: 'x1',
     offline: null,
@@ -63,26 +108,39 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     toast: null,
     events: [],
     tick: (now) => {
-      const { state, cfg: c, effects, lastMs } = get();
+      const { state, cfg: c, effects, lastMs, onboarding: o, playtimeMs } = get();
       if (now <= lastMs) return;
-      set({ state: advance(state, c, lastMs, now, effects).state, lastMs: now });
+      const dt = now - lastMs;
+      // tick іде лише на передньому плані: ігровий час і «Пташка» не рахуються у фоні (FR-12, FR-29)
+      set({
+        state: advance(state, c, lastMs, now, [...effects, ...birdEffect(c, o, lastMs)]).state,
+        lastMs: now,
+        playtimeMs: playtimeMs + dt,
+        ...(o.birdLeftMs > 0 ? { onboarding: { ...o, birdLeftMs: Math.max(0, o.birdLeftMs - dt) } } : {}),
+      });
     },
     tapSeal: (now) => {
-      const { state, cfg: c, effects } = get();
-      set({ state: tap(state, c, now, effects).state });
+      const { state, cfg: c, effects, onboarding: o, lastMs } = get();
+      set({ state: tap(state, c, now, [...effects, ...birdEffect(c, o, Math.min(lastMs, now))]).state });
     },
     buy: (ref, now) => {
       const { state, cfg: c, effects, mode, pinned } = get();
       const r = buy(state, c, ref, mode, now, effects);
       if (!isOk(r)) return;
       // 009 FR-22: на першій покупці рівня конфіг закріплюється, далі його не змінює ні прапор, ні оновлення
-      const firstUpgrade = pinned == null && r.events.some((e) => e.type === 'purchase');
+      const purchased = r.events.some((e) => e.type === 'purchase');
+      const firstUpgrade = pinned == null && purchased;
       set({ state: r.state, events: [...get().events, ...r.events].slice(-20), ...(firstUpgrade ? { pinned: c } : {}) });
+      // 002 FR-16: крок 6 закриває перша покупка рівня
+      if (purchased) get().onbComplete(6);
     },
     hire: (ref) => {
       const { state, cfg: c } = get();
       const r = hire(state, c, ref);
-      if (isOk(r)) set({ state: r.state, events: [...get().events, ...r.events].slice(-20) });
+      if (!isOk(r)) return;
+      set({ state: r.state, events: [...get().events, ...r.events].slice(-20) });
+      // 002 FR-17: крок 7 — найм діловода «Стройової частини» (рішення 56), далі clerk-first
+      if (ref.type === 'stage' && ref.id === 'stroy' && get().onbComplete(7)) set({ clerkFirstOpen: true });
     },
     refuel: (now) => set({ state: refuel(get().state, get().cfg, now).state }),
     cat: (now) => set({ state: catTap(get().state, get().cfg, now).state }),
@@ -93,7 +151,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (a.clockBack) {
         // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
         const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects, lastMs: backAt, toast: { kind: 'clockBack' } });
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], lastMs: backAt, toast: { kind: 'clockBack' } });
         return;
       }
       const res = offline(state, c, leftAt, backAt, effects);
@@ -113,13 +171,66 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({ state: r.state, offline: null, offlineBackAt: null });
     },
     clearToast: () => set({ toast: null }),
+    showToast: (toast) => set({ toast }),
+    onbComplete: (step, extra) => {
+      const o = get().onboarding;
+      const n = complete(o, step, get().playtimeMs, extra);
+      if (n === o) return false;
+      set({ onboarding: n });
+      return true;
+    },
+    actSign: () => {
+      const { actTaps, onboarding: o, state, cfg: c } = get();
+      if (o.step !== 4 || actTaps >= ACT_TAPS) return actTaps;
+      const n = actTaps + 1;
+      if (n < ACT_TAPS) {
+        set({ actTaps: n });
+        return n;
+      }
+      // рішення 57: 8 × tapValue разом, без множників («Пташка» ще не злетіла)
+      const add = ACT_TAPS * c.params.tapValue;
+      set({ actTaps: n, state: { ...state, signatures: state.signatures + add, lifetimeCycle: state.lifetimeCycle + add } });
+      get().onbComplete(4);
+      return n;
+    },
+    stamp: () => {
+      if (!get().onbComplete(5)) return;
+      const o = get().onboarding;
+      set({ onboarding: { ...o, birdLeftMs: get().cfg.params.onboardingBirdMin * 60_000 } });
+    },
+    closeClerkFirst: () => set({ clerkFirstOpen: false, toast: null }),
+    receiveTg1: () => set({ onboarding: receiveTg1(get().onboarding, get().playtimeMs) }),
+    answerTg1: (choiceId, eff) => {
+      const o = get().onboarding;
+      if (o.step !== 8) return;
+      set({ effects: [...get().effects, ...eff], onboarding: { ...o, tg1: { choiceId, atPlayMs: get().playtimeMs } } });
+      get().onbComplete(8);
+    },
+    claimArchive: () => {
+      const { state, cfg: c, onboarding: o } = get();
+      if (o.step !== 9) return 0;
+      const amount = c.params.archiveBonusMin * baseIncomePerMin(state, c);
+      set({
+        state: { ...state, signatures: state.signatures + amount, lifetimeCycle: state.lifetimeCycle + amount },
+        onboarding: { ...o, archiveBonus: amount },
+        toast: { kind: 'archive', amount },
+      });
+      get().onbComplete(9);
+      return amount;
+    },
   }));
 }
 
 export type ConveyorStore = ReturnType<typeof createConveyorStore>;
 
 /** Ігрова частина запису (009 GameSave): прострочені ефекти не зберігаємо. */
-export function gameSave(store: ConveyorStore): { economy: EconomyState; effects: Effect[]; pinned: EconomyConfig | null } {
-  const { state, effects, lastMs, pinned } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned };
+export function gameSave(store: ConveyorStore): {
+  economy: EconomyState;
+  effects: StoredEffect[];
+  pinned: EconomyConfig | null;
+  playtimeMs: number;
+  onboarding: OnboardingState;
+} {
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding };
 }

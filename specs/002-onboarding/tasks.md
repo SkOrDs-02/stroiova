@@ -17,17 +17,17 @@ description: "Задачі: 002 Онбординг і перша сесія — 
 
 ## Phase 1: Setup
 
-- [ ] T001 `npx expo install expo-haptics`, `npx expo-doctor`; `package.json`
-- [ ] T002 [P] `content/callsign-stopwords.json` (`{ "version": 1, "words": [...] }`: «упа», «зсу» з варіантами, базовий мат; нижній регістр, без дублікатів) + `content/schema/callsign-stopwords.schema.json`; перевірка в `tools/check_content.py` (рішення 58)
-- [ ] T003 [P] `src/features/onboarding/texts.ts`: рядки o1–o4, b6–b9, c7, o3.sheet_*, o3.err4–5, b9.status1–3, b9.end, b9.doc, b9.cta2 з texts.md розділ 5 і spec 002 «Тексти»; без «—» (рішення 55); b6.arrow «Покращ рапорти: їх піде більше.» (рішення 57); нові — коментар «на вичитку»
+- [X] T001 `npx expo install expo-haptics`, `npx expo-doctor`; `package.json`
+- [X] T002 [P] `content/callsign-stopwords.json` (`{ "version": 1, "words": [...] }`: «упа», «зсу» з варіантами, базовий мат; нижній регістр, без дублікатів) + `content/schema/callsign-stopwords.schema.json`; перевірка в `tools/check_content.py` (рішення 58)
+- [X] T003 [P] `src/features/onboarding/texts.ts`: рядки o1–o4, b6–b9, c7, o3.sheet_*, o3.err4–5, b9.status1–3, b9.end, b9.doc, b9.cta2 з texts.md розділ 5 і spec 002 «Тексти»; без «—» (рішення 55); b6.arrow «Покращ рапорти: їх піде більше.» (рішення 57); нові — коментар «на вичитку»
 
 ## Phase 2: Foundational
 
-- [ ] T004 `src/economy/game/types.ts`, `income.ts`: `Effect.source` + `'onboarding_bird'`, перший у порядку `multStack`; тест у `src/economy/__tests__/` (×2 у `multStack` і в `tap`)
-- [ ] T005 `src/features/onboarding/steps.ts`: `OnboardingState`, `newOnboarding`, `complete` (лише поточний крок; запис у `completed` з `atPlayMs`, `durationMs`, `skipped`), `ready` (coachUpgrade / coachHire / telegram ≥ 300 000 мс / call ≥ `archiveBonusAtSec`), `TELEGRAM_AT_MS`; тести `src/features/onboarding/__tests__/steps-test.ts`
-- [ ] T006 `src/save/schema.ts`, `migrations.ts`: `CURRENT_SCHEMA = 2`; `game.playtimeMs` («≥ 0»), `game.onboarding` (поля data-model.md; `callsign.text` 2–16 знаків); міграція 1 → 2: `step: 'done'`, `playtimeMs: 0`, `callsign: null`; тест на фікстуру v1 у `src/save/__tests__/migration-test.ts`
-- [ ] T007 `src/features/conveyor/store.ts`: `playtimeMs` і `onboarding` у сторі; `tick` додає ігровий час і тимчасовий ефект «Пташки», зменшує `birdLeftMs`; `away` не чіпає ні того, ні іншого; `gameSave`/`draftOf` пишуть їх; тест AC-6 (друга частина: 20 хв онлайн знімають ×2, 2 год фону — ні) у `src/features/conveyor/__tests__/bird-test.ts`
-- [ ] T008 `src/features/boot/useBoot.ts`: новий гравець → `newOnboarding`; `saveNow` після кожного закритого кроку (FR-28)
+- [X] T004 `src/economy/game/types.ts`, `income.ts`: `Effect.source` + `'onboarding_bird'`, перший у порядку `multStack`; тест у `src/economy/__tests__/` (×2 у `multStack` і в `tap`)
+- [X] T005 `src/features/onboarding/steps.ts`: `OnboardingState`, `newOnboarding`, `complete` (лише поточний крок; запис у `completed` з `atPlayMs`, `durationMs`, `skipped`), `ready` (coachUpgrade / coachHire / telegram ≥ 300 000 мс / call ≥ `archiveBonusAtSec`), `TELEGRAM_AT_MS`; тести `src/features/onboarding/__tests__/steps-test.ts`
+- [X] T006 `src/save/schema.ts`, `migrations.ts`: `CURRENT_SCHEMA = 2`; `game.playtimeMs` («≥ 0»), `game.onboarding` (поля data-model.md; `callsign.text` 2–16 знаків); міграція 1 → 2: `step: 'done'`, `playtimeMs: 0`, `callsign: null`; тест на фікстуру v1 у `src/save/__tests__/migration-test.ts`
+- [X] T007 `src/features/conveyor/store.ts`: `playtimeMs` і `onboarding` у сторі; `tick` додає ігровий час і тимчасовий ефект «Пташки», зменшує `birdLeftMs`; `away` не чіпає ні того, ні іншого; `gameSave`/`draftOf` пишуть їх; тест AC-6 (друга частина: 20 хв онлайн знімають ×2, 2 год фону — ні) у `src/features/conveyor/__tests__/bird-test.ts`
+- [X] T008 `src/features/boot/useBoot.ts`: новий гравець → `newOnboarding`; `saveNow` після кожного закритого кроку (FR-28)
 
 ## Phase 3: US1 — кроки 1–2 (P1) 🎯
 

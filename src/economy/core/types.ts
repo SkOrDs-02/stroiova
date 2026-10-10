@@ -38,6 +38,11 @@ export interface EconomyParams {
   tapValue: number;
   tapRateMax: number;
   offlineReturnMin: number;
+  /** Онбординг (002): «Пташка» ×onboardingBirdMult на onboardingBirdMin хв ігрового часу; бонус архіву archiveBonusMin хв базового доходу на archiveBonusAtSec с гри */
+  onboardingBirdMin: number;
+  onboardingBirdMult: number;
+  archiveBonusMin: number;
+  archiveBonusAtSec: number;
   storageHours: number;
   offlineAdMult: number;
   offlineAdPerDay: number;
