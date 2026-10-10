@@ -2,7 +2,7 @@
   {
     "id": "tg_0093_program_order", "no": "5301", "level": 5,
     "from": "bde_support", "to": "bn_commander", "title": "Про наказ про програму",
-    "body": "Облік майна вести лише в програмі, паперові журнали й дублювання заборонено. Підстава — наказ командира про використання програми. Наказ видати на папері: програму ще не введено.",
+    "body": "Облік майна вести лише в програмі, паперові журнали й дублювання заборонено. Підстава: наказ командира про використання програми. Наказ видати на папері: програму ще не введено.",
     "deadline": "std",
     "review": true,
     "choices": [
@@ -68,7 +68,7 @@
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Переформатувати все", "effects": {"slow": [{"target": "zvedennia", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Переформатовано. Оновлення повернуло новий шрифт."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Чекати оновлення", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10, "inspExtraItem": "dashboard_font"}, "result": "Оновлення вийшло. Шрифт змінено ще раз."},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Шрифт змінився сам. Шухляда — ні."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Шрифт змінився сам. Шухляда ні."}
     ]
   },
   {
@@ -128,7 +128,7 @@
     "schedule": {"requires": {"conversionsMin": 1}},
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Друкувати поштучно", "effects": {"paper": 6, "slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пакет розпаковано. Третина рапортів — на щорічну відпустку."},
+      {"id": "diligent", "kind": "diligent", "title": "Друкувати поштучно", "effects": {"paper": 6, "slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пакет розпаковано. Третина рапортів на щорічну відпустку."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Позначка в системі", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10, "digitalShield": true}, "result": "Система пише «Підписано пакетом» сама. Від руки не вміє."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Пакет лежить цілий. Підписаний."}
     ]
@@ -208,7 +208,7 @@
   {
     "id": "tg_0245_wrong_address", "no": "5318", "level": 5,
     "from": "higher_hq", "to": "stroy_chief", "title": "Про адресу",
-    "body": "Відмовлено в реєстрації. Підстава: документ надійшов не за адресою. Адресат у документі — начальник стройової частини. Переадресувати адресату.",
+    "body": "Відмовлено в реєстрації. Підстава: документ надійшов не за адресою. Адресат у документі: начальник стройової частини. Переадресувати адресату.",
     "deadline": "std",
     "review": true,
     "choices": [
@@ -236,7 +236,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Надіслати з поясненням", "effects": {"slow": [{"target": "dovidky", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пояснення надійшло. Документ — утретє."},
+      {"id": "diligent", "kind": "diligent", "title": "Надіслати з поясненням", "effects": {"slow": [{"target": "dovidky", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пояснення надійшло. Документ утретє."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Нічого не надсилати", "effects": {"durationMin": 1, "rep": -5, "inspPct": 5}, "result": "Тиша. Система вважає, що документ надійшов один раз."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Обидва примірники лежать. Однакові."}
     ]
@@ -322,7 +322,7 @@
     "review": true,
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Запросити дозвіл", "effects": {"slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Дозвіл надійшов знімком екрана. На знімок дозволу немає."},
-      {"id": "formal_reply", "kind": "formal_reply", "title": "Сфотографувати екран", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15, "inspExtraItem": "laptop_glove"}, "result": "Фото екрана — не знімок екрана. Формально."},
+      {"id": "formal_reply", "kind": "formal_reply", "title": "Сфотографувати екран", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15, "inspExtraItem": "laptop_glove"}, "result": "Фото екрана не є знімком екрана. Формально."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Екран на місці. Його ніхто не знімав."}
     ]
   },
@@ -370,7 +370,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Написати від руки", "effects": {"paper": 1, "slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Паперовий рапорт прийнято. Строк — з дня подання."},
+      {"id": "diligent", "kind": "diligent", "title": "Написати від руки", "effects": {"paper": 1, "slow": [{"target": "raporty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Паперовий рапорт прийнято. Строк: з дня подання."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Обрати «Інше»", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "«Інше» розглядається як інше."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Рапорт без типу. Лежить як є."}
     ]
@@ -513,7 +513,7 @@
     "id": "tg_0270_sunday_3am", "no": "5343", "level": 5,
     "from": "higher_hq", "to": "bn_commander", "title": "Про попередній розгляд",
     "body": "Телеграму, що надійшла о 03:00 в неділю, розглянути не пізніше 10:00 наступного робочого дня. Наступний робочий",
-    "deadline": [["Розглянути", "до 10:00", "now"], ["День", "—", "plain"]],
+    "deadline": [["Розглянути", "до 10:00", "now"], ["День", "не вказано", "plain"]],
     "schedule": {"requires": {"conversionsMin": 4}, "fading": true},
     "review": true,
     "choices": [
@@ -573,7 +573,7 @@
     "id": "tg_0275_report", "no": "5348", "level": 5,
     "from": "higher_hq", "to": "bn_commander", "title": "Про",
     "body": "Доповісти.",
-    "deadline": [["Строк", "—", "plain"]],
+    "deadline": [["Строк", "не вказано", "plain"]],
     "schedule": {"requires": {"conversionsMin": 4}, "fading": true},
     "review": true,
     "choices": [
@@ -597,7 +597,7 @@
     "id": "tg_0277_no_text", "no": "5350", "level": 5,
     "from": "higher_hq", "to": "bn_commander", "title": "Про …",
     "body": "ТЕКСТ ВІДСУТНІЙ. ВИКОНАТИ.",
-    "deadline": [["Строк", "—", "plain"]],
+    "deadline": [["Строк", "не вказано", "plain"]],
     "schedule": {"requires": {"conversionsMin": 4}, "fading": true},
     "review": true,
     "choices": [
@@ -699,7 +699,7 @@
   {
     "id": "tg_0280_sixteen_journals", "no": "5359", "level": 5,
     "from": "bde_support", "to": "bn_commander", "title": "Про шістнадцять журналів",
-    "body": "Шістнадцять скасованих книг і журналів обліку майна відновити. Першою — книгу обліку руху осіб, що харчуються.",
+    "body": "Шістнадцять скасованих книг і журналів обліку майна відновити. Почати з книги обліку руху осіб, що харчуються.",
     "deadline": "std",
     "schedule": {"endless": true, "requires": {"dubMin": 1}},
     "review": true,
@@ -751,7 +751,7 @@
   {
     "id": "tg_0284_two_originals", "no": "5363", "level": 5,
     "from": "higher_hq", "to": "bn_commander", "title": "Про два оригінали",
-    "body": "Відповіді на телеграми готувати у двох оригінальних примірниках. Перший — на зберігання, другий — на погодження першого.",
+    "body": "Відповіді на телеграми готувати у двох оригінальних примірниках. Перший на зберігання, другий на погодження першого.",
     "deadline": "std",
     "schedule": {"endless": true, "requires": {"dubMin": 1, "dubModifier": "two_copies"}},
     "review": true,
@@ -790,7 +790,7 @@
   {
     "id": "tg_0287_qr_signer", "no": "5366", "level": 5,
     "from": "info_security", "to": "stroy_chief", "title": "Про QR-код дубля",
-    "body": "Кожен паперовий дубль позначити QR-кодом із реквізитом підписувача. Підписувач — Оператор ЕОМ № 1. Посаду внести до штату.",
+    "body": "Кожен паперовий дубль позначити QR-кодом із реквізитом підписувача. Підписувач: Оператор ЕОМ № 1. Посаду внести до штату.",
     "deadline": "std",
     "schedule": {"endless": true, "requires": {"dubMin": 2}},
     "review": true,

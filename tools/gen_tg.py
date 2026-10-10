@@ -87,7 +87,7 @@ tg(id="tg_0007_briefing", no="4493", **{"from": "bn_chief_of_staff"}, to="stroy_
 
 tg(id="tg_0008_morale", no="4495", **{"from": "higher_hq"}, to="bn_commander",
    title="Про моральний стан",
-   body="Визначити моральний стан підрозділу. Додаток — таблиця на 14 аркушів.",
+   body="Визначити моральний стан підрозділу. Додаток: таблиця на 14 аркушів.",
    deadline="std", placeholder=True,
    choices=[
      ch("diligent", "diligent", "Заповнити таблицю на 14 аркушів", {"paper": 14, "slow": [S("stroy")], "rep": 10}, result="Таблицю заповнено. Мораль за цей час упала."),
@@ -143,7 +143,7 @@ tg(id="tg_0013_report_reports", no="4512", **{"from": "higher_hq"}, to="bn_comma
 
 tg(id="tg_0014_urgency", no="4516", stamp="ТЕРМІНОВО", **{"from": "higher_hq"}, to="bn_commander",
    title="Про терміновість",
-   body="Усі телеграми вважати терміновими. Цю — особливо.",
+   body="Усі телеграми вважати терміновими. Цю особливо.",
    deadline=[["Командування", "терміново", "old"], ["Бригада", "терміново", "old"], ["Ви", "особливо", "alert"]],
    choices=[
      ch("diligent", "diligent", "Проставити «терміново» на всіх вхідних", {"paper": 1, "slow": [S("stroy")], "rep": 5}),
@@ -380,7 +380,7 @@ tg(id="tg_0038_autumn_cleanup", no="4621", level=2, **{"from": "bde_chief_of_sta
 
 tg(id="tg_0039_originals", no="4625", level=2, **{"from": "bde_chief_of_staff"}, to="stroy_chief",
    title="Про примірники оригіналу",
-   body="Спільний наказ подати на підпис у шести примірниках. На кожному в правому верхньому куті поставити штамп «ОРИГІНАЛ. Прим. № ___». Усі шість примірників — оригінали.",
+   body="Спільний наказ подати на підпис у шести примірниках. На кожному в правому верхньому куті поставити штамп «ОРИГІНАЛ. Прим. № ___». Усі шість примірників є оригіналами.",
    deadline="std",
    choices=[
      ch("diligent", "diligent", "Шість оригіналів", {"paper": 6, "slow": [S("nakazy")], "rep": 5}, result="Шість оригіналів. Копії немає жодної."),
@@ -423,12 +423,12 @@ ids = set()
 # Slowdown targets: streams and pipeline stages. 03: L1–L2; 011: zvedennia, narada; 012 FR-26: zpz, dopovid.
 STAGES = {"kombat", "stroy", "fin", "kazna", "raporty", "akty", "dovidky", "nakladni", "nakazy",
           "zvedennia", "narada", "zpz", "dopovid"}
-# Senders and recipients: 03 «Модель даних»; cmd_hq — штаб командування (Р3, content/tg/level3.sources.md).
+# Senders and recipients: 03 «Модель даних»; cmd_hq: штаб командування (Р3, content/tg/level3.sources.md).
 SENDERS = {"higher_hq", "bn_chief_of_staff", "bde_support", "fin_chief", "info_security", "treasury",
            "bde_chief_of_staff", "cmd_hq"}
 RECIPIENTS = {"bn_commander", "stroy_chief", "bde_fin"}
 NOTE_MAX = 60      # 03: choices[].note ≤ 60
-TITLE_MAX = 22     # 03: choices[].title ≤ 22 — лише попередження, частина наявних кнопок довша
+TITLE_MAX = 22     # 03: choices[].title ≤ 22, лише попередження, частина наявних кнопок довша
 def walk_eff(e, where):
     for s in e.get("slow", []):
         assert s["target"] in STAGES, where
@@ -515,7 +515,7 @@ def check_pools():
     except ImportError:
         return ["немає модуля jsonschema: pip install jsonschema"], [], ""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from check_content import RED, strings
+    from check_content import RED, strings, dash_errors
 
     errors, warnings = [], []
     schema = json.load(open(SCHEMA_PATH, encoding="utf-8"))
@@ -564,6 +564,7 @@ def check_pools():
             m = RED.search(s)
             if m and "Це не смішно" not in s:
                 errors.append("%s: червона лінія «%s»: %s" % (rel, m.group(0), s[:70]))
+        errors += dash_errors(data, rel)
 
     # unique id / no across all pools
     for key in ("id", "no"):

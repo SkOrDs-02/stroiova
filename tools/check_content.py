@@ -1,25 +1,30 @@
 #!/usr/bin/env python3
 """Перевірка контенту: унікальність телеграм, кількість за рівнями, червоні лінії,
-а також пули телеграм за схемою (tools/gen_tg.py --check).
+довге тире (рішення 55), а також пули телеграм за схемою (tools/gen_tg.py --check).
 Запуск: python3 tools/check_content.py"""
 import json, re, sys, os, glob, collections
 
 RED = re.compile(r"станці|(?-i:\bУПА\b|\bЗСУ\b)|загибл|поранен|полон|СЗЧ|ВЛК|ТЦК|куріння|курить|зброя|боєприпас|мобілізац", re.I)
 SKIP_KEYS = {"source", "sources", "url", "fact"}
+EM_DASH = "\u2014"  # довге тире: у content/ його немає зовсім, і в службових полях теж (рішення 55)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def tgs(path):
     d = json.load(open(path))
     return d["telegrams"] if isinstance(d, dict) else d
 
-def strings(x, key=None):
+def strings(x, key=None, skip=SKIP_KEYS):
     if isinstance(x, str):
-        if key not in SKIP_KEYS:
+        if key not in skip:
             yield x
     elif isinstance(x, list):
-        for v in x: yield from strings(v, key)
+        for v in x: yield from strings(v, key, skip)
     elif isinstance(x, dict):
-        for k, v in x.items(): yield from strings(v, k)
+        for k, v in x.items(): yield from strings(v, k, skip)
+
+def dash_errors(data, where):
+    """Довге тире в будь-якому рядку, зокрема у fact, source і note (рішення 55)."""
+    return ["%s: довге тире (рішення 55): %s" % (where, s[:70]) for s in strings(data, skip=()) if EM_DASH in s]
 
 def main():
     os.chdir(ROOT)
@@ -33,7 +38,9 @@ def main():
     errors += [f"дубль no {k}" for k, v in nos.items() if v > 1]
 
     for f in sorted(glob.glob("content/**/*.json", recursive=True)):
-        for s in strings(json.load(open(f))):
+        data = json.load(open(f))
+        errors += dash_errors(data, f)
+        for s in strings(data):
             m = RED.search(s)
             if m and "Це не смішно" not in s:
                 errors.append(f"{f}: червона лінія «{m.group(0)}»: {s[:70]}")
@@ -41,13 +48,13 @@ def main():
     per = collections.Counter(t.get("level", 1) for t in all_tg if not t.get("schedule", {}).get("scripted"))
     print("Телеграм усього:", len(all_tg), "| за рівнями (без сценарних):", dict(sorted(per.items())))
 
-    # пули телеграм: схема, перехресні посилання, пачки, ліміти (дублі й червоні слова вже пораховано вище)
+    # пули телеграм: схема, перехресні посилання, пачки, ліміти (дублі, червоні слова й тире вже пораховано вище)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import gen_tg
     tg_errors, tg_warnings, summary = gen_tg.check_pools()
     print(summary)
     for w in tg_warnings: print("УВАГА:", w)
-    errors += [e for e in tg_errors if not e.startswith("дубль id ") and not e.startswith("дубль no ") and "червона лінія" not in e]
+    errors += [e for e in tg_errors if not e.startswith("дубль id ") and not e.startswith("дубль no ") and "червона лінія" not in e and "довге тире" not in e]
 
     for e in errors: print("ПОМИЛКА:", e)
     return 1 if errors else 0

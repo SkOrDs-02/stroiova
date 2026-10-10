@@ -20,7 +20,7 @@
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Внести строк у графік", "effects": {"paper": 1, "slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "План-графік подано вчасно. Згідно з план-графіком."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Подати без строку", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Графік лежить. Строк його подання — у ньому."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Графік лежить. Строк його подання в ньому."}
     ]
   },
   {
@@ -42,7 +42,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Обґрунтувати", "effects": {"paper": 1, "slow": [{"target": "zpz", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Підстав три. Звіт про відсутність — на чотири аркуші."},
+      {"id": "diligent", "kind": "diligent", "title": "Обґрунтувати", "effects": {"paper": 1, "slow": [{"target": "zpz", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Підстав три. Звіт про відсутність на чотири аркуші."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Подати «Звіту немає»", "effects": {"durationMin": 1, "rep": -5, "inspPct": 20}, "result": "Відсутність без підстав. Вважається відсутньою."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Звіту немає. Звіту про це теж."}
     ]
@@ -74,7 +74,7 @@
   {
     "id": "tg_0079_meeting_date", "no": "5213", "level": 4,
     "from": "bn_chief_of_staff", "to": "stroy_chief", "title": "Про дату протоколу",
-    "body": "Нарада з підготовки доповіді триває третю добу. Дата протоколу — дата наради: першу й останню вказати через тире. Останньої поки немає.",
+    "body": "Нарада з підготовки доповіді триває третю добу. Дата протоколу є датою наради: першу й останню вказати через тире. Останньої поки немає.",
     "deadline": "std",
     "review": true,
     "choices": [
@@ -86,7 +86,7 @@
   {
     "id": "tg_0080_sixteen", "no": "5215", "level": 4,
     "from": "bn_chief_of_staff", "to": "stroy_chief", "title": "Про список присутніх",
-    "body": "На доповіді в залі присутні 16 осіб. Якщо присутніх понад п'ятнадцять, їхній список додається до протоколу. Шістнадцятий — доповідач.",
+    "body": "На доповіді в залі присутні 16 осіб. Якщо присутніх понад п'ятнадцять, їхній список додається до протоколу. Шістнадцятий і є доповідач.",
     "deadline": "std",
     "review": true,
     "choices": [
@@ -146,13 +146,13 @@
   {
     "id": "tg_0085_copies", "no": "5225", "level": 4,
     "from": "higher_hq", "to": "bn_commander", "title": "Про кількість примірників",
-    "body": "Доповідь розіслати всім присутнім на нараді. Кількість примірників має відповідати кількості адресатів. Адресатів дванадцять. Тринадцятий примірник — у справу.",
+    "body": "Доповідь розіслати всім присутнім на нараді. Кількість примірників має відповідати кількості адресатів. Адресатів дванадцять. Тринадцятий примірник у справу.",
     "deadline": "std",
     "review": true,
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Тринадцять примірників", "effects": {"paper": 13, "slow": [{"target": "zpz", "mult": 0.5, "hours": 1}], "rep": 10}, "result": "Справа отримала свій примірник. Присутньою не була."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Розіслати в СЕДО", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10, "digitalShield": true}, "result": "Розіслано. Тринадцятого адресата система не знайшла."},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Тринадцять адресатів чекають. Один із них — шухляда."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Тринадцять адресатів чекають. Один із них: шухляда."}
     ]
   },
   {
@@ -257,7 +257,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Завести журнал", "effects": {"paper": 1, "slow": [{"target": "narada", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Перший запис у журналі — про те, що його заведено."},
+      {"id": "diligent", "kind": "diligent", "title": "Завести журнал", "effects": {"paper": 1, "slow": [{"target": "narada", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Перший запис у журналі про те, що його заведено."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Записати в загальний", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15}},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Протокол лежить. Журналу для нього немає."}
     ]
@@ -270,7 +270,7 @@
     "review": true,
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Два номери", "effects": {"paper": 2, "slow": [{"target": "narada", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Протокол № 47 закрито. Протокол № 1 відкрито. Нарада та сама."},
-      {"id": "formal_reply", "kind": "formal_reply", "title": "Номер 47-1", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Номер 47-1 прийнято. Наступний — 47-2."},
+      {"id": "formal_reply", "kind": "formal_reply", "title": "Номер 47-1", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Номер 47-1 прийнято. Наступний: 47-2."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Протокол лежить. Між роками."}
     ]
   },
@@ -289,7 +289,7 @@
   {
     "id": "tg_0206_hundred_slides", "no": "5244", "level": 4,
     "from": "higher_hq", "to": "bn_commander", "title": "Про обсяг презентації",
-    "body": "Доповідь на п'ять хвилин супроводжувати презентацією на сто слайдів. Двадцять слайдів на хвилину. Питання — після.",
+    "body": "Доповідь на п'ять хвилин супроводжувати презентацією на сто слайдів. Двадцять слайдів на хвилину. Питання після.",
     "deadline": "std",
     "review": true,
     "choices": [
@@ -349,13 +349,13 @@
   {
     "id": "tg_0211_resolution_change", "no": "5249", "level": 4, "stamp": "ТЕРМІНОВО",
     "from": "bn_chief_of_staff", "to": "stroy_chief", "title": "Про зміну резолюції",
-    "body": "Резолюцію «Доповісти тезово» змінити на «Доповісти детально». Доповідну записку про зміну резолюції подати у триденний строк. Доповідь — завтра.",
+    "body": "Резолюцію «Доповісти тезово» змінити на «Доповісти детально». Доповідну записку про зміну резолюції подати у триденний строк. Доповідь завтра.",
     "deadline": [["Резолюція", "3 доби", "old"], ["Доповідь", "завтра", "now"], ["Ви", "сьогодні", "alert"]],
     "review": true,
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Записку сьогодні", "effects": {"slow": [{"target": "dopovid", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Резолюцію змінено. Доповідь вийшла тезово-детальна."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Доповісти тезово", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15}, "result": "Тезово. Згідно зі старою резолюцією."},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {"delayed": [{"afterHours": 24, "effects": {"rep": -5}}]}, "note": "Три доби спливають. Доповідь — завтра."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {"delayed": [{"afterHours": 24, "effects": {"rep": -5}}]}, "note": "Три доби спливають. Доповідь завтра."}
     ]
   },
   {
@@ -367,7 +367,7 @@
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Завести справу", "effects": {"paper": 1, "slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Справу заведено. Звітність зросла на одну справу."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "У справу «Різне»", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Шухляда — не справа. Номенклатура мовчить."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Шухляда не справа. Номенклатура мовчить."}
     ]
   },
   {
@@ -403,13 +403,13 @@
     "choices": [
       {"id": "diligent", "kind": "diligent", "title": "Призначити нараду", "effects": {"slow": [{"target": "narada", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Нараду проведено. У протоколі дванадцять рішень."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Виконати № 1–11 так", "effects": {"durationMin": 2, "rep": -5, "inspPct": 15}, "result": "Виконано без наради. Рішення № 12 не виконано."},
-      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Дванадцять рішень лежать. Одне з них — нарада."}
+      {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Дванадцять рішень лежать. Одне з них: нарада."}
     ]
   },
   {
     "id": "tg_0216_feb_march", "no": "5254", "level": 4,
     "from": "higher_hq", "to": "bn_commander", "title": "Про готовність до перевірки",
-    "body": "Стан діловодства перевіряється раз на рік, у лютому — березні. Звіт про готовність до перевірки подавати щомісяця.",
+    "body": "Стан діловодства перевіряється раз на рік, у лютому–березні. Звіт про готовність до перевірки подавати щомісяця.",
     "deadline": "std",
     "review": true,
     "choices": [
@@ -457,11 +457,11 @@
   {
     "id": "tg_0220_six_grifs", "no": "5258", "level": 4,
     "from": "bn_chief_of_staff", "to": "stroy_chief", "title": "Про грифи погодження",
-    "body": "Звіт погоджують шестеро. Перший гриф погодження — від лівого поля, другий — через 100 мм. Третьому на аркуші місця немає.",
+    "body": "Звіт погоджують шестеро. Перший гриф погодження від лівого поля, другий через 100 мм. Третьому на аркуші місця немає.",
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Аркуш погодження", "effects": {"paper": 1, "slow": [{"target": "narada", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Звіт на одну сторінку. Аркуш погодження — на дві."},
+      {"id": "diligent", "kind": "diligent", "title": "Аркуш погодження", "effects": {"paper": 1, "slow": [{"target": "narada", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Звіт на одну сторінку. Аркуш погодження на дві."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Двох найстарших", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15}, "result": "Решта четверо погодили усно. Ображено."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Звіт лежить. Погоджено на двох із шести."}
     ]
@@ -497,7 +497,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Перерахувати посуд", "effects": {"slow": [{"target": "akty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Кухлів сорок два. За книгою — сорок один і кришка."},
+      {"id": "diligent", "kind": "diligent", "title": "Перерахувати посуд", "effects": {"slow": [{"target": "akty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Кухлів сорок два. За книгою сорок один і кришка."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Доповісти: посуд є", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Книга скасована. Посуд ні."}
     ]
@@ -521,7 +521,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Заповнити сім", "effects": {"paper": 7, "slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 10}, "result": "У шести збіглось. У сьомій — ні."},
+      {"id": "diligent", "kind": "diligent", "title": "Заповнити сім", "effects": {"paper": 7, "slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 10}, "result": "У шести збіглось. У сьомій ні."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Подати одну на всіх", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15}},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Шість табличок лежать. Сьома в голові."}
     ]
@@ -533,7 +533,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Дописати", "effects": {"paper": 3, "slow": [{"target": "zpz", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Три сторінки. Одна — про те, як писались інші дві."},
+      {"id": "diligent", "kind": "diligent", "title": "Дописати", "effects": {"paper": 3, "slow": [{"target": "zpz", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Три сторінки. Одна про те, як писались інші дві."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Додати таблицю", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Таблиця з одного рядка. На всю сторінку."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Звіт лежить. Короткий."}
     ]
@@ -553,7 +553,7 @@
   {
     "id": "tg_0228_monitor", "no": "5266", "level": 4,
     "from": "bn_chief_of_staff", "to": "stroy_chief", "title": "Про електронну резолюцію",
-    "body": "Доручення надійшло в електронній формі. Електронна резолюція — єдина допустима форма. Комбат поставив резолюцію ручкою на моніторі.",
+    "body": "Доручення надійшло в електронній формі. Електронна резолюція є єдиною допустимою формою. Комбат поставив резолюцію ручкою на моніторі.",
     "deadline": "std",
     "review": true,
     "choices": [
@@ -565,7 +565,7 @@
   {
     "id": "tg_0229_one_thesis", "no": "5267", "level": 4,
     "from": "bn_chief_of_staff", "to": "stroy_chief", "title": "Про висновки й пропозиції",
-    "body": "Доповідь — виклад питань з висновками та пропозиціями. Доповідь тезово складається з однієї тези. Висновки й пропозиції вмістити в неї.",
+    "body": "Доповідь є викладом питань з висновками та пропозиціями. Доповідь тезово складається з однієї тези. Висновки й пропозиції вмістити в неї.",
     "deadline": "std",
     "review": true,
     "choices": [
@@ -581,8 +581,8 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Видати довідку", "effects": {"paper": 1, "slow": [{"target": "dovidky", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Доповідь відбулась. Довідка це підтверджує. Доповідь — довідку."},
-      {"id": "formal_reply", "kind": "formal_reply", "title": "Послатися на протокол", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Протокол без довідки не підтверджує. Довідка без протоколу — теж."},
+      {"id": "diligent", "kind": "diligent", "title": "Видати довідку", "effects": {"paper": 1, "slow": [{"target": "dovidky", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Доповідь відбулась. Довідка це підтверджує. Доповідь підтверджує довідку."},
+      {"id": "formal_reply", "kind": "formal_reply", "title": "Послатися на протокол", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Протокол без довідки не підтверджує. Довідка без протоколу теж."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Доповідь була. Довідки немає."}
     ]
   },
@@ -661,11 +661,11 @@
   {
     "id": "tg_0237_misc", "no": "5275", "level": 4,
     "from": "bn_chief_of_staff", "to": "stroy_chief", "title": "Про порядок денний",
-    "body": "У порядку денному наради одне питання: «Різне». Розділи протоколу мають відповідати пунктам порядку денного. Протокол на одинадцять сторінок, усе — «Різне».",
+    "body": "У порядку денному наради одне питання: «Різне». Розділи протоколу мають відповідати пунктам порядку денного. Протокол на одинадцять сторінок, усе в «Різному».",
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Розбити на пункти", "effects": {"paper": 2, "slow": [{"target": "narada", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пунктів одинадцять. Останній — «Різне»."},
+      {"id": "diligent", "kind": "diligent", "title": "Розбити на пункти", "effects": {"paper": 2, "slow": [{"target": "narada", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пунктів одинадцять. Останній: «Різне»."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Лишити «Різне»", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15}},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Протокол лежить. Різне."}
     ]
@@ -709,11 +709,11 @@
   {
     "id": "tg_0241_done_early", "no": "5279", "level": 4,
     "from": "bn_chief_of_staff", "to": "stroy_chief", "title": "Про позначку про виконання",
-    "body": "У системі звіт позначено виконаним. Строк виконання — завтра. Пояснити, як виконано наперед.",
+    "body": "У системі звіт позначено виконаним. Строк виконання: завтра. Пояснити, як виконано наперед.",
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Написати пояснення", "effects": {"paper": 1, "slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пояснення прийнято. Строк пояснення — вчора."},
+      {"id": "diligent", "kind": "diligent", "title": "Написати пояснення", "effects": {"paper": 1, "slow": [{"target": "stroy", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Пояснення прийнято. Строк пояснення: вчора."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Зняти позначку", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}, "result": "Звіт невиконаний. До завтра."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Виконано. Наперед."}
     ]
@@ -725,7 +725,7 @@
     "deadline": "std",
     "review": true,
     "choices": [
-      {"id": "diligent", "kind": "diligent", "title": "Перерахувати мило", "effects": {"slow": [{"target": "akty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "Мила на обліку — шість шматків. Фактично — п'ять і обмилок."},
+      {"id": "diligent", "kind": "diligent", "title": "Перерахувати мило", "effects": {"slow": [{"target": "akty", "mult": 0.5, "hours": 1}], "rep": 5}, "result": "На обліку шість шматків мила. Фактично п'ять і обмилок."},
       {"id": "formal_reply", "kind": "formal_reply", "title": "Доповісти: мило є", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10}},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Журнал скасовано. Мило лежить."}
     ]
