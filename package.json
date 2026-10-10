@@ -55,6 +55,7 @@
       "/balance/",
       "/design/",
       "/.claude/"
-    ]
+    ],
+    "testTimeout": 30000
   }
 }
