@@ -22,7 +22,7 @@ const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
 
 export type Route =
   | { kind: 'boot'; migrating: boolean }
-  | { kind: 'newer'; installed: string; required: string }
+  | { kind: 'newer'; installed: string; required: string; atMs: number }
   | { kind: 'error'; corrupt: Extract<LoadResult, { kind: 'corrupt' }>; atMs: number }
   | { kind: 'game'; store: ConveyorStore };
 
@@ -77,7 +77,7 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
     // на наступному тіку, щоб boot встиг показати «міграцію»
     const id = setTimeout(() => {
       const r = loadSave(kv, opts());
-      if (r.kind === 'newer') setRoute({ kind: 'newer', installed: APP_VERSION, required: r.appVersion });
+      if (r.kind === 'newer') setRoute({ kind: 'newer', installed: APP_VERSION, required: r.appVersion, atMs: clock() });
       else if (r.kind === 'corrupt') setRoute({ kind: 'error', corrupt: r, atMs: clock() });
       else setRoute({ kind: 'game', store: startGame(kv, r.kind === 'ok' ? r.save : null, clock()) });
     }, 0);

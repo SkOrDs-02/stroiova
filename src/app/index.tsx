@@ -27,7 +27,7 @@ export default function Index() {
 
   const r = boot.route;
   if (r.kind === 'boot') return <BootScreen migrating={r.migrating} />;
-  if (r.kind === 'newer') return <ForceUpdateScreen installed={r.installed} required={r.required} />;
+  if (r.kind === 'newer') return <ForceUpdateScreen installed={r.installed} required={r.required} nowMs={r.atMs} />;
   if (r.kind === 'error') {
     return <SaveErrorScreen backup={r.corrupt.backup} nowMs={r.atMs} onRestore={boot.restore} onNew={boot.startNew} onReport={boot.report} />;
   }

@@ -43,7 +43,14 @@ export function SaveErrorScreen({ backup, nowMs, onRestore, onNew, onReport }: P
         {backup && e ? (
           <View style={styles.card} testID="save-backup">
             <Text style={styles.cardH}>{t.saveBackupH(fmtWhen(backup.savedAt))}</Text>
-            <Text style={styles.cardBody}>{t.backupLine(e.level, formatBig(e.signatures, 'balance'), e.prestigePoints)}</Text>
+            <View style={styles.row}>
+              <Text style={styles.cardBody}>{t.bkSigs}</Text>
+              <Text style={styles.cardValue}>{formatBig(e.signatures, 'balance')}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.cardBody}>{t.bkPoints}</Text>
+              <Text style={styles.cardValue}>{e.prestigePoints}</Text>
+            </View>
             <Text style={styles.cardBody}>{t.saveLoss(fmtTime(backup.savedAt))}</Text>
           </View>
         ) : (
@@ -85,6 +92,8 @@ const styles = StyleSheet.create({
   paperBody: { color: color.ink, fontSize: typeScale.docBody.fontSize, lineHeight: typeScale.docBody.lineHeight },
   card: { backgroundColor: color.surface, borderRadius: radius[8], padding: space[12], gap: space[4] },
   cardH: { color: color.text, fontSize: typeScale.h4.fontSize, fontWeight: typeScale.h4.fontWeight },
+  row: { flexDirection: 'row', justifyContent: 'space-between' },
+  cardValue: { color: color.text, fontSize: typeScale.num.fontSize, fontWeight: typeScale.num.fontWeight },
   cardBody: { color: color.muted, fontSize: typeScale.bodyS.fontSize, lineHeight: typeScale.bodyS.lineHeight },
   note: { color: color.muted, fontSize: typeScale.caption.fontSize },
   actions: { gap: space[8] },
