@@ -1,6 +1,7 @@
 // Нарахування за інтервал (001 FR-3, FR-24): інтеграл кусково-сталої швидкості по точках зміни множників.
 // Результат не залежить від частоти кадрів: швидкість × тривалість без проміжного округлення.
 import { integrate } from '../core';
+import { paperPerMin } from './actions';
 import { fuelBonusEndMs, income } from './income';
 import type { Big, EconomyConfig, EconomyState, Effect } from './types';
 
@@ -24,8 +25,12 @@ export function earnedBetween(state: EconomyState, cfg: EconomyConfig, a: number
 /** Онлайн: гра на передньому плані з fromMs до toMs за монотонним годинником (FR-3). */
 export function advance(state: EconomyState, cfg: EconomyConfig, fromMs: number, toMs: number, effects: readonly Effect[] = []): { state: EconomyState; earned: Big } {
   const earned = earnedBetween(state, cfg, fromMs, toMs, effects);
-  if (earned === 0) return { state, earned };
-  return { state: { ...state, signatures: state.signatures + earned, lifetimeCycle: state.lifetimeCycle + earned }, earned };
+  const paper = paperPerMin(state, cfg, false) * Math.max(0, toMs - fromMs) / MIN;
+  if (earned === 0 && paper === 0) return { state, earned };
+  return {
+    state: { ...state, signatures: state.signatures + earned, lifetimeCycle: state.lifetimeCycle + earned, paper: state.paper + paper },
+    earned,
+  };
 }
 
 /** Поріг екрана повернення: коротша відсутність зараховується тостом без довідки (FR-25, карта екранів). */
@@ -46,6 +51,8 @@ export interface OfflineResult {
   idle: boolean;
   /** Коротка відсутність: тост без довідки (FR-25) */
   short: boolean;
+  /** Аркуші від Накладних з діловодом за зарахований час (FR-22); ×2 на папір не діє */
+  paper: number;
 }
 
 /** Офлайн-дохід (FR-15, FR-23, FR-24): лише одиниці з діловодами, перші min(Δ, сховище), відрізки за множниками. */
@@ -58,7 +65,8 @@ export function offline(state: EconomyState, cfg: EconomyConfig, leftAtMs: numbe
   const idle = income(state, cfg, leftAtMs, [], { idle: true }).flow.v === 0;
   const fuelEnd = fuelBonusEndMs(state, cfg);
   const fuelBonusMs = Math.max(0, Math.min(fuelEnd, end) - leftAtMs);
-  return { earned, awayMs, creditedMs, cappedMs: awayMs - creditedMs, storageMs, fuelBonusMs, idle, short: awayMs < OFFLINE_RETURN_MIN_MS };
+  const paper = (paperPerMin(state, cfg, true) * creditedMs) / MIN;
+  return { earned, awayMs, creditedMs, cappedMs: awayMs - creditedMs, storageMs, fuelBonusMs, idle, short: awayMs < OFFLINE_RETURN_MIN_MS, paper };
 }
 
 /** Скільки нагород ×2 лишилось на місцеву добу (FR-26); нова дата скидає лічильник (09 FR-15). */
@@ -87,6 +95,7 @@ export function claimOffline(
       ...state,
       signatures: state.signatures + claimed,
       lifetimeCycle: state.lifetimeCycle + claimed,
+      paper: state.paper + res.paper,
       offlineDoubles: doubled ? { date: localDate, count: used + 1 } : state.offlineDoubles,
     },
   };
