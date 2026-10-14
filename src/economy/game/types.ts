@@ -59,6 +59,8 @@ export interface EconomyState {
 export interface Effect {
   kind: 'mult' | 'factor';
   source:
+    /** «Пташка в небі» онбордингу (002 FR-12): живе лише в пам'яті стору, за ігровим часом; у запис і офлайн не потрапляє */
+    | 'onboarding_bird'
     | 'ad_boost'
     | 'gift_drone'
     | 'gift_shovel'

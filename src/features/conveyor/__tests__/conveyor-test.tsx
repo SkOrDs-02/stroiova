@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { cfgV5, HOUR, T0 } from '@/economy/test-fixtures';
 
-import { ConveyorScreen } from '../ConveyorScreen';
+import { MainScreen as ConveyorScreen } from '@/features/main/MainScreen';
 import { createConveyorStore } from '../store';
 
 // ігровий цикл (requestAnimationFrame) перевіряють юніт-тести advance; тут він заважав би act()

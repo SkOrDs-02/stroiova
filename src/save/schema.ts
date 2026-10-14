@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 1;
+export const CURRENT_SCHEMA = 2;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -38,9 +38,27 @@ export const economyStateSchema = z.object({
   museum: z.object({ unit: z.record(z.string(), z.number().positive()), storage: z.number().positive(), paper: z.number().positive() }),
 });
 
+const stepNo = z.number().int().min(1).max(11);
+
+/** Стан онбордингу (002 data-model.md); схема 2. */
+export const onboardingSchema = z.object({
+  step: z.union([stepNo, z.literal('done')]),
+  callsign: z.object({ type: z.enum(['excel', 'skrepka', 'drukar', 'custom']), text: z.string().min(2).max(16) }).nullable(),
+  gender: z.enum(['m', 'f']).nullable(),
+  birdLeftMs: nonNeg,
+  completed: z.array(z.object({ step: stepNo, atPlayMs: nonNeg, durationMs: nonNeg, skipped: z.boolean() })),
+  stepStartedAtPlayMs: nonNeg,
+  tg1ReceivedAtPlayMs: nonNeg.nullable(),
+  tg1: z.object({ choiceId: z.string(), atPlayMs: nonNeg }).nullable(),
+  archiveBonus: nonNeg.nullable(),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
+  /** Ігровий час на передньому плані від першого запуску (002 FR-29) */
+  playtimeMs: nonNeg,
+  onboarding: onboardingSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

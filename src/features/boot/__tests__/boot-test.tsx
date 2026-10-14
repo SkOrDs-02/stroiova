@@ -28,9 +28,9 @@ async function boot() {
 describe('запуск', () => {
   beforeEach(reset);
 
-  test('порожнє сховище → гра, запис і install_id створено', async () => {
+  test('порожнє сховище → титул онбордингу (002 AC-1), запис і install_id створено', async () => {
     await boot();
-    expect(screen.getByTestId('flow-line')).toBeTruthy();
+    expect(screen.getByTestId('onb-title')).toBeTruthy();
     expect(mockKv.getString(KEY_SAVE)).toBeDefined();
     expect(mockKv.getString('install_id')).toMatch(/.+/);
   });
@@ -76,7 +76,8 @@ describe('запуск', () => {
     expect(screen.queryByTestId('save-restore')).toBeNull();
     await fireEvent.press(screen.getByTestId('save-report'));
     await fireEvent.press(screen.getByTestId('save-new'));
-    expect(await screen.findByTestId('flow-line')).toBeTruthy();
+    // новий прогрес — онбординг з кроку 1 (002 FR-2)
+    expect(await screen.findByTestId('onb-title')).toBeTruthy();
   });
 
   test('AC-8: новіша схема → force-update з версією запису, запис не змінено', async () => {

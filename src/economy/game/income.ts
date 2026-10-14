@@ -47,7 +47,7 @@ export function multStack(state: EconomyState, cfg: EconomyConfig, t: number, ef
   const rows: MultRow[] = [];
   if (state.prestigePoints > 0) rows.push({ source: 'prestige', value: prestigeMult(state.prestigePoints, p) });
   if (state.hasNoAds) rows.push({ source: 'no_ads', value: p.paidMult });
-  const order: Effect['source'][] = ['ad_boost', 'gift_drone', 'gift_shovel', 'inspection_pass'];
+  const order: Effect['source'][] = ['onboarding_bird', 'ad_boost', 'gift_drone', 'gift_shovel', 'inspection_pass'];
   for (const src of order) {
     for (const e of effects) {
       if (e.kind === 'mult' && e.source === src && activeAt(e, t)) rows.push({ source: src, value: e.value, endsAtMs: e.endMs });
