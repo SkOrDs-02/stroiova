@@ -16,6 +16,11 @@ import { InspResult } from '@/features/inspections/InspResult';
 import { InspWarning } from '@/features/inspections/InspWarning';
 import { offlineRows } from '@/features/inspections/present';
 import { inspT } from '@/features/inspections/texts';
+import { GiftArrived } from '@/features/race/GiftArrived';
+import { offlineRaceRows } from '@/features/race/present';
+import { RaceCard } from '@/features/race/RaceCard';
+import { RaceResult } from '@/features/race/RaceResult';
+import { RaceSheet } from '@/features/race/RaceSheet';
 import { Seal } from '@/features/conveyor/Seal';
 import { birdEffect, canHireNow, type ConveyorStore, type Toast } from '@/features/conveyor/store';
 import { t } from '@/features/conveyor/texts';
@@ -154,6 +159,12 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // без гравця результат іде в довідку й позначається показаним (FR-25); коротка відсутність без довідки — акт
   const inspResult = inspFree && !inspCall && !inspWarn && ins.last != null && !ins.last.seen;
   const inspBanner = insp != null && (insp.warned || !insp.modal);
+  // 005: gift-arrived і результат гонки — у тій самій черзі, після перевірок (крайовий випадок spec)
+  const race = s.race.active;
+  const [raceSheet, setRaceSheet] = useState(false);
+  const raceFree = inspFree && !inspCall && !inspWarn && !inspResult;
+  const giftOpen = raceFree && race != null && !race.seen;
+  const raceResult = raceFree && !giftOpen && s.race.last != null && !s.race.last.seen;
 
   const coachFor = (id: string) => {
     if (!coachOn) return undefined;
@@ -211,6 +222,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.inspText}>{`${inspT.banner(formatCountdown((insp!.arrMs - now) / 1000))} · ${inspT.prepare}`}</Text>
           </Pressable>
         ) : null}
+        {race && race.seen ? <RaceCard race={race} nowMs={now} p={s.cfg.params} onOpen={() => setRaceSheet(true)} /> : null}
         {kombatOn ? (
           <Pressable testID="kombat-bar" accessibilityRole="button" onPress={() => setView({ kind: 'kombat' })} style={styles.kombatBar}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${tgT.kbTitle} · ${tgT.left(formatDuration(Math.max(0, (kombat!.endMs - now) / 1000)))}`}</Text>
@@ -352,7 +364,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       {inspWarn ? <InspWarning store={store} /> : null}
       {inspResult ? <InspResult store={store} /> : null}
       {s.inspPrepOpen && insp ? <InspPrep store={store} /> : null}
-      {s.offline ? <OfflineReturn res={s.offline} inspRows={offlineRows(ins.last, s.cfg.params, s.offlineBackAt ?? now)} onClaim={s.claim} /> : null}
+      {giftOpen ? <GiftArrived store={store} /> : null}
+      {raceResult ? <RaceResult store={store} /> : null}
+      {raceSheet && race ? <RaceSheet store={store} onClose={() => setRaceSheet(false)} /> : null}
+      {s.offline ? <OfflineReturn res={s.offline} inspRows={[...offlineRows(ins.last, s.cfg.params, s.offlineBackAt ?? now), ...offlineRaceRows(s.race.last)]} onClaim={s.claim} /> : null}
     </View>
   );
 }
