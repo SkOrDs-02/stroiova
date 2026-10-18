@@ -37,7 +37,7 @@ export function RaceSheet({ store, onClose }: { store: ConveyorStore; onClose: (
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.k}>{raceT.life[r.type]}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.v}>{dur(v.svcLeftMs)}</Text>
         </View>
-        {v.paused ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{raceT.paused(telegram('tg_0020_gift_price')?.no ?? '')}</Text> : null}
+        {v.paused ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{raceT.paused(telegram('tg_0020_gift_price')?.no ?? null)}</Text> : null}
         {savedSec > 0 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.sped} testID="race-sped">{raceT.sped(dur(savedSec * 1000), sped.map((x) => raceT.how[x.method] ?? '').join(', '))}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.verdict, v.late && styles.late]}>
           <Text style={styles.bold}>{`${v.late ? raceT.sheetLateK : raceT.sheetOkK} `}</Text>
@@ -45,7 +45,8 @@ export function RaceSheet({ store, onClose }: { store: ConveyorStore; onClose: (
         </Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h}>{raceT.speed}</Text>
         <Button testID="race-digital" label={raceT.digital} disabled={!canDigital} onPress={() => s.raceDigital()} />
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{`${raceT.digitalCut(p.raceDigitalCutH)}. ${raceT.digitalNote}`}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{raceT.digitalCut(p.raceDigitalCutH)}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{raceT.digitalNote}</Text>
         <Button testID="race-close" variant="ghost" label={raceT.close} onPress={onClose} />
       </View>
     </View>

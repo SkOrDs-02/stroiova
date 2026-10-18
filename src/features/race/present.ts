@@ -15,9 +15,10 @@ export function bonusText(type: GiftType, p: EconomyParams): string {
   return raceT.bonus(type, formatMult(g.fuel ? p.fuelBonus : g.mult));
 }
 
+/** Множник подарунка словами: генератор не додає власного, а тримає пальне без заправки (рішення 30) */
 export function multText(type: GiftType, p: EconomyParams): string {
   const g = p.gifts[type];
-  return formatMult(g.fuel ? p.fuelBonus : g.mult);
+  return g.fuel ? `${formatMult(p.fuelBonus)} без заправки` : formatMult(g.mult);
 }
 
 /** Рядок довідки повернення (FR-26): гонка скінчилась без гравця. */

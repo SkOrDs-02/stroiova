@@ -2,6 +2,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
+import { formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { useTumbLine } from '@/features/inspections/useTumbLine';
 import { routeFor } from '@/race/race';
@@ -30,7 +31,7 @@ export function RaceResult({ store }: { store: ConveyorStore }) {
     <View style={styles.scrim} testID={o.won ? 'race-won' : 'race-lost'}>
       <View style={styles.wrap} accessibilityViewIsModal>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{o.won ? raceT.wonTitle[o.type] : raceT.lostTitle}</Text>
-        {o.won ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.fx}>{raceT.wonFx(o.type, multText(o.type, p))}</Text> : null}
+        {o.won ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.fx}>{raceT.wonFx(o.type, formatMult(o.type === 'generator' ? p.fuelBonus : p.gifts[o.type].mult))}</Text> : null}
         <View style={styles.paper}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{`${raceT.act(o.no)} · ${raceT.docKind}`}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{o.won ? raceT.item[o.type] : `${raceT.lostEntry[o.type]}${raceT.lostEntryTail}`}</Text>
@@ -38,7 +39,7 @@ export function RaceResult({ store }: { store: ConveyorStore }) {
           {o.won ? (
             <>
               <Row k={raceT.took} v={dur(o.tookSec * 1000)} />
-              <Row k={raceT.left} v={dur(leftMs)} />
+              <Row k={raceT.left[o.type]} v={dur(leftMs)} />
               <Row k={raceT.speedups} v={o.speedups ? String(o.speedups) : raceT.none} />
             </>
           ) : (
