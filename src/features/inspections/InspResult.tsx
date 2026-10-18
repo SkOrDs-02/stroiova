@@ -10,6 +10,7 @@ import { type } from '@/ui/type';
 
 import { muT } from '@/features/museum/texts';
 import { titleOf } from '@/features/museum/present';
+import { journal } from '@/museum/journals';
 
 import { actRows, verdictText } from './present';
 import { inspT } from './texts';
@@ -56,6 +57,7 @@ export function InspResult({ store }: { store: ConveyorStore }) {
             <View key={r.no} style={styles.exhibit} testID="insp-exhibit">
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{muT.inspBlock(r.nAfter)}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{muT.inspLine(r.no, titleOf(r.no))}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="insp-exhibit-note">{r.no === 8 ? `${muT.rarity.legendary}. ${muT.noteSeries}` : muT.rarity[journal(r.no)?.rarity ?? 'common']}</Text>
             </View>
           ))}
           <View style={styles.foot}>

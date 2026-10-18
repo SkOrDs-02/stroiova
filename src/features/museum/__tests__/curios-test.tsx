@@ -2,14 +2,14 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { bundledConfig } from '@/economy/config';
-import { createConveyorStore, gameSave } from '@/features/conveyor/store';
+import { draftOf } from '@/features/boot/useBoot';
+import { createConveyorStore } from '@/features/conveyor/store';
 import { MainScreen } from '@/features/main/MainScreen';
 import { memoryStorage } from '@/save/storage';
 import { KEY_SAVE, loadSave, serialize } from '@/save/repository';
 import { grant, newMuseum } from '@/museum/museum';
 import { MIGRATIONS, onboardingDone } from '@/save/migrations';
 import { CURRENT_SCHEMA } from '@/save/schema';
-import { draft } from '@/save/test-saves';
 
 jest.mock('@/features/conveyor/useGameLoop', () => ({ useGameLoop: () => {} }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
@@ -94,9 +94,8 @@ describe('журнал курйозів', () => {
     const store = game();
     store.getState().answerTelegram('tg_0015_paper_copy#1', 'diligent');
     await lose(store);
-    const saved = gameSave(store);
-    const d = draft({}, {});
-    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, museum: saved.museum, economy: saved.economy as never } }) });
+    // реальний запис зі стору: draftOf -> serialize -> loadSave, як на диску
+    const kv = memoryStorage({ [KEY_SAVE]: serialize(draftOf(store)!) });
     const r = loadSave(kv, { current: CURRENT_SCHEMA, migrations: MIGRATIONS });
     expect(r.kind).toBe('ok');
     if (r.kind !== 'ok') return;

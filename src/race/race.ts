@@ -115,8 +115,6 @@ function finish(s0: RaceState, cfg: EconomyConfig, offline: boolean): { s: RaceS
     }
     const boostType = g.fuel ? 'generator_fuel_hold' : r.type === 'drone' ? 'drone_x2' : 'shovels_x1_5';
     events.push({ type: 'boostActivate', boostType, mult: g.fuel ? p.fuelBonus : g.mult, durationSec: marginSec });
-  } else {
-    events.push({ type: 'raceCurio', id: r.id, giftType: r.type });
   }
   events.unshift({ type: 'raceFinish', id: r.id, result: won ? 'success' : 'fail', marginSec, speedups, offline });
   const last: RaceOutcome = {
@@ -135,6 +133,8 @@ function finish(s0: RaceState, cfg: EconomyConfig, offline: boolean): { s: RaceS
     offline,
     seen: false,
   };
+  // запис курйозу несе дані гонки сам: за один tick може скінчитись кілька гонок, а `last` лишається лише остання
+  if (!won) events.push({ type: 'raceCurio', id: r.id, giftType: r.type, raceNo: last.no, level: last.level, steps: last.steps, stepsDone: last.stepsDone, stepsTotal: last.stepsTotal, marginSec, endMs });
   return { s: { ...s0, active: null, last, lastRaceEndMs: endMs }, effects, events };
 }
 

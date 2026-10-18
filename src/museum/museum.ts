@@ -1,7 +1,6 @@
 // Музей й журнал курйозів (007): отримання журналів, бонуси для економіки, записи курйозів.
 import type { DomainEvent, EconomyConfig, EconomyState } from '@/economy/game/types';
 import type { Journals } from '@/race/race';
-import type { RaceOutcome } from '@/race/types';
 import { telegram } from '@/telegrams/content';
 import type { InboxItem, TelegramState } from '@/telegrams/types';
 
@@ -88,7 +87,7 @@ export function grant(ms: MuseumState, eco: EconomyState, cfg: EconomyConfig, no
 }
 
 /** Журнали з подій інших фіч: цифровізація (06), `journal` телеграми (03), перша перевірка без зауважень (04). */
-export function fromEvents(ms: MuseumState, eco: EconomyState, cfg: EconomyConfig, evs: readonly DomainEvent[], atMs: number, ctx: { offline: boolean }): GrantResult {
+export function fromEvents(ms: MuseumState, eco: EconomyState, cfg: EconomyConfig, evs: readonly DomainEvent[], atMs: number, ctx: { offline: boolean; inspAtMs?: number }): GrantResult {
   let cur: GrantResult = { ms, eco, events: [] };
   for (const e of evs) {
     let r: GrantResult | null = null;
@@ -96,7 +95,7 @@ export function fromEvents(ms: MuseumState, eco: EconomyState, cfg: EconomyConfi
     else if (e.type === 'journal') {
       const no = journalNo(e.id);
       if (no != null) r = grant(cur.ms, cur.eco, cfg, [no], atMs, 'telegram');
-    } else if (e.type === 'inspectionJournal') r = grant(cur.ms, cur.eco, cfg, [7], atMs, 'inspection', ctx.offline ? 'other' : 'insp');
+    } else if (e.type === 'inspectionJournal') r = grant(cur.ms, cur.eco, cfg, [7], ctx.inspAtMs ?? atMs, 'inspection', ctx.offline ? 'other' : 'insp');
     if (r) cur = { ms: r.ms, eco: r.eco, events: [...cur.events, ...r.events] };
   }
   return cur;
@@ -165,13 +164,11 @@ export function curioFromTelegram(ms: MuseumState, ev: Extract<DomainEvent, { ty
 }
 
 /** Програна гонка: запис про подарунок, списаний раніше, ніж поставлений на облік (FR-21) */
-export function curioFromRace(ms: MuseumState, ev: Extract<DomainEvent, { type: 'raceCurio' }>, last: RaceOutcome | null): MuseumState {
-  const out = last && last.id === ev.id ? last : null;
-  if (!out) return ms;
+export function curioFromRace(ms: MuseumState, ev: Extract<DomainEvent, { type: 'raceCurio' }>): MuseumState {
   return push(ms, {
     kind: 'gift',
-    atMs: out.endMs,
-    gift: { raceId: out.id, raceNo: out.no, type: out.type, level: out.level, steps: out.steps, stepsDone: out.stepsDone, stepsTotal: out.stepsTotal, marginSec: out.marginSec },
+    atMs: ev.endMs,
+    gift: { raceId: ev.id, raceNo: ev.raceNo, type: ev.giftType, level: ev.level, steps: ev.steps, stepsDone: ev.stepsDone, stepsTotal: ev.stepsTotal, marginSec: ev.marginSec },
   });
 }
 

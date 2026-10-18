@@ -146,7 +146,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const toast = s.toast;
   useEffect(() => {
     if (toast == null) return;
-    const id = setTimeout(() => store.getState().clearToast(), duration.toast);
+    // тост «Новий експонат» з «Відкрити» тримаємо втричі довше: тапнути треба встигнути
+    const id = setTimeout(() => store.getState().clearToast(), duration.toast * (toast.kind === 'exhibit' ? 3 : 1));
     return () => clearTimeout(id);
   }, [toast, store]);
 
@@ -208,7 +209,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     else if (tab === 'telegrams') setView({ kind: 'list' });
     else if (tab === 'digital') setView({ kind: 'digital' });
     else if (tab === 'museum') {
-      s.openMuseum();
+      if (view.kind !== 'museum') s.openMuseum();
       setView({ kind: 'museum' });
     }
     else if (tab === 'stroyova') setView({ kind: 'main' });

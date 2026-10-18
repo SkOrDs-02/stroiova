@@ -42,7 +42,7 @@ export function CuriosList({ store, onOpen }: { store: ConveyorStore; onOpen: (s
                   <View style={styles.main}>
                     <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{`${r.num} · ${r.status}`}</Text>
                     <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title}>{r.title}</Text>
-                    <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} numberOfLines={2}>{r.meta}</Text>
+                    <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} numberOfLines={1}>{r.meta}</Text>
                   </View>
                 </Pressable>
               ))}

@@ -287,9 +287,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     let ms = g.museum;
     for (const e of evs) {
       if (e.type === 'curio') ms = curioFromTelegram(ms, e, g.telegrams, atMs);
-      if (e.type === 'raceCurio') ms = curioFromRace(ms, e, g.race.last);
+      if (e.type === 'raceCurio') ms = curioFromRace(ms, e);
     }
-    const r = museumFromEvents(ms, g.state, g.cfg, evs, atMs, { offline });
+    // «У музеї з» - мітка самої перевірки, а не повернення гравця (крайовий випадок «Офлайн»)
+    const r = museumFromEvents(ms, g.state, g.cfg, evs, atMs, { offline, inspAtMs: g.inspections.last?.arrMs });
     if (r.ms === g.museum && r.eco === g.state && !r.events.length) return;
     set({ museum: r.ms, state: r.eco, events: [...get().events, ...r.events].slice(-40) });
   };

@@ -1,9 +1,16 @@
 // Підписи цифровізації (006): доріжка рівнів, назви журналів.
 import museum from '../../../content/museum.json';
 
+import { MUSEUM_SIZE } from '@/museum/journals';
+
 import { digitT } from './texts';
 
 const JOURNALS = new Map<number, string>((museum.journals as { no: number; title: string }[]).map((j) => [j.no, j.title]));
+
+/** Журнали, які музей цієї збірки показує (№ 1-8, рішення 76); № 9+ записуються без розкриття до 016 */
+export function shownJournals(nos: readonly number[]): number[] {
+  return nos.filter((n) => n <= MUSEUM_SIZE);
+}
 
 export function journalTitle(no: number): string {
   return JOURNALS.get(no) ?? `№ ${no}`;

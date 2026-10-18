@@ -90,6 +90,26 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
   return store;
 }
 
+/**
+ * Зміни, які пишемо одразу, не чекаючи 5 с автозапису (002 FR-28, 003 «вбивство посеред вибору», 004 FR-28, 005, 006 FR-16, 007 рішення 79):
+ * крок онбордингу, відповідь чи нова телеграма, перевірка, гонка, цифровізація, журнал або запис курйозу.
+ */
+export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: ReturnType<ConveyorStore['getState']>): boolean {
+  return (
+    st.onboarding.step !== prev.onboarding.step ||
+    st.telegrams.inbox !== prev.telegrams.inbox ||
+    st.telegrams.kombat !== prev.telegrams.kombat ||
+    st.inspections.active !== prev.inspections.active ||
+    st.inspections.last !== prev.inspections.last ||
+    st.race.active !== prev.race.active ||
+    st.race.last !== prev.race.last ||
+    st.digit !== prev.digit ||
+    // журнал записується в мить джерела: вбивство застосунку в наступні 5 с його не губить
+    st.museum.owned !== prev.museum.owned ||
+    st.museum.curios !== prev.museum.curios
+  );
+}
+
 export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: Route; restore(): void; startNew(): void; report(): void } {
   const [route, setRoute] = useState<Route>(() => ({ kind: 'boot', migrating: needsMigration(kv) }));
 
@@ -120,14 +140,7 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
     // 002 FR-28: прогрес онбордингу пишеться одразу після кожного закритого кроку;
     // 003 «вбивство посеред вибору»: відповідь, нова телеграма, посильний — теж одразу, не чекаючи 5 с
     const unsubStep = store.subscribe((st, prev) => {
-      const tgChanged = st.telegrams.inbox !== prev.telegrams.inbox || st.telegrams.kombat !== prev.telegrams.kombat;
-      // 004 FR-28: оголошення, купівля пункту, приїзд — одразу
-      const inspChanged = st.inspections.active !== prev.inspections.active || st.inspections.last !== prev.inspections.last;
-      // 005: подарунок, прискорення, фінал — одразу
-      const raceChanged = st.race.active !== prev.race.active || st.race.last !== prev.race.last;
-      // 006 FR-16: цифровізацію зберігаємо одразу; церемонія переживає вбивство застосунку (FR-22)
-      const digitChanged = st.digit !== prev.digit;
-      if (st.onboarding.step !== prev.onboarding.step || tgChanged || inspChanged || raceChanged || digitChanged) auto.saveNow();
+      if (needsSaveNow(st, prev)) auto.saveNow();
     });
     let leftAt: number | null = null;
     const sub = AppState.addEventListener('change', (s) => {

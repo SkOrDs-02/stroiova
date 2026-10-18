@@ -2,6 +2,7 @@
 import { offline } from '@/economy/game/advance';
 import { giftPaper } from '@/economy/game/actions';
 import { income } from '@/economy/game/income';
+import { newCycle } from '@/economy/game/state';
 import type { DomainEvent } from '@/economy/game/types';
 import { routeFor } from '@/race/race';
 import { cfg, eco, HOUR, tgWith } from '@/telegrams/test-utils';
@@ -80,6 +81,9 @@ describe('джерела (FR-3…FR-9)', () => {
   test('AC-5: перша перевірка без зауважень після цифровізації дає № 7 (блок в insp-result), офлайн - модалка', () => {
     const online = fromEvents(owning(1, 2, 3), eco(), cfg, [{ type: 'inspectionJournal', id: 'insp_0001' }], T, { offline: false });
     expect(online.ms.reveal).toMatchObject([{ no: 7, via: 'insp', nAfter: 4 }]);
+    // мітка отримання - мітка перевірки, а не повернення гравця
+    const dated = fromEvents(owning(1, 2, 3), eco(), cfg, [{ type: 'inspectionJournal', id: 'insp_0001' }], T + 5 * HOUR, { offline: true, inspAtMs: T + HOUR });
+    expect(dated.ms.owned.find((o) => o.no === 7)!.atMs).toBe(T + HOUR);
     expect(nextReveal(online.ms)).toBeNull();
     const off = fromEvents(owning(1, 2, 3), eco(), cfg, [{ type: 'inspectionJournal', id: 'insp_0001' }], T, { offline: true });
     expect(nextReveal(off.ms)).toMatchObject({ no: 7, via: 'other' });
@@ -125,6 +129,8 @@ describe('бонуси в економіці (FR-10, FR-11, AC-8, AC-19)', () =>
     };
     expect(ratio(ms1)).toBeCloseTo(1.05, 10);
     expect(ratio(ms18)).toBeCloseTo(1.1, 10);
+    // після цифровізацій і переходу на Р2 бонус лишається: у стані він зберігається поза newCycle
+    expect(newCycle({ ...base, level: 2, museum: bonuses(ms18, cfg) }, cfg).museum.unit.stroy).toBeCloseTo(1.1, 10);
   });
 
   test('AC-19: сховище 8 год -> 8 год 24 хв (з № 8 - 8 год 48 хв); з розширеним 24 год -> 25 год 12 хв і 26 год 24 хв', () => {
@@ -198,8 +204,8 @@ describe('курйози (FR-21…FR-23, AC-13)', () => {
     let ms = newMuseum();
     ms = curioFromTelegram(ms, { type: 'curio', telegramId: answered.inbox[0]!.id, uid: answered.inbox[0]!.uid, text: null }, answered, T);
     ms = curioFromTelegram(ms, { type: 'curio', telegramId: answered.inbox[1]!.id, uid: answered.inbox[1]!.uid, text: null }, answered, T + 1);
-    const out = { id: 'race_0001', no: 1, type: 'drone' as const, level: 1, won: false, endMs: T + 2, tookSec: 0, marginSec: 5520, steps: [{ unit: 'akty' as const, sec: 100 }], stepsDone: 2, stepsTotal: 4, speedups: 0, offline: false, seen: false };
-    ms = curioFromRace(ms, { type: 'raceCurio', id: 'race_0001', giftType: 'drone' }, out);
+    const lost = { type: 'raceCurio' as const, id: 'race_0001', giftType: 'drone' as const, raceNo: 1, level: 1, steps: [{ unit: 'akty' as const, sec: 100 }], stepsDone: 2, stepsTotal: 4, marginSec: 5520, endMs: T + 2 };
+    ms = curioFromRace(ms, lost);
     expect(ms.curios.map((c) => [c.seq, c.kind, c.status ?? null])).toEqual([[1, 'telegram', 'diligent'], [2, 'telegram', 'drawer'], [3, 'gift', null]]);
     expect(curioSummary(ms)).toEqual({ total: 3, telegrams: 2, gifts: 1 });
     expect(ms.curios[2]!.gift).toMatchObject({ raceNo: 1, stepsDone: 2, stepsTotal: 4, marginSec: 5520 });
@@ -220,7 +226,9 @@ describe('курйози (FR-21…FR-23, AC-13)', () => {
     expect(ms.curios.map((c) => c.seq)).toEqual([1, 2]);
   });
 
-  test('гонка не збігається з останнім підсумком - запису немає', () => {
-    expect(curioFromRace(newMuseum(), { type: 'raceCurio', id: 'race_0009', giftType: 'drone' }, null).curios).toEqual([]);
+  test('дві програні гонки за один tick - обидві в журналі (дані беруться з події, а не з останнього підсумку)', () => {
+    const ev = (n: number) => ({ type: 'raceCurio' as const, id: `race_000${n}`, giftType: 'shovel' as const, raceNo: n, level: 1, steps: [{ unit: 'akty' as const, sec: 60 }], stepsDone: 1, stepsTotal: 4, marginSec: 60, endMs: T + n });
+    const ms = curioFromRace(curioFromRace(newMuseum(), ev(1)), ev(2));
+    expect(ms.curios.map((c) => [c.seq, c.gift!.raceNo])).toEqual([[1, 1], [2, 2]]);
   });
 });

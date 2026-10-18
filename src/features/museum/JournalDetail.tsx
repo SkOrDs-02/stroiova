@@ -4,7 +4,7 @@ import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { journal } from '@/museum/journals';
-import { color, radius, space } from '@/theme';
+import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   body: { ...type('body'), color: color.text },
   rarity: { ...type('label') },
   quote: { ...type('body'), color: color.text, backgroundColor: color.surface, borderRadius: radius[8], padding: space[12] },
-  cover: { minHeight: 150, borderRadius: radius[6], padding: space[12], justifyContent: 'space-between' },
+  cover: { minHeight: size.coverHeight, borderRadius: radius[6], padding: space[12], justifyContent: 'space-between' },
   coverLocked: { backgroundColor: color.surface2, justifyContent: 'center', alignItems: 'center' },
   legend: { borderWidth: 2, borderColor: color.accent },
   coverHead: { ...type('h2'), color: color.text },

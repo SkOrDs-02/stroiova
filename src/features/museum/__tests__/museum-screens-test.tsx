@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { bundledConfig } from '@/economy/config';
 import { newGame } from '@/economy/game/state';
+import { needsSaveNow } from '@/features/boot/useBoot';
 import { createConveyorStore, gameSave } from '@/features/conveyor/store';
 import { MainScreen } from '@/features/main/MainScreen';
 import { grant, newMuseum, unseen } from '@/museum/museum';
@@ -119,6 +120,7 @@ describe('розкриття (рішення 79)', () => {
       expect(store.getState().digitize()).toBe(true);
     });
     expect(screen.getByTestId('digit-result')).toBeTruthy();
+    expect(screen.getByTestId('digit-result-ok')).toHaveTextContent('Далі');
     // поки акт на екрані, розкриття чекає
     expect(screen.queryByTestId('journal-new')).toBeNull();
     expect(screen.getByTestId('tab-museum-dot')).toBeTruthy();
@@ -141,6 +143,25 @@ describe('розкриття (рішення 79)', () => {
     expect(store.getState().state.museum.unit.stroy).toBeCloseTo(1.05, 10);
     expect(store.getState().state.museum.storage).toBeCloseTo(1.05, 10);
     expect(screen.queryByTestId('tab-museum-dot')).toBeNull();
+  });
+
+  test('AC-3 (екран): цифровізація на Р2 журналів у музей не розкриває - «без журналів» з лічильником «У музеї 5 з 8», кнопка «До стройової»', async () => {
+    const store = game([1, 2, 3, 4, 5], 6.27e9 * 1600);
+    store.setState({
+      state: { ...store.getState().state, level: 2, streamLevels: [30, 20, 10, 5, 3], stageLevels: [20, 20, 20, 20], prestigePoints: 100 },
+      digit: { ...store.getState().digit, counts: { '1': 3 }, total: 3 },
+    });
+    await render(<MainScreen store={store} />);
+    await act(async () => {
+      expect(store.getState().digitize()).toBe(true);
+    });
+    expect(screen.getByTestId('result-museum')).toHaveTextContent('У музеї 5 з 8');
+    expect(screen.getByTestId('digit-result-ok')).toHaveTextContent('До стройової');
+    await fireEvent.press(screen.getByTestId('digit-result-ok'));
+    expect(screen.queryByTestId('journal-new')).toBeNull();
+    // № 9 записано без розкриття й без лічильника (рішення 76)
+    expect(store.getState().museum.owned.map((o) => o.no)).toContain(9);
+    expect(unseen(store.getState().museum)).toBe(0);
   });
 
   test('«Деталі експоната» відкриває шторку над розкриттям і повертає до нього', async () => {
@@ -189,6 +210,18 @@ describe('розкриття (рішення 79)', () => {
     expect(screen.getByTestId('mu-count')).toHaveTextContent('3 з 8');
     expect(screen.queryByTestId('tab-museum-dot')).toBeNull();
     expect(second.getState().events.at(-1)).toMatchObject({ type: 'museumOpen', source: 'unlock_toast', journalsUnseen: 2 });
+  });
+});
+
+describe('збереження в мить джерела (AC-18)', () => {
+  test('журнали № 1-3 потрапляють у запис одразу: хоча б одна зміна стору з уже заповненим музеєм вимагає негайного запису', () => {
+    const store = game([], L(40));
+    const saves: number[] = [];
+    store.subscribe((st, prev) => {
+      if (needsSaveNow(st, prev)) saves.push(st.museum.owned.length);
+    });
+    store.getState().digitize();
+    expect(saves.at(-1)).toBe(3);
   });
 });
 
@@ -251,6 +284,7 @@ describe('перевірка й телеграма дають журнали', (
     store.getState().tick(arr + 1000);
     await render(<MainScreen store={store} />);
     expect(screen.getAllByTestId('insp-exhibit')).toHaveLength(2);
+    expect(screen.getAllByTestId('insp-exhibit-note')[1]).toHaveTextContent('Легендарний. Серію зібрано. Уже діє.');
     await fireEvent.press(screen.getByTestId('insp-result-ok'));
     expect(store.getState().museum.owned.map((o) => o.no)).toContain(8);
     await fireEvent.press(screen.getByTestId('tab-museum'));
