@@ -124,7 +124,7 @@ export type DomainEvent =
       itemsTotal: number;
     }
   | { type: 'inspectionItemAdded'; id: string; itemId: string; telegramId: string }
-  | { type: 'inspectionItemComplete'; id: string; itemId: string; method: 'signatures'; cost: Big; secToDeadline: number }
+  | { type: 'inspectionItemComplete'; id: string; itemId: string; method: 'signatures' | 'ad' | 'no_ads_pass'; cost: Big; secToDeadline: number }
   | {
       type: 'inspectionFinish';
       id: string;
@@ -134,10 +134,10 @@ export type DomainEvent =
       offline: boolean;
       secFromStart: number;
     }
-  | { type: 'boostActivate'; boostType: 'inspection_x3' | 'drone_x2' | 'shovels_x1_5' | 'generator_fuel_hold'; mult: number; durationSec: number }
+  | { type: 'boostActivate'; boostType: 'income_x2' | 'inspection_x3' | 'drone_x2' | 'shovels_x1_5' | 'generator_fuel_hold'; mult: number; durationSec: number }
   // 005: гонка з часом; аналітика етапу 5 (race_start, race_speedup_apply, race_finish), курйози 07
   | { type: 'raceStart'; id: string; giftType: 'drone' | 'shovel' | 'generator'; docSec: number; resourceSec: number; winnable: boolean }
-  | { type: 'raceSpeedup'; id: string; method: 'digital_bonus'; secSaved: number }
+  | { type: 'raceSpeedup'; id: string; method: 'digital_bonus' | 'ad' | 'no_ads_pass'; secSaved: number }
   | { type: 'raceFinish'; id: string; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean }
   /** Програна гонка: запис «Списано раніше, ніж поставлено на облік» (07) */
   | {
@@ -160,6 +160,13 @@ export type DomainEvent =
   | { type: 'inspectionJournal'; id: string }
   // 007: музей; аналітика етапу 5 (museum_journal_unlock)
   | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection'; ownedAfter: number; isSeriesComplete: boolean }
+  // 008: реклама й покупки; аналітика етапу 5 (ad_*, purchase_*, offline_income_claim)
+  | { type: 'adRewardGrant'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; isNoAdsClaim: boolean }
+  | { type: 'adFail'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; stage: 'not_ready' | 'load' | 'show' | 'closed_early' | 'consent_blocked'; code?: string }
+  | { type: 'purchaseComplete'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; isFirstPurchase: boolean; purchaseNumber: number }
+  | { type: 'purchaseFail'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; reason: 'user_cancelled' | 'payment_pending' | 'store_problem' | 'network' | 'product_unavailable' | 'already_owned' | 'not_allowed' | 'unknown' }
+  | { type: 'purchaseRestore'; trigger: 'shop_button' | 'settings_button' | 'auto_check'; isSuccess: boolean; restoredProductIds: ('no_ads' | 'starter_pack' | 'storage_24h')[] }
+  | { type: 'offlineIncomeClaim'; isDoubled: boolean; doubleSource: 'ad' | 'no_ads_pass' | 'none'; offlineDoublesToday: number }
   | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */

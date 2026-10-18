@@ -3,6 +3,7 @@
 import { DEFAULTS } from '@/economy/core';
 import { newInspections } from '@/inspections/lifecycle';
 import { newDigitization } from '@/digitization/digitization';
+import { newMonetization } from '@/monetization/monetization';
 import { newMuseum } from '@/museum/museum';
 import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
@@ -40,7 +41,21 @@ export const MIGRATIONS: Record<number, Migration> = {
   5: (game) => ({ ...(game as object), digitization: digitizationV6((game as { inspections?: { installMs?: number } }).inspections?.installMs ?? 0) }),
   // 6 → 7 (007): музею й курйозів ще не було - порожній стан (006 ще не вийшла: цифровізацій, що скасували б журнали, немає)
   6: (game) => ({ ...(game as object), museum: museumV7() }),
+  // 7 → 8 (008): покупок і реклами ще не було. Прапори з економіки (`hasNoAds` тощо) лишаються: права починаються з кешу, а перше ж
+  // опитування стору або відновлення виправить його. Набір, що вже діє в економіці, не дублює 50 000.
+  7: (game) => {
+    const g = game as { economy?: { hasNoAds?: boolean; storageHours?: number; fuelCapacityMs?: number } };
+    const m = newMonetization();
+    const e = g.economy ?? {};
+    const rights = { no_ads: !!e.hasNoAds, storage_24h: (e.storageHours ?? 8) >= 24, starter_pack: (e.fuelCapacityMs ?? 0) >= 12 * 3_600_000 };
+    return { ...(game as object), monetization: { ...m, rights, starterGranted: rights.starter_pack, offer: rights.starter_pack ? 'done' : 'wait' } };
+  },
 };
+
+/** Порожній стан реклами й покупок схеми 8. */
+export function monetizationV8() {
+  return newMonetization();
+}
 
 /** Порожній стан музею схеми 7. */
 export function museumV7() {

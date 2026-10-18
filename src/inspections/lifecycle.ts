@@ -300,6 +300,23 @@ export function shiftInspections(s: InspectionState, rawMs: number): InspectionS
   };
 }
 
+/** «Усе за рекламу» / «Забрати все» (008 FR-6): усі пункти, що є на мить нагороди; пізніші коштують підписи. */
+export function completeAll(
+  s0: InspectionState,
+  nowMs: number,
+  method: 'ad' | 'no_ads_pass',
+): { s: InspectionState; events: DomainEvent[] } | { error: 'no_active' | 'done' } {
+  const insp = s0.active;
+  if (!insp || nowMs >= insp.arrMs) return { error: 'no_active' };
+  const open = insp.items.filter((i) => !i.done);
+  if (!open.length) return { error: 'done' };
+  const items = insp.items.map((i) => (i.done ? i : { ...i, done: true, doneAtMs: nowMs }));
+  return {
+    s: { ...s0, active: { ...insp, items } },
+    events: open.map((i) => ({ type: 'inspectionItemComplete' as const, id: insp.id, itemId: i.id, method, cost: 0, secToDeadline: Math.round((insp.arrMs - nowMs) / 1000) })),
+  };
+}
+
 export type BuyError = 'no_active' | 'unknown' | 'done' | 'short';
 
 /** Тап по пункту (FR-14): списує ціну без підтвердження, позначку не зняти. */

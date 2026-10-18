@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 
 import { bundledConfig } from '@/economy/config';
+import { formatDuration } from '@/economy/format';
 import { advance, claimOffline, offline, type OfflineResult } from '@/economy/game/advance';
 import { baseIncomePerMin } from '@/economy/game/income';
 import { catTap, refuel, tap } from '@/economy/game/actions';
@@ -19,6 +20,13 @@ import { closeCeremonyStep, digitize as digitizeNow, newDigitization, shiftDigit
 import type { DigitizationState } from '@/digitization/types';
 import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
+import { addBoost, addPending, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
+import type { AdService, MonetizationState, Placement, ProductId, PurchaseService } from '@/monetization/types';
+import { adT, iapT, shopT } from '@/features/monetization/texts';
+import { unavailableAds } from '@/services/ads';
+import { unavailablePurchases } from '@/services/purchases';
+import { adSpeedup } from '@/race/race';
+import { completeAll } from '@/inspections/lifecycle';
 import { digitT } from '@/features/digitization/texts';
 import { dayKey } from '@/telegrams/clock';
 import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
@@ -71,6 +79,11 @@ interface Store {
   digit: DigitizationState;
   /** Музей і курйози (007) */
   museum: MuseumState;
+  /** Реклама й покупки (008) */
+  monetization: MonetizationState;
+  services: { ads: AdService; purchases: PurchaseService };
+  /** Ролик чи оплата йде: повторні тапи ігноруються (крайовий випадок); лише в пам'яті */
+  busy: 'ad' | 'purchase' | null;
   /** Підказка «Час цифровізуватися» активна (FR-9); оновлюється раз на хвилину гри, лише в пам'яті */
   digitRec: boolean;
   /** Остання перевірка підказки, мс */
@@ -103,7 +116,8 @@ interface Store {
   cat: (nowMs: number) => void;
   setMode: (mode: BuyMode) => void;
   away: (leftAtMs: number, backAtMs: number) => void;
-  claim: () => void;
+  /** Забрати довідку; `doubled` - ×2 за ролик чи «Забрати» (008 FR-4); false - ліміт ×2 на добу вичерпано */
+  claim: (doubled?: boolean) => boolean;
   clearToast: () => void;
   showToast: (toast: Toast) => void;
   /** Закрити крок онбордингу (002 FR-1); false — крок не поточний */
@@ -142,6 +156,18 @@ interface Store {
   closeInspPrep: () => void;
   /** insp-result закрито (FR-22) */
   closeInspResult: () => void;
+  /** Нагорода за рекламу чи «Забрати» (008 FR-1…FR-14): ролик показується лише з обробника тапу */
+  watchAd: (placement: Placement) => Promise<'granted' | 'closed' | 'unavailable' | 'blocked' | 'busy'>;
+  /** Купити товар (FR-15…FR-24) */
+  purchase: (id: ProductId) => Promise<void>;
+  /** Відновити покупки (FR-27) */
+  restore: (trigger: 'shop_button' | 'settings_button' | 'auto_check') => Promise<void>;
+  /** Тихо звірити права зі стором на запуску (FR-26, FR-27) */
+  syncPurchases: () => Promise<void>;
+  /** iap-success закрито */
+  closeIapSuccess: () => void;
+  /** starter-offer закрито (FR-19) */
+  ackStarterOffer: () => void;
   /** `journal-new` закрито: журнал переглянуто (рішення 79) */
   closeReveal: () => void;
   /** Вкладку «Музей» відкрито: усе переглянуто (007 FR-20) */
@@ -192,6 +218,8 @@ export interface Initial {
   race?: RaceState;
   digit?: DigitizationState;
   museum?: MuseumState;
+  monetization?: MonetizationState;
+  services?: { ads: AdService; purchases: PurchaseService };
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -239,6 +267,53 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       // Граніт у «знайшли» — репліка персонажа, у ліміті сесії
       if (e.type === 'kombatFound' && get().telegrams.kombat.active) characterLine('granit.success', `kombat:${get().telegrams.kombat.active!.startMs}`);
     }
+  };
+  const pushEvent = (e: DomainEvent) => set({ events: [...get().events, e].slice(-40) });
+  /** Товар отримано: права, ефект, події (008 FR-17, FR-18, FR-23); `silent` - відновлення без iap-success */
+  const grantNow = (id: ProductId, silent: boolean) => {
+    const g = get();
+    const r = grantProduct(g.monetization, g.state, g.cfg, id, g.lastMs, { silent });
+    if (r.ms === g.monetization) return;
+    set({
+      monetization: r.ms,
+      state: r.eco,
+      events: [...g.events, ...(silent ? [] : [{ type: 'purchaseComplete' as const, productId: id, isFirstPurchase: g.monetization.purchases === 0, purchaseNumber: r.ms.purchases }])].slice(-40),
+    });
+  };
+  /** Нагорода за ролик чи «Забрати» (008 FR-2…FR-6, FR-12): записується в мить нагороди */
+  const rewardAd = (placement: Placement, method: 'ad' | 'no_ads_pass'): boolean => {
+    const g = get();
+    const now = g.lastMs;
+    const date = localDate(now);
+    const p = g.cfg.params;
+    let ok = false;
+    if (placement === 'income_boost') {
+      const v = boostView(g.monetization, g.effects, now, date, g.cfg, g.state.hasNoAds);
+      if (v.button === 'limit' || v.button === 'cap') return false;
+      set({ effects: addBoost(g.effects, now, g.cfg) as StoredEffect[], monetization: bump(g.monetization, 'boost', date) });
+      pushEvent({ type: 'boostActivate', boostType: 'income_x2', mult: p.adMult, durationSec: p.adHours * 3600 });
+      get().showToast({ kind: 'text', text: adT.reward });
+      ok = true;
+    } else if (placement === 'offline_double') {
+      ok = get().claim(true);
+    } else if (placement === 'race_speedup') {
+      if (raceAdView(g.monetization, g.state, g.cfg, date).button === 'limit') return false;
+      const r = adSpeedup(g.race, now, g.cfg, method);
+      if ('error' in r) return false;
+      set({ race: r.s, monetization: bump(g.monetization, 'race', date), events: [...g.events, ...r.events].slice(-40) });
+      get().showToast({ kind: 'text', text: adT.rewardRace(formatDuration(r.events[0]!.type === 'raceSpeedup' ? r.events[0]!.secSaved : 0)) });
+      ok = true;
+    } else {
+      const insp = g.inspections.active;
+      if (!insp || inspAdView(g.monetization, insp.id, g.state).button === 'limit') return false;
+      const r = completeAll(g.inspections, now, method);
+      if ('error' in r) return false;
+      set({ inspections: r.s, monetization: { ...g.monetization, inspAdId: insp.id }, events: [...g.events, ...r.events].slice(-40) });
+      get().showToast({ kind: 'text', text: adT.rewardInsp });
+      ok = true;
+    }
+    if (ok) pushEvent({ type: 'adRewardGrant', placement, isNoAdsClaim: method === 'no_ads_pass' });
+    return ok;
   };
   /** Репліка персонажа з мішка пулу на слот (телеграма, подія): одна на слот, ≤ 2 за сесію (рішення 41, 45). */
   const characterLine = (key: string, slot: string): string | null => {
@@ -387,6 +462,9 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     race: init?.race ?? newRace(`race-${nowMs}`),
     digit: init?.digit ?? newDigitization(nowMs),
     museum: interrupted.ms,
+    monetization: init?.monetization ?? newMonetization(),
+    services: init?.services ?? { ads: unavailableAds, purchases: unavailablePurchases },
+    busy: null,
     digitRec: false,
     digitCheckedAt: 0,
     digitHintShown: false,
@@ -477,15 +555,19 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         }
       }
     },
-    claim: () => {
+    claim: (doubled = false) => {
       const { state, cfg: c, offline: res, offlineBackAt } = get();
-      if (!res || offlineBackAt == null) return;
-      const r = claimOffline(state, c, res, false, localDate(offlineBackAt));
-      if ('error' in r) return;
+      if (!res || offlineBackAt == null) return false;
+      const r = claimOffline(state, c, res, doubled, localDate(offlineBackAt));
+      if ('error' in r) return false;
       // рядки перевірки показано в довідці (FR-25): insp-result не потрібен
       const last = get().inspections.last;
       const seen = last?.offline && !last.seen ? { inspections: { ...get().inspections, last: { ...last, seen: true } } } : {};
-      set({ state: r.state, offline: null, offlineBackAt: null, ...seen });
+      const claimEv: DomainEvent = { type: 'offlineIncomeClaim', isDoubled: doubled, doubleSource: doubled ? (state.hasNoAds ? 'no_ads_pass' : 'ad') : 'none', offlineDoublesToday: r.state.offlineDoubles.count };
+      // 008 FR-19: результат перевірки побачено в довідці - час для стартової пропозиції
+      const insp = last?.offline && !last.seen;
+      set({ state: r.state, offline: null, offlineBackAt: null, events: [...get().events, claimEv].slice(-40), ...(insp ? { monetization: offerDue(get().monetization) } : {}), ...seen });
+      return true;
     },
     clearToast: () => {
       const [next, ...rest] = get().toastQueue;
@@ -638,8 +720,92 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const ins = get().inspections;
       if (ins.last && !ins.last.seen) set({ inspections: { ...ins, last: { ...ins.last, seen: true } } });
       // блок «Новий експонат» показано в акті (007 FR-19)
-      set({ museum: closeInspReveal(get().museum) });
+      set({ museum: closeInspReveal(get().museum), monetization: offerDue(get().monetization) });
     },
+    watchAd: async (placement) => {
+      const g = get();
+      if (g.busy) return 'busy';
+      const noAds = g.state.hasNoAds;
+      const date = localDate(g.lastMs);
+      const blocked = (() => {
+        if (placement === 'income_boost') return boostView(g.monetization, g.effects, g.lastMs, date, g.cfg, noAds).button;
+        if (placement === 'offline_double') return offlineView(g.state, g.cfg, date).button;
+        if (placement === 'race_speedup') return raceAdView(g.monetization, g.state, g.cfg, date).button;
+        return g.inspections.active ? inspAdView(g.monetization, g.inspections.active.id, g.state).button : 'limit';
+      })();
+      if (blocked === 'limit' || blocked === 'cap') return 'blocked';
+      if (noAds) return rewardAd(placement, 'no_ads_pass') ? 'granted' : 'blocked';
+      const av = g.services.ads.availability();
+      if (av === 'no_net' || av === 'no_fill' || av === 'no_consent') {
+        pushEvent({ type: 'adFail', placement, stage: av === 'no_consent' ? 'consent_blocked' : 'not_ready' });
+        get().showToast({ kind: 'text', text: av === 'no_net' ? adT.naNet : av === 'no_consent' ? adT.naConsent : adT.nofill });
+        return 'unavailable';
+      }
+      set({ busy: 'ad' });
+      const res = await get().services.ads.show(placement);
+      set({ busy: null });
+      if (res.kind === 'earned') return rewardAd(placement, 'ad') ? 'granted' : 'blocked';
+      if (res.kind === 'closed_early') {
+        pushEvent({ type: 'adFail', placement, stage: 'closed_early' });
+        get().showToast({ kind: 'text', text: adT.closed });
+        return 'closed';
+      }
+      pushEvent({ type: 'adFail', placement, stage: res.stage, ...(res.code ? { code: res.code } : {}) });
+      get().showToast({ kind: 'text', text: adT.nofill });
+      return 'unavailable';
+    },
+    purchase: async (id) => {
+      const g = get();
+      if (g.busy) return;
+      const svc = g.services.purchases;
+      if (svc.status() !== 'ready' || g.monetization.rights[id]) return;
+      set({ busy: 'purchase' });
+      const r = await svc.purchase(id);
+      set({ busy: null });
+      if (r.kind === 'cancelled') {
+        pushEvent({ type: 'purchaseFail', productId: id, reason: 'user_cancelled' });
+      } else if (r.kind === 'pending') {
+        set({ monetization: addPending(get().monetization, id) });
+        pushEvent({ type: 'purchaseFail', productId: id, reason: 'payment_pending' });
+        get().showToast({ kind: 'text', text: iapT.pending });
+      } else if (r.kind === 'error' && r.reason === 'already_owned') {
+        // «уже куплено» - це відновлення: ефект вмикається, тост rs.ok
+        grantNow(id, true);
+        get().showToast({ kind: 'text', text: id === 'no_ads' ? iapT.restoreNoAds : iapT.restoreDone(shopT.products[id].name) });
+      } else if (r.kind === 'error') {
+        pushEvent({ type: 'purchaseFail', productId: id, reason: r.reason, ...(r.code ? { code: r.code } : {}) });
+        get().showToast({ kind: 'text', text: iapT.fail });
+      } else {
+        grantNow(id, false);
+      }
+    },
+    restore: async (trigger) => {
+      const g = get();
+      if (g.busy) return;
+      set({ busy: 'purchase' });
+      const r = await g.services.purchases.restore();
+      set({ busy: null });
+      if (r.kind === 'error') {
+        pushEvent({ type: 'purchaseRestore', trigger, isSuccess: false, restoredProductIds: [] });
+        if (trigger !== 'auto_check') get().showToast({ kind: 'text', text: iapT.restoreErr });
+        return;
+      }
+      const fresh = r.owned.filter((id) => !get().monetization.rights[id]);
+      for (const id of fresh) grantNow(id, true);
+      pushEvent({ type: 'purchaseRestore', trigger, isSuccess: r.owned.length > 0, restoredProductIds: r.owned });
+      if (trigger === 'auto_check' && !fresh.length) return;
+      if (!r.owned.length) get().showToast({ kind: 'text', text: iapT.restoreNone });
+      else if (r.owned.length === 1 && r.owned[0] === 'no_ads') get().showToast({ kind: 'text', text: iapT.restoreNoAds });
+      else get().showToast({ kind: 'text', text: iapT.restoreDone(r.owned.map((id) => `«${shopT.products[id].name}»`).join(', ')) });
+    },
+    syncPurchases: async () => {
+      const rights = await get().services.purchases.rights();
+      const g = get();
+      const r = syncRights(g.monetization, g.state, g.cfg, rights, g.lastMs);
+      if (r.ms !== g.monetization) set({ monetization: r.ms, state: r.eco });
+    },
+    closeIapSuccess: () => set({ monetization: closeSuccess(get().monetization) }),
+    ackStarterOffer: () => set({ monetization: offerShown(get().monetization) }),
     closeReveal: () => set({ museum: closeRevealMuseum(get().museum) }),
     openMuseum: (source = 'tab') => {
       const g = get();
@@ -672,7 +838,8 @@ export function gameSave(store: ConveyorStore): {
   race: RaceState;
   digitization: DigitizationState;
   museum: MuseumState;
+  monetization: MonetizationState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization };
 }

@@ -80,6 +80,8 @@ export const DEFAULTS: EconomyParams = {
   storageHours: 8,
   adsPerDay: 3,
   adHours: 4,
+  adMult: 2, // the multiplier of an ad boost (sim.js models it as the average 1 + adFrac, i.e. ×2 while it runs)
+  adCapHours: 12, // the boost stacks up to this much; the button is active while ≤ adCapHours − adHours is left
   offlineAdMult: 2, // offline income × this for an ad (or «Забрати» after the purchase)…
   offlineAdPerDay: 3, // …on the first N returns of each day
   offlineFreeMult: 3, // v7.1, decision 35: the player without ads gets offline income × this for free (no video)… (×2: finale ≈ 137 days)
