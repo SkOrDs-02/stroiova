@@ -57,9 +57,9 @@ export function RaceSheet({ store, onClose }: { store: ConveyorStore; onClose: (
             placement="race_speedup"
             view={raceAdView(s.monetization, s.state, s.cfg, localDate(s.lastMs))}
             label={adT.raceCut}
-            takeLabel={adT.raceCut}
+            takeLabel={adT.raceTake}
             note={adT.raceCutNote}
-            takeNote={adT.raceCutNote}
+            takeNote={adT.raceTakeNote}
             testID="race-ad"
           />
         ) : null}

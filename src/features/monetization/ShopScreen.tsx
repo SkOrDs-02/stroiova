@@ -81,7 +81,7 @@ export function ShopScreen({ store, insetTop }: { store: ConveyorStore; insetTop
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.restoreText}>{shopT.restore}</Text>
         </Pressable>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="shop-restore-note">
-          {busy ? shopT.restoreNoteBusy : status === 'no_net' ? shopT.restoreNoteNet : shopT.restoreNote}
+          {busy ? shopT.restoreNoteBusy : status === 'no_net' ? shopT.restoreNoteNet : status === 'no_billing' ? (android ? shopT.restoreNoteBillAndroid : shopT.restoreNoteBillIos) : shopT.restoreNote}
         </Text>
       </ScrollView>
     </View>

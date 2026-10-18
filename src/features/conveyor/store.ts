@@ -769,7 +769,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       } else if (r.kind === 'error' && r.reason === 'already_owned') {
         // «уже куплено» - це відновлення: ефект вмикається, тост rs.ok
         grantNow(id, true);
-        get().showToast({ kind: 'text', text: id === 'no_ads' ? iapT.restoreNoAds : iapT.restoreDone(shopT.products[id].name) });
+        get().showToast({ kind: 'text', text: id === 'no_ads' ? iapT.restoreNoAds : iapT.restoreDone(`«${shopT.products[id].name}»`) });
       } else if (r.kind === 'error') {
         pushEvent({ type: 'purchaseFail', productId: id, reason: r.reason, ...(r.code ? { code: r.code } : {}) });
         get().showToast({ kind: 'text', text: iapT.fail });

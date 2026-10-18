@@ -36,8 +36,8 @@ export function BoostsSheet({ store, onClose, onShop }: { store: ConveyorStore; 
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4}>{boostsT.active}</Text>
           {stack.rows.map((r, i) => (
             <View key={`${r.source}-${i}`} style={styles.row} testID={`boost-row-${r.source}`}>
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.k, styles.flex]}>{boostsT.rows[r.source] ?? r.source}</Text>
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.v}>{r.endsAtMs != null ? `${formatMult(r.value)} · ${formatCountdown((r.endsAtMs - now) / 1000)}` : formatMult(r.value)}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.k, styles.flex]}>{r.source === 'ad_boost' && s.state.hasNoAds ? boostsT.rows.ad_boost_free : (boostsT.rows[r.source] ?? r.source)}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.v}>{r.endsAtMs != null ? `${formatMult(r.value)} · ${formatCountdown((r.endsAtMs - now) / 1000)}` : r.source === 'no_ads' || r.source === 'prestige' ? `${formatMult(r.value)} · ${boostsT.forever}` : formatMult(r.value)}</Text>
             </View>
           ))}
           <View style={styles.row} testID="boost-row-museum">

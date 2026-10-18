@@ -90,7 +90,7 @@ describe('шторка бустів', () => {
 
   test.each([
     ['no_fill', 'Ролика зараз немає'],
-    ['no_net', "Немає зв'язку"],
+    ['no_net', "Немає зв’язку"],
     ['no_consent', 'без згоди'],
   ] as const)('AC-8: %s - кнопка вимкнена з причиною, ролик не показується', async (av, text) => {
     const { store, ads } = game({ ads: fakeAds({ availability: av }) });
@@ -213,7 +213,7 @@ describe('магазин і покупки', () => {
     await act(async () => shop.set({ status: 'no_net' }));
     await fireEvent.press(screen.getByTestId('tab-stroyova'));
     await fireEvent.press(screen.getByTestId('tab-shop'));
-    expect(screen.getByTestId('shop-banner')).toHaveTextContent(/Немає зв'язку/);
+    expect(screen.getByTestId('shop-banner')).toHaveTextContent(/Немає зв’язку/);
     expect(screen.getByTestId('buy-no_ads')).toBeDisabled();
     expect(screen.getByTestId('shop-restore')).toBeDisabled();
     expect(screen.getByTestId('shop-boost-ad')).toBeTruthy();

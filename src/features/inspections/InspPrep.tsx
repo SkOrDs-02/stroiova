@@ -95,6 +95,7 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
             label={adT.inspAll}
             takeLabel={adT.inspTake}
             note={() => adT.inspNote}
+            takeNote={() => adT.inspTakeNote}
             limitLabel={adT.inspLimit}
             testID="insp-ad"
           />
