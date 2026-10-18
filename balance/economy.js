@@ -259,6 +259,34 @@ var StroiovaEconomy = (() => {
     inspFailHours: 1,
     inspPushVisit: 1,
     // minutes: the player opens the game on push № 3 (2 h before arrival) if no session falls between warning and arrival; 0 = never
+    // v7.3 (003): reputation and formal replies. repTiers 0 = off (the old model: every telegram «сумлінно», «норма» forever)
+    repTiers: 0,
+    replyShare: 0,
+    // the bot's strategy: share of telegrams answered with a formal reply (no slowdown, no paper)
+    repStart: 50,
+    repLow: 35,
+    // «низька» below this
+    repHigh: 70,
+    // «висока» from this
+    repDiligent: 7,
+    // average reputation for «сумлінно» in telegrams № 1–40 (+5…+10)
+    repReply: -5,
+    // a formal reply
+    replyInspPct: 13,
+    // average inspPct of a formal reply in № 1–40
+    replyChanceLow: 1.5,
+    // the unscheduled-inspection chance × this at «низька»…
+    replyChanceHigh: 0.5,
+    // …and × this at «висока» («норма» ×1)
+    inspIntervalLowMinH: 24,
+    // scheduled inspections at «низька» (04 FR-3)…
+    inspIntervalLowMaxH: 30,
+    inspIntervalHighMinH: 36,
+    // …and at «висока»; «норма» uses inspIntervalMinH/MaxH
+    inspIntervalHighMaxH: 48,
+    unscheduledPerDay: 1,
+    // unscheduled inspections a day at most; no ×3, only the failure risk (decision 28)
+    unscheduledWarnH: 2,
     // gifts and the race (05, decision 30): service hours, act steps in hours (Акти, Комбат, Стройова, Фін.), the Казначейство step on level 2+
     gifts: {
       drone: { mult: 2, serviceH: 9, steps: [1.5, 1.8333, 1.5, 2.6667] },
