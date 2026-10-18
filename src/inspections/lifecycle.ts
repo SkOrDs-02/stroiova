@@ -9,7 +9,7 @@ import type { ChecklistItem, Inspection, InspectionOutcome, InspectionState, Ins
 
 const MIN = 60_000;
 const HOUR = 3_600_000;
-/** Захист від нескінченного циклу на дуже довгій відсутності: стільки перевірок за один tick */
+/** Технічна межа, не баланс: стільки оголошень і приїздів за один tick (≈ 60 діб відсутності при інтервалі ≥ 24 год) */
 const MAX_PER_TICK = 60;
 
 export function newInspections(installMs: number, seedText: string): InspectionState {
@@ -259,7 +259,7 @@ export function fromTelegramEvent(
     if (ev.remarkPct > 0) {
       // № 16: на активній кидок одразу, інакше — на найближчому оголошенні (рішення 66)
       if (s0.active) return out({ ...s0, active: { ...s0.active, remark: s0.active.remark || rand() < ev.remarkPct / 100 } });
-      return out({ ...s0, pendingRemarkPct: Math.min(100, s0.pendingRemarkPct + ev.remarkPct) });
+      return out({ ...s0, pendingRemarkPct: Math.max(s0.pendingRemarkPct, ev.remarkPct) });
     }
   }
   return { s: s0, events: [], addedItem: null };
@@ -280,6 +280,24 @@ function addItem(
   // ціна пункту, доданого пізніше, — від доходу в мить додавання (R3)
   const item: ChecklistItem = { id: def.id, price: priceOf(def, eco, cfg), done: false, fromTelegram: telegramId };
   return out({ ...s0, active: { ...insp, items: [...insp.items, item] } }, [{ type: 'inspectionItemAdded', id: insp.id, itemId: def.id, telegramId }], def.id);
+}
+
+/** Годинник назад (009 FR-14): усі мітки зсуваються на rawMs (< 0), щоб залишок відліку не змінився. */
+export function shiftInspections(s: InspectionState, rawMs: number): InspectionState {
+  if (rawMs >= 0) return s;
+  const sh = (t: number) => t + rawMs;
+  const a = s.active;
+  return {
+    ...s,
+    nextArrMs: s.nextArrMs == null ? null : sh(s.nextArrMs),
+    active: a && {
+      ...a,
+      annMs: sh(a.annMs),
+      arrMs: sh(a.arrMs),
+      items: a.items.map((i) => (i.doneAtMs == null ? i : { ...i, doneAtMs: sh(i.doneAtMs) })),
+    },
+    last: s.last && { ...s.last, arrMs: sh(s.last.arrMs) },
+  };
 }
 
 export type BuyError = 'no_active' | 'unknown' | 'done' | 'short';

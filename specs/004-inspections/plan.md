@@ -70,7 +70,8 @@ src/inspections/               # чистий домен
 ├── offline.ts                 # рядки довідки (FR-24, FR-25)
 └── __tests__/
 src/features/inspections/      # екрани
-├── InspWarning.tsx · InspPrep.tsx · InspResult.tsx · InspBanner.tsx · present.ts · texts.ts
+├── InspCall.tsx · InspWarning.tsx · InspPrep.tsx · InspResult.tsx · present.ts · texts.ts · useTumbLine.ts
+src/features/main/MainScreen.tsx  # черга модалок перевірки, банер
 src/features/conveyor/store.ts # зріз inspections, tick/away → перевірки перед доходом
 src/features/conveyor/OfflineReturn.tsx  # рядки перевірки
 src/save/schema.ts, migrations.ts        # схема 4

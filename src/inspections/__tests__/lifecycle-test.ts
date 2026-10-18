@@ -5,7 +5,7 @@ import { newGame } from '@/economy/game/state';
 import type { DomainEvent, EconomyState } from '@/economy/game/types';
 
 import { baseChecklist } from '../checklist';
-import { buyItem, fromTelegramEvent, newInspections, onSessionStart, readiness, shortfall, tick } from '../lifecycle';
+import { buyItem, fromTelegramEvent, newInspections, onSessionStart, readiness, shiftInspections, shortfall, tick } from '../lifecycle';
 import { offlineLines } from '../offline';
 import { arrWindow, firstDue, localHour, nextArrival } from '../schedule';
 import type { InspectionState } from '../types';
@@ -227,5 +227,31 @@ describe('позапланові (FR-5…FR-7)', () => {
     // друга на тій самій комісії — без модалки (FR-9)
     const r2 = tick({ ...s0, bossesSeen: ['brigade_commission', 'command_commission'] }, eco({ level: 2 }), cfg, ctx(at(12), at(12, 30)));
     expect(r2.s.active!.modal).toBe(false);
+  });
+});
+
+describe('крайові випадки', () => {
+  test('AC-20: позапланова 3 з 5 — провалили, Стройова ×0,5 на 1 год', () => {
+    const s0 = { ...newInspections(at(0), 'x'), nextNo: 2 };
+    const r = fromTelegramEvent(s0, eco(), cfg, { type: 'unscheduledInspection', telegramId: 'tg_0002_less_paper', warnSec: 7200, extraItem: null }, at(12), TZ, 50);
+    const a = r.s.active!;
+    const part = { ...r.s, active: { ...a, items: a.items.map((i, k) => ({ ...i, done: k < 3 })) } };
+    const t = tick(part, eco(), cfg, ctx(at(12), a.arrMs));
+    expect(t.s.last).toMatchObject({ passed: false, trigger: 'unscheduled' });
+    expect(t.effects).toEqual([{ kind: 'factor', source: 'inspection_fail', value: 0.5, target: { type: 'stage', id: 'stroy' }, startMs: a.arrMs, endMs: a.arrMs + HOUR }]);
+  });
+
+  test('годинник назад (009 FR-14): мітки зсуваються, залишок відліку той самий', () => {
+    const s = firstAnnounced();
+    const sh = shiftInspections(s, -2 * HOUR);
+    expect(sh.active!.arrMs).toBe(s.active!.arrMs - 2 * HOUR);
+    expect(sh.active!.annMs).toBe(s.active!.annMs - 2 * HOUR);
+    expect(shiftInspections(s, 5000)).toBe(s);
+  });
+
+  test('№ 16 двічі до перевірки — шанс не сумується (рішення 66: +20%)', () => {
+    const ev = { type: 'inspItem' as const, telegramId: 'tg_0016', item: null, remarkPct: 20 };
+    const a = fromTelegramEvent(newInspections(at(0), 'x'), eco(), cfg, ev, at(10), TZ, 50).s;
+    expect(fromTelegramEvent(a, eco(), cfg, ev, at(11), TZ, 50).s.pendingRemarkPct).toBe(20);
   });
 });

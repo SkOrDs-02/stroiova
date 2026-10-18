@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   item: { flexDirection: 'row', alignItems: 'center', gap: space[12], minHeight: size.touchMin, padding: space[12], borderRadius: radius[10], backgroundColor: color.surface, borderWidth: 1, borderColor: color.border },
   itemDone: { borderColor: color.accent },
   itemOff: { backgroundColor: color.bgDeep },
-  box: { width: space[20], height: space[20], borderRadius: radius[4], borderWidth: 1.5, borderColor: color.borderStrong, alignItems: 'center', justifyContent: 'center' },
+  box: { width: space[20], height: space[20], borderRadius: radius[4], borderWidth: 2, borderColor: color.borderStrong, alignItems: 'center', justifyContent: 'center' },
   boxOn: { backgroundColor: color.accent, borderColor: color.accent },
   tick: { ...type('caption'), color: color.accentInk, fontWeight: typeScale.cta.fontWeight },
   itemText: { flex: 1, gap: space[2] },

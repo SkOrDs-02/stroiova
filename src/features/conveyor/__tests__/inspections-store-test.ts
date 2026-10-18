@@ -1,6 +1,7 @@
 // 004 у сторі: перша на старті сесії (AC-1), купівля пункту, офлайн з ×3 (AC-15), 003 FR-15 після першої планової.
 import { bundledConfig } from '@/economy/config';
-import { createConveyorStore } from '@/features/conveyor/store';
+import { income, multStack } from '@/economy/game/income';
+import { createConveyorStore, gameSave } from '@/features/conveyor/store';
 import { onboardingDone } from '@/save/migrations';
 
 const HOUR = 3_600_000;
@@ -73,5 +74,48 @@ describe('перевірки в сторі', () => {
     expect(ok.getState().offline!.earned).toBeGreaterThan(bad.getState().offline!.earned);
     ok.getState().claim();
     expect(ok.getState().inspections.last!.seen).toBe(true);
+  });
+});
+
+describe('перевірки в сторі: крайові', () => {
+  test('AC-11, AC-21: провал — дохід більший за 0, тап дає tapValue × M; репутація та сама, reputationTierChange немає', () => {
+    const store = installed();
+    store.getState().away(local(9, 5), local(18));
+    const a = store.getState().inspections.active!;
+    const rep = store.getState().telegrams.reputation.value;
+    store.getState().tick(a.arrMs + 60_000);
+    const st = store.getState();
+    expect(st.inspections.last!.passed).toBe(false);
+    expect(st.effects.some((e) => e.source === 'inspection_fail')).toBe(true);
+    const inc = income(st.state, st.cfg, st.lastMs, st.effects);
+    expect(inc.perMin).toBeGreaterThan(0);
+    const M = multStack(st.state, st.cfg, st.lastMs, st.effects).total;
+    const before = st.state.signatures;
+    st.tapSeal(st.lastMs + 1);
+    expect(store.getState().state.signatures - before).toBeCloseTo(st.cfg.params.tapValue * M, 6);
+    expect(st.telegrams.reputation.value).toBe(rep);
+    expect(st.events.some((e) => e.type === 'reputationTierChange')).toBe(false);
+  });
+
+  test('AC-19: вбивство застосунку — пункти, відлік і id ті самі після запису й відкриття', () => {
+    const store = installed();
+    store.getState().away(local(9, 5), local(18));
+    const a = store.getState().inspections.active!;
+    for (const it of a.items.slice(0, 3)) store.getState().buyInspItem(it.id);
+    const saved = JSON.parse(JSON.stringify(gameSave(store)));
+    const again = createConveyorStore(local(18, 30), bundledConfig, { ...saved, state: saved.economy });
+    again.getState().away(local(18, 1), local(18, 30));
+    const b = again.getState().inspections.active!;
+    expect(b.id).toBe(a.id);
+    expect(b.arrMs).toBe(a.arrMs);
+    expect(b.items.filter((i) => i.done)).toHaveLength(3);
+  });
+
+  test('годинник назад: відлік до комісії не стрибає (009 FR-14)', () => {
+    const store = installed();
+    store.getState().away(local(9, 5), local(18));
+    const left = store.getState().inspections.active!.arrMs - store.getState().lastMs;
+    store.getState().away(local(18), local(17));
+    expect(store.getState().inspections.active!.arrMs - store.getState().lastMs).toBe(left);
   });
 });

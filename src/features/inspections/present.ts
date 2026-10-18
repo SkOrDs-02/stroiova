@@ -13,7 +13,7 @@ export function reasonText(telegramId: string): string {
 }
 
 export function itemTitle(id: string): string {
-  return inspT.item[id]?.title ?? id;
+  return inspT.item[id]?.title ?? '';
 }
 
 /** Підпис пункту: з артборда, а для доданого з телеграми — «Додано після відписки на № N» (insp.added). */

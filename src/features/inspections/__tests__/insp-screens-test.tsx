@@ -5,6 +5,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { bundledConfig } from '@/economy/config';
 import { createConveyorStore } from '@/features/conveyor/store';
 import { MainScreen } from '@/features/main/MainScreen';
+import { fromTelegramEvent } from '@/inspections/lifecycle';
 import type { InspectionState } from '@/inspections/types';
 import { onboardingDone } from '@/save/migrations';
 
@@ -121,5 +122,49 @@ describe('екрани перевірок', () => {
     expect(rows[1]).toHaveTextContent(/Множник за перевірку.*×3 ще 1 год/);
     await fireEvent.press(screen.getByTestId('offline-claim'));
     expect(screen.queryByTestId('insp-result')).toBeNull();
+  });
+});
+
+describe('екрани перевірок: позапланові й повернення', () => {
+  test('AC-5: позапланова — insp-warning з причиною «№ 4471 «…»»', async () => {
+    const store = game();
+    const ins = fromTelegramEvent({ ...store.getState().inspections, nextNo: 2, bossesSeen: ['brigade_commission'] }, store.getState().state, bundledConfig, { type: 'unscheduledInspection', telegramId: 'tg_0001_sergeants', warnSec: 7200, extraItem: 'sergeants_count' }, local(12), 0, 50).s;
+    store.setState({ inspections: ins, lastMs: local(12) });
+    await render(<MainScreen store={store} />);
+    expect(screen.getByTestId('insp-warning')).toHaveTextContent(/Позапланова перевірка/);
+    expect(screen.getByTestId('insp-reason')).toHaveTextContent(/Причина: відписка на телеграму № 4471/);
+  });
+
+  test('AC-6: відписка під час активної — пункт додано, тост «Комісія додала пункт»', async () => {
+    let shown = false;
+    for (let seed = 1; seed < 200 && !shown; seed++) {
+      const store = announced();
+      const a = store.getState().inspections.active!;
+      const tg = store.getState().telegrams;
+      store.setState({
+        inspections: { ...store.getState().inspections, callPending: false, active: { ...a, warned: true } },
+        telegrams: { ...tg, rng: seed, firstInspectionPassed: true, inbox: [{ uid: 'tg_0001_sergeants#1', id: 'tg_0001_sergeants', kind: 'telegram', receivedAt: local(18), status: 'new' }] },
+      });
+      store.getState().answerTelegram('tg_0001_sergeants#1', 'formal_reply');
+      if (store.getState().inspections.active!.items.some((i) => i.id === 'sergeants_count')) {
+        shown = true;
+        expect(store.getState().inspections.active!.id).toBe(a.id);
+        expect(store.getState().toast).toEqual({ kind: 'text', text: 'Комісія додала пункт: Сержанти' });
+      }
+    }
+    expect(shown).toBe(true);
+  });
+
+  test('AC-4: оголошення без гравця — спершу offline-return, потім insp-warning і банер', async () => {
+    const store = game();
+    await act(async () => store.getState().away(local(9, 5), local(18)));
+    await render(<MainScreen store={store} />);
+    expect(screen.getByTestId('offline-return')).toBeTruthy();
+    expect(screen.queryByTestId('insp-call')).toBeNull();
+    await fireEvent.press(screen.getByTestId('offline-claim'));
+    expect(screen.getByTestId('insp-call')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('insp-call-ok'));
+    await fireEvent.press(screen.getByTestId('insp-later'));
+    expect(screen.getByTestId('insp-banner')).toBeTruthy();
   });
 });

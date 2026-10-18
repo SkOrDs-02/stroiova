@@ -11,7 +11,7 @@ import { absence, isNewSession, shiftTimers } from '@/economy/game/time';
 import type { BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, StoredEffect, UnitRef } from '@/economy/game/types';
 import { complete, isDone, isFullScreenStep, newOnboarding, receiveTg1, type CompleteExtra, type OnboardingState, type StepNo } from '@/features/onboarding/steps';
 import { inspT } from '@/features/inspections/texts';
-import { buyItem as buyInsp, fromTelegramEvent as inspFromTelegram, newInspections, onSessionStart as inspSessionStart, tick as tickInsp } from '@/inspections/lifecycle';
+import { shiftInspections, buyItem as buyInsp, fromTelegramEvent as inspFromTelegram, newInspections, onSessionStart as inspSessionStart, tick as tickInsp } from '@/inspections/lifecycle';
 import type { InspectionState } from '@/inspections/types';
 import { dayKey } from '@/telegrams/clock';
 import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
@@ -183,7 +183,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     // «Готуватися» з tg-result відкриває insp-prep; insp-warning після цього не потрібен
     if (prep && insp.active) insp = { ...insp, active: { ...insp.active, warned: true } };
     set({ telegrams: tg, inspections: insp, effects, events: [...get().events, ...out].slice(-40), ...(prep ? { inspPrepOpen: true } : {}) });
-    for (const id of added) get().showToast({ kind: 'text', text: inspT.toastItem(inspT.item[id]?.short ?? id) });
+    for (const id of added) {
+      const short = inspT.item[id]?.short;
+      if (short) get().showToast({ kind: 'text', text: inspT.toastItem(short) });
+    }
     for (const e of evs) {
       if (e.type === 'reputationTierChange') get().showToast({ kind: 'rep', tier: e.to });
       // Граніт у «знайшли» — репліка персонажа, у ліміті сесії
@@ -255,7 +258,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (a.clockBack) {
         // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
         const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects as StoredEffect[], lastMs: backAt, toast: { kind: 'clockBack' } });
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), lastMs: backAt, toast: { kind: 'clockBack' } });
         return;
       }
       const res = offline(state, c, leftAt, backAt, effects);

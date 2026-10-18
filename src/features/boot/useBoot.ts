@@ -4,7 +4,7 @@ import * as Crypto from 'expo-crypto';
 import { useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { bundledConfig } from '@/economy/config';
+import { bundledConfig, withBundled } from '@/economy/config';
 import { isNewSession } from '@/economy/game/time';
 import type { EconomyConfig, EconomyState } from '@/economy/game/types';
 import { createConveyorStore, gameSave, type ConveyorStore, type StoredEffect } from '@/features/conveyor/store';
@@ -68,8 +68,7 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     return store;
   }
   const pinned = save.economyConfig as EconomyConfig | null;
-  // параметри фіч, яких не було в закріпленому конфігу (003, 004…), беруться з вбудованого: числа економіки — закріплені
-  const cfg: EconomyConfig = pinned ? { ...pinned, source: 'cached', params: { ...bundledConfig.params, ...pinned.params } } : bundledConfig;
+  const cfg: EconomyConfig = pinned ? withBundled(pinned) : bundledConfig;
   const store = createConveyorStore(save.savedAt, cfg, {
     state: save.game.economy as EconomyState,
     effects: save.game.effects as StoredEffect[],
