@@ -8,11 +8,9 @@ import { catTap, refuel, tap } from '@/economy/game/actions';
 import { buy, hire, isOk } from '@/economy/game/purchase';
 import { newGame } from '@/economy/game/state';
 import { absence, shiftTimers } from '@/economy/game/time';
-import type { BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, UnitRef } from '@/economy/game/types';
+import type { BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, StoredEffect, UnitRef } from '@/economy/game/types';
 import { complete, isFullScreenStep, newOnboarding, receiveTg1, type CompleteExtra, type OnboardingState, type StepNo } from '@/features/onboarding/steps';
-
-/** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті (002 R3). */
-export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };
+export type { StoredEffect } from '@/economy/game/types';
 
 export type Toast =
   | { kind: 'offline'; amount: number }

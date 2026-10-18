@@ -18,31 +18,31 @@ description: "Задачі: 003 Телеграми й репутація — е�
 
 ## Phase 1: Setup
 
-- [ ] T001 [P] `src/telegrams/types.ts`: `Telegram`, `Choice`, `Effects` (ключі з spec «Модель даних»), `InboxItem`, `TelegramState`, `Timer` (data-model.md)
-- [ ] T002 [P] `src/telegrams/rng.ts`: LCG зі станом (R1); тест: той самий seed — та сама послідовність, різні seed — різні
-- [ ] T003 [P] `src/telegrams/content.ts`: пули з `content/telegrams.json` і `content/tg/level1-2.json`, індекс за id, `poolFor(level)` (FR-7: Р2 бере й Р1); тест: № 1 сценарна, № 13 `repeatEveryDays`, override-шаблон окремо
+- [X] T001 [P] `src/telegrams/types.ts`: `Telegram`, `Choice`, `Effects` (ключі з spec «Модель даних»), `InboxItem`, `TelegramState`, `Timer` (data-model.md)
+- [X] T002 [P] `src/telegrams/rng.ts`: LCG зі станом (R1); тест: той самий seed — та сама послідовність, різні seed — різні
+- [X] T003 [P] `src/telegrams/content.ts`: пули з `content/telegrams.json` і `content/tg/level1-2.json`, індекс за id, `poolFor(level)` (FR-7: Р2 бере й Р1); тест: № 1 сценарна, № 13 `repeatEveryDays`, override-шаблон окремо
 
 ## Phase 2: Foundational
 
-- [ ] T004 `src/telegrams/reputation.ts`: `applyDelta` (0–100), `repTier`, `replyChance` (p = 0 до `firstInspectionPassed`, ×`replyChanceLow`/1/`replyChanceHigh`, щит при P_total ≥ 1), історія ≤ 3; тести AC-9, AC-10, AC-11, AC-15 (домен)
+- [X] T004 `src/telegrams/reputation.ts`: `applyDelta` (0–100), `repTier`, `replyChance` (p = 0 до `firstInspectionPassed`, ×`replyChanceLow`/1/`replyChanceHigh`, щит при P_total ≥ 1), історія ≤ 3; тести AC-9, AC-10, AC-11, AC-15 (домен)
 - [ ] T005 `src/save/schema.ts`, `migrations.ts`: `CURRENT_SCHEMA = 3`, zod `telegramStateSchema`, міграція 2 → 3 (порожній стан; № 1 в архіві, якщо онбординг уже відповів); тест на фікстуру v2
-- [ ] T006 `src/economy/game/types.ts`: `DomainEvent` + події 003 (data-model.md)
+- [X] T006 `src/economy/game/types.ts`: `DomainEvent` + події 003 (data-model.md)
 
 ## Phase 3: US2 — відповідь і ефекти (P1) 🎯
 
 **Independent Test**: AC-7, AC-12, AC-13, AC-14 (рядки), AC-22 (notice)
 
-- [ ] T007 [P] [US2] `src/telegrams/__tests__/effects-test.ts`: AC-7 (сумлінно на № 1: Стройова ×0,5 рівно 1 год, «на виконанні» до кінця, репутація 50 → 60, потім архів); AC-13 (4 аркуші → варіант на 5 неактивний, «Бракує 1 аркуша»); AC-12 (шухляда № 16 → через 24 год −5; відповідь з шухляди через 3 год скасовує); `roll`, `fuel` (№ 24), прапорці (№ 23 → № 28), `ifNoClerk`, `queueNext` (№ 5 → № 22, № 17); notice № 4581 → архів «до відома», подія `journal`
-- [ ] T008 [US2] `src/telegrams/effects.ts`: `canChoose`, `answer` (R4), атомарно: стан, економіка, ефекти, події, `result`
-- [ ] T009 [US2] `src/telegrams/timers.ts`: `delayed`, `returnsAfterHours`, `followUps` (`ifChoice`), «на виконанні» → архів; спрацьовують і за відсутності (FR-17)
+- [X] T007 [P] [US2] `src/telegrams/__tests__/effects-test.ts`: AC-7 (сумлінно на № 1: Стройова ×0,5 рівно 1 год, «на виконанні» до кінця, репутація 50 → 60, потім архів); AC-13 (4 аркуші → варіант на 5 неактивний, «Бракує 1 аркуша»); AC-12 (шухляда № 16 → через 24 год −5; відповідь з шухляди через 3 год скасовує); `roll`, `fuel` (№ 24), прапорці (№ 23 → № 28), `ifNoClerk`, `queueNext` (№ 5 → № 22, № 17); notice № 4581 → архів «до відома», подія `journal`
+- [X] T008 [US2] `src/telegrams/effects.ts`: `canChoose`, `answer` (R4), атомарно: стан, економіка, ефекти, події, `result`
+- [X] T009 [US2] `src/telegrams/timers.ts`: `delayed`, `returnsAfterHours`, `followUps` (`ifChoice`), «на виконанні» → архів; спрацьовують і за відсутності (FR-17)
 
 ## Phase 4: US1 — розклад і доставка (P1)
 
 **Independent Test**: AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-23, AC-25
 
-- [ ] T010 [P] [US1] `src/telegrams/__tests__/schedule-test.ts`: AC-2 (3 доби: 2–4 на добу, 08–22, ≥ 2 год, «Нових» ≤ 5); AC-3 (10 год відсутності, 2 слоти → 2 телеграми з мітками слотів); AC-4 (жовтень, без гонки, 0 цифровізацій: № 4, 20, 25, 31–35 не приходять; № 13 знову через 7 діб); AC-5; AC-6; AC-23 (повтор архівних); AC-25 (30 слотів без повторів, два seed — різний порядок)
-- [ ] T011 [US1] `src/telegrams/schedule.ts`: план доби (R2), `tick` з доставкою слотів і таймерами, `tzOffsetMin`
-- [ ] T012 [US1] `src/telegrams/bag.ts`: мішок, умови `schedule`, черга, повтор архівних (R3)
+- [X] T010 [P] [US1] `src/telegrams/__tests__/schedule-test.ts`: AC-2 (3 доби: 2–4 на добу, 08–22, ≥ 2 год, «Нових» ≤ 5); AC-3 (10 год відсутності, 2 слоти → 2 телеграми з мітками слотів); AC-4 (жовтень, без гонки, 0 цифровізацій: № 4, 20, 25, 31–35 не приходять; № 13 знову через 7 діб); AC-5; AC-6; AC-23 (повтор архівних); AC-25 (30 слотів без повторів, два seed — різний порядок)
+- [X] T011 [US1] `src/telegrams/schedule.ts`: план доби (R2), `tick` з доставкою слотів і таймерами, `tzOffsetMin`
+- [X] T012 [US1] `src/telegrams/bag.ts`: мішок, умови `schedule`, черга, повтор архівних (R3)
 
 ## Phase 5: US3 — репутація в інтерфейсі й стор (P1)
 
@@ -64,8 +64,8 @@ description: "Задачі: 003 Телеграми й репутація — е�
 
 **Independent Test**: AC-17, AC-18, AC-19, AC-20, AC-21
 
-- [ ] T019 [P] [US5] `src/telegrams/__tests__/events-test.ts`: AC-17 (override при P_total 0 і 2), AC-20 (комбат: ×0,25 ≤ 30 хв, посильний = 4 хв базового доходу, «знайшли» через 3 хв), AC-21 (≤ 1 на добу; № 18 «на стіл» 50%)
-- [ ] T020 [US5] `src/telegrams/events.ts`: override у слоті (R6), комбат на старті сесії й з № 18, посильний
+- [X] T019 [P] [US5] `src/telegrams/__tests__/events-test.ts`: AC-17 (override при P_total 0 і 2), AC-20 (комбат: ×0,25 ≤ 30 хв, посильний = 4 хв базового доходу, «знайшли» через 3 хв), AC-21 (≤ 1 на добу; № 18 «на стіл» 50%)
+- [X] T020 [US5] `src/telegrams/events.ts`: override у слоті (R6), комбат на старті сесії й з № 18, посильний
 - [ ] T021 [US5] `src/features/telegrams/KombatSheet.tsx` (артборд `KombatSheet`), стан «комбата шукають» на `main`
 - [ ] T022 [P] [US4] `src/features/telegrams/TelegramFlag.tsx` (артборд `TgFlag`): 4 причини, коментар ≤ 280, «Позначено», без впливу на гру; тест AC-18
 - [ ] T023 [P] [US6] `src/features/telegrams/NoteDetail.tsx` (артборд `NoteDetail`, «підсумок дзвінка» з 002); тест AC-19
