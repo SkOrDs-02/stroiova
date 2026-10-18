@@ -22,6 +22,7 @@ export function JournalNew({ store }: { store: ConveyorStore }) {
   if (!r || !j) return null;
   const last = !s.museum.reveal.some((x) => x !== r && x.via === 'other');
   return (
+    <>
     <View style={styles.scrim} testID="journal-new">
       <View style={styles.wrap} accessibilityViewIsModal>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2} accessibilityRole="header">{muT.newTitle}</Text>
@@ -40,8 +41,10 @@ export function JournalNew({ store }: { store: ConveyorStore }) {
         <Button testID="jn-next" label={last ? muT.done : muT.next} onPress={s.closeReveal} />
         <Button testID="jn-detail" label={muT.detail} variant="ghost" onPress={() => setDetail(j.no)} />
       </View>
-      {detail != null ? <JournalDetail store={store} no={detail} onClose={() => setDetail(null)} /> : null}
     </View>
+    {/* шторка поряд зі scrim, а не всередині: модальне вікно приховує від доступності все, що поряд з ним */}
+    {detail != null ? <JournalDetail store={store} no={detail} onClose={() => setDetail(null)} /> : null}
+    </>
   );
 }
 
