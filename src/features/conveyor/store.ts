@@ -15,6 +15,9 @@ import { shiftInspections, buyItem as buyInsp, fromTelegramEvent as inspFromTele
 import type { InspectionState } from '@/inspections/types';
 import { digitalSpeedup, fromTelegram as raceFromTelegram, newRace, resume as raceResume, shiftRace, tick as tickRace } from '@/race/race';
 import type { RaceState } from '@/race/types';
+import { closeCeremonyStep, digitize as digitizeNow, newDigitization, shiftDigitization, status as digitStatus } from '@/digitization/digitization';
+import type { DigitizationState } from '@/digitization/types';
+import { digitT } from '@/features/digitization/texts';
 import { dayKey } from '@/telegrams/clock';
 import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
 import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } from '@/telegrams/effects';
@@ -60,6 +63,14 @@ interface Store {
   inspPrepOpen: boolean;
   /** Гонка з часом (005) */
   race: RaceState;
+  /** Цифровізація (006) */
+  digit: DigitizationState;
+  /** Підказка «Час цифровізуватися» активна (FR-9); оновлюється раз на хвилину гри, лише в пам'яті */
+  digitRec: boolean;
+  /** Остання перевірка підказки, мс */
+  digitCheckedAt: number;
+  /** `digitization_hint_show` уже надіслано цієї сесії (FR-10) */
+  digitHintShown: boolean;
   /** Репліки персонажів цієї сесії (рішення 45: ≤ 2 за сесію); лише в пам'яті */
   sessionLines: { count: number; byUid: Record<string, string> };
   /** Тапи першого акта; лише в пам'яті: після вбивства «0 з 8» (002 R4) */
@@ -133,6 +144,12 @@ interface Store {
   ackGift: () => void;
   /** race-won / race-lost закрито */
   closeRaceResult: () => void;
+  /** Цифровізація (006 FR-14…FR-17); false — недоступно чи вже йде церемонія */
+  digitize: (fromHint?: boolean) => boolean;
+  /** Закрити крок церемонії: digit-result → level-up → кінець (FR-21, FR-25) */
+  closeDigitStep: () => void;
+  /** Картку «Як це працює» показано (FR-12) */
+  ackDigitHow: () => void;
 }
 
 /** Рішення 59: до закриття кроку 7 наймати можна лише діловода «Стройової частини». */
@@ -163,6 +180,7 @@ export interface Initial {
   telegrams?: TelegramState;
   inspections?: InspectionState;
   race?: RaceState;
+  digit?: DigitizationState;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -232,6 +250,22 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     return text;
   };
   /**
+   * Підказка «Час цифровізуватися» (006 FR-8…FR-10): умова перевіряється раз на хвилину гри; подія — раз за сесію.
+   */
+  const DIGIT_HINT_EVERY_MS = 60_000;
+  const checkDigitHint = (now: number, force = false) => {
+    const g = get();
+    if (!force && now - g.digitCheckedAt < DIGIT_HINT_EVERY_MS) return;
+    const st = digitStatus(g.state, g.digit, g.cfg, now, g.effects);
+    const patch: Partial<Store> = { digitCheckedAt: now };
+    if (st.recommended !== g.digitRec) patch.digitRec = st.recommended;
+    if (st.recommended && !g.digitHintShown) {
+      patch.digitHintShown = true;
+      patch.events = [...g.events, { type: 'digitizationHint' as const, etaSec: st.etaSec ?? 0, points: st.points, pointsTotal: g.state.prestigePoints, isFirst: g.digit.total === 0 }].slice(-40);
+    }
+    set(patch);
+  };
+  /**
    * Перевірки в (from, to] (004): оголошення й приїзди. Іде перед доходом: ×3 чи сповільнення з мітками приїзду
    * вже в ефектах, коли економіка ріже інтервал (01 FR-24).
    */
@@ -244,7 +278,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       tzOffsetMin: tzOffsetAt(to),
       offline,
       reputation: g.telegrams.reputation.value,
-      digitizations: 0, // лічильник цифровізацій з'явиться з 06
+      digitizations: g.digit.total,
     });
     if (r.s === g.inspections && !r.events.length) return;
     // 003 FR-15: після першої планової відписки можуть кликати позапланові
@@ -279,7 +313,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       nowMs: to,
       tzOffsetMin: tzOffsetAt(to),
       level: g.state.level,
-      digitizations: 0, // лічильник цифровізацій з'явиться з 06
+      digitizations: g.digit.total,
       raceActive: g.race.active?.type ?? null,
       away,
     });
@@ -293,7 +327,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (a.clockBack) {
         // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
         const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), lastMs: backAt, toast: { kind: 'clockBack' } });
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), digit: shiftDigitization(get().digit, a.rawMs), digitCheckedAt: 0, lastMs: backAt, toast: { kind: 'clockBack' } });
         return;
       }
       const res = offline(state, c, leftAt, backAt, effects);
@@ -316,6 +350,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     inspections: init?.inspections ?? newInspections(nowMs, `insp-${nowMs}`),
     inspPrepOpen: false,
     race: init?.race ?? newRace(`race-${nowMs}`),
+    digit: init?.digit ?? newDigitization(nowMs),
+    digitRec: false,
+    digitCheckedAt: 0,
+    digitHintShown: false,
     sessionLines: { count: 0, byUid: {} },
     // крок 5 закривається кінцем анімації ПОГОДЖЕНО; якщо застосунок вбито під час неї, акт уже підписано (FR-28)
     actTaps: init?.onboarding?.step === 5 ? ACT_TAPS : 0,
@@ -345,6 +383,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       });
       runTelegrams(lastMs, now, false);
       resumeRaceIfFree(now);
+      checkDigitHint(now);
     },
     tapSeal: (now) => {
       const { state, cfg: c, effects, onboarding: o, lastMs } = get();
@@ -360,6 +399,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({ state: r.state, events: [...get().events, ...r.events].slice(-20), ...(firstUpgrade ? { pinned: c } : {}) });
       // 002 FR-16: крок 6 закриває перша покупка рівня
       if (purchased) get().onbComplete(6);
+      // 006 FR-9: підказка зникає, щойно умова хибна (після покупки наступна покупка далі)
+      checkDigitHint(now, true);
     },
     hire: (ref) => {
       if (!canHireNow(get().onboarding, ref)) return;
@@ -386,7 +427,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       runTelegrams(leftAt, Math.max(leftAt, backAt), true);
       resumeRaceIfFree(backAt);
       if (isNewSession(leftAt, backAt)) {
-        set({ sessionLines: { count: 0, byUid: {} } });
+        set({ sessionLines: { count: 0, byUid: {} }, digitHintShown: false });
         const g = get();
         const k = onSessionStart(g.telegrams, g.cfg, backAt, tzOffsetAt(backAt), false);
         // чинна подія не накладається: ×0,25 не множиться вдруге (рішення 25)
@@ -505,7 +546,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (item) handleEvents([{ type: 'inspectionPrepare', telegramId: item.id }], get().lastMs);
     },
     kavaLineFor: (uid) => characterLine('kava.tg_new', uid),
-    // перевірки — поза лімітом 2 реплік за сесію (рішення 45); Ліна (гонка) — у ліміті
+    // перевірки й цифровізація — поза лімітом 2 реплік за сесію (рішення 45, 74); Ліна (гонка) — у ліміті (рішення 70)
     tumbLine: (key, slot) => (key.startsWith('lina.') ? characterLine(key, slot) : eventLine(key, slot)),
     raceDigital: () => {
       const g = get();
@@ -518,6 +559,23 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const rc = get().race;
       if (rc.active && !rc.active.seen) set({ race: { ...rc, active: { ...rc.active, seen: true } } });
     },
+    digitize: (fromHint = false) => {
+      const g = get();
+      const r = digitizeNow(g.state, g.digit, g.cfg, g.lastMs, fromHint);
+      if ('error' in r) return false;
+      // L і підписи в нуль, нові потоки: ціни й дохід інші, тож підказка перераховується
+      set({ state: r.state, digit: { ...r.ds, howSeen: true }, digitRec: false, events: [...g.events, ...r.events].slice(-40) });
+      return true;
+    },
+    closeDigitStep: () => {
+      const g = get();
+      const c = g.digit.ceremony;
+      const next = closeCeremonyStep(g.digit);
+      set({ digit: next });
+      // перехід на Р2: unit-unlock і coach Казначейства замінює тост k.tip (рішення 71, 73)
+      if (c?.step === 'levelUp') get().showToast({ kind: 'text', text: digitT.kTip });
+    },
+    ackDigitHow: () => set({ digit: { ...get().digit, howSeen: true } }),
     closeRaceResult: () => {
       const rc = get().race;
       if (rc.last && !rc.last.seen) set({ race: { ...rc, last: { ...rc.last, seen: true } } });
@@ -567,7 +625,8 @@ export function gameSave(store: ConveyorStore): {
   telegrams: TelegramState;
   inspections: InspectionState;
   race: RaceState;
+  digitization: DigitizationState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit };
 }

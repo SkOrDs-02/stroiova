@@ -1,0 +1,22 @@
+// Підписи цифровізації (006): доріжка рівнів, назви журналів.
+import museum from '../../../content/museum.json';
+
+import { digitT } from './texts';
+
+const JOURNALS = new Map<number, string>((museum.journals as { no: number; title: string }[]).map((j) => [j.no, j.title]));
+
+export function journalTitle(no: number): string {
+  return JOURNALS.get(no) ?? `№ ${no}`;
+}
+
+export type TrackKey = keyof typeof digitT.track;
+const KEYS: TrackKey[] = ['batalion', 'bryhada', 'command', 'general', 'paperless'];
+
+/** Доріжка з 5 рівнів (FR-11, FR-28): пройдено / зараз / після 3-ї / пізніше. */
+export function track(level: number): { key: TrackKey; name: string; state: string }[] {
+  return KEYS.map((key, i) => {
+    const n = i + 1;
+    const state = n < level ? digitT.trackState.done : n === level ? digitT.trackState.now : n === level + 1 && level === 1 ? digitT.trackState.after3 : digitT.trackState.later;
+    return { key, name: digitT.track[key], state };
+  });
+}

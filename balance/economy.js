@@ -280,6 +280,7 @@ var StroiovaEconomy = (() => {
       { id: "orders_stitch", level: 2, min: 28 },
       { id: "where_journal", level: 2, min: 21, added: true }
     ],
+    digitJournals: { "1": { "1": [1, 2, 3], "2": [4, 5] }, "2": { "1": [9], "2": [10], "3": [11] } },
     inspPushVisit: 1,
     // minutes: the player opens the game on push № 3 (2 h before arrival) if no session falls between warning and arrival; 0 = never
     // v7.3 (003): reputation and formal replies. repTiers 0 = off (the old model: every telegram «сумлінно», «норма» forever)

@@ -3918,101 +3918,116 @@
         "text": "Тепер підписую пачкою, з телефона. Шукати мене вже не треба.",
         "chars": 60,
         "source": "texts.md §4, Граніт",
-        "review": false
+        "review": false,
+        "speaker": "Граніт"
       },
       {
         "id": "digit.line.02",
         "text": "Друкувати телеграми тепер заборонено. Тому читаю з твого монітора.",
         "chars": 66,
         "source": "texts.md §4, Кава",
-        "review": false
+        "review": false,
+        "speaker": "Кава"
       },
       {
         "id": "digit.line.03",
-        "text": "Шістнадцять журналів скасували? Я в них писав. Не шкодую.",
-        "chars": 57,
-        "source": "texts.md §4, Археолог",
-        "review": false
+        "text": "Журнали скасували? Я в них писав. Не шкодую.",
+        "chars": 44,
+        "review": true,
+        "fact": "Колись було «Шістнадцять журналів» (texts.md §4); цифровізація скасовує 3, 2 чи 0 журналів, число прибрано",
+        "speaker": "Археолог"
       },
       {
         "id": "digit.line.04",
         "text": "Штамп «Паперова копія електронного документа». Ставлю востаннє.",
         "chars": 63,
         "source": "texts.md §4, Оля",
-        "review": false
+        "review": false,
+        "speaker": "Оля"
       },
       {
         "id": "digit.line.05",
         "text": "Електронну справу не прошнуруєш. Я пробував.",
         "chars": 44,
         "source": "texts.md §4, Петро",
-        "review": false
+        "review": false,
+        "speaker": "Петро"
       },
       {
         "id": "digit.line.06",
         "text": "Паста лишилась. Підпишу нею листівку для Ліни.",
         "chars": 46,
         "source": "texts.md §4, Іван",
-        "review": false
+        "review": false,
+        "speaker": "Іван"
       },
       {
         "id": "digit.line.07",
         "text": "Первинку тепер можна підписати електронним підписом. Питати я не перестану.",
         "chars": 75,
         "source": "texts.md §4, Сальдо",
-        "review": false
+        "review": false,
+        "speaker": "Сальдо"
       },
       {
         "id": "digit.line.08",
         "text": "Електронний журнал? Роздрукуйте. Не можна? Тоді покажіть тумбочку.",
         "chars": 66,
         "source": "texts.md §4, Тумбочкін",
-        "review": false
+        "review": false,
+        "speaker": "Тумбочкін"
       },
       {
         "id": "digit.line.09",
         "text": "Акт тепер підписують за день? Тоді встигну привезти дві.",
         "chars": 56,
         "source": "texts.md §4, Ліна",
-        "review": false
+        "review": false,
+        "speaker": "Ліна"
       },
       {
         "id": "digit.line.10",
         "text": "Сейф спорожнів. Кіт лишився.",
         "chars": 28,
         "source": "texts.md §4, Кіт",
-        "review": false
+        "review": false,
+        "speaker": "Кіт Сейф"
       },
       {
         "id": "digit.line.11",
         "text": "Дід друкує вдвічі менше. Ображений, але працює.",
         "chars": 47,
         "source": "texts.md §4, Дід",
-        "review": false
+        "review": false,
+        "speaker": "Дід"
       },
       {
         "id": "digit.line.12",
         "text": "Вихідні номери тепер дає система. Своїх вихідних я так і не отримала.",
         "chars": 69,
-        "review": true
+        "review": true,
+        "speaker": "Оля"
       },
       {
         "id": "digit.line.13",
-        "text": "Електронну справу не проб'єш. Діркопробивач лишаю як прес-пап'є.",
-        "chars": 64,
-        "review": true
+        "text": "Діркопробивач тепер прес-пап'є. Паперів під ним поменшало.",
+        "chars": 58,
+        "review": true,
+        "speaker": "Тарас «Діркопробивач»"
       },
       {
         "id": "digit.line.14",
         "text": "Вхідні реєструє система. Мене вона теж зареєструвала, як користувача.",
         "chars": 69,
-        "review": true
+        "review": true,
+        "speaker": "Іван"
       },
       {
         "id": "digit.line.15",
-        "text": "Поля в системі виставлено за замовчуванням. Лінійку все одно ношу.",
-        "chars": 66,
-        "review": true
+        "text": "Поля в системі виставлено за замовчуванням. Лінійка лишилась для порядку.",
+        "chars": 73,
+        "review": true,
+        "speaker": "Тумбочкін"
       },
       {
         "id": "digit.line.16",
@@ -4024,7 +4039,8 @@
           4,
           5
         ],
-        "review": true
+        "review": true,
+        "speaker": "Світлана «Гриф»"
       },
       {
         "id": "digit.line.17",
@@ -4036,7 +4052,8 @@
           4,
           5
         ],
-        "review": true
+        "review": true,
+        "speaker": "Богдан «Копійка»"
       },
       {
         "id": "digit.line.18",
@@ -4047,7 +4064,8 @@
           4,
           5
         ],
-        "review": true
+        "review": true,
+        "speaker": "Сальдо"
       },
       {
         "id": "digit.line.19",
@@ -4058,38 +4076,42 @@
           4,
           5
         ],
-        "review": true
+        "review": true,
+        "speaker": "Кава"
       },
       {
         "id": "digit.line.20",
-        "text": "Наради тепер можна проводити онлайн. Я однаково на нараді.",
-        "chars": 58,
+        "text": "Наради тепер можна проводити онлайн. Стільці лишаються, наради теж.",
+        "chars": 67,
         "levels": [
           3,
           4,
           5
         ],
-        "review": true
+        "review": true,
+        "speaker": "Граніт"
       },
       {
         "id": "digit.line.21",
-        "text": "Звіти тепер збирає система. Звіт про це я однаково написала.",
-        "chars": 60,
+        "text": "Звіти тепер збирає система. Звіт про систему доведеться писати вручну.",
+        "chars": 70,
         "levels": [
           4,
           5
         ],
-        "review": true
+        "review": true,
+        "speaker": "Оля"
       },
       {
         "id": "digit.line.22",
-        "text": "Доповідь тепер на дашборді. Регламент: один погляд.",
+        "text": "Доповідь тепер на зведенні. Регламент: один погляд.",
         "chars": 51,
         "levels": [
           4,
           5
         ],
-        "review": true
+        "review": true,
+        "speaker": "Археолог"
       },
       {
         "id": "digit.line.23",
@@ -4099,9 +4121,11 @@
           4,
           5
         ],
-        "review": true
+        "review": true,
+        "speaker": "Кава"
       }
-    ]
+    ],
+    "speakerNote": "Репліку показує digit-result з підписом персонажа (06 FR-20). Для рядків 12-23 мовця вибрано за змістом, на вичитку."
   },
   "granit.trans": {
     "where": "Перехід на рівень: event_toast (014 FR-26, арка `transition`), по одній за сесію в перших сесіях рівня; одноразова, не мішок: на рівні рівно один рядок (поле `levels`). У Дублях не показується (013 FR-28), замість неї - `*.dub`. Хто: Граніт",

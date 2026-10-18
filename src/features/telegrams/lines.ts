@@ -4,7 +4,7 @@ import lines from '../../../content/lines.json';
 
 import type { TelegramState } from '@/telegrams/types';
 
-type Pool = { lines: { id: string; text: string }[] };
+type Pool = { lines: { id: string; text: string; speaker?: string }[] };
 const POOLS = lines as unknown as Record<string, Pool>;
 
 export function poolSize(key: string): number {
@@ -21,4 +21,9 @@ export function emptyLine(tg: TelegramState, key: string): string {
 export function lineAt(key: string, n: number): string {
   const pool = POOLS[key]?.lines ?? [];
   return pool.length ? pool[((n % pool.length) + pool.length) % pool.length]!.text : '';
+}
+
+/** Хто каже репліку (пули, де є поле `speaker`): шукаємо за текстом, бо стор зберігає лише текст. */
+export function speakerOf(key: string, text: string): string | null {
+  return POOLS[key]?.lines.find((l) => l.text === text)?.speaker ?? null;
 }

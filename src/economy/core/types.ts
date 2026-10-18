@@ -112,6 +112,8 @@ export interface EconomyParams {
   raceAdCut: number;
   raceDigitalCutH: number;
   museumRacePct: number;
+  /** 006: журнали, які скасовує цифровізація: рівень → номер цифровізації на рівні → номери журналів (sim.js, 016 FR-5) */
+  digitJournals: Record<string, Record<string, number[]>>;
   storageHours: number;
   offlineAdMult: number;
   offlineAdPerDay: number;
@@ -121,6 +123,10 @@ export interface EconomyParams {
   fuelBonusThreshold: number;
   prestigeExponent: number;
   prestigeBonus: number;
+  /** Мінімум балів для кожної цифровізації (рішення 26) і підказка «Час цифровізуватися» (06 FR-9) */
+  prestigeMinPoints: number;
+  prestigeStallHours: number;
+  prestigeStallShare: number;
   paperStart: number;
   paperPerMinPerLevel: number;
   paperGift: number;
