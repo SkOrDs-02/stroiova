@@ -36,6 +36,7 @@ export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onBa
   const views = tel.choices.map((c) => choiceView(c, s.telegrams, s.state, s.cfg, fromDrawer)).filter((v) => !(fromDrawer && v.choice.kind === 'drawer'));
   const tier = t.tier[repTier(s.telegrams.reputation.value, s.cfg.params)];
   const g = s.onboarding.gender;
+  const kava = item.status === 'new' && item.kind === 'telegram' ? s.sessionLines.byUid[uid] : undefined;
   const choose = (choiceId: string) => {
     const r = s.answerTelegram(uid, choiceId);
     if (!('error' in r)) onAnswered(uid);
@@ -51,6 +52,12 @@ export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onBa
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.screen}>{isMsg ? t.screenMsg : t.screen}</Text>
       </View>
       <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + space[16] }]}>
+        {kava ? (
+          <View style={styles.kava} testID="tg-kava">
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kavaName}>{t.kava}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kavaLine}>{kava}</Text>
+          </View>
+        ) : null}
         <View style={styles.tiles}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tile}>{t.repTile(tier)}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tile}>{`${t.resPaper}: ${Math.floor(s.state.paper)}`}</Text>
@@ -116,6 +123,9 @@ const styles = StyleSheet.create({
   screen: { ...type('h4'), color: color.muted },
   scroll: { padding: space[16], gap: space[8] },
   tiles: { flexDirection: 'row', gap: space[8] },
+  kava: { backgroundColor: color.surface, borderRadius: radius[8], padding: space[12], gap: space[2] },
+  kavaName: { ...type('label'), color: color.accent },
+  kavaLine: { ...type('body'), color: color.text },
   tile: { ...type('caption'), color: color.text, backgroundColor: color.surface, borderRadius: radius[6], paddingHorizontal: space[8], paddingVertical: space[6], overflow: 'hidden' },
   paper: { backgroundColor: color.paper, borderRadius: radius[4], padding: space[16], gap: space[4] },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

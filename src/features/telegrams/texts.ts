@@ -33,6 +33,7 @@ export const t = {
     bde_fin: 'фінансовій службі бригади',
   } as Record<string, string>,
   howReact: 'Як реагуємо?',
+  kava: 'Начштабу «Кава»',
   isNew: 'новий варіант',
   // наслідки варіанта (артборд TgDetail): «Стройова ×0,5 на 1 год · +10 до репутації»
   slow: (unit: string, mult: string, hours: number) => `${unit} ${mult} на ${hours} год`,

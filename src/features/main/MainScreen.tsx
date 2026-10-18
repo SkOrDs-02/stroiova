@@ -159,6 +159,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       setView({ kind: 'note', uid: item.uid });
     } else {
       if (item.kind === 'notice') s.openItem(item.uid);
+      if (item.kind === 'telegram' && item.status === 'new') s.kavaLineFor(item.uid);
       setView({ kind: 'detail', uid: item.uid, coach: false });
     }
   };

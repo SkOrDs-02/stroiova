@@ -69,7 +69,7 @@ description: "Задачі: 003 Телеграми й репутація — е�
 - [X] T021 [US5] `src/features/telegrams/KombatSheet.tsx` (артборд `KombatSheet`), стан «комбата шукають» на `main`
 - [X] T022 [P] [US4] `src/features/telegrams/TelegramFlag.tsx` (артборд `TgFlag`): 4 причини, коментар ≤ 280, «Позначено», без впливу на гру; тест AC-18
 - [X] T023 [P] [US6] `src/features/telegrams/NoteDetail.tsx` (артборд `NoteDetail`, «підсумок дзвінка» з 002); тест AC-19
-- [ ] T024 [US1] `src/telegrams/lines.ts`: мішок реплік, ліміт 2 за сесію (рішення 41, 45); репліки Кави на `tg-list`/`tg-result`, Граніта в `kombat-sheet`; тест
+- [X] T024 [US1] `src/telegrams/lines.ts`: мішок реплік, ліміт 2 за сесію (рішення 41, 45); репліки Кави на `tg-list`/`tg-result`, Граніта в `kombat-sheet`; тест
 
 ## Phase 8: Polish
 

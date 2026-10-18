@@ -99,3 +99,17 @@ describe('вхідні', () => {
     expect(screen.getByTestId('kombat-bar')).toBeTruthy();
   });
 });
+
+describe('репліки (рішення 41, 45)', () => {
+  test('Кава над новою телеграмою — одна на телеграму, не більше 2 за сесію', () => {
+    const store = storeWith({ ids: ['tg_0002_less_paper', 'tg_0007_briefing', 'tg_0008_morale'] });
+    const [a, b, c] = store.getState().telegrams.inbox.map((x) => x.uid);
+    const la = store.getState().kavaLineFor(a!);
+    expect(la).toBeTruthy();
+    expect(store.getState().kavaLineFor(a!)).toBe(la);
+    expect(store.getState().kavaLineFor(b!)).toBeTruthy();
+    expect(store.getState().kavaLineFor(c!)).toBeNull();
+    store.getState().away(T0, T0 + 10 * 60_000);
+    expect(store.getState().kavaLineFor(c!)).toBeTruthy();
+  });
+});

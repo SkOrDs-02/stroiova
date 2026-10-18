@@ -16,7 +16,11 @@ import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } fro
 import { fromTelegram, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
 import type { TelegramState } from '@/telegrams/types';
+import { lineAt } from '@/features/telegrams/lines';
 export type { StoredEffect } from '@/economy/game/types';
+
+/** Рішення 45: не більше 2 реплік персонажів за сесію (сюжет, онбординг, перевірки, телеграми й пуші — поза лімітом). */
+const SESSION_LINES_MAX = 2;
 
 /** Зсув місцевого часу пристрою, хв (= −getTimezoneOffset): розклад телеграм за годинником пристрою (003 FR-2). */
 export function tzOffsetAt(ms: number): number {
@@ -44,6 +48,8 @@ interface Store {
   onboarding: OnboardingState;
   /** Телеграми й репутація (003) */
   telegrams: TelegramState;
+  /** Репліки персонажів цієї сесії (рішення 45: ≤ 2 за сесію); лише в пам'яті */
+  sessionLines: { count: number; byUid: Record<string, string> };
   /** Тапи першого акта; лише в пам'яті: після вбивства «0 з 8» (002 R4) */
   actTaps: number;
   /** Модалка clerk-first після найму на кроці 7 */
@@ -91,6 +97,8 @@ interface Store {
   flagTelegram: (uid: string) => void;
   /** «Відправити посильного» (FR-28) */
   sendRunner: () => boolean;
+  /** Репліка Кави над новою телеграмою: одна на телеграму, ≤ 2 реплік за сесію (рішення 41, 45) */
+  kavaLineFor: (uid: string) => string | null;
   /** Бонус архіву «Археолога» (крок 9, FR-20): archiveBonusMin × базовий дохід, один раз */
   claimArchive: () => number;
 }
@@ -184,6 +192,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     playtimeMs: init?.playtimeMs ?? 0,
     onboarding: init?.onboarding ?? newOnboarding(0),
     telegrams: init?.telegrams ?? newTelegrams(cfg.params, `game-${nowMs}`),
+    sessionLines: { count: 0, byUid: {} },
     // крок 5 закривається кінцем анімації ПОГОДЖЕНО; якщо застосунок вбито під час неї, акт уже підписано (FR-28)
     actTaps: init?.onboarding?.step === 5 ? ACT_TAPS : 0,
     clerkFirstOpen: false,
@@ -246,6 +255,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       // 003: телеграми, що прийшли без гравця (FR-3); нова сесія — шанс «Комбата шукають» (FR-29)
       runTelegrams(leftAt, Math.max(leftAt, backAt), true);
       if (isNewSession(leftAt, backAt)) {
+        set({ sessionLines: { count: 0, byUid: {} } });
         const g = get();
         const k = onSessionStart(g.telegrams, g.cfg, backAt, tzOffsetAt(backAt), false);
         set({ telegrams: k.tg, ...(k.effect ? { effects: [...g.effects, k.effect] } : {}) });
@@ -343,6 +353,15 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     flagTelegram: (uid) => {
       const tg = get().telegrams;
       set({ telegrams: { ...tg, inbox: tg.inbox.map((x) => (x.uid === uid ? { ...x, flagged: true } : x)) } });
+    },
+    kavaLineFor: (uid) => {
+      const sl = get().sessionLines;
+      if (sl.byUid[uid] != null) return sl.byUid[uid]!;
+      if (sl.count >= SESSION_LINES_MAX) return null;
+      const text = lineAt('kava.tg_new', get().telegrams.deliveries + sl.count);
+      if (!text) return null;
+      set({ sessionLines: { count: sl.count + 1, byUid: { ...sl.byUid, [uid]: text } } });
+      return text;
     },
     sendRunner: () => {
       const g = get();
