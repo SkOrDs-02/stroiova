@@ -52,11 +52,11 @@ export function paperCost(e: Effects, flags: Record<string, true>): number {
   return n;
 }
 
-export type Availability = { ok: true } | { ok: false; reason: 'paper'; n: number } | { ok: false; reason: 'digital' };
+export type Availability = { ok: true } | { ok: false; reason: 'paper'; n: number } | { ok: false; reason: 'digital' } | { ok: false; reason: 'drawer' };
 
 /** Чи можна обрати варіант (FR-18, FR-25): папір не стає від'ємним, «на цифру» — лише з P_total ≥ 1. */
 export function canChoose(tg: TelegramState, eco: EconomyState, c: Choice, fromDrawer = false): Availability {
-  if (fromDrawer && c.kind === 'drawer') return { ok: false, reason: 'digital' };
+  if (fromDrawer && c.kind === 'drawer') return { ok: false, reason: 'drawer' };
   if (c.requires?.digitalPoints && eco.prestigePoints < c.requires.digitalPoints) return { ok: false, reason: 'digital' };
   const need = paperCost(c.effects, tg.flags);
   const have = Math.floor(eco.paper);
@@ -67,7 +67,7 @@ export function canChoose(tg: TelegramState, eco: EconomyState, c: Choice, fromD
  * Застосувати вибір (FR-12…FR-20). Відповідь із шухляди скасовує ще не застосовані `delayed` і повернення (FR-10).
  * Шанс позапланової: p за репутацією й щитом (FR-14…FR-16), ≤ unscheduledPerDay на добу.
  */
-export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choiceId: string, ctx: AnswerCtx): AnswerResult | { error: 'state' | 'choice' | 'paper' | 'digital' } {
+export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choiceId: string, ctx: AnswerCtx): AnswerResult | { error: 'state' | 'choice' | 'paper' | 'digital' | 'drawer' } {
   const idx = tg0.inbox.findIndex((x) => x.uid === uid);
   const item0 = tg0.inbox[idx];
   if (!item0 || (item0.status !== 'new' && item0.status !== 'drawer')) return { error: 'state' };
@@ -115,7 +115,8 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
       }
     }
     if (e.durationMin) workUntil = Math.max(workUntil, nowMs + e.durationMin * MIN);
-    if (e.inspPct) {
+    // № 19: кидок не зараз, а через inspRollAfterHours (таймер рахує шанс на мить кидка)
+    if (e.inspPct && !e.inspRollAfterHours) {
       const pr = replyChance(tg, p, e.inspPct, !!choice.effects.digitalShield, eco.prestigePoints);
       res.chancePct = Math.round(pr * 100);
       const used = tg.unscheduledDays.filter((d) => d === ctx.dayKey).length;
@@ -128,7 +129,9 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
     if (e.inspRollAfterHours && e.inspPct) {
       tg = { ...tg, timers: [...tg.timers, { atMs: nowMs + e.inspRollAfterHours * HOUR, kind: 'inspRoll', itemUid: uid, pct: e.inspPct }] };
     }
-    if (e.inspExtraItem || e.inspRemarkPct) events.push({ type: 'inspItem', telegramId: tel.id, item: e.inspExtraItem ?? null, remarkPct: e.inspRemarkPct ?? 0 });
+    // пункт чекліста — лише разом із випадінням (FR-15); зауваження № 16 — окремо, для 04
+    if (e.inspExtraItem && res.inspHit) events.push({ type: 'inspItem', telegramId: tel.id, item: e.inspExtraItem, remarkPct: 0 });
+    if (e.inspRemarkPct) events.push({ type: 'inspItem', telegramId: tel.id, item: null, remarkPct: e.inspRemarkPct });
     if (e.roll && rng.next() < e.roll.pct / 100) {
       res.rollText = e.roll.text;
       apply(e.roll.effects, true);

@@ -80,7 +80,8 @@ describe('справжні міграції', () => {
     expect(r.save.game.onboarding).toEqual(onboardingDone());
     expect(r.save.game.playtimeMs).toBe(0);
     expect(r.save.game.economy.signatures).toBe(777);
-    expect(r.save.game.telegrams).toEqual(telegramsV3());
+    // онбординг пройдено: розклад телеграм стартує одразу (startMs = 0), вхідні порожні
+    expect(r.save.game.telegrams).toEqual({ ...telegramsV3(), startMs: 0 });
     expect(JSON.parse(kv.getString(KEY_BAK1)!).schemaVersion).toBe(1);
   });
 
@@ -93,5 +94,27 @@ describe('справжні міграції', () => {
     expect(r).toMatchObject({ kind: 'ok', migratedFrom: 2 });
     if (r.kind !== 'ok') return;
     expect(r.save.game.telegrams.inbox).toEqual([expect.objectContaining({ id: 'tg_0001_sergeants', status: 'archive', choiceId: 'formal_reply' })]);
+    expect(r.save.game.telegrams.startMs).toBe(0);
+  });
+
+  test('2 → 3: крок 8, № 1 прийшла без відповіді — вона в «Нових», розклад іде', () => {
+    const d = draft({ schemaVersion: 2, savedAt: 5000 });
+    const { telegrams: _t, ...gameV2 } = d.game;
+    const onboarding = { ...gameV2.onboarding, step: 8, tg1ReceivedAtPlayMs: 300_000, tg1: null };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV2, onboarding } as never }) });
+    const r = loadSave(kv, { current: 3, migrations: MIGRATIONS });
+    if (r.kind !== 'ok') throw new Error(r.kind);
+    expect(r.save.game.telegrams.inbox).toEqual([expect.objectContaining({ id: 'tg_0001_sergeants', status: 'new' })]);
+    expect(r.save.game.telegrams.startMs).toBe(0);
+  });
+
+  test('2 → 3: онбординг до кроку 8 — розклад чекає на № 1', () => {
+    const d = draft({ schemaVersion: 2, savedAt: 5000 });
+    const { telegrams: _t, ...gameV2 } = d.game;
+    const onboarding = { ...gameV2.onboarding, step: 6 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV2, onboarding } as never }) });
+    const r = loadSave(kv, { current: 3, migrations: MIGRATIONS });
+    if (r.kind !== 'ok') throw new Error(r.kind);
+    expect(r.save.game.telegrams.startMs).toBeNull();
   });
 });

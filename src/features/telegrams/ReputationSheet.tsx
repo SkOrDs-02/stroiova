@@ -46,7 +46,7 @@ export function ReputationSheet({ store, onClose }: { store: ConveyorStore; onCl
           const choice = tel?.choices.find((c) => c.id === item?.choiceId);
           return (
             <View key={`${h.uid}-${h.atMs}`} style={styles.logRow} testID="rep-log">
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.logText} numberOfLines={1}>{t.repLogItem(tel?.title ?? '', t.kind[choice?.kind ?? ''] ?? '')}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.logText} numberOfLines={1}>{t.repLogItem(tel?.title ?? '', t.logKind[choice?.kind ?? ''] ?? choice?.title ?? '')}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.logD, h.delta > 0 && styles.logPlus]}>{h.delta > 0 ? `+${h.delta}` : `−${Math.abs(h.delta)}`}</Text>
             </View>
           );

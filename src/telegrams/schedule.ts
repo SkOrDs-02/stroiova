@@ -3,13 +3,18 @@ import { refuel } from '@/economy/game/actions';
 import type { DomainEvent, EconomyConfig, EconomyState, EconomyParams } from '@/economy/game/types';
 
 import { pick } from './bag';
-import { dayKey, dayStart, DAY, HOUR, monthOf } from './clock';
+import { dayKey, dayNumber, dayStart, DAY, HOUR, monthOf } from './clock';
 import { FIRST_TELEGRAM_ID, OVERRIDE_ID, telegram } from './content';
-import { applyRep } from './reputation';
+import { applyRep, replyChance } from './reputation';
 import { roller, seedFrom } from './rng';
 import type { InboxItem, ItemKind, TelegramState, Timer } from './types';
 
 const MIN = 60_000;
+
+/** Перший номер наказу override — з контенту (`orderNoStart`). */
+export function overrideStartNo(): number {
+  return telegram(OVERRIDE_ID)?.schedule?.orderNoStart ?? 0;
+}
 
 export function newTelegrams(p: EconomyParams, seedText: string): TelegramState {
   return {
@@ -24,9 +29,10 @@ export function newTelegrams(p: EconomyParams, seedText: string): TelegramState 
     firstInspectionPassed: false,
     unscheduledDays: [],
     refuelBlockedUntil: 0,
-    override: { lastDayKey: null, nextNo: (telegram(OVERRIDE_ID)?.schedule?.orderNoStart ?? 118) },
+    override: { lastDayKey: null, nextNo: overrideStartNo() },
     kombat: { lastDayKey: null, active: null },
     deliveries: 0,
+    lineBags: {},
   };
 }
 
@@ -163,7 +169,8 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
       }
       const choice = pick(tg, { nowMs: at, level: ctx.level, digitizations: ctx.digitizations, month: monthOf(at, ctx.tzOffsetMin), raceActive: ctx.raceActive, repeatMinDays: p.tgRepeatMinDays }, () => rng.next());
       if (!choice) continue;
-      if (choice.fromQueue) tg = { ...tg, queue: tg.queue.filter((q) => q !== choice.id) };
+      // черга чиститься й від уже отриманих id (FR-6)
+      tg = { ...tg, queue: tg.queue.filter((q) => q !== choice.id && !tg.inbox.some((x) => x.id === q)) };
       deliver(choice.id, 'telegram', at);
       continue;
     }
@@ -182,12 +189,20 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
       eco = refuel(eco, ctx.cfg, t.atMs).state;
     } else if (t.kind === 'inspRoll' && t.pct) {
       const used = tg.unscheduledDays.filter((d) => d === dayKey(t.atMs, ctx.tzOffsetMin)).length;
-      const pr = tg.firstInspectionPassed ? t.pct / 100 : 0;
+      // шанс на мить кидка: рівень репутації й перша планова — як у FR-14…FR-16
+      const pr = replyChance(tg, p, t.pct, false, eco.prestigePoints);
       if (pr > 0 && rng.next() < pr && used < p.unscheduledPerDay) {
         tg = { ...tg, unscheduledDays: [...tg.unscheduledDays, dayKey(t.atMs, ctx.tzOffsetMin)].slice(-7) };
         events.push({ type: 'unscheduledInspection', telegramId: item?.id ?? '', warnSec: p.unscheduledWarnH * 3600, extraItem: null });
       }
     }
+  }
+
+  // «Комбата знайшли» (FR-28): подія для random_event_resolve (етап 5), один раз
+  const k = tg.kombat.active;
+  if (k && !k.found && k.endMs <= ctx.nowMs) {
+    tg = { ...tg, kombat: { ...tg.kombat, active: { ...k, found: true } } };
+    events.push({ type: 'kombatFound', how: k.runnerAtMs != null ? 'runner' : 'wait' });
   }
 
   // «на виконанні» → архів (FR-9)
@@ -198,5 +213,5 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
 }
 
 function daysBetween(a: string, b: string): number {
-  return Math.round((Date.UTC(+b.slice(0, 4), +b.slice(5, 7) - 1, +b.slice(8, 10)) - Date.UTC(+a.slice(0, 4), +a.slice(5, 7) - 1, +a.slice(8, 10))) / DAY);
+  return dayNumber(b) - dayNumber(a);
 }

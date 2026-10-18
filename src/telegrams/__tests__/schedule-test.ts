@@ -130,3 +130,29 @@ describe('розклад', () => {
     expect(order('seed-1')).toEqual(a);
   });
 });
+
+describe('доповнення за рев\'ю', () => {
+  test('AC-3: 10 год відсутності, у вікні 2 слоти — 2 телеграми з мітками цих слотів', () => {
+    const tg0 = answerAll(started('ac3'), START + 1000);
+    const slots = [START + 3 * HOUR, START + 6 * HOUR];
+    const tg = { ...tg0, day: { key: dayKey(START, 0), slots, used: 0 } };
+    const r = tick(tg, eco(), ctxFor(START + 1000, START + 10 * HOUR, { away: true }));
+    expect(r.delivered.map((x) => x.receivedAt)).toEqual(slots);
+    expect(r.events.filter((e) => e.type === 'telegramReceive')).toHaveLength(2);
+  });
+
+  test('AC-6: Р2 бере неотримані № 7 і № 9 разом із пулом Р2; вхідні Р1 лишаються', () => {
+    const tg0 = started('ac6');
+    const { poolFor } = jest.requireActual('../content') as typeof import('../content');
+    const p2 = poolFor(2).map((t) => t.id);
+    expect(p2).toEqual(expect.arrayContaining(['tg_0007_briefing', 'tg_0009_indent', 'tg_0026_kopiyka']));
+    const r = tick(tg0, eco(), ctxFor(START, START + 2 * DAY, { level: 2 }));
+    expect(r.tg.inbox.find((x) => x.id === 'tg_0001_sergeants')).toBeTruthy();
+  });
+
+  test('міграція: startMs = 0 (зріз 001/009) — слоти йдуть з першого tick', () => {
+    const tg = { ...newTelegrams(p, 'm'), startMs: 0 };
+    const r = tick(tg, eco(), ctxFor(D0, D0 + DAY));
+    expect(r.delivered.length).toBeGreaterThanOrEqual(p.slowPerDayMin);
+  });
+});

@@ -34,7 +34,7 @@ description: "Задачі: 003 Телеграми й репутація — е�
 
 - [X] T007 [P] [US2] `src/telegrams/__tests__/effects-test.ts`: AC-7 (сумлінно на № 1: Стройова ×0,5 рівно 1 год, «на виконанні» до кінця, репутація 50 → 60, потім архів); AC-13 (4 аркуші → варіант на 5 неактивний, «Бракує 1 аркуша»); AC-12 (шухляда № 16 → через 24 год −5; відповідь з шухляди через 3 год скасовує); `roll`, `fuel` (№ 24), прапорці (№ 23 → № 28), `ifNoClerk`, `queueNext` (№ 5 → № 22, № 17); notice № 4581 → архів «до відома», подія `journal`
 - [X] T008 [US2] `src/telegrams/effects.ts`: `canChoose`, `answer` (R4), атомарно: стан, економіка, ефекти, події, `result`
-- [X] T009 [US2] `src/telegrams/timers.ts`: `delayed`, `returnsAfterHours`, `followUps` (`ifChoice`), «на виконанні» → архів; спрацьовують і за відсутності (FR-17)
+- [X] T009 [US2] Таймери в `src/telegrams/schedule.ts` (окремого `timers.ts` немає): `delayed`, `returnsAfterHours`, `followUps` (`ifChoice`), «на виконанні» → архів; спрацьовують і за відсутності (FR-17)
 
 ## Phase 4: US1 — розклад і доставка (P1)
 
@@ -49,8 +49,8 @@ description: "Задачі: 003 Телеграми й репутація — е�
 **Independent Test**: AC-1 (стор), AC-15, AC-16; онбординг 002 AC-11…AC-13 не ламаються
 
 - [X] T013 [US3] `src/features/conveyor/store.ts`: зріз `telegrams`, `tick` викликає `telegrams.tick` (`tzOffsetMin` від застосунку), дії `answerTelegram`, `openTelegram`, `flagTelegram`; тост `rep.toast`; онбординг: № 1 через `deliverScripted`, крок 8 закриває `answer` (R7); `features/telegrams/first.ts` прибрати
-- [X] T014 [P] [US3] `src/features/telegrams/__tests__/reputation-ui-test.tsx`: AC-15 (36 → відписка −5 → плитка «низька», тост), AC-16 (шторка з поточним рівнем і 3 змінами)
-- [X] T015 [US3] `src/features/telegrams/ReputationTile.tsx`, `ReputationSheet.tsx` (артборд `ReputationSheet`); плитка в шапці `main` (FR-22)
+- [X] T014 [P] [US3] `src/features/telegrams/__tests__/inbox-test.tsx`: AC-15 (36 → відписка −5 → плитка «низька», тост), AC-16 (шторка з поточним рівнем і 3 змінами)
+- [X] T015 [US3] Плитка репутації в `MainScreen`, `TelegramList`, `TelegramDetail`; `ReputationSheet.tsx` (артборд `ReputationSheet`); плитка в шапці `main` (FR-22)
 
 ## Phase 6: US2 — екрани вхідних (P1)
 
@@ -73,8 +73,8 @@ description: "Задачі: 003 Телеграми й репутація — е�
 
 ## Phase 8: Polish
 
-- [ ] T025 Web-сценарій quickstart у Chromium 375×667
-- [ ] T026 Агенти `spec-guardian` і `content-reviewer`; виправлення
+- [X] T025 Web-сценарій quickstart у Chromium 375×667
+- [X] T026 Агенти `spec-guardian` і `content-reviewer`; виправлення
 - [ ] T027 Документація: CLAUDE.md (`src/telegrams`), `npm run check`
 
 ## Поза етапом 1

@@ -54,7 +54,9 @@ export const t = {
   resSpent: 'Витрачено',
   resPaper: 'Папір',
   resChance: 'Шанс перевірки',
-  kind: { diligent: 'сумлінно', formal_reply: 'відписка', drawer: 'шухляда', special: 'особливий' } as Record<string, string>,
+  kind: { diligent: 'сумлінно', formal_reply: 'відписка', drawer: 'у шухляду' } as Record<string, string>,
+  // журнал змін репутації (артборд ReputationSheet): «Про Excel»: виконано сумлінно
+  logKind: { diligent: 'виконано сумлінно', formal_reply: 'відписка', drawer: 'пролежала в шухляді' } as Record<string, string>,
   resStamp: 'Виконано',
   resFirstH: 'Що таке репутація',
   resCtaFirst: 'Зрозуміло',
@@ -102,8 +104,8 @@ export const t = {
   flagComment: 'Коментар, якщо хочеш',
   flagNote: 'Надсилаємо номер телеграми, причину й коментар. Без позивного і без імені.',
   flagSend: 'Надіслати позначку',
-  flagThanks: 'Дякуємо',
-  flagThanksSub: 'Позначку зареєстровано. Телеграму перечитаємо.',
+  flagThanks: 'Позначку отримано',
+  flagThanksSub: 'Телеграму перечитаємо. Якщо жарт б’є по людях, а не по паперу, її замінять оновленням.',
   flagBack: 'До телеграми',
   // «Комбата шукають» (KombatSheet)
   kbTitle: 'Комбата шукають',
@@ -119,4 +121,6 @@ export const t = {
   kbBack: 'До стройової',
   // записки (NoteDetail)
   noteOk: 'Добре',
+  noteCall: 'Дзвінок «Археологу»',
+  noteFallback: 'Записка',
 };

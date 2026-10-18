@@ -14,8 +14,8 @@ export const NOTE_CALL = 'note_call';
 
 /** Заголовок і зміст записки за id (артборд NoteDetail). */
 export function noteView(id: string): { title: string; who: string; lines: string[] } {
-  if (id === NOTE_CALL) return { title: 'Дзвінок «Археологу»', who: onb.b9Arch, lines: [onb.b9A1, onb.b9A2] };
-  return { title: id, who: '', lines: [] };
+  if (id === NOTE_CALL) return { title: t.noteCall, who: onb.b9Arch, lines: [onb.b9A1, onb.b9A2] };
+  return { title: t.noteFallback, who: '', lines: [] };
 }
 
 export function NoteDetail({ store, uid, onClose }: { store: ConveyorStore; uid: string; onClose: () => void }) {

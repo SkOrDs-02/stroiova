@@ -57,7 +57,7 @@ export function TelegramFlag({ store, uid, onClose }: { store: ConveyorStore; ui
               label={t.flagSend}
               onPress={() => {
                 if (sent) return;
-                s.flagTelegram(uid);
+                s.flagTelegram(uid, reason, comment.trim().length > 0);
                 setSent(true);
               }}
             />

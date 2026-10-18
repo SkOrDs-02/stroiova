@@ -62,7 +62,7 @@ export function resultRows(item: InboxItem, tel: Telegram, cfg: EconomyConfig, t
   const c = tel.choices.find((x) => x.id === item.choiceId);
   const r = item.result;
   if (!c || !r) return [];
-  const rows: [string, string][] = [[t.resDecision, t.kind[c.kind] ?? c.kind]];
+  const rows: [string, string][] = [[t.resDecision, t.kind[c.kind] ?? c.title]];
   for (const s of r.slow) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${s.hours} год`]);
   if (c.effects.durationMin) rows.push([t.resSpent, t.minutes(c.effects.durationMin)]);
   if (r.paper) rows.push([t.resPaper, t.sheets(r.paper)]);

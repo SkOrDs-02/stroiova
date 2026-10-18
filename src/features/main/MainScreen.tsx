@@ -299,6 +299,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           coachText={view.coach ? onb.b8Tip : undefined}
           onAnswered={(uid) => setView({ kind: 'result', uid, back: view.coach ? 'main' : 'list' })}
           onFlag={(uid) => setView({ kind: 'flag', uid, back: 'detail' })}
+          onReputation={view.coach ? undefined : () => setView({ kind: 'rep', back: 'list' })}
           onBack={view.coach ? undefined : () => setView({ kind: 'list' })}
         />
       ) : null}

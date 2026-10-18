@@ -7,7 +7,11 @@ import type { TelegramState } from '@/telegrams/types';
 type Pool = { lines: { id: string; text: string }[] };
 const POOLS = lines as unknown as Record<string, Pool>;
 
-/** Рядок пулу: по колу без повтору підряд, крок — кількість доставок (детерміновано, без годинника). */
+export function poolSize(key: string): number {
+  return POOLS[key]?.lines.length ?? 0;
+}
+
+/** Порожній стан вхідних (не репліка персонажа): стабільний між рендерами, змінюється з новою доставкою. */
 export function emptyLine(tg: TelegramState, key: string): string {
   const pool = POOLS[key]?.lines ?? [];
   if (!pool.length) return '';

@@ -16,7 +16,8 @@ import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } fro
 import { fromTelegram, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
 import type { TelegramState } from '@/telegrams/types';
-import { lineAt } from '@/features/telegrams/lines';
+import { lineAt, poolSize } from '@/features/telegrams/lines';
+import { pickLine } from '@/telegrams/lines';
 export type { StoredEffect } from '@/economy/game/types';
 
 /** Рішення 45: не більше 2 реплік персонажів за сесію (сюжет, онбординг, перевірки, телеграми й пуші — поза лімітом). */
@@ -94,7 +95,9 @@ interface Store {
   /** Відкрити телеграму без вибору чи записку (FR-11, FR-27) */
   openItem: (uid: string) => void;
   /** «Це не смішно» (FR-26): лише позначка, без впливу на гру */
-  flagTelegram: (uid: string) => void;
+  flagTelegram: (uid: string, reason?: number | null, hasComment?: boolean) => void;
+  /** «Готуватися» до позапланової перевірки (перебіг — 04) */
+  prepareInspection: (uid: string) => void;
   /** «Відправити посильного» (FR-28) */
   sendRunner: () => boolean;
   /** Репліка Кави над новою телеграмою: одна на телеграму, ≤ 2 реплік за сесію (рішення 41, 45) */
@@ -146,7 +149,22 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       }
     }
     set({ telegrams: tg, effects, events: [...get().events, ...evs].slice(-40) });
-    for (const e of evs) if (e.type === 'reputationTierChange') get().showToast({ kind: 'rep', tier: e.to });
+    for (const e of evs) {
+      if (e.type === 'reputationTierChange') get().showToast({ kind: 'rep', tier: e.to });
+      // Граніт у «знайшли» — репліка персонажа, у ліміті сесії
+      if (e.type === 'kombatFound' && get().telegrams.kombat.active) characterLine('granit.success', `kombat:${get().telegrams.kombat.active!.startMs}`);
+    }
+  };
+  /** Репліка персонажа з мішка пулу на слот (телеграма, подія): одна на слот, ≤ 2 за сесію (рішення 41, 45). */
+  const characterLine = (key: string, slot: string): string | null => {
+    const sl = get().sessionLines;
+    if (sl.byUid[slot] != null) return sl.byUid[slot]!;
+    if (sl.count >= SESSION_LINES_MAX) return null;
+    const r = pickLine(get().telegrams, key, poolSize(key));
+    if (r.index == null) return null;
+    const text = lineAt(key, r.index);
+    set({ telegrams: r.tg, sessionLines: { count: sl.count + 1, byUid: { ...sl.byUid, [slot]: text } } });
+    return text;
   };
   /** Розклад і таймери телеграм у (from, to] (003 FR-2, FR-3, FR-17): лише після № 1. */
   const runTelegrams = (from: number, to: number, away: boolean) => {
@@ -258,7 +276,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         set({ sessionLines: { count: 0, byUid: {} } });
         const g = get();
         const k = onSessionStart(g.telegrams, g.cfg, backAt, tzOffsetAt(backAt), false);
-        set({ telegrams: k.tg, ...(k.effect ? { effects: [...g.effects, k.effect] } : {}) });
+        // чинна подія не накладається: ×0,25 не множиться вдруге (рішення 25)
+        set({ telegrams: k.tg, ...(k.effect ? { effects: [...g.effects.filter((x) => x.source !== 'kombat_away' || x.endMs <= backAt), k.effect] } : {}) });
         handleEvents(k.events, backAt);
       }
     },
@@ -350,19 +369,19 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         set({ telegrams: { ...g.telegrams, inbox: g.telegrams.inbox.map((x) => (x.uid === uid ? { ...x, read: true } : x)) } });
       }
     },
-    flagTelegram: (uid) => {
+    flagTelegram: (uid, reason = null, hasComment = false) => {
       const tg = get().telegrams;
+      const item = tg.inbox.find((x) => x.uid === uid);
+      if (!item || item.flagged) return;
       set({ telegrams: { ...tg, inbox: tg.inbox.map((x) => (x.uid === uid ? { ...x, flagged: true } : x)) } });
+      // текст коментаря не зберігаємо до перевірки Data safety (003 ВП-6)
+      handleEvents([{ type: 'telegramFlag', telegramId: item.id, reason, hasComment, afterChoice: item.choiceId != null }], get().lastMs);
     },
-    kavaLineFor: (uid) => {
-      const sl = get().sessionLines;
-      if (sl.byUid[uid] != null) return sl.byUid[uid]!;
-      if (sl.count >= SESSION_LINES_MAX) return null;
-      const text = lineAt('kava.tg_new', get().telegrams.deliveries + sl.count);
-      if (!text) return null;
-      set({ sessionLines: { count: sl.count + 1, byUid: { ...sl.byUid, [uid]: text } } });
-      return text;
+    prepareInspection: (uid) => {
+      const item = get().telegrams.inbox.find((x) => x.uid === uid);
+      if (item) handleEvents([{ type: 'inspectionPrepare', telegramId: item.id }], get().lastMs);
     },
+    kavaLineFor: (uid) => characterLine('kava.tg_new', uid),
     sendRunner: () => {
       const g = get();
       const r = sendRunnerTg(g.telegrams, g.state, g.cfg, g.lastMs);

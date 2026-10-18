@@ -109,9 +109,11 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
     if (!store) return;
     const auto = createAutosave(kv, () => draftOf(store));
     auto.start();
-    // 002 FR-28: прогрес онбордингу пишеться одразу після кожного закритого кроку
+    // 002 FR-28: прогрес онбордингу пишеться одразу після кожного закритого кроку;
+    // 003 «вбивство посеред вибору»: відповідь, нова телеграма, посильний — теж одразу, не чекаючи 5 с
     const unsubStep = store.subscribe((st, prev) => {
-      if (st.onboarding.step !== prev.onboarding.step) auto.saveNow();
+      const tgChanged = st.telegrams.inbox !== prev.telegrams.inbox || st.telegrams.kombat !== prev.telegrams.kombat;
+      if (st.onboarding.step !== prev.onboarding.step || tgChanged) auto.saveNow();
     });
     let leftAt: number | null = null;
     const sub = AppState.addEventListener('change', (s) => {

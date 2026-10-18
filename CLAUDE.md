@@ -32,6 +32,7 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 | `design/system/` | Дизайн-система: `tokens.json`, `README.md`, компоненти, `components/index.d.ts` (контракт пропсів), шрифт TT2020 |
 | `balance/` | Бот і події симулятора `sim.js` (формули — з `economy.js`), пресети, відбитки `golden/`, пісочниця (`sandbox/build.py` → `sandbox/index.html`) |
 | `src/save/` | Збереження (009): MMKV (`mmkv.ts`), схема й міграції, знімки, контрольна сума; запуск і екрани — `src/features/boot/` |
+| `src/telegrams/` | Телеграми й репутація (003): чистий домен — розклад, мішок, ефекти, репутація, комбат; екрани — `src/features/telegrams/` |
 | `src/economy/` | Модуль економіки: `core` (спільний із симулятором), `game` (стан і дії гри), `format.ts`; вбудований конфіг `econ-v7.2` |
 | `analytics/tracking-plan.yaml` | 60 подій аналітики; `docs/analytics.md` — пояснення |
 | `docs/art-and-sound.md`, `docs/stores.md`, `docs/playtest-and-launch.md` | Арт і звук, сторінки сторів, тестування й запуск |

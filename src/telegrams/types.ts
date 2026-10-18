@@ -111,7 +111,7 @@ export interface InboxItem {
   result?: ItemResult;
 }
 
-export type TimerKind = 'delayed' | 'return' | 'followUp' | 'fill' | 'kombatEnd' | 'runner' | 'inspRoll';
+export type TimerKind = 'delayed' | 'return' | 'followUp' | 'fill' | 'inspRoll';
 
 export interface Timer {
   atMs: number;
@@ -139,6 +139,8 @@ export interface TelegramState {
   unscheduledDays: string[];
   refuelBlockedUntil: number;
   override: { lastDayKey: string | null; nextNo: number };
-  kombat: { lastDayKey: string | null; active: { startMs: number; endMs: number; runnerAtMs: number | null } | null };
+  kombat: { lastDayKey: string | null; active: { startMs: number; endMs: number; runnerAtMs: number | null; found?: boolean } | null };
   deliveries: number;
+  /** Мішки реплік за пулами content/lines.json (рішення 41) */
+  lineBags: Record<string, { used: number[]; last: number | null }>;
 }

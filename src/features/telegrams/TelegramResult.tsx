@@ -67,7 +67,14 @@ export function TelegramResult({ store, uid, firstText, onClose }: Props) {
       </ScrollView>
       {item.result.inspHit ? (
         <View style={styles.actions}>
-          <Button testID="tg-result-prepare" label={t.inspPrepare} onPress={onClose} />
+          <Button
+            testID="tg-result-prepare"
+            label={t.inspPrepare}
+            onPress={() => {
+              s.prepareInspection(uid);
+              onClose();
+            }}
+          />
           <Button testID="tg-result-cta" variant="secondary" label={t.inspLater} onPress={onClose} />
         </View>
       ) : (

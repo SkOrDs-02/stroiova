@@ -65,17 +65,17 @@ src/telegrams/                 # чистий домен
 ├── types.ts                   # Telegram, Choice, Effects, InboxItem, TelegramState
 ├── content.ts                 # завантаження пулів (telegrams.json, tg/level1-2.json), індекс за id, пул рівня
 ├── rng.ts                     # детермінований генератор із seed у стані
-├── schedule.ts                # план доби (2–4 слоти, вікно, інтервал), доставка за відсутності, maxNew
+├── clock.ts                   # місцева доба без Date (зсув зони від застосунку)
+├── schedule.ts                # план доби, доставка за відсутності, maxNew, таймери (delayed, повернення, followUps, кидок № 19)
 ├── bag.ts                     # мішок пулу, умови schedule, повтор архівних (FR-5, FR-31)
 ├── effects.ts                 # застосування варіанта: економіка, репутація, таймери, кидки, прапорці
 ├── reputation.ts              # 0–100, рівні, шанс відписки, історія змін
-├── timers.ts                  # delayed, returnsAfterHours, followUps, «на виконанні»
 ├── events.ts                  # override, «Комбата шукають»
-├── lines.ts                   # пули реплік: мішок, ліміт за сесію
+├── lines.ts                   # мішок реплік зі станом у записі (ліміт 2 за сесію — у сторі)
 └── __tests__/
 src/features/telegrams/        # екрани (first.ts з 002 переходить у домен)
 ├── TelegramList.tsx · TelegramDetail.tsx · TelegramResult.tsx · TelegramFlag.tsx · NoteDetail.tsx
-├── ReputationTile.tsx · ReputationSheet.tsx · KombatSheet.tsx · texts.ts
+├── ReputationSheet.tsx · KombatSheet.tsx · present.ts · lines.ts · texts.ts
 src/features/conveyor/store.ts # зріз telegrams, дії, tick → доставка й таймери
 src/save/schema.ts, migrations.ts  # схема 3
 ```

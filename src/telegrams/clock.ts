@@ -26,6 +26,19 @@ export function monthOf(ms: number, tzOffsetMin: number): number {
   return civil(Math.floor(localMs(ms, tzOffsetMin) / DAY)).m;
 }
 
+/** Номер доби від 1970-01-01 за ключем РРРР-ММ-ДД (days_from_civil): різниця діб без Date. */
+export function dayNumber(key: string): number {
+  let y = +key.slice(0, 4);
+  const m = +key.slice(5, 7);
+  const d = +key.slice(8, 10);
+  y -= m <= 2 ? 1 : 0;
+  const era = Math.floor(y / 400);
+  const yoe = y - era * 400;
+  const doy = Math.floor((153 * (m + (m > 2 ? -3 : 9)) + 2) / 5) + d - 1;
+  const doe = yoe * 365 + Math.floor(yoe / 4) - Math.floor(yoe / 100) + doy;
+  return era * 146097 + doe - 719468;
+}
+
 // Howard Hinnant, days_from_civil навпаки: номер доби від 1970-01-01 → рік, місяць, день
 function civil(z0: number): { y: number; m: number; d: number } {
   const z = z0 + 719468;

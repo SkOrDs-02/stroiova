@@ -20,11 +20,13 @@ interface Props {
   coachText?: string;
   onAnswered: (uid: string) => void;
   onFlag: (uid: string) => void;
+  /** Тап по плитці репутації (FR-22) */
+  onReputation?: () => void;
   /** Без «Назад», поки коуч кроку 8 веде до вибору */
   onBack?: () => void;
 }
 
-export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onBack }: Props) {
+export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onReputation, onBack }: Props) {
   const insets = useSafeAreaInsets();
   const s = useStore(store);
   const item = s.telegrams.inbox.find((x) => x.uid === uid);
@@ -59,7 +61,9 @@ export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onBa
           </View>
         ) : null}
         <View style={styles.tiles}>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tile}>{t.repTile(tier)}</Text>
+          <Pressable accessibilityRole="button" onPress={onReputation} disabled={!onReputation} testID="tg-rep-tile">
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tile}>{t.repTile(tier)}</Text>
+          </Pressable>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tile}>{`${t.resPaper}: ${Math.floor(s.state.paper)}`}</Text>
         </View>
         <View style={styles.paper}>

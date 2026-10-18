@@ -60,7 +60,7 @@ button{font:inherit;cursor:pointer}
         </div>
       </div>
 
-      <p class="st-sub" style="color: var(--text); font-size: 14px">Що вища, то рідше планові перевірки.</p>
+      <p class="st-sub" style="color: var(--text); font-size: 14px">Що вища, то рідше помічають відписки.</p>
 
       <sc-for list="{{levels}}" as="lv" hint-placeholder-count="3">
         <div style="{{lv.box}}">
@@ -96,9 +96,9 @@ class Component extends DCLogic {
     var st = this.props.state ?? 'норма';
     var G = { 'низька': 'M12 17L7.8 12.8', 'норма': 'M12 17v-6', 'висока': 'M12 17l4.2-4.2' };
     var D = [
-      { name: 'Низька', key: 'низька', insp: 'частіше: раз на 24–30 год', otp: 'помічають швидше' },
+      { name: 'Низька', key: 'низька', insp: 'раз на 24–48 год', otp: 'помічають швидше' },
       { name: 'Норма', key: 'норма', insp: 'раз на 24–48 год', otp: 'іноді помічають' },
-      { name: 'Висока', key: 'висока', insp: 'рідше: раз на 36–48 год', otp: 'помічають рідко' }
+      { name: 'Висока', key: 'висока', insp: 'раз на 24–48 год', otp: 'помічають рідко' }
     ];
     var levels = D.map(function (d) {
       var now = d.key === st;

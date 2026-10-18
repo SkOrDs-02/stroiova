@@ -6,6 +6,7 @@ import { T0 } from '@/economy/test-fixtures';
 import { createConveyorStore } from '@/features/conveyor/store';
 import { MainScreen } from '@/features/main/MainScreen';
 import { onboardingDone } from '@/save/migrations';
+import { seedFrom } from '@/telegrams/rng';
 import { tgWith } from '@/telegrams/test-utils';
 import type { TelegramState } from '@/telegrams/types';
 
@@ -111,5 +112,52 @@ describe('репліки (рішення 41, 45)', () => {
     expect(store.getState().kavaLineFor(c!)).toBeNull();
     store.getState().away(T0, T0 + 10 * 60_000);
     expect(store.getState().kavaLineFor(c!)).toBeTruthy();
+  });
+});
+
+describe('доповнення за рев\'ю (екран)', () => {
+  test('AC-14: № 24 «Видати під усне розпорядження» — бак повний, «Рішення», «−5 · норма», «Шанс перевірки 20%», «Виконано»', async () => {
+    const store = storeWith({ ids: ['tg_0024_fuel_order'], firstInspectionPassed: true });
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('tab-telegrams'));
+    await fireEvent.press(screen.getByTestId('tg-row-tg_0024_fuel_order#1'));
+    await fireEvent.press(screen.getByTestId('tg-choice-formal_reply'));
+    const res = screen.getByTestId('tg-result');
+    expect(res).toHaveTextContent(/Рішення/);
+    expect(res).toHaveTextContent(/−5 · норма/);
+    expect(res).toHaveTextContent(/Шанс перевірки/);
+    expect(res).toHaveTextContent(/20%/);
+    expect(res).toHaveTextContent(/Виконано/);
+    expect(store.getState().state.fuelEndMs).toBe(store.getState().lastMs + store.getState().state.fuelCapacityMs);
+  });
+
+  test('AC-16: шторка показує 3 останні зміни', async () => {
+    const store = storeWith({ ids: ['tg_0002_less_paper', 'tg_0007_briefing', 'tg_0008_morale', 'tg_0011_engines'] }, 999);
+    for (const uid of store.getState().telegrams.inbox.map((x) => x.uid)) store.getState().answerTelegram(uid, 'formal_reply');
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('rep-tile'));
+    expect(screen.getAllByTestId('rep-log')).toHaveLength(3);
+  });
+
+  test('AC-20: ціна посильного не залежить від сповільнень (4 хв базового доходу)', () => {
+    const { runnerCost } = jest.requireActual('@/telegrams/events') as typeof import('@/telegrams/events');
+    const store = storeWith({ ids: ['tg_0001_sergeants'] });
+    const before = runnerCost(store.getState().state, store.getState().cfg);
+    store.getState().answerTelegram('tg_0001_sergeants#1', 'diligent');
+    expect(store.getState().effects.some((e) => e.source === 'telegram_slow')).toBe(true);
+    expect(runnerCost(store.getState().state, store.getState().cfg)).toBe(before);
+  });
+
+  test('AC-21: № 18 «на стіл» з випадінням — стор вмикає «Резолюції комбата» ×0,25 не довше 30 хв', () => {
+    for (let s = 1; s <= 40; s++) {
+      const store = storeWith({ ids: ['tg_0018_kombat_leave'], rng: seedFrom(`ui21-${s}`) });
+      store.getState().answerTelegram('tg_0018_kombat_leave#1', 'kombat_desk');
+      const k = store.getState().effects.find((e) => e.source === 'kombat_away');
+      if (!k) continue;
+      expect(k.value).toBe(bundledConfig.params.kombatMult);
+      expect(k.endMs - k.startMs).toBeLessThanOrEqual(30 * 60_000);
+      return;
+    }
+    throw new Error('за 40 зерен «на стіл» жодного разу не випало');
   });
 });

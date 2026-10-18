@@ -20,6 +20,7 @@ export function KombatSheet({ store, onClose }: { store: ConveyorStore; onClose:
   const left = a ? formatDuration(Math.max(0, (a.endMs - now) / 1000)) : '';
   const cost = runnerCost(s.state, s.cfg);
   const sent = a?.runnerAtMs != null;
+  const granit = a ? s.sessionLines.byUid[`kombat:${a.startMs}`] : undefined;
   return (
     <View style={styles.scrim} testID={found ? 'kombat-found' : 'kombat-sheet'}>
       <View style={styles.sheet} accessibilityViewIsModal>
@@ -27,7 +28,7 @@ export function KombatSheet({ store, onClose }: { store: ConveyorStore; onClose:
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.unit}>{`${t.kbUnit}, ${formatMult(s.cfg.params.kombatMult)}${found ? '' : ` · ${t.left(left)}`}`}</Text>
         {found ? (
           <>
-            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.line}>{lineAt('granit.success', s.telegrams.deliveries)}</Text>
+            {granit ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.line} testID="kombat-granit">{granit}</Text> : null}
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{t.kbFoundLine}</Text>
             <Button testID="kombat-ok" label={t.kbOk} onPress={onClose} />
           </>

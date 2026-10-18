@@ -92,7 +92,7 @@ export const telegramStateSchema = z.object({
   timers: z.array(
     z.object({
       atMs: z.number(),
-      kind: z.enum(['delayed', 'return', 'followUp', 'fill', 'kombatEnd', 'runner', 'inspRoll']),
+      kind: z.enum(['delayed', 'return', 'followUp', 'fill', 'inspRoll']),
       itemUid: z.string(),
       effects: effectsSchema.optional(),
       telegramId: z.string().optional(),
@@ -110,9 +110,10 @@ export const telegramStateSchema = z.object({
   override: z.object({ lastDayKey: z.string().nullable(), nextNo: z.number() }),
   kombat: z.object({
     lastDayKey: z.string().nullable(),
-    active: z.object({ startMs: z.number(), endMs: z.number(), runnerAtMs: z.number().nullable() }).nullable(),
+    active: z.object({ startMs: z.number(), endMs: z.number(), runnerAtMs: z.number().nullable(), found: z.boolean().optional() }).nullable(),
   }),
   deliveries: z.number().int().nonnegative(),
+  lineBags: z.record(z.string(), z.object({ used: z.array(z.number().int().nonnegative()), last: z.number().int().nullable() })),
 });
 
 export const gameSaveSchema = z.object({

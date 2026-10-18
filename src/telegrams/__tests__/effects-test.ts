@@ -2,6 +2,7 @@
 import { T0 } from '@/economy/test-fixtures';
 
 import { answer, canChoose, openNotice, telegramOf, type AnswerResult } from '../effects';
+import { seedFrom } from '../rng';
 import { tick } from '../schedule';
 import { ctx, eco, HOUR, p, cfg, tgWith } from '../test-utils';
 import type { TelegramState } from '../types';
@@ -58,7 +59,7 @@ describe('відповідь на телеграму', () => {
     expect(run(r.tg, r.eco, T0 + 24 * HOUR).tg.reputation.value).toBe(45);
     const again = ok(answer(r.tg, r.eco, 'tg_0016_second_page#1', 'diligent', ctx(T0 + 3 * HOUR)));
     expect(run(again.tg, again.eco, T0 + 25 * HOUR).tg.reputation.value).toBe(55);
-    expect(answer(r.tg, r.eco, 'tg_0016_second_page#1', 'drawer', ctx(T0 + 3 * HOUR))).toEqual({ error: 'digital' });
+    expect(answer(r.tg, r.eco, 'tg_0016_second_page#1', 'drawer', ctx(T0 + 3 * HOUR))).toEqual({ error: 'drawer' });
   });
 
   test('FR-6: «вписати себе» на № 5 ставить № 22 і № 17 у чергу', () => {
@@ -97,5 +98,42 @@ describe('відповідь на телеграму', () => {
       hits += r.events.filter((e) => e.type === 'unscheduledInspection').length;
     }
     expect(hits).toBeLessThanOrEqual(p.unscheduledPerDay);
+  });
+});
+
+describe('доповнення за рев\'ю', () => {
+  test('AC-8: випадіння — подія позапланової з попередженням 2 год, рядок результату', () => {
+    let hit: AnswerResult | null = null;
+    for (let s = 1; s < 200 && !hit; s++) {
+      const r = ok(answer(tgWith(['tg_0002_less_paper'], { firstInspectionPassed: true, rng: seedFrom(`ac8-${s}`) }), eco(), 'tg_0002_less_paper#1', 'formal_reply', ctx()));
+      if (r.item.result!.inspHit) hit = r;
+    }
+    expect(hit).not.toBeNull();
+    expect(hit!.events).toContainEqual({ type: 'unscheduledInspection', telegramId: 'tg_0002_less_paper', warnSec: 7200, extraItem: null });
+    expect(hit!.item.result!.chancePct).toBe(20);
+  });
+
+  test('№ 19: відписка без миттєвого кидка; кидок через 24 год за шансом рівня; № 4544 його скасовує', () => {
+    const r = ok(answer(tgWith(['tg_0019_eighteen_docs'], { firstInspectionPassed: true }), eco(), 'tg_0019_eighteen_docs#1', 'formal_reply', ctx()));
+    expect(r.item.result!.chancePct).toBe(0);
+    expect(r.events.some((e) => e.type === 'unscheduledInspection')).toBe(false);
+    expect(r.tg.timers).toContainEqual(expect.objectContaining({ kind: 'inspRoll', pct: 25 }));
+    const withNotice = { ...r.tg, inbox: [...r.tg.inbox, { uid: 'n#1', id: 'tg_0019b_two_acts', kind: 'notice' as const, receivedAt: T0, status: 'new' as const }] };
+    expect(openNotice(withNotice, 'n#1', T0).tg.timers.some((t) => t.kind === 'inspRoll')).toBe(false);
+  });
+
+  test('AC-22: відповідь «у шухляду» теж дає запис курйозу', () => {
+    const r = ok(answer(tgWith(['tg_0007_briefing']), eco(), 'tg_0007_briefing#1', 'drawer', ctx()));
+    expect(r.events).toContainEqual(expect.objectContaining({ type: 'curio', telegramId: 'tg_0007_briefing' }));
+  });
+
+  test('AC-21: № 18 «на стіл» — запит «Комбата шукають» до 30 хв (50%)', () => {
+    let got = 0;
+    for (let s = 1; s <= 40; s++) {
+      const r = ok(answer(tgWith(['tg_0018_kombat_leave'], { rng: seedFrom(`ac21-${s}`) }), eco(), 'tg_0018_kombat_leave#1', 'kombat_desk', ctx()));
+      if (r.events.some((e) => e.type === 'kombatRequest' && e.maxMin === 30)) got++;
+    }
+    expect(got).toBeGreaterThan(5);
+    expect(got).toBeLessThan(35);
   });
 });

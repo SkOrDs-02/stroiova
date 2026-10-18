@@ -43,7 +43,9 @@ export function pick(tg: TelegramState, c: BagCtx, rand: () => number): { id: st
     const last = lastReceived(tg, t.id);
     if (last == null) return true;
     const every = t.schedule?.repeatEveryDays;
-    return every != null && c.nowMs - last >= every * DAY;
+    // № 13 повторюється, лише коли попередня вже відповіла (не лежить у «Нових» чи шухляді)
+    const open = tg.inbox.some((x) => x.id === t.id && x.status !== 'archive');
+    return every != null && !open && c.nowMs - last >= every * DAY;
   });
   if (fresh.length) return { id: fresh[Math.floor(rand() * fresh.length)]!.id, fromQueue: false };
   // другий прохід: архівна з найдавнішою відповіддю, не частіше ніж раз на repeatMinDays (FR-31)

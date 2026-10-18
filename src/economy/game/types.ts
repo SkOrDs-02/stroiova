@@ -108,7 +108,10 @@ export type DomainEvent =
   | { type: 'raceEffect'; telegramId: string; effect: Record<string, unknown> }
   | { type: 'arc'; id: string }
   | { type: 'journal'; id: string }
-  | { type: 'curio'; telegramId: string; uid: string; text: string | null };
+  | { type: 'curio'; telegramId: string; uid: string; text: string | null }
+  | { type: 'telegramFlag'; telegramId: string; reason: number | null; hasComment: boolean; afterChoice: boolean }
+  /** «Готуватися» з tg-result: 04 відкриє insp-warning */
+  | { type: 'inspectionPrepare'; telegramId: string };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */
 export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };
