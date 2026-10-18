@@ -25,7 +25,6 @@ export function ReputationSheet({ store, onClose }: { store: ConveyorStore; onCl
         </View>
         <View style={styles.headRow}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.cell, styles.cellName]} />
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cellH}>{t.repInsp}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cellH}>{t.repReply}</Text>
         </View>
         {t.repLevels.map((lv) => {
@@ -33,7 +32,6 @@ export function ReputationSheet({ store, onClose }: { store: ConveyorStore; onCl
           return (
             <View key={lv.key} style={[styles.lvRow, now && styles.lvNow]} testID={`rep-level-${lv.key}`}>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.cell, styles.cellName, now && styles.bold]}>{now ? `${lv.name} · ${t.repNow}` : lv.name}</Text>
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{lv.insp}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{lv.otp}</Text>
             </View>
           );
