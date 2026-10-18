@@ -170,14 +170,25 @@ describe('утримання й церемонія', () => {
     expect(screen.getByTestId('toast')).toHaveTextContent(/Казначейство: нова ланка труби/);
   });
 
-  test('AC-15: застосунок убито на digit-result після 3-ї — при запуску показано level-up, гравець на Р2', async () => {
+  test('AC-15: застосунок убито на digit-result після 3-ї — при запуску показано непоказаний крок, потім level-up; гравець на Р2', async () => {
     const store = game(L(40), { signatures: 1e9, prestigePoints: 70 }, { '1': 2 });
     store.getState().digitize();
-    store.getState().closeDigitStep(); // акт закрито, застосунок убито на наказі
+    // запис містить церемонію на кроці «акт»
+    expect(store.getState().digit.ceremony).toMatchObject({ step: 'result', levelUp: true });
+    await render(<MainScreen store={store} />);
+    expect(screen.getByTestId('digit-result')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('digit-result-ok'));
+    expect(screen.getByTestId('level-up')).toBeTruthy();
+    expect(store.getState().state.level).toBe(2);
+  });
+
+  test('AC-15: убито вже на наказі — при запуску одразу level-up', async () => {
+    const store = game(L(40), { signatures: 1e9, prestigePoints: 70 }, { '1': 2 });
+    store.getState().digitize();
+    store.getState().closeDigitStep();
     expect(store.getState().digit.ceremony).toMatchObject({ step: 'levelUp' });
     await render(<MainScreen store={store} />);
     expect(screen.getByTestId('level-up')).toBeTruthy();
-    expect(store.getState().state.level).toBe(2);
   });
 
   test('AC-19: Р2 — 5 потоків, 4 ланки, шапка «Бригада · будинок культури»', async () => {

@@ -252,9 +252,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
   /**
    * Підказка «Час цифровізуватися» (006 FR-8…FR-10): умова перевіряється раз на хвилину гри; подія — раз за сесію.
    */
+  const DIGIT_HINT_EVERY_MS = 60_000;
   const checkDigitHint = (now: number, force = false) => {
     const g = get();
-    if (!force && now - g.digitCheckedAt < 60_000) return;
+    if (!force && now - g.digitCheckedAt < DIGIT_HINT_EVERY_MS) return;
     const st = digitStatus(g.state, g.digit, g.cfg, now, g.effects);
     const patch: Partial<Store> = { digitCheckedAt: now };
     if (st.recommended !== g.digitRec) patch.digitRec = st.recommended;
@@ -326,7 +327,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (a.clockBack) {
         // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
         const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), digit: shiftDigitization(get().digit, a.rawMs), lastMs: backAt, toast: { kind: 'clockBack' } });
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), digit: shiftDigitization(get().digit, a.rawMs), digitCheckedAt: 0, lastMs: backAt, toast: { kind: 'clockBack' } });
         return;
       }
       const res = offline(state, c, leftAt, backAt, effects);
@@ -398,6 +399,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({ state: r.state, events: [...get().events, ...r.events].slice(-20), ...(firstUpgrade ? { pinned: c } : {}) });
       // 002 FR-16: крок 6 закриває перша покупка рівня
       if (purchased) get().onbComplete(6);
+      // 006 FR-9: підказка зникає, щойно умова хибна (після покупки наступна покупка далі)
+      checkDigitHint(now, true);
     },
     hire: (ref) => {
       if (!canHireNow(get().onboarding, ref)) return;
@@ -543,8 +546,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (item) handleEvents([{ type: 'inspectionPrepare', telegramId: item.id }], get().lastMs);
     },
     kavaLineFor: (uid) => characterLine('kava.tg_new', uid),
-    // перевірки — поза лімітом 2 реплік за сесію (рішення 45); Ліна (гонка) — у ліміті
-    tumbLine: (key, slot) => (key.startsWith('lina.') || key.startsWith('digit.') ? characterLine(key, slot) : eventLine(key, slot)),
+    // перевірки й цифровізація — поза лімітом 2 реплік за сесію (рішення 45, 74); Ліна (гонка) — у ліміті (рішення 70)
+    tumbLine: (key, slot) => (key.startsWith('lina.') ? characterLine(key, slot) : eventLine(key, slot)),
     raceDigital: () => {
       const g = get();
       const r = digitalSpeedup(g.race, g.lastMs, g.state.prestigePoints, g.cfg);
@@ -561,7 +564,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const r = digitizeNow(g.state, g.digit, g.cfg, g.lastMs, fromHint);
       if ('error' in r) return false;
       // L і підписи в нуль, нові потоки: ціни й дохід інші, тож підказка перераховується
-      set({ state: r.state, digit: r.ds, digitRec: false, events: [...g.events, ...r.events].slice(-40) });
+      set({ state: r.state, digit: { ...r.ds, howSeen: true }, digitRec: false, events: [...g.events, ...r.events].slice(-40) });
       return true;
     },
     closeDigitStep: () => {

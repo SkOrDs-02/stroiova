@@ -48,7 +48,22 @@ export function HoldButton({ label, onComplete, testID }: { label: string; onCom
   };
 
   return (
-    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={label} onPressIn={begin} onPressOut={stop} style={styles.btn}>
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      // VoiceOver і TalkBack не вміють утримувати: дія «activate» виконує те саме, що 1,2 с утримання
+      accessibilityActions={[{ name: 'activate', label }]}
+      onAccessibilityAction={() => {
+        if (!done.current) {
+          done.current = true;
+          onComplete();
+        }
+      }}
+      onPressIn={begin}
+      onPressOut={stop}
+      style={styles.btn}
+    >
       <View style={[styles.fill, { width: `${pct}%` }]} />
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} numberOfLines={2}>{label}</Text>
     </Pressable>

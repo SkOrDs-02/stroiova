@@ -35,8 +35,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   3: (game) => ({ ...(game as object), inspections: inspectionsV4((game as { telegrams?: { startMs?: number | null } }).telegrams?.startMs ?? 0) }),
   // 4 → 5 (005): гонок ще не було — порожній стан; перший подарунок рахується від встановлення (inspections.installMs)
   4: (game) => ({ ...(game as object), race: raceV5() }),
-  // 5 → 6 (006): цифровізацій ще не було; цикл рахується від початку розкладу телеграм (чи 0 — «давно»)
-  5: (game) => ({ ...(game as object), digitization: digitizationV6((game as { telegrams?: { startMs?: number | null } }).telegrams?.startMs ?? 0) }),
+  // 5 → 6 (006): цифровізацій ще не було; цикл рахується від встановлення (`inspections.installMs`, як у 4 → 5)
+  5: (game) => ({ ...(game as object), digitization: digitizationV6((game as { inspections?: { installMs?: number } }).inspections?.installMs ?? 0) }),
 };
 
 /** Порожній стан цифровізації схеми 6. */

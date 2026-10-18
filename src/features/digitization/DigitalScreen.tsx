@@ -27,7 +27,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
       <View style={styles.head}>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h1} accessibilityRole="header">{digitT.title}</Text>
         <Pressable testID="digit-info" accessibilityRole="button" accessibilityLabel={digitT.how.info} onPress={() => setHow(true)} style={styles.info}>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.infoText}>i</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.infoText}>{digitT.how.infoMark}</Text>
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.body}>

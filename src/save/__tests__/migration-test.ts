@@ -140,10 +140,10 @@ describe('справжні міграції', () => {
     expect(r.save.game.race).toMatchObject({ giftIdx: 0, active: null, lastRaceEndMs: null });
   });
 
-  test('5 → 6 (006): цифровізацій ще не було — порожній стан, цикл від старту розкладу телеграм', () => {
+  test('5 → 6 (006): цифровізацій ще не було — порожній стан, цикл від встановлення', () => {
     const d = draft({ schemaVersion: 5, savedAt: 5000 });
     const { digitization: _d, ...gameV5 } = d.game;
-    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV5, telegrams: { ...gameV5.telegrams, startMs: 4000 } } as never }) });
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV5, inspections: { ...gameV5.inspections, installMs: 4000 } } as never }) });
     const r = loadSave(kv, { current: 6, migrations: MIGRATIONS });
     expect(r).toMatchObject({ kind: 'ok', migratedFrom: 5 });
     if (r.kind !== 'ok') return;

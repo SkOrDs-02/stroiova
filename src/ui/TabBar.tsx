@@ -45,7 +45,7 @@ export function TabBar({ active, telegramsNew = 0, digitalDot = false, coachTab,
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} numberOfLines={1} style={[styles.label, on && styles.labelOn, off && styles.labelOff]}>
               {tab.label}
             </Text>
-            {tab.id === 'digital' && digitalDot ? <View style={styles.dot} testID="tab-digital-dot" /> : null}
+            {tab.id === 'digital' && digitalDot ? <View style={styles.dot} testID="tab-digital-dot" accessibilityLabel={t.digitalDot} /> : null}
             {badge ? (
               <View style={styles.badge} testID="tab-telegrams-badge">
                 <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.badgeText}>{badge}</Text>

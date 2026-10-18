@@ -154,7 +154,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const tier = repTier(s.telegrams.reputation.value, s.cfg.params);
   // 006 FR-22: церемонія цифровізації (акт, наказ про переведення) показується, поки гравець її не закрив, і при запуску
   const ceremony = s.digit.ceremony;
-  const overlay = s.offline != null || s.clerkFirstOpen || (view.kind !== 'main' && view.kind !== 'digital') || kombatAuto;
+  const overlay = s.offline != null || s.clerkFirstOpen || view.kind !== 'main' || kombatAuto;
   const coachRow = !overlay && (rd === 'coachUpgrade' || rd === 'coachHire');
   const coachTab = !overlay && rd === 'coachTelegram';
   const coachOn = coachRow || coachTab;

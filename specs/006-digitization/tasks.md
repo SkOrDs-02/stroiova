@@ -17,4 +17,4 @@ description: "Задачі: 006 Цифровізація й «Бригада» �
 - [ ] T009 `spec-guardian`, `content-reviewer`; CLAUDE.md (`src/digitization`); `npm run check`
 
 ## Поза етапом 1
-Дзвінки (02), `journal-new` і бонуси журналів (07), `unit-unlock` і `coach` (тост замість них), пуші (10), PostHog (етап 5), вихід з Р2 (011).
+Дзвінки (02), `journal-new` і бонуси журналів (07), `unit-unlock` і `coach` (тост замість них), пуші (10), PostHog і `sec_since_*`, `digitization_screen_open` (етап 5), Reduce Motion для штампа (FX), вихід з Р2 (011).
