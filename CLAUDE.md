@@ -36,6 +36,7 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 | `src/inspections/` | Перевірки (004): чистий домен — розклад, чекліст і ціни, оголошення, результат, рядки довідки; екрани — `src/features/inspections/` |
 | `src/race/` | Гонка з часом і подарунки (005): чистий домен — розклад подарунків, маршрут акта, таймери, фінал, прискорення; екрани — `src/features/race/` |
 | `src/digitization/` | Цифровізація й «Бригада» (006): чистий домен — бали, доступність, підказка, скидання, перехід на Р2; екрани — `src/features/digitization/` |
+| `src/museum/` | Музей і курйози (007): чистий домен — журнали № 1–8, джерела, бонуси в економіці й гонці, розкриття, записи курйозів; екрани — `src/features/museum/`; тексти журналів — `content/museum.json` |
 | `src/economy/` | Модуль економіки: `core` (спільний із симулятором), `game` (стан і дії гри), `format.ts`; вбудований конфіг `econ-v7.2` |
 | `analytics/tracking-plan.yaml` | 60 подій аналітики; `docs/analytics.md` — пояснення |
 | `docs/art-and-sound.md`, `docs/stores.md`, `docs/playtest-and-launch.md` | Арт і звук, сторінки сторів, тестування й запуск |
