@@ -84,7 +84,7 @@ describe('підказка (AC-6)', () => {
     const store = game(L(31), { prestigePoints: 30, streamLevels: [120, 120, 120, 120], stageLevels: [120, 120, 120] });
     await act(async () => store.getState().tick(T0 + 61_000));
     await render(<MainScreen store={store} />);
-    expect(screen.getByTestId('digit-hint')).toHaveTextContent(/Наступна покупка — через .* Час цифровізуватися\./);
+    expect(screen.getByTestId('digit-hint')).toHaveTextContent(/Наступна покупка через .* Час цифровізуватися\./);
     expect(screen.getByTestId('tab-digital-dot')).toBeTruthy();
     await act(async () => store.getState().tick(T0 + 200_000));
     await act(async () => store.getState().tick(T0 + 400_000));
@@ -141,7 +141,7 @@ describe('утримання й церемонія', () => {
     expect(r).toHaveTextContent(/про переведення обліку в електронну форму/);
     expect(r).toHaveTextContent(/Оцифровано/);
     expect(screen.getByTestId('result-points')).toHaveTextContent('+40');
-    expect(screen.getByTestId('result-total')).toHaveTextContent('Разом 40 · ×1,8 до всіх підписів назавжди');
+    expect(screen.getByTestId('result-total')).toHaveTextContent('Разом балів: 40 · ×1,8 до всіх підписів назавжди');
     expect(r).toHaveTextContent(/Летять у музей.*№ 1 ·.*№ 2 ·.*№ 3 ·/);
     await fireEvent.press(screen.getByTestId('digit-result-ok'));
     expect(screen.queryByTestId('digit-result')).toBeNull();
@@ -156,7 +156,7 @@ describe('утримання й церемонія', () => {
     expect(screen.getByTestId('confirm-lvl')).toHaveTextContent(/Третя цифровізація на рівні/);
     await fireEvent(screen.getByTestId('digit-hold'), 'pressIn');
     await act(async () => { jest.advanceTimersByTime(1300); });
-    expect(screen.getByTestId('digit-result')).toHaveTextContent(/Батальйон оцифровано. Наказ про переведення вже друкують./);
+    expect(screen.getByTestId('digit-result')).toHaveTextContent(/Наказ про переведення вже друкують./);
     await fireEvent.press(screen.getByTestId('digit-result-ok'));
     expect(screen.getByTestId('level-up')).toHaveTextContent(/НАКАЗ № 2/);
     expect(screen.getByTestId('level-points')).toHaveTextContent('Цифрові бали 110, переходять');
@@ -165,7 +165,7 @@ describe('утримання й церемонія', () => {
     expect(screen.queryByTestId('level-up')).toBeNull();
     expect(store.getState().state.level).toBe(2);
     expect(screen.getByTestId('place')).toHaveTextContent('Бригада · будинок культури');
-    expect(screen.getByTestId('toast')).toHaveTextContent(/Казначейство — нова ланка труби/);
+    expect(screen.getByTestId('toast')).toHaveTextContent(/Казначейство: нова ланка труби/);
   });
 
   test('AC-15: застосунок убито на digit-result після 3-ї — при запуску показано level-up, гравець на Р2', async () => {

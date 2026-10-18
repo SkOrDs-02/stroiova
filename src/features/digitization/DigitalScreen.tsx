@@ -81,7 +81,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
               ))}
             </>
           ) : (
-            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{digitT.noJournals}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{level >= 2 ? digitT.noJournalsR2 : digitT.noJournals}</Text>
           )}
         </View>
         <View style={styles.card}>
