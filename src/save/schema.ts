@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 5;
+export const CURRENT_SCHEMA = 6;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -210,6 +210,30 @@ export const raceStateSchema = z.object({
     .nullable(),
 });
 
+/** Цифровізація (006 plan.md); схема 6. */
+export const digitizationStateSchema = z.object({
+  counts: z.record(z.string(), z.number().int().nonnegative()),
+  total: z.number().int().nonnegative(),
+  howSeen: z.boolean(),
+  ceremony: z
+    .object({
+      no: z.number().int().min(1),
+      level: z.number().int().min(1),
+      levelCount: z.number().int().min(1),
+      atMs: z.number(),
+      lifetime: nonNeg,
+      points: z.number().int().nonnegative(),
+      pointsTotal: z.number().int().nonnegative(),
+      multBefore: z.number(),
+      multAfter: z.number(),
+      journals: z.array(z.number().int()),
+      levelUp: z.boolean(),
+      step: z.enum(['result', 'levelUp']),
+    })
+    .nullable(),
+  cycleStartMs: z.number(),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -222,6 +246,8 @@ export const gameSaveSchema = z.object({
   inspections: inspectionStateSchema,
   /** Гонка з часом (005) */
   race: raceStateSchema,
+  /** Цифровізація (006) */
+  digitization: digitizationStateSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

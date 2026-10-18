@@ -16,6 +16,12 @@ import { InspResult } from '@/features/inspections/InspResult';
 import { InspWarning } from '@/features/inspections/InspWarning';
 import { offlineRows } from '@/features/inspections/present';
 import { inspT } from '@/features/inspections/texts';
+import { status as digitStatus } from '@/digitization/digitization';
+import { DigitalScreen } from '@/features/digitization/DigitalScreen';
+import { DigitConfirm } from '@/features/digitization/DigitConfirm';
+import { DigitResult } from '@/features/digitization/DigitResult';
+import { LevelUp } from '@/features/digitization/LevelUp';
+import { digitT } from '@/features/digitization/texts';
 import { GiftArrived } from '@/features/race/GiftArrived';
 import { offlineRaceRows } from '@/features/race/present';
 import { RaceCard } from '@/features/race/RaceCard';
@@ -56,7 +62,9 @@ type View3 =
   | { kind: 'flag'; uid: string; back: 'detail' | 'list' }
   | { kind: 'note'; uid: string }
   | { kind: 'rep'; back: 'main' | 'list' }
-  | { kind: 'kombat' };
+  | { kind: 'kombat' }
+  | { kind: 'digital' }
+  | { kind: 'digit-confirm' };
 
 function toastText(toast: Toast): string {
   switch (toast.kind) {
@@ -144,7 +152,9 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const inbox = s.telegrams.inbox;
   const badge = inbox.filter((x) => (x.status === 'new' && x.kind !== 'note') || (x.kind === 'note' && !x.read)).length;
   const tier = repTier(s.telegrams.reputation.value, s.cfg.params);
-  const overlay = s.offline != null || s.clerkFirstOpen || view.kind !== 'main' || kombatAuto;
+  // 006 FR-22: церемонія цифровізації (акт, наказ про переведення) показується, поки гравець її не закрив, і при запуску
+  const ceremony = s.digit.ceremony;
+  const overlay = s.offline != null || s.clerkFirstOpen || (view.kind !== 'main' && view.kind !== 'digital') || kombatAuto;
   const coachRow = !overlay && (rd === 'coachUpgrade' || rd === 'coachHire');
   const coachTab = !overlay && rd === 'coachTelegram';
   const coachOn = coachRow || coachTab;
@@ -153,12 +163,14 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // 004: перевірки — у черзі після інших модалок (FR-10, FR-22): call → insp-warning → insp-result
   const ins = s.inspections;
   const insp = ins.active;
-  const inspFree = !overlay && !showCall;
+  const ceremonyOpen = ceremony != null && s.offline == null && !s.clerkFirstOpen;
+  const inspFree = !overlay && !showCall && !ceremonyOpen;
   const inspCall = inspFree && insp != null && ins.callPending;
   const inspWarn = inspFree && !inspCall && insp != null && insp.modal && !insp.warned;
   // без гравця результат іде в довідку й позначається показаним (FR-25); коротка відсутність без довідки — акт
   const inspResult = inspFree && !inspCall && !inspWarn && ins.last != null && !ins.last.seen;
   const inspBanner = insp != null && (insp.warned || !insp.modal);
+  const digitEta = s.digitRec ? digitStatus(s.state, s.digit, s.cfg, now, s.effects).etaSec : null;
   // 005: gift-arrived і результат гонки — у тій самій черзі, після перевірок (крайовий випадок spec)
   const race = s.race.active;
   // race-sheet прив'язано до гонки: скінчилась — шторка зникає й не відкривається над наступним подарунком
@@ -181,6 +193,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     // 002 FR-19: на кроці 8 підсвічена вкладка відкриває саму телеграму № 1, без списку
     if (tab === 'telegrams' && o.step === 8 && tg1?.status === 'new') setView({ kind: 'detail', uid: tg1.uid, coach: true });
     else if (tab === 'telegrams') setView({ kind: 'list' });
+    else if (tab === 'digital') setView({ kind: 'digital' });
     else if (tab === 'stroyova') setView({ kind: 'main' });
   };
   const openItem = (item: InboxItem) => {
@@ -193,15 +206,18 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       setView({ kind: 'detail', uid: item.uid, coach: false });
     }
   };
-  const tabsEnabled: TabId[] = coachRow ? [] : o.step !== 'done' && o.step < 8 ? ['stroyova'] : ['stroyova', 'telegrams'];
+  const tabsEnabled: TabId[] = coachRow ? [] : o.step !== 'done' && o.step < 8 ? ['stroyova'] : ['stroyova', 'telegrams', 'digital'];
 
   return (
     <View style={styles.root}>
       {view.kind === 'list' ? (
         <TelegramList store={store} onOpen={openItem} onReputation={() => setView({ kind: 'rep', back: 'list' })} />
+      ) : view.kind === 'digital' || view.kind === 'digit-confirm' ? (
+        <DigitalScreen store={store} onOpenConfirm={() => setView({ kind: 'digit-confirm' })} />
       ) : (
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
+        {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{digitT.placeR2}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.balance} testID="balance">{formatBig(s.state.signatures, 'counter')}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.income} testID="income">{`${formatRate(inc.perMin)} · ${formatMult(M)}`}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.flow} testID="flow-line">
@@ -220,6 +236,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
             </Pressable>
           ) : null}
         </View>
+        {s.digitRec ? (
+          <Pressable testID="digit-hint" accessibilityRole="button" onPress={() => setView({ kind: 'digital' })} style={styles.hintBar}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.hintText}>{digitT.hint(formatDuration(Math.max(0, (digitEta ?? 0)))) }</Text>
+          </Pressable>
+        ) : null}
         {inspBanner ? (
           <Pressable testID="insp-banner" accessibilityRole="button" onPress={s.openInspPrep} style={styles.inspBar}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.inspText}>{`${inspT.banner(formatCountdown((insp!.arrMs - now) / 1000))} · ${inspT.prepare}`}</Text>
@@ -302,7 +323,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         </>
       )}
       <TabBar
-        active={view.kind === 'list' ? 'telegrams' : 'stroyova'}
+        active={view.kind === 'list' ? 'telegrams' : view.kind === 'digital' || view.kind === 'digit-confirm' ? 'digital' : 'stroyova'}
+        digitalDot={s.digitRec}
         telegramsNew={badge}
         coachTab={coachTab ? 'telegrams' : undefined}
         enabled={tabsEnabled}
@@ -367,6 +389,9 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       {inspWarn ? <InspWarning store={store} /> : null}
       {inspResult ? <InspResult store={store} /> : null}
       {s.inspPrepOpen && insp ? <InspPrep store={store} /> : null}
+      {view.kind === 'digit-confirm' ? <DigitConfirm store={store} onClose={() => setView({ kind: 'digital' })} onDone={() => setView({ kind: 'main' })} /> : null}
+      {ceremonyOpen && ceremony!.step === 'result' ? <DigitResult store={store} /> : null}
+      {ceremonyOpen && ceremony!.step === 'levelUp' ? <LevelUp store={store} /> : null}
       {raceSheet ? <RaceSheet store={store} onClose={() => setRaceSheetId(null)} /> : null}
       {giftOpen ? (
         <GiftArrived
@@ -405,6 +430,9 @@ const styles = StyleSheet.create({
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: color.scrim },
   kombatBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.surface2, borderWidth: 1, borderColor: color.accent },
   kombatText: { ...type('bodyS'), color: color.accent },
+  place: { ...type('caption'), color: color.muted },
+  hintBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.surface2, borderWidth: 1, borderColor: color.accent },
+  hintText: { ...type('bodyS'), color: color.accent },
   inspBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.alertBg, borderWidth: 1, borderColor: color.alertLine },
   inspText: { ...type('bodyS'), color: color.alertText },
   coachTab: { ...type('bodyS'), color: color.accent, fontWeight: typeScale.cta.fontWeight, backgroundColor: color.bgDeep, paddingHorizontal: space[16], paddingVertical: space[8] },

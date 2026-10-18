@@ -14,6 +14,8 @@ const TABS: { id: TabId; label: string }[] = (Object.keys(t.tabs) as TabId[]).ma
 interface Props {
   active: TabId;
   telegramsNew?: number;
+  /** Крапка на «Цифрі»: рекомендовано цифровізуватися (06 FR-9) */
+  digitalDot?: boolean;
   /** Коуч: лише ця вкладка тапається, решта приглушена (002 FR-15) */
   coachTab?: TabId;
   /** Вкладки, яких ще немає в збірці (06–08): не тапаються */
@@ -22,7 +24,7 @@ interface Props {
   onChange: (tab: TabId) => void;
 }
 
-export function TabBar({ active, telegramsNew = 0, coachTab, enabled, bottomInset = 0, onChange }: Props) {
+export function TabBar({ active, telegramsNew = 0, digitalDot = false, coachTab, enabled, bottomInset = 0, onChange }: Props) {
   return (
     <View style={[styles.bar, { paddingBottom: bottomInset }]} accessibilityRole="tablist" testID="tabbar">
       {TABS.map((tab) => {
@@ -43,6 +45,7 @@ export function TabBar({ active, telegramsNew = 0, coachTab, enabled, bottomInse
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} numberOfLines={1} style={[styles.label, on && styles.labelOn, off && styles.labelOff]}>
               {tab.label}
             </Text>
+            {tab.id === 'digital' && digitalDot ? <View style={styles.dot} testID="tab-digital-dot" /> : null}
             {badge ? (
               <View style={styles.badge} testID="tab-telegrams-badge">
                 <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.badgeText}>{badge}</Text>
@@ -63,5 +66,6 @@ const styles = StyleSheet.create({
   labelOn: { color: color.accent },
   labelOff: { color: color.pencil },
   badge: { position: 'absolute', top: space[6], right: space[8], minWidth: space[18], borderRadius: radius.pill, backgroundColor: color.alert, paddingHorizontal: space[4], alignItems: 'center' },
+  dot: { position: 'absolute', top: space[8], right: space[16], width: space[8], height: space[8], borderRadius: radius.pill, backgroundColor: color.accent },
   badgeText: { ...type('label'), color: color.onAlert },
 });

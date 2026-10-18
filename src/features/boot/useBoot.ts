@@ -10,6 +10,7 @@ import type { EconomyConfig, EconomyState } from '@/economy/game/types';
 import { createConveyorStore, gameSave, type ConveyorStore, type StoredEffect } from '@/features/conveyor/store';
 import type { OnboardingState } from '@/features/onboarding/steps';
 import type { InspectionState } from '@/inspections/types';
+import type { DigitizationState } from '@/digitization/types';
 import type { RaceState } from '@/race/types';
 import type { TelegramState } from '@/telegrams/types';
 import { MIGRATIONS } from '@/save/migrations';
@@ -56,7 +57,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization },
   };
 }
 
@@ -79,6 +80,7 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     telegrams: save.game.telegrams as TelegramState,
     inspections: save.game.inspections as InspectionState,
     race: save.game.race as RaceState,
+    digit: save.game.digitization as DigitizationState,
   });
   // новий холодний старт — нова сесія (FR-4); після міграції знімок уже зроблено в loadSave
   if (!opts.snapshotted) snapshot(kv);
@@ -121,7 +123,9 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
       const inspChanged = st.inspections.active !== prev.inspections.active || st.inspections.last !== prev.inspections.last;
       // 005: подарунок, прискорення, фінал — одразу
       const raceChanged = st.race.active !== prev.race.active || st.race.last !== prev.race.last;
-      if (st.onboarding.step !== prev.onboarding.step || tgChanged || inspChanged || raceChanged) auto.saveNow();
+      // 006 FR-16: цифровізацію зберігаємо одразу; церемонія переживає вбивство застосунку (FR-22)
+      const digitChanged = st.digit !== prev.digit;
+      if (st.onboarding.step !== prev.onboarding.step || tgChanged || inspChanged || raceChanged || digitChanged) auto.saveNow();
     });
     let leftAt: number | null = null;
     const sub = AppState.addEventListener('change', (s) => {

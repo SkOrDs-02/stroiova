@@ -2,6 +2,7 @@
 // Правило: нова форма запису = CURRENT_SCHEMA + 1, міграція сюди, фікстура попередньої версії в тести (принцип III).
 import { DEFAULTS } from '@/economy/core';
 import { newInspections } from '@/inspections/lifecycle';
+import { newDigitization } from '@/digitization/digitization';
 import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
 
@@ -34,7 +35,14 @@ export const MIGRATIONS: Record<number, Migration> = {
   3: (game) => ({ ...(game as object), inspections: inspectionsV4((game as { telegrams?: { startMs?: number | null } }).telegrams?.startMs ?? 0) }),
   // 4 → 5 (005): гонок ще не було — порожній стан; перший подарунок рахується від встановлення (inspections.installMs)
   4: (game) => ({ ...(game as object), race: raceV5() }),
+  // 5 → 6 (006): цифровізацій ще не було; цикл рахується від початку розкладу телеграм (чи 0 — «давно»)
+  5: (game) => ({ ...(game as object), digitization: digitizationV6((game as { telegrams?: { startMs?: number | null } }).telegrams?.startMs ?? 0) }),
 };
+
+/** Порожній стан цифровізації схеми 6. */
+export function digitizationV6(cycleStartMs: number) {
+  return newDigitization(cycleStartMs);
+}
 
 /** Порожній стан гонки схеми 5. */
 export function raceV5() {
