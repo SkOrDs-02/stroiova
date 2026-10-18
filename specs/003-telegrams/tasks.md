@@ -75,7 +75,7 @@ description: "Задачі: 003 Телеграми й репутація — е�
 
 - [X] T025 Web-сценарій quickstart у Chromium 375×667
 - [X] T026 Агенти `spec-guardian` і `content-reviewer`; виправлення
-- [ ] T027 Документація: CLAUDE.md (`src/telegrams`), `npm run check`
+- [X] T027 Документація: CLAUDE.md (`src/telegrams`), `npm run check`
 
 ## Поза етапом 1
 
