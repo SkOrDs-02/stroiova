@@ -180,6 +180,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       }
       if (e.type === 'inspectionPrepare' && insp.active) prep = true;
     }
+    // «Готуватися» з tg-result відкриває insp-prep; insp-warning після цього не потрібен
+    if (prep && insp.active) insp = { ...insp, active: { ...insp.active, warned: true } };
     set({ telegrams: tg, inspections: insp, effects, events: [...get().events, ...out].slice(-40), ...(prep ? { inspPrepOpen: true } : {}) });
     for (const id of added) get().showToast({ kind: 'text', text: inspT.toastItem(inspT.item[id]?.title ?? id) });
     for (const e of evs) {

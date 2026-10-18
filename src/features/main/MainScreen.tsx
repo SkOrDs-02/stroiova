@@ -4,12 +4,18 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from 'zustand';
 
-import { formatBig, formatDuration, formatMult, formatRate } from '@/economy/format';
+import { formatBig, formatCountdown, formatDuration, formatMult, formatRate } from '@/economy/format';
 import { fuelMult, income, multStack, tankPct } from '@/economy/game/income';
 import { quote } from '@/economy/game/purchase';
 import { itemsFor } from '@/economy/game/state';
 import type { BuyMode } from '@/economy/game/types';
 import { OfflineReturn } from '@/features/conveyor/OfflineReturn';
+import { InspCall } from '@/features/inspections/InspCall';
+import { InspPrep } from '@/features/inspections/InspPrep';
+import { InspResult } from '@/features/inspections/InspResult';
+import { InspWarning } from '@/features/inspections/InspWarning';
+import { offlineRows } from '@/features/inspections/present';
+import { inspT } from '@/features/inspections/texts';
 import { Seal } from '@/features/conveyor/Seal';
 import { birdEffect, canHireNow, type ConveyorStore, type Toast } from '@/features/conveyor/store';
 import { t } from '@/features/conveyor/texts';
@@ -139,6 +145,16 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const coachOn = coachRow || coachTab;
   const showCall = callHeld || (!overlay && rd === 'call');
 
+  // 004: перевірки — у черзі після інших модалок (FR-10, FR-22): call → insp-warning → insp-result
+  const ins = s.inspections;
+  const insp = ins.active;
+  const inspFree = !overlay && !showCall;
+  const inspCall = inspFree && insp != null && ins.callPending;
+  const inspWarn = inspFree && !inspCall && insp != null && insp.modal && !insp.warned;
+  // без гравця результат іде в довідку й позначається показаним (FR-25); коротка відсутність без довідки — акт
+  const inspResult = inspFree && !inspCall && !inspWarn && ins.last != null && !ins.last.seen;
+  const inspBanner = insp != null && (insp.warned || !insp.modal);
+
   const coachFor = (id: string) => {
     if (!coachOn) return undefined;
     if (rd === 'coachUpgrade' && id === 'raporty') return { target: 'buy' as const, text: onb.b6Arrow };
@@ -190,6 +206,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
             </Pressable>
           ) : null}
         </View>
+        {inspBanner ? (
+          <Pressable testID="insp-banner" accessibilityRole="button" onPress={s.openInspPrep} style={styles.inspBar}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.inspText}>{`${inspT.banner(formatCountdown((insp!.arrMs - now) / 1000))} · ${inspT.prepare}`}</Text>
+          </Pressable>
+        ) : null}
         {kombatOn ? (
           <Pressable testID="kombat-bar" accessibilityRole="button" onPress={() => setView({ kind: 'kombat' })} style={styles.kombatBar}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${tgT.kbTitle} · ${tgT.left(formatDuration(Math.max(0, (kombat!.endMs - now) / 1000)))}`}</Text>
@@ -327,7 +348,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           onClose={() => setCallHeld(false)}
         />
       ) : null}
-      {s.offline ? <OfflineReturn res={s.offline} onClaim={s.claim} /> : null}
+      {inspCall ? <InspCall onClose={s.ackInspCall} /> : null}
+      {inspWarn ? <InspWarning store={store} /> : null}
+      {inspResult ? <InspResult store={store} /> : null}
+      {s.inspPrepOpen && insp ? <InspPrep store={store} /> : null}
+      {s.offline ? <OfflineReturn res={s.offline} inspRows={offlineRows(ins.last, s.cfg.params, s.offlineBackAt ?? now)} onClaim={s.claim} /> : null}
     </View>
   );
 }
@@ -353,6 +378,8 @@ const styles = StyleSheet.create({
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: color.scrim },
   kombatBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.surface2, borderWidth: 1, borderColor: color.accent },
   kombatText: { ...type('bodyS'), color: color.accent },
+  inspBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.alertBg, borderWidth: 1, borderColor: color.alertLine },
+  inspText: { ...type('bodyS'), color: color.alertText },
   coachTab: { ...type('bodyS'), color: color.accent, fontWeight: typeScale.cta.fontWeight, backgroundColor: color.bgDeep, paddingHorizontal: space[16], paddingVertical: space[8] },
   bottomStack: { position: 'absolute', left: 0, right: 0, gap: space[8] },
   toast: { marginHorizontal: space[16], backgroundColor: color.surface, borderRadius: radius[6], padding: space[12] },

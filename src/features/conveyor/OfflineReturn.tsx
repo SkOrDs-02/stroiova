@@ -1,4 +1,4 @@
-// Тимчасова довідка повернення (001 FR-25…FR-28): сума, обрізка сховищем, «Стройова стояла». ×2 — 008, повний екран — 002.
+// Тимчасова довідка повернення (001 FR-25…FR-28): сума, обрізка сховищем, «Стройова стояла»; рядки перевірки (004 FR-25). ×2 — 008, повний екран — 002.
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatBig, formatDuration } from '@/economy/format';
@@ -7,7 +7,7 @@ import { color, radius, size, space, typeScale, zIndex } from '@/theme';
 
 import { t } from './texts';
 
-export function OfflineReturn({ res, onClaim }: { res: OfflineResult; onClaim: () => void }) {
+export function OfflineReturn({ res, inspRows = [], onClaim }: { res: OfflineResult; inspRows?: { k: string; v: string; bad: boolean }[]; onClaim: () => void }) {
   return (
     <View style={styles.scrim} accessibilityViewIsModal>
         <View style={styles.sheet} testID="offline-return">
@@ -23,6 +23,12 @@ export function OfflineReturn({ res, onClaim }: { res: OfflineResult; onClaim: (
               {res.cappedMs > 0 ? <Text style={styles.body}>{t.offStorage(formatDuration(res.storageMs / 1000), formatDuration(res.cappedMs / 1000))}</Text> : null}
             </>
           )}
+          {inspRows.map((r) => (
+            <View key={r.k} style={styles.row} testID="offline-insp">
+              <Text style={[styles.body, styles.k, r.bad && styles.bad]}>{r.k}</Text>
+              <Text style={[styles.body, r.bad && styles.bad]}>{r.v}</Text>
+            </View>
+          ))}
           <Pressable testID="offline-claim" accessibilityRole="button" onPress={onClaim} style={styles.btn}>
             <Text style={styles.btnText}>{res.idle ? t.offBack : t.offTake(formatBig(res.earned, 'balance'))}</Text>
           </Pressable>
@@ -37,6 +43,9 @@ const styles = StyleSheet.create({
   title: { color: color.ink, fontSize: typeScale.h2.fontSize, lineHeight: typeScale.h2.lineHeight, fontWeight: typeScale.h2.fontWeight },
   sum: { color: color.ink, fontSize: typeScale.displayM.fontSize, lineHeight: typeScale.displayM.lineHeight, fontWeight: typeScale.displayM.fontWeight },
   body: { color: color.ink2, fontSize: typeScale.body.fontSize, lineHeight: typeScale.body.lineHeight },
+  row: { flexDirection: 'row', justifyContent: 'space-between', gap: space[8] },
+  k: { flexShrink: 1 },
+  bad: { color: color.alertPaper },
   btn: { minHeight: size.ctaHeight, borderRadius: radius[6], backgroundColor: color.accent, justifyContent: 'center', alignItems: 'center' },
   btnText: { color: color.accentInk, fontSize: typeScale.cta.fontSize, fontWeight: typeScale.cta.fontWeight },
 });
