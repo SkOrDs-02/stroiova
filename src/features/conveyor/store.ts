@@ -9,9 +9,14 @@ import { buy, hire, isOk } from '@/economy/game/purchase';
 import { newGame } from '@/economy/game/state';
 import { absence, isNewSession, shiftTimers } from '@/economy/game/time';
 import type { BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, StoredEffect, UnitRef } from '@/economy/game/types';
-import { complete, isFullScreenStep, newOnboarding, receiveTg1, type CompleteExtra, type OnboardingState, type StepNo } from '@/features/onboarding/steps';
+import { complete, isDone, isFullScreenStep, newOnboarding, receiveTg1, type CompleteExtra, type OnboardingState, type StepNo } from '@/features/onboarding/steps';
+import { inspT } from '@/features/inspections/texts';
+import { shiftInspections, buyItem as buyInsp, fromTelegramEvent as inspFromTelegram, newInspections, onSessionStart as inspSessionStart, tick as tickInsp } from '@/inspections/lifecycle';
+import type { InspectionState } from '@/inspections/types';
+import { digitalSpeedup, fromTelegram as raceFromTelegram, newRace, resume as raceResume, shiftRace, tick as tickRace } from '@/race/race';
+import type { RaceState } from '@/race/types';
 import { dayKey } from '@/telegrams/clock';
-import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
+import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
 import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } from '@/telegrams/effects';
 import { fromTelegram, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
@@ -49,6 +54,12 @@ interface Store {
   onboarding: OnboardingState;
   /** Телеграми й репутація (003) */
   telegrams: TelegramState;
+  /** Перевірки (004) */
+  inspections: InspectionState;
+  /** insp-prep відкрито (з банера, insp-warning чи «Готуватися» в tg-result); лише в пам'яті */
+  inspPrepOpen: boolean;
+  /** Гонка з часом (005) */
+  race: RaceState;
   /** Репліки персонажів цієї сесії (рішення 45: ≤ 2 за сесію); лише в пам'яті */
   sessionLines: { count: number; byUid: Record<string, string> };
   /** Тапи першого акта; лише в пам'яті: після вбивства «0 з 8» (002 R4) */
@@ -104,6 +115,24 @@ interface Store {
   kavaLineFor: (uid: string) => string | null;
   /** Бонус архіву «Археолога» (крок 9, FR-20): archiveBonusMin × базовий дохід, один раз */
   claimArchive: () => number;
+  /** Пункт чекліста за підписи (004 FR-14); false — не списано */
+  buyInspItem: (itemId: string) => boolean;
+  /** `call` «Археолога» перед першою перевіркою закрито (FR-2) */
+  ackInspCall: () => void;
+  /** insp-warning закрито: «Готуватися» відкриває insp-prep, «Пізніше» — ні (FR-8, FR-9) */
+  ackInspWarning: (prepare: boolean) => void;
+  openInspPrep: () => void;
+  closeInspPrep: () => void;
+  /** insp-result закрито (FR-22) */
+  closeInspResult: () => void;
+  /** Репліка Тумбочкіна з пулу на момент перевірки; поза лімітом сесії (рішення 45) */
+  tumbLine: (key: string, slot: string) => string | null;
+  /** «Послатися на цифру» (005 FR-16); false — недоступно */
+  raceDigital: () => boolean;
+  /** gift-arrived закрито «Зареєструвати акт» (FR-6) */
+  ackGift: () => void;
+  /** race-won / race-lost закрито */
+  closeRaceResult: () => void;
 }
 
 /** Рішення 59: до закриття кроку 7 наймати можна лише діловода «Стройової частини». */
@@ -132,6 +161,8 @@ export interface Initial {
   playtimeMs?: number;
   onboarding?: OnboardingState;
   telegrams?: TelegramState;
+  inspections?: InspectionState;
+  race?: RaceState;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -141,14 +172,38 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     if (!evs.length) return;
     let effects = get().effects;
     let tg = get().telegrams;
+    let insp = get().inspections;
+    const out: DomainEvent[] = [...evs];
+    const added: string[] = [];
+    let prep = false;
     for (const e of evs) {
       if (e.type === 'kombatRequest') {
         const k = fromTelegram(tg, get().cfg, nowMs, tzOffsetAt(nowMs), e.maxMin);
         tg = k.tg;
         if (k.effect) effects = [...effects.filter((x) => x.source !== 'kombat_away' || x.endMs <= nowMs), k.effect];
       }
+      // 004 FR-5…FR-7, FR-18: позапланова, пункт з телеграми, зауваження № 16
+      if (e.type === 'unscheduledInspection' || e.type === 'inspItem') {
+        const r = inspFromTelegram(insp, get().state, get().cfg, e, nowMs, tzOffsetAt(nowMs), tg.reputation.value);
+        insp = r.s;
+        out.push(...r.events);
+        if (r.addedItem) added.push(r.addedItem);
+      }
+      if (e.type === 'inspectionPrepare' && insp.active) prep = true;
+      // 005 FR-18: телеграма № 20 змінює поточну гонку
+      if (e.type === 'raceEffect') {
+        // лише на гонку, під час якої телеграма прийшла: відповідь після кінця гонки не чіпає наступну
+        const item = tg.inbox.filter((x) => x.id === e.telegramId).at(-1);
+        set({ race: raceFromTelegram(get().race, e.effect, nowMs, item?.receivedAt ?? nowMs) });
+      }
     }
-    set({ telegrams: tg, effects, events: [...get().events, ...evs].slice(-40) });
+    // «Готуватися» з tg-result відкриває insp-prep; insp-warning після цього не потрібен
+    if (prep && insp.active) insp = { ...insp, active: { ...insp.active, warned: true } };
+    set({ telegrams: tg, inspections: insp, effects, events: [...get().events, ...out].slice(-40), ...(prep ? { inspPrepOpen: true } : {}) });
+    for (const id of added) {
+      const short = inspT.item[id]?.short;
+      if (short) get().showToast({ kind: 'text', text: inspT.toastItem(short) });
+    }
     for (const e of evs) {
       if (e.type === 'reputationTierChange') get().showToast({ kind: 'rep', tier: e.to });
       // Граніт у «знайшли» — репліка персонажа, у ліміті сесії
@@ -166,6 +221,54 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     set({ telegrams: r.tg, sessionLines: { count: sl.count + 1, byUid: { ...sl.byUid, [slot]: text } } });
     return text;
   };
+  /** Репліка події (перевірки): з мішка пулу, одна на слот, поза лімітом 2 за сесію (рішення 45). */
+  const eventLine = (key: string, slot: string): string | null => {
+    const sl = get().sessionLines;
+    if (sl.byUid[slot] != null) return sl.byUid[slot]!;
+    const r = pickLine(get().telegrams, key, poolSize(key));
+    if (r.index == null) return null;
+    const text = lineAt(key, r.index);
+    set({ telegrams: r.tg, sessionLines: { count: sl.count, byUid: { ...sl.byUid, [slot]: text } } });
+    return text;
+  };
+  /**
+   * Перевірки в (from, to] (004): оголошення й приїзди. Іде перед доходом: ×3 чи сповільнення з мітками приїзду
+   * вже в ефектах, коли економіка ріже інтервал (01 FR-24).
+   */
+  const runInspections = (from: number, to: number, offline: boolean) => {
+    const g = get();
+    if (to <= from) return;
+    const r = tickInsp(g.inspections, g.state, g.cfg, {
+      fromMs: from,
+      nowMs: to,
+      tzOffsetMin: tzOffsetAt(to),
+      offline,
+      reputation: g.telegrams.reputation.value,
+      digitizations: 0, // лічильник цифровізацій з'явиться з 06
+    });
+    if (r.s === g.inspections && !r.events.length) return;
+    // 003 FR-15: після першої планової відписки можуть кликати позапланові
+    const tg = r.scheduledArrived && !g.telegrams.firstInspectionPassed ? { ...g.telegrams, firstInspectionPassed: true } : g.telegrams;
+    set({ inspections: r.s, telegrams: tg, effects: [...g.effects, ...r.effects], events: [...g.events, ...r.events].slice(-40), ...(r.s.active ? {} : { inspPrepOpen: false }) });
+  };
+  /**
+   * Гонка в (from, to] (005): фінал і прихід подарунка. Іде перед доходом: множник подарунка з мітками кінця акта
+   * вже в ефектах, коли економіка ріже інтервал (FR-27).
+   */
+  const runRace = (from: number, to: number, offline: boolean) => {
+    const g = get();
+    if (to <= from) return;
+    const r = tickRace(g.race, g.state, g.cfg, { fromMs: from, nowMs: to, tzOffsetMin: tzOffsetAt(to), installMs: g.inspections.installMs, offline });
+    if (r.s === g.race && !r.events.length) return;
+    set({ race: r.s, state: r.eco, effects: [...g.effects, ...r.effects], events: [...g.events, ...r.events].slice(-40) });
+  };
+  /** № 20 вийшла з шухляди (відповідь чи повернення): акт іде далі (FR-18). */
+  const resumeRaceIfFree = (now: number) => {
+    const r = get().race.active;
+    if (!r || r.pausedAtMs == null) return;
+    const held = get().telegrams.inbox.some((x) => x.status === 'drawer' && !!telegram(x.id)?.choices.find((c) => c.id === x.choiceId)?.effects.race);
+    if (!held) set({ race: raceResume(get().race, now) });
+  };
   /** Розклад і таймери телеграм у (from, to] (003 FR-2, FR-3, FR-17): лише після № 1. */
   const runTelegrams = (from: number, to: number, away: boolean) => {
     const g = get();
@@ -177,7 +280,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       tzOffsetMin: tzOffsetAt(to),
       level: g.state.level,
       digitizations: 0, // лічильник цифровізацій з'явиться з 06
-      raceActive: null, // гонка — 05
+      raceActive: g.race.active?.type ?? null,
       away,
     });
     set({ telegrams: r.tg, state: r.eco });
@@ -190,7 +293,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (a.clockBack) {
         // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
         const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects as StoredEffect[], lastMs: backAt, toast: { kind: 'clockBack' } });
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), lastMs: backAt, toast: { kind: 'clockBack' } });
         return;
       }
       const res = offline(state, c, leftAt, backAt, effects);
@@ -210,6 +313,9 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     playtimeMs: init?.playtimeMs ?? 0,
     onboarding: init?.onboarding ?? newOnboarding(0),
     telegrams: init?.telegrams ?? newTelegrams(cfg.params, `game-${nowMs}`),
+    inspections: init?.inspections ?? newInspections(nowMs, `insp-${nowMs}`),
+    inspPrepOpen: false,
+    race: init?.race ?? newRace(`race-${nowMs}`),
     sessionLines: { count: 0, byUid: {} },
     // крок 5 закривається кінцем анімації ПОГОДЖЕНО; якщо застосунок вбито під час неї, акт уже підписано (FR-28)
     actTaps: init?.onboarding?.step === 5 ? ACT_TAPS : 0,
@@ -223,8 +329,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     toastQueue: [],
     events: [],
     tick: (now) => {
+      if (now <= get().lastMs) return;
+      runInspections(get().lastMs, now, false);
+      runRace(get().lastMs, now, false);
       const { state, cfg: c, effects, lastMs, onboarding: o, playtimeMs } = get();
-      if (now <= lastMs) return;
       const dt = now - lastMs;
       // tick іде лише на передньому плані: ігровий час і «Пташка» не рахуються у фоні (FR-12, FR-29).
       // До кінця першого акта конвеєр стоїть (як у sim.js: дохід з onboardingBirdStartSec), іде лише ігровий час.
@@ -236,6 +344,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         ...(o.birdLeftMs > 0 ? { onboarding: { ...o, birdLeftMs: Math.max(0, o.birdLeftMs - dt) } } : {}),
       });
       runTelegrams(lastMs, now, false);
+      resumeRaceIfFree(now);
     },
     tapSeal: (now) => {
       const { state, cfg: c, effects, onboarding: o, lastMs } = get();
@@ -269,9 +378,13 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     cat: (now) => set({ state: catTap(get().state, get().cfg, now).state }),
     setMode: (mode) => set({ mode }),
     away: (leftAt, backAt) => {
+      // перевірки без гравця — за станом чекліста на мить виходу (FR-24); до доходу, щоб ×3 потрапив у офлайн
+      runInspections(leftAt, backAt, true);
+      runRace(leftAt, backAt, true);
       awayInner(leftAt, backAt);
       // 003: телеграми, що прийшли без гравця (FR-3); нова сесія — шанс «Комбата шукають» (FR-29)
       runTelegrams(leftAt, Math.max(leftAt, backAt), true);
+      resumeRaceIfFree(backAt);
       if (isNewSession(leftAt, backAt)) {
         set({ sessionLines: { count: 0, byUid: {} } });
         const g = get();
@@ -279,6 +392,12 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         // чинна подія не накладається: ×0,25 не множиться вдруге (рішення 25)
         set({ telegrams: k.tg, ...(k.effect ? { effects: [...g.effects.filter((x) => x.source !== 'kombat_away' || x.endMs <= backAt), k.effect] } : {}) });
         handleEvents(k.events, backAt);
+        // 004 FR-2: перша перевірка — на старті сесії, коли онбординг етапу 1 пройдено (крок 9)
+        const g2 = get();
+        if (isDone(g2.onboarding, 9)) {
+          const ins = inspSessionStart(g2.inspections, g2.state, g2.cfg, backAt, tzOffsetAt(backAt), g2.telegrams.reputation.value);
+          if (ins.events.length) set({ inspections: ins.s, events: [...g2.events, ...ins.events].slice(-40) });
+        }
       }
     },
     claim: () => {
@@ -286,7 +405,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (!res || offlineBackAt == null) return;
       const r = claimOffline(state, c, res, false, localDate(offlineBackAt));
       if ('error' in r) return;
-      set({ state: r.state, offline: null, offlineBackAt: null });
+      // рядки перевірки показано в довідці (FR-25): insp-result не потрібен
+      const last = get().inspections.last;
+      const seen = last?.offline && !last.seen ? { inspections: { ...get().inspections, last: { ...last, seen: true } } } : {};
+      set({ state: r.state, offline: null, offlineBackAt: null, ...seen });
     },
     clearToast: () => {
       const [next, ...rest] = get().toastQueue;
@@ -350,6 +472,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if ('error' in r) return r;
       set({ telegrams: r.tg, state: r.eco, effects: [...g.effects, ...r.effects] });
       handleEvents(r.events, now);
+      resumeRaceIfFree(now);
       // 002 FR-19: відповідь на № 1 закриває крок 8
       if (r.item.id === FIRST_TELEGRAM_ID && get().onboarding.step === 8) {
         set({ onboarding: { ...get().onboarding, tg1: { choiceId, atPlayMs: get().playtimeMs } } });
@@ -382,6 +505,44 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (item) handleEvents([{ type: 'inspectionPrepare', telegramId: item.id }], get().lastMs);
     },
     kavaLineFor: (uid) => characterLine('kava.tg_new', uid),
+    // перевірки — поза лімітом 2 реплік за сесію (рішення 45); Ліна (гонка) — у ліміті
+    tumbLine: (key, slot) => (key.startsWith('lina.') ? characterLine(key, slot) : eventLine(key, slot)),
+    raceDigital: () => {
+      const g = get();
+      const r = digitalSpeedup(g.race, g.lastMs, g.state.prestigePoints, g.cfg);
+      if ('error' in r) return false;
+      set({ race: r.s, events: [...g.events, ...r.events].slice(-40) });
+      return true;
+    },
+    ackGift: () => {
+      const rc = get().race;
+      if (rc.active && !rc.active.seen) set({ race: { ...rc, active: { ...rc.active, seen: true } } });
+    },
+    closeRaceResult: () => {
+      const rc = get().race;
+      if (rc.last && !rc.last.seen) set({ race: { ...rc, last: { ...rc.last, seen: true } } });
+    },
+    buyInspItem: (itemId) => {
+      const g = get();
+      const r = buyInsp(g.inspections, g.state, itemId, g.lastMs);
+      if ('error' in r) return false;
+      set({ inspections: r.s, state: r.eco, events: [...g.events, ...r.events].slice(-40) });
+      return true;
+    },
+    ackInspCall: () => set({ inspections: { ...get().inspections, callPending: false } }),
+    ackInspWarning: (prepare) => {
+      const ins = get().inspections;
+      if (!ins.active) return;
+      set({ inspections: { ...ins, active: { ...ins.active, warned: true } }, inspPrepOpen: prepare });
+    },
+    openInspPrep: () => {
+      if (get().inspections.active) set({ inspPrepOpen: true });
+    },
+    closeInspPrep: () => set({ inspPrepOpen: false }),
+    closeInspResult: () => {
+      const ins = get().inspections;
+      if (ins.last && !ins.last.seen) set({ inspections: { ...ins, last: { ...ins.last, seen: true } } });
+    },
     sendRunner: () => {
       const g = get();
       const r = sendRunnerTg(g.telegrams, g.state, g.cfg, g.lastMs);
@@ -404,7 +565,9 @@ export function gameSave(store: ConveyorStore): {
   playtimeMs: number;
   onboarding: OnboardingState;
   telegrams: TelegramState;
+  inspections: InspectionState;
+  race: RaceState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race };
 }

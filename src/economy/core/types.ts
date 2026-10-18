@@ -29,6 +29,22 @@ export interface LevelDef {
   [key: string]: unknown;
 }
 
+/** Пункт чекліста (04): хвилини базового доходу; added — не базовий, його додає відписка (`inspExtraItem` у контенті) */
+export interface InspItemDef {
+  id: string;
+  level: number;
+  min: number;
+  added?: boolean;
+}
+
+/** Подарунок Ліни (005): множник до підписів (дрон, лопати), fuel — тримає пальне (генератор) */
+export interface GiftDef {
+  mult: number;
+  fuel?: number;
+  serviceH: number;
+  steps: number[];
+}
+
 export interface EconomyParams {
   streams: UnitDef[];
   stages: UnitDef[];
@@ -67,6 +83,35 @@ export interface EconomyParams {
   kombatMaxMin: number;
   kombatRunnerMin: number;
   kombatRunnerCostMin: number;
+  /** 004: перевірки (рішення 25, 28, 61, 65); хвилини пунктів — таблиця «Пункти чекліста» */
+  inspFirstAfterHours: number;
+  inspIntervalMinH: number;
+  inspIntervalMaxH: number;
+  inspWarnMinH: number;
+  inspWarnMaxH: number;
+  inspMult: number;
+  inspHours: number;
+  inspFailMult: number;
+  inspFailHours: number;
+  inspFirstFromHour: number;
+  inspFirstToHour: number;
+  inspArriveFromHour: number;
+  inspArriveToHour: number;
+  inspArriveJitterMin: number;
+  inspMinPrice: number;
+  inspItems: InspItemDef[];
+  /** 005: подарунки й гонка (рішення 29–31); кроки акта — години (Акти, Комбат, Стройова, Фін.) */
+  gifts: Record<'drone' | 'shovel' | 'generator', GiftDef>;
+  giftOrder: ('drone' | 'shovel' | 'generator')[];
+  giftL2StepH: number;
+  giftFirstDay: number;
+  giftGapHours: number;
+  giftFromHour: number;
+  giftToHour: number;
+  raceAdPerDay: number;
+  raceAdCut: number;
+  raceDigitalCutH: number;
+  museumRacePct: number;
   storageHours: number;
   offlineAdMult: number;
   offlineAdPerDay: number;

@@ -8,3 +8,11 @@ export const bundledConfig: EconomyConfig = {
   source: 'bundled',
   params: withDefaults(preset.params),
 };
+
+/**
+ * Закріплений конфіг (009 FR-22) після оновлення застосунку: числа економіки — закріплені, а параметри фіч,
+ * яких у ньому ще не було (003, 004…), беруться з вбудованого.
+ */
+export function withBundled(pinned: EconomyConfig): EconomyConfig {
+  return { ...pinned, source: 'cached', params: { ...bundledConfig.params, ...pinned.params } };
+}

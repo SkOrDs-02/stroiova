@@ -33,6 +33,8 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 | `balance/` | Бот і події симулятора `sim.js` (формули — з `economy.js`), пресети, відбитки `golden/`, пісочниця (`sandbox/build.py` → `sandbox/index.html`) |
 | `src/save/` | Збереження (009): MMKV (`mmkv.ts`), схема й міграції, знімки, контрольна сума; запуск і екрани — `src/features/boot/` |
 | `src/telegrams/` | Телеграми й репутація (003): чистий домен — розклад, мішок, ефекти, репутація, комбат; екрани — `src/features/telegrams/` |
+| `src/inspections/` | Перевірки (004): чистий домен — розклад, чекліст і ціни, оголошення, результат, рядки довідки; екрани — `src/features/inspections/` |
+| `src/race/` | Гонка з часом і подарунки (005): чистий домен — розклад подарунків, маршрут акта, таймери, фінал, прискорення; екрани — `src/features/race/` |
 | `src/economy/` | Модуль економіки: `core` (спільний із симулятором), `game` (стан і дії гри), `format.ts`; вбудований конфіг `econ-v7.2` |
 | `analytics/tracking-plan.yaml` | 60 подій аналітики; `docs/analytics.md` — пояснення |
 | `docs/art-and-sound.md`, `docs/stores.md`, `docs/playtest-and-launch.md` | Арт і звук, сторінки сторів, тестування й запуск |
