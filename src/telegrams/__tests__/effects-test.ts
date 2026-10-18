@@ -1,14 +1,14 @@
 // 003 AC-7, AC-9, AC-11, AC-12, AC-13, AC-22; FR-9…FR-20 на рівні домену.
 import { T0 } from '@/economy/test-fixtures';
 
-import { answer, canChoose, openNotice, telegramOf } from '../effects';
+import { answer, canChoose, openNotice, telegramOf, type AnswerResult } from '../effects';
 import { tick } from '../schedule';
 import { ctx, eco, HOUR, p, cfg, tgWith } from '../test-utils';
 import type { TelegramState } from '../types';
 
-const ok = <T,>(r: T | { error: string }): T => {
-  if ((r as { error?: string }).error) throw new Error((r as { error: string }).error);
-  return r as T;
+const ok = (r: AnswerResult | { error: string }): AnswerResult => {
+  if ('error' in r) throw new Error(r.error);
+  return r;
 };
 const run = (tg: TelegramState, e: ReturnType<typeof eco>, toMs: number) => tick(tg, e, { cfg, fromMs: T0, nowMs: toMs, tzOffsetMin: 0, level: 1, digitizations: 0, raceActive: null, away: false });
 
