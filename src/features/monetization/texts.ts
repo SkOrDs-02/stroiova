@@ -126,4 +126,5 @@ export const boostsT = {
   museumNote: 'окремо',
   shopLink: 'Постійний ×1,3 - у магазині',
   capLine: 'Накопичується до 12 год',
+  close: 'Закрити',
 };

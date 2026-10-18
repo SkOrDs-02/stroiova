@@ -9,6 +9,9 @@ import type { ConveyorStore } from '@/features/conveyor/store';
 import { readiness, shortfall } from '@/inspections/lifecycle';
 import { color, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
+import { AdButton } from '@/features/monetization/AdButton';
+import { adT } from '@/features/monetization/texts';
+import { inspAdView } from '@/monetization/monetization';
 import { type } from '@/ui/type';
 
 import { itemMeta, itemTitle } from './present';
@@ -84,6 +87,18 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
             </Pressable>
           );
         })}
+        {pct < 100 ? (
+          <AdButton
+            store={store}
+            placement="inspection_checklist"
+            view={inspAdView(s.monetization, a.id, s.state)}
+            label={adT.inspAll}
+            takeLabel={adT.inspTake}
+            note={() => adT.inspNote}
+            limitLabel={adT.inspLimit}
+            testID="insp-ad"
+          />
+        ) : null}
         {pct >= 100 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.ready} testID="insp-ready-line">{inspT.readyLine[a.boss]}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
           <Text style={styles.pass}>{`${inspT.passRuleK} `}</Text>

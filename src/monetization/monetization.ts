@@ -2,7 +2,7 @@
 import { offlineDoublesLeft } from '@/economy/game/advance';
 import type { DomainEvent, EconomyConfig, EconomyState, StoredEffect } from '@/economy/game/types';
 
-import type { MonetizationState, Placement, ProductId, Rights } from './types';
+import type { MonetizationState, ProductId, Rights } from './types';
 import { PRODUCT_IDS } from './types';
 
 const HOUR = 3_600_000;
