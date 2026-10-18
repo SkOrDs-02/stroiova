@@ -5,11 +5,15 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { bundledConfig } from '@/economy/config';
 import { createConveyorStore } from '@/features/conveyor/store';
 import { MainScreen } from '@/features/main/MainScreen';
+import { offline } from '@/economy/game/advance';
+import { income, multStack } from '@/economy/game/income';
+import { fromTelegram as fromTelegramRace, view } from '@/race/race';
 import { onboardingDone } from '@/save/migrations';
 
 jest.mock('@/features/conveyor/useGameLoop', () => ({ useGameLoop: () => {} }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
 
+const HOUR = 3_600_000;
 const local = (h: number, m = 0, day = 0) => new Date(2025, 9, 10 + day, h, m).getTime();
 
 /** Встановлення о 15:00 першої доби; «Акти» відкрито, діловоди є (офлайн-дохід) */
@@ -80,7 +84,7 @@ describe('гонка в сторі', () => {
 });
 
 describe('екрани гонки', () => {
-  test('AC-2: gift-arrived — служба 9 год, акт 7 год, вердикт; «Зареєструвати акт» відкриває картку', async () => {
+  test('AC-2: gift-arrived — служба, прогноз, вердикт; «Зареєструвати акт» відкриває race-sheet, потім картка', async () => {
     const store = withDrone();
     await render(<MainScreen store={store} />);
     const g = screen.getByTestId('gift-arrived');
@@ -89,6 +93,8 @@ describe('екрани гонки', () => {
     expect(screen.getByTestId('gift-verdict')).toHaveTextContent(/Встигаєш із запасом 1\sгод\s30\sхв/);
     await fireEvent.press(screen.getByTestId('gift-register'));
     expect(screen.queryByTestId('gift-arrived')).toBeNull();
+    expect(screen.getByTestId('race-sheet')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('race-close'));
     expect(screen.getByTestId('race-card')).toHaveTextContent(/Акт № 1 · Квадрокоптер/);
   });
 
@@ -128,5 +134,65 @@ describe('екрани гонки', () => {
     expect(lost).toHaveTextContent(/Квадрокоптер \(1 шт\.\), подарунок волонтерів, списано раніше, ніж поставлено на облік\./);
     expect(lost).toHaveTextContent(/Пройдено етапів4 з 5/);
     expect(store.getState().events.some((e) => e.type === 'raceCurio')).toBe(true);
+  });
+
+  test('race-sheet відкрито, гонка скінчилась — шторка зникає й не перекриває наступний подарунок', async () => {
+    const store = withDrone();
+    store.getState().ackGift();
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('race-speed'));
+    expect(screen.getByTestId('race-sheet')).toBeTruthy();
+    await act(async () => store.getState().tick(local(16, 0, 1)));
+    expect(screen.queryByTestId('race-sheet')).toBeNull();
+    expect(screen.getByTestId('race-won')).toBeTruthy();
+  });
+});
+
+describe('гонка: крайові', () => {
+  test('AC-11: найм діловода на ланці маршруту прогноз акта не змінює; race-sheet найму не пропонує', async () => {
+    const store = withDrone();
+    store.getState().ackGift();
+    const before = view(store.getState().race.active!, store.getState().lastMs).actLeftMs;
+    store.setState({ state: { ...store.getState().state, stageClerks: [true, true, true], signatures: 1e12 } });
+    store.getState().hire({ type: 'stream', id: 'akty' });
+    expect(view(store.getState().race.active!, store.getState().lastMs).actLeftMs).toBe(before);
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('race-speed'));
+    expect(screen.getByTestId('race-sheet')).not.toHaveTextContent(/діловод/i);
+  });
+
+  test('AC-15: буст реклами ×2 і дрон ×2 — M_boost ×4', () => {
+    const store = withDrone();
+    store.getState().ackGift();
+    const t = local(16, 0, 1);
+    store.getState().tick(t);
+    const st = store.getState();
+    const ad = { kind: 'mult' as const, source: 'ad_boost' as const, value: 2, startMs: t - 1, endMs: t + HOUR };
+    const base = multStack(st.state, st.cfg, t, st.effects.filter((e) => e.source !== 'gift_drone')).total;
+    expect(multStack(st.state, st.cfg, t, [...st.effects, ad]).total / base).toBeCloseTo(4, 6);
+  });
+
+  test('AC-17: офлайн-дохід подвоєно лише на відрізку від кінця акта до кінця служби', () => {
+    const store = withDrone();
+    store.getState().ackGift();
+    const st0 = store.getState();
+    const leftAt = local(13, 30, 1);
+    const backAt = local(19, 30, 1);
+    store.getState().away(leftAt, backAt);
+    const won = store.getState();
+    const plain = offline(st0.state, st0.cfg, leftAt, backAt, st0.effects);
+    const extra = won.offline!.earned - plain.earned;
+    // ×2 на 15:30–17:00: зайве = дохід за 1 год 30 хв без подарунка
+    const perMin = income(st0.state, st0.cfg, local(16, 0, 1), st0.effects).perMin;
+    expect(extra).toBeCloseTo(perMin * 90, -1);
+  });
+
+  test('№ 20 від попередньої гонки не чіпає наступну', () => {
+    const store = withDrone();
+    store.getState().ackGift();
+    const r = store.getState().race.active!;
+    const before = r.actEndMs;
+    store.setState({ race: fromTelegramRace(store.getState().race, { docHours: 4 }, store.getState().lastMs, r.startMs - HOUR) });
+    expect(store.getState().race.active!.actEndMs).toBe(before);
   });
 });

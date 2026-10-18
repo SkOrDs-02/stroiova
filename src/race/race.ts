@@ -128,6 +128,7 @@ function finish(s0: RaceState, cfg: EconomyConfig, offline: boolean): { s: RaceS
     endMs,
     tookSec: Math.round((endMs - r.startMs) / 1000),
     marginSec,
+    steps: r.steps,
     stepsDone: won ? r.steps.length : v.stepIdx,
     stepsTotal: r.steps.length,
     speedups,
@@ -196,9 +197,10 @@ export function digitalSpeedup(s: RaceState, nowMs: number, prestigePoints: numb
 }
 
 /** Телеграма № 20 (FR-18): docHours — акт довший; pauseDoc — акт стоїть, поки вона в шухляді. */
-export function fromTelegram(s: RaceState, effect: Record<string, unknown>, nowMs: number): RaceState {
+export function fromTelegram(s: RaceState, effect: Record<string, unknown>, nowMs: number, receivedAtMs: number = nowMs): RaceState {
   const r = s.active;
-  if (!r) return s;
+  // № 20 приходить лише під час гонки за дрон; відповідь на телеграму попередньої гонки поточну не змінює
+  if (!r || r.type !== 'drone' || receivedAtMs < r.startMs) return s;
   if (typeof effect.docHours === 'number' && effect.docHours > 0) {
     const sec = Math.round(effect.docHours * 3600);
     return { ...s, active: { ...r, actEndMs: r.actEndMs + sec * 1000, actTotalSec: r.actTotalSec + sec, sped: [...r.sped, { method: 'telegram', sec }] } };
@@ -222,6 +224,7 @@ export function shiftRace(s: RaceState, rawMs: number): RaceState {
   return {
     ...s,
     lastRaceEndMs: s.lastRaceEndMs == null ? null : sh(s.lastRaceEndMs),
+    last: s.last && { ...s.last, endMs: sh(s.last.endMs) },
     active: r && { ...r, startMs: sh(r.startMs), svcEndMs: sh(r.svcEndMs), actEndMs: sh(r.actEndMs), pausedAtMs: r.pausedAtMs == null ? null : sh(r.pausedAtMs) },
   };
 }

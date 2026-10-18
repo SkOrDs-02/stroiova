@@ -13,7 +13,7 @@ import { bonusText, dur } from './present';
 import { Route } from './Route';
 import { raceT } from './texts';
 
-export function GiftArrived({ store }: { store: ConveyorStore }) {
+export function GiftArrived({ store, onRegister }: { store: ConveyorStore; onRegister: () => void }) {
   const s = useStore(store);
   const r = s.race.active!;
   const v = view(r, s.lastMs);
@@ -40,7 +40,7 @@ export function GiftArrived({ store }: { store: ConveyorStore }) {
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.verdict, v.late && styles.late]} testID="gift-verdict">
           {v.late ? raceT.lateGift(dur(-v.marginMs)) : raceT.ok(dur(v.marginMs))}
         </Text>
-        <Button testID="gift-register" label={raceT.register} onPress={s.ackGift} />
+        <Button testID="gift-register" label={raceT.register} onPress={onRegister} />
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{raceT.timerNote}</Text>
       </View>
     </View>

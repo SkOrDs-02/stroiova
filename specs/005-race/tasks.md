@@ -13,7 +13,7 @@ description: "Задачі: 005 Гонка з часом і подарунки �
 ## Phase 2: Домен
 - [X] T003 `src/race/schedule.ts`: найраніший подарунок у (from, to] (R1); тести AC-1, AC-19
 - [X] T004 `src/race/race.ts`: старт (маршрут, служба, папір), `view`, фінал (ефекти, курйоз), «Послатися на цифру», № 20, пауза; тести AC-2, AC-4…AC-7, AC-12, AC-14…AC-17
-- [X] T005 `src/race/offline.ts`: рядок довідки (FR-26)
+- [X] T005 Рядок довідки (FR-26) — `src/features/race/present.ts` (`offlineRaceRows`)
 
 ## Phase 3: Стор
 - [X] T006 `src/features/conveyor/store.ts`: зріз `race`, тік до доходу, `raceActive` для 003, `raceEffect`, зняття паузи, дії; `useBoot` — запис після старту, прискорення, фіналу; тести стору (AC-17 офлайн ×2 лише 3 год)

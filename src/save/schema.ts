@@ -200,6 +200,7 @@ export const raceStateSchema = z.object({
       endMs: z.number(),
       tookSec: nonNeg,
       marginSec: nonNeg,
+      steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna']), sec: nonNeg })),
       stepsDone: z.number().int().nonnegative(),
       stepsTotal: z.number().int().min(1),
       speedups: z.number().int().nonnegative(),

@@ -191,7 +191,11 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       }
       if (e.type === 'inspectionPrepare' && insp.active) prep = true;
       // 005 FR-18: телеграма № 20 змінює поточну гонку
-      if (e.type === 'raceEffect') set({ race: raceFromTelegram(get().race, e.effect, nowMs) });
+      if (e.type === 'raceEffect') {
+        // лише на гонку, під час якої телеграма прийшла: відповідь після кінця гонки не чіпає наступну
+        const item = tg.inbox.filter((x) => x.id === e.telegramId).at(-1);
+        set({ race: raceFromTelegram(get().race, e.effect, nowMs, item?.receivedAt ?? nowMs) });
+      }
     }
     // «Готуватися» з tg-result відкриває insp-prep; insp-warning після цього не потрібен
     if (prep && insp.active) insp = { ...insp, active: { ...insp.active, warned: true } };
@@ -501,7 +505,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (item) handleEvents([{ type: 'inspectionPrepare', telegramId: item.id }], get().lastMs);
     },
     kavaLineFor: (uid) => characterLine('kava.tg_new', uid),
-    tumbLine: (key, slot) => eventLine(key, slot),
+    // перевірки — поза лімітом 2 реплік за сесію (рішення 45); Ліна (гонка) — у ліміті
+    tumbLine: (key, slot) => (key.startsWith('lina.') ? characterLine(key, slot) : eventLine(key, slot)),
     raceDigital: () => {
       const g = get();
       const r = digitalSpeedup(g.race, g.lastMs, g.state.prestigePoints, g.cfg);

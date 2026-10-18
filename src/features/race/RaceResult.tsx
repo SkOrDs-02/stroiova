@@ -5,7 +5,6 @@ import { useStore } from 'zustand';
 import { formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { useTumbLine } from '@/features/inspections/useTumbLine';
-import { routeFor } from '@/race/race';
 import { color, radius, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
@@ -25,7 +24,6 @@ export function RaceResult({ store }: { store: ConveyorStore }) {
   const o = s.race.last!;
   const p = s.cfg.params;
   const line = useTumbLine(store, `lina.${o.won ? 'won' : 'lost'}.${o.type}`, `race:${o.id}:end`);
-  const steps = routeFor(o.type, o.level, s.cfg);
   const leftMs = Math.max(0, o.endMs + o.marginSec * 1000 - s.lastMs);
   return (
     <View style={styles.scrim} testID={o.won ? 'race-won' : 'race-lost'}>
@@ -35,7 +33,7 @@ export function RaceResult({ store }: { store: ConveyorStore }) {
         <View style={styles.paper}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{`${raceT.act(o.no)} · ${raceT.docKind}`}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{o.won ? raceT.item[o.type] : `${raceT.lostEntry[o.type]}${raceT.lostEntryTail}`}</Text>
-          <Route race={{ steps }} stepIdx={o.stepsDone} done={o.won} />
+          <Route race={{ steps: o.steps }} stepIdx={o.stepsDone} done={o.won} />
           {o.won ? (
             <>
               <Row k={raceT.took} v={dur(o.tookSec * 1000)} />

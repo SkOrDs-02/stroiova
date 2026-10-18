@@ -22,7 +22,8 @@
 | FR-19…FR-24, FR-26, FR-27 | ✅ | — |
 | FR-25 | `race-lost` з «До стройової»; доменна подія курйозу | «Поділитися», `curio-detail` — 07 |
 | FR-28 | ❌ | пуші № 5, 6, 10 — 10 |
-| Пули `lina.*` | ✅ мішок, поза лімітом сесії як подія (рішення 45) | `saldo.return` — разом із 07 |
+| Пули `lina.*` | ✅ мішок, у ліміті 2 реплік за сесію (рішення 45, 70) | `saldo.return` — разом із 07 |
+| `boosts-sheet` | ❌ (екрана ще немає; множник видно в чипі) | разом із бустом реклами — 08 |
 | Події аналітики | доменні записи | PostHog — етап 5 |
 
 AC етапу: 1, 2, 4–7, 11, 12, 14–17, 19; AC-3 — без пуша; AC-8…AC-10 — 08; AC-13, AC-20 — 07; AC-18 — 10.
@@ -46,8 +47,8 @@ AC етапу: 1, 2, 4–7, 11, 12, 14–17, 19; AC-3 — без пуша; AC-8�
 ## Project Structure
 
 ```text
-src/race/            types.ts · schedule.ts (розклад подарунків) · race.ts (старт, тік, фінал, прискорення, № 20) · offline.ts · __tests__/
-src/features/race/   GiftArrived.tsx · RaceCard.tsx · RaceSheet.tsx · RaceResult.tsx · present.ts · texts.ts
+src/race/            types.ts · schedule.ts (розклад подарунків) · race.ts (старт, тік, фінал, прискорення, № 20) · __tests__/
+src/features/race/   GiftArrived.tsx · RaceCard.tsx · RaceSheet.tsx · RaceResult.tsx · Route.tsx · present.ts (рядки довідки) · texts.ts
 src/features/conveyor/store.ts   зріз race; tick/away → гонка перед доходом
 src/save/schema.ts, migrations.ts   схема 5
 ```

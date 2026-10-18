@@ -27,7 +27,8 @@ export function giftTime(s: RaceState, p: EconomyParams, fromMs: number, toMs: n
       c = dayStart(c, tz) + p.giftFromHour * HOUR;
       continue;
     }
-    return c;
+    // як у sim.js: подарунок, що «настав» раніше, приходить у першу мить проміжку (from, to]
+    return c > fromMs ? c : Math.min(fromMs + 1, toMs);
   }
   return null;
 }

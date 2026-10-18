@@ -37,6 +37,8 @@ export interface RaceOutcome {
   tookSec: number;
   /** Перемога: скільки ще служить; поразка: скільки бракувало */
   marginSec: number;
+  /** Маршрут гонки, як на старті (FR-8) */
+  steps: Race['steps'];
   stepsDone: number;
   stepsTotal: number;
   speedups: number;

@@ -161,10 +161,13 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const inspBanner = insp != null && (insp.warned || !insp.modal);
   // 005: gift-arrived і результат гонки — у тій самій черзі, після перевірок (крайовий випадок spec)
   const race = s.race.active;
-  const [raceSheet, setRaceSheet] = useState(false);
+  // race-sheet прив'язано до гонки: скінчилась — шторка зникає й не відкривається над наступним подарунком
+  const [raceSheetId, setRaceSheetId] = useState<string | null>(null);
+  const raceSheet = race != null && raceSheetId === race.id;
   const raceFree = inspFree && !inspCall && !inspWarn && !inspResult;
-  const giftOpen = raceFree && race != null && !race.seen;
-  const raceResult = raceFree && !giftOpen && s.race.last != null && !s.race.last.seen;
+  // хронологічно: спершу фінал попередньої гонки, потім новий подарунок
+  const raceResult = raceFree && s.race.last != null && !s.race.last.seen;
+  const giftOpen = raceFree && !raceResult && race != null && !race.seen;
 
   const coachFor = (id: string) => {
     if (!coachOn) return undefined;
@@ -222,7 +225,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.inspText}>{`${inspT.banner(formatCountdown((insp!.arrMs - now) / 1000))} · ${inspT.prepare}`}</Text>
           </Pressable>
         ) : null}
-        {race && race.seen ? <RaceCard race={race} nowMs={now} p={s.cfg.params} onOpen={() => setRaceSheet(true)} /> : null}
+        {race && race.seen ? <RaceCard race={race} nowMs={now} p={s.cfg.params} onOpen={() => setRaceSheetId(race.id)} /> : null}
         {kombatOn ? (
           <Pressable testID="kombat-bar" accessibilityRole="button" onPress={() => setView({ kind: 'kombat' })} style={styles.kombatBar}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${tgT.kbTitle} · ${tgT.left(formatDuration(Math.max(0, (kombat!.endMs - now) / 1000)))}`}</Text>
@@ -364,9 +367,18 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       {inspWarn ? <InspWarning store={store} /> : null}
       {inspResult ? <InspResult store={store} /> : null}
       {s.inspPrepOpen && insp ? <InspPrep store={store} /> : null}
-      {giftOpen ? <GiftArrived store={store} /> : null}
+      {raceSheet ? <RaceSheet store={store} onClose={() => setRaceSheetId(null)} /> : null}
+      {giftOpen ? (
+        <GiftArrived
+          store={store}
+          onRegister={() => {
+            // FR-6: «Зареєструвати акт» закриває модалку й відкриває race-sheet
+            s.ackGift();
+            setRaceSheetId(race!.id);
+          }}
+        />
+      ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
-      {raceSheet && race ? <RaceSheet store={store} onClose={() => setRaceSheet(false)} /> : null}
       {s.offline ? <OfflineReturn res={s.offline} inspRows={[...offlineRows(ins.last, s.cfg.params, s.offlineBackAt ?? now), ...offlineRaceRows(s.race.last)]} onClaim={s.claim} /> : null}
     </View>
   );
