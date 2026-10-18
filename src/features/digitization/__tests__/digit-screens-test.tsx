@@ -143,6 +143,8 @@ describe('утримання й церемонія', () => {
     expect(screen.getByTestId('result-points')).toHaveTextContent('+40');
     expect(screen.getByTestId('result-total')).toHaveTextContent('Разом балів: 40 · ×1,8 до всіх підписів назавжди');
     expect(r).toHaveTextContent(/Летять у музей.*№ 1 ·.*№ 2 ·.*№ 3 ·/);
+    // репліка з пулу digit.line показується з підписом персонажа
+    expect(screen.getByTestId('result-speaker').props.children).toMatch(/\S/);
     await fireEvent.press(screen.getByTestId('digit-result-ok'));
     expect(screen.queryByTestId('digit-result')).toBeNull();
     expect(store.getState().digit.ceremony).toBeNull();

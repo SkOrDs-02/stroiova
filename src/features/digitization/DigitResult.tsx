@@ -5,6 +5,7 @@ import { useStore } from 'zustand';
 import { formatBig, formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { useTumbLine } from '@/features/inspections/useTumbLine';
+import { speakerOf } from '@/features/telegrams/lines';
 import { color, radius, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
@@ -42,7 +43,12 @@ export function DigitResult({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.stamp}>{digitT.stamp}</Text>
           </View>
         </View>
-        {line ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.quote}>{line}</Text> : null}
+        {line ? (
+          <>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="result-speaker">{speakerOf('digit.line', line) ?? ''}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.quote}>{line}</Text>
+          </>
+        ) : null}
         <Button testID="digit-result-ok" label={c.levelUp ? digitT.next : digitT.toMain} onPress={s.closeDigitStep} />
       </View>
     </View>
@@ -70,5 +76,6 @@ const styles = StyleSheet.create({
   cell: { ...type('docBody'), color: color.ink, flexShrink: 1 },
   foot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space[8], marginTop: space[6] },
   stamp: { ...type('stampS'), color: color.stamp, borderWidth: 2, borderColor: color.stamp, paddingHorizontal: space[6], textTransform: 'uppercase' },
+  muted: { ...type('caption'), color: color.muted },
   quote: { ...type('body'), color: color.text, backgroundColor: color.surface, borderRadius: radius[8], padding: space[12] },
 });
