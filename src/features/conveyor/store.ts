@@ -307,6 +307,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         onboarding: { ...o, archiveBonus: amount },
       });
       get().showToast({ kind: 'archive', amount });
+      // 003 FR-27: підсумок дзвінка лягає в «Записки»
+      const tg = get().telegrams;
+      const note = { uid: `note_call#${tg.deliveries + 1}`, id: 'note_call', kind: 'note' as const, receivedAt: get().lastMs, status: 'archive' as const, read: false };
+      set({ telegrams: { ...tg, inbox: [...tg.inbox, note], deliveries: tg.deliveries + 1 } });
       get().onbComplete(9);
       return amount;
     },

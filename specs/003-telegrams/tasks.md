@@ -25,7 +25,7 @@ description: "Задачі: 003 Телеграми й репутація — е�
 ## Phase 2: Foundational
 
 - [X] T004 `src/telegrams/reputation.ts`: `applyDelta` (0–100), `repTier`, `replyChance` (p = 0 до `firstInspectionPassed`, ×`replyChanceLow`/1/`replyChanceHigh`, щит при P_total ≥ 1), історія ≤ 3; тести AC-9, AC-10, AC-11, AC-15 (домен)
-- [ ] T005 `src/save/schema.ts`, `migrations.ts`: `CURRENT_SCHEMA = 3`, zod `telegramStateSchema`, міграція 2 → 3 (порожній стан; № 1 в архіві, якщо онбординг уже відповів); тест на фікстуру v2
+- [X] T005 `src/save/schema.ts`, `migrations.ts`: `CURRENT_SCHEMA = 3`, zod `telegramStateSchema`, міграція 2 → 3 (порожній стан; № 1 в архіві, якщо онбординг уже відповів); тест на фікстуру v2
 - [X] T006 `src/economy/game/types.ts`: `DomainEvent` + події 003 (data-model.md)
 
 ## Phase 3: US2 — відповідь і ефекти (P1) 🎯
@@ -48,17 +48,17 @@ description: "Задачі: 003 Телеграми й репутація — е�
 
 **Independent Test**: AC-1 (стор), AC-15, AC-16; онбординг 002 AC-11…AC-13 не ламаються
 
-- [ ] T013 [US3] `src/features/conveyor/store.ts`: зріз `telegrams`, `tick` викликає `telegrams.tick` (`tzOffsetMin` від застосунку), дії `answerTelegram`, `openTelegram`, `flagTelegram`; тост `rep.toast`; онбординг: № 1 через `deliverScripted`, крок 8 закриває `answer` (R7); `features/telegrams/first.ts` прибрати
-- [ ] T014 [P] [US3] `src/features/telegrams/__tests__/reputation-ui-test.tsx`: AC-15 (36 → відписка −5 → плитка «низька», тост), AC-16 (шторка з поточним рівнем і 3 змінами)
-- [ ] T015 [US3] `src/features/telegrams/ReputationTile.tsx`, `ReputationSheet.tsx` (артборд `ReputationSheet`); плитка в шапці `main` (FR-22)
+- [X] T013 [US3] `src/features/conveyor/store.ts`: зріз `telegrams`, `tick` викликає `telegrams.tick` (`tzOffsetMin` від застосунку), дії `answerTelegram`, `openTelegram`, `flagTelegram`; тост `rep.toast`; онбординг: № 1 через `deliverScripted`, крок 8 закриває `answer` (R7); `features/telegrams/first.ts` прибрати
+- [X] T014 [P] [US3] `src/features/telegrams/__tests__/reputation-ui-test.tsx`: AC-15 (36 → відписка −5 → плитка «низька», тост), AC-16 (шторка з поточним рівнем і 3 змінами)
+- [X] T015 [US3] `src/features/telegrams/ReputationTile.tsx`, `ReputationSheet.tsx` (артборд `ReputationSheet`); плитка в шапці `main` (FR-22)
 
 ## Phase 6: US2 — екрани вхідних (P1)
 
 **Independent Test**: AC-7…AC-14 на екрані; quickstart 1–6
 
-- [ ] T016 [P] [US2] `src/features/telegrams/__tests__/inbox-test.tsx`: розділи «Нові», «На виконанні» з таймером, «Шухляда · N», «Архів · N», «Записки»; бейдж вкладки; деталь з рядками ефектів ≤ 60 знаків і причиною неактивності; результат «Рішення», «Репутація ±N · рівень», «Шанс перевірки N%» (AC-14)
-- [ ] T017 [US2] `src/features/telegrams/TelegramList.tsx` (артборд `TgList`, порожні стани з пулів `tg.empty_*`), вкладка «Телеграми» в `MainScreen`
-- [ ] T018 [US2] `src/features/telegrams/TelegramDetail.tsx` (усі стани `TgDetail` етапу), `TelegramResult.tsx` (усі стани `TgResult`; «Готуватися» — доменна подія для 04), `texts.ts` (нові рядки spec «Тексти» з позначкою на вичитку)
+- [X] T016 [P] [US2] `src/features/telegrams/__tests__/inbox-test.tsx`: розділи «Нові», «На виконанні» з таймером, «Шухляда · N», «Архів · N», «Записки»; бейдж вкладки; деталь з рядками ефектів ≤ 60 знаків і причиною неактивності; результат «Рішення», «Репутація ±N · рівень», «Шанс перевірки N%» (AC-14)
+- [X] T017 [US2] `src/features/telegrams/TelegramList.tsx` (артборд `TgList`, порожні стани з пулів `tg.empty_*`), вкладка «Телеграми» в `MainScreen`
+- [X] T018 [US2] `src/features/telegrams/TelegramDetail.tsx` (усі стани `TgDetail` етапу), `TelegramResult.tsx` (усі стани `TgResult`; «Готуватися» — доменна подія для 04), `texts.ts` (нові рядки spec «Тексти» з позначкою на вичитку)
 
 ## Phase 7: US4–US6 — позначка, події, записки
 
@@ -66,9 +66,9 @@ description: "Задачі: 003 Телеграми й репутація — е�
 
 - [X] T019 [P] [US5] `src/telegrams/__tests__/events-test.ts`: AC-17 (override при P_total 0 і 2), AC-20 (комбат: ×0,25 ≤ 30 хв, посильний = 4 хв базового доходу, «знайшли» через 3 хв), AC-21 (≤ 1 на добу; № 18 «на стіл» 50%)
 - [X] T020 [US5] `src/telegrams/events.ts`: override у слоті (R6), комбат на старті сесії й з № 18, посильний
-- [ ] T021 [US5] `src/features/telegrams/KombatSheet.tsx` (артборд `KombatSheet`), стан «комбата шукають» на `main`
-- [ ] T022 [P] [US4] `src/features/telegrams/TelegramFlag.tsx` (артборд `TgFlag`): 4 причини, коментар ≤ 280, «Позначено», без впливу на гру; тест AC-18
-- [ ] T023 [P] [US6] `src/features/telegrams/NoteDetail.tsx` (артборд `NoteDetail`, «підсумок дзвінка» з 002); тест AC-19
+- [X] T021 [US5] `src/features/telegrams/KombatSheet.tsx` (артборд `KombatSheet`), стан «комбата шукають» на `main`
+- [X] T022 [P] [US4] `src/features/telegrams/TelegramFlag.tsx` (артборд `TgFlag`): 4 причини, коментар ≤ 280, «Позначено», без впливу на гру; тест AC-18
+- [X] T023 [P] [US6] `src/features/telegrams/NoteDetail.tsx` (артборд `NoteDetail`, «підсумок дзвінка» з 002); тест AC-19
 - [ ] T024 [US1] `src/telegrams/lines.ts`: мішок реплік, ліміт 2 за сесію (рішення 41, 45); репліки Кави на `tg-list`/`tg-result`, Граніта в `kombat-sheet`; тест
 
 ## Phase 8: Polish

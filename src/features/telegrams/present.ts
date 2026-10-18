@@ -1,0 +1,76 @@
+// Як показати телеграму (003 FR-12, FR-19): рядок наслідків варіанта, рядки результату, підстановки.
+import { formatDuration, formatMult } from '@/economy/format';
+import type { EconomyConfig, EconomyState } from '@/economy/game/types';
+import { gendered } from '@/features/onboarding/callsign';
+import type { Gender } from '@/features/onboarding/steps';
+import { canChoose, paperCost } from '@/telegrams/effects';
+import { replyChance } from '@/telegrams/reputation';
+import type { Choice, InboxItem, Telegram, TelegramState } from '@/telegrams/types';
+
+import { t } from './texts';
+
+const HOUR = 3_600_000;
+
+export function unitName(cfg: EconomyConfig, id: string): string {
+  const p = cfg.params;
+  const lv = p.levels.map((l) => [l.stream, l.stage]).flat();
+  return [...p.streams, ...p.stages, ...lv].find((u) => u && (u as { id: string }).id === id)?.name ?? id;
+}
+
+/** «Стройова частина» → «Стройова», як на артбордах. */
+export const short = (name: string) => name.split(' ')[0] ?? name;
+
+/** Підстановки: {n}, {n1} override і форма «він / вона». */
+export function fill(text: string, item: InboxItem, gender: Gender | null): string {
+  const v = item.vars;
+  const s = v ? text.replace(/\{n1\}/g, String(v.n1)).replace(/\{n\}/g, String(v.n)) : text;
+  return gendered(s, gender);
+}
+
+export interface ChoiceView {
+  choice: Choice;
+  summary: string;
+  disabled: string | null;
+}
+
+/** Варіант із рядком ефекту ≤ 60 знаків (FR-12) і причиною неактивності (FR-18, FR-25). */
+export function choiceView(c: Choice, tg: TelegramState, eco: EconomyState, cfg: EconomyConfig, fromDrawer: boolean): ChoiceView {
+  const e = c.effects;
+  const parts: string[] = [];
+  if (e.durationMin) parts.push(t.minutes(e.durationMin));
+  const paper = paperCost(e, tg.flags);
+  if (paper) parts.push(t.sheets(paper));
+  for (const s of e.slow ?? []) parts.push(t.slow(short(unitName(cfg, s.target)), formatMult(s.mult), s.hours));
+  const shield = !!e.digitalShield && eco.prestigePoints >= 1;
+  if (shield) parts.push(t.shield);
+  else {
+    if (e.rep) parts.push(t.rep(e.rep));
+    // шанс показуємо лише коли він є (FR-15: до першої планової — без рядка)
+    if (e.inspPct) {
+      const pr = replyChance(tg, cfg.params, e.inspPct, !!e.digitalShield, eco.prestigePoints);
+      if (pr > 0) parts.push(t.insp(Math.round(pr * 100)));
+    }
+  }
+  const summary = parts.length ? parts.join(' · ') : (c.note ?? '');
+  const av = canChoose(tg, eco, c, fromDrawer);
+  const disabled = av.ok ? null : av.reason === 'paper' ? t.noPaper(av.n) : (c.disabledReason ?? t.ovDisabled);
+  return { choice: c, summary, disabled };
+}
+
+/** Рядки tg-result (FR-19, AC-14): рішення, ефекти, репутація з рівнем, шанс. */
+export function resultRows(item: InboxItem, tel: Telegram, cfg: EconomyConfig, tierWord: string): [string, string][] {
+  const c = tel.choices.find((x) => x.id === item.choiceId);
+  const r = item.result;
+  if (!c || !r) return [];
+  const rows: [string, string][] = [[t.resDecision, t.kind[c.kind] ?? c.kind]];
+  for (const s of r.slow) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${s.hours} год`]);
+  if (c.effects.durationMin) rows.push([t.resSpent, t.minutes(c.effects.durationMin)]);
+  if (r.paper) rows.push([t.resPaper, t.sheets(r.paper)]);
+  if (r.rep || c.kind !== 'drawer') rows.push([t.resRep, `${r.rep > 0 ? '+' : r.rep < 0 ? '−' : ''}${Math.abs(r.rep)} · ${tierWord}`]);
+  if (r.chancePct > 0) rows.push([t.resChance, `${r.chancePct}%`]);
+  return rows;
+}
+
+export function inspWarn(cfg: EconomyConfig): string {
+  return formatDuration(cfg.params.unscheduledWarnH * HOUR / 1000);
+}
