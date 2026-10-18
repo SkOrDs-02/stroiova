@@ -2,6 +2,7 @@
 // Правило: нова форма запису = CURRENT_SCHEMA + 1, міграція сюди, фікстура попередньої версії в тести (принцип III).
 import { DEFAULTS } from '@/economy/core';
 import { newInspections } from '@/inspections/lifecycle';
+import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
 
 export type Migration = (game: unknown) => unknown;
@@ -31,7 +32,14 @@ export const MIGRATIONS: Record<number, Migration> = {
   // 3 → 4 (004): перевірки. Точної мітки встановлення в записі немає: беремо старт розкладу телеграм (крок 7),
   // а для записів, де він 0 чи ще не настав, — 0 («давно»): першу перевірку стор однаково не оголосить до кінця онбордингу.
   3: (game) => ({ ...(game as object), inspections: inspectionsV4((game as { telegrams?: { startMs?: number | null } }).telegrams?.startMs ?? 0) }),
+  // 4 → 5 (005): гонок ще не було — порожній стан; перший подарунок рахується від встановлення (inspections.installMs)
+  4: (game) => ({ ...(game as object), race: raceV5() }),
 };
+
+/** Порожній стан гонки схеми 5. */
+export function raceV5() {
+  return newRace('race-migrated');
+}
 
 /** Порожній стан перевірок схеми 4. */
 export function inspectionsV4(installMs: number) {

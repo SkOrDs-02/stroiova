@@ -134,7 +134,13 @@ export type DomainEvent =
       offline: boolean;
       secFromStart: number;
     }
-  | { type: 'boostActivate'; boostType: 'inspection_x3'; mult: number; durationSec: number }
+  | { type: 'boostActivate'; boostType: 'inspection_x3' | 'drone_x2' | 'shovels_x1_5' | 'generator_fuel_hold'; mult: number; durationSec: number }
+  // 005: гонка з часом; аналітика етапу 5 (race_start, race_speedup_apply, race_finish), курйози 07
+  | { type: 'raceStart'; id: string; giftType: 'drone' | 'shovel' | 'generator'; docSec: number; resourceSec: number; winnable: boolean }
+  | { type: 'raceSpeedup'; id: string; method: 'digital_bonus'; secSaved: number }
+  | { type: 'raceFinish'; id: string; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean }
+  /** Програна гонка: запис «Списано раніше, ніж поставлено на облік» (07) */
+  | { type: 'raceCurio'; id: string; giftType: 'drone' | 'shovel' | 'generator' }
   /** Перша без зауважень після першої цифровізації: журнал № 7 (07 FR-8) */
   | { type: 'inspectionJournal'; id: string };
 

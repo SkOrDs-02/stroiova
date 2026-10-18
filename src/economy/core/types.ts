@@ -37,6 +37,14 @@ export interface InspItemDef {
   added?: boolean;
 }
 
+/** Подарунок Ліни (005): множник до підписів (дрон, лопати), fuel — тримає пальне (генератор) */
+export interface GiftDef {
+  mult: number;
+  fuel?: number;
+  serviceH: number;
+  steps: number[];
+}
+
 export interface EconomyParams {
   streams: UnitDef[];
   stages: UnitDef[];
@@ -92,6 +100,18 @@ export interface EconomyParams {
   inspArriveJitterMin: number;
   inspMinPrice: number;
   inspItems: InspItemDef[];
+  /** 005: подарунки й гонка (рішення 29–31); кроки акта — години (Акти, Комбат, Стройова, Фін.) */
+  gifts: Record<'drone' | 'shovel' | 'generator', GiftDef>;
+  giftOrder: ('drone' | 'shovel' | 'generator')[];
+  giftL2StepH: number;
+  giftFirstDay: number;
+  giftGapHours: number;
+  giftFromHour: number;
+  giftToHour: number;
+  raceAdPerDay: number;
+  raceAdCut: number;
+  raceDigitalCutH: number;
+  museumRacePct: number;
   storageHours: number;
   offlineAdMult: number;
   offlineAdPerDay: number;

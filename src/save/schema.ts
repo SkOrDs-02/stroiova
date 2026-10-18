@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 4;
+export const CURRENT_SCHEMA = 5;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -165,6 +165,51 @@ export const inspectionStateSchema = z.object({
   journalGiven: z.boolean(),
 });
 
+const giftType = z.enum(['drone', 'shovel', 'generator']);
+
+/** Гонка з часом (005 data-model.md); схема 5. */
+export const raceStateSchema = z.object({
+  rng: z.number(),
+  giftIdx: z.number().int().nonnegative(),
+  lastGiftDayKey: z.string().nullable(),
+  lastRaceEndMs: z.number().nullable(),
+  active: z
+    .object({
+      id: z.string(),
+      no: z.number().int().min(1),
+      type: giftType,
+      level: z.number().int().min(1),
+      startMs: z.number(),
+      svcEndMs: z.number(),
+      steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna']), sec: nonNeg })),
+      actTotalSec: nonNeg,
+      actEndMs: z.number(),
+      pausedAtMs: z.number().nullable(),
+      digUsed: z.boolean(),
+      sped: z.array(z.object({ method: z.enum(['digital_bonus', 'telegram']), sec: z.number() })),
+      seen: z.boolean(),
+    })
+    .nullable(),
+  last: z
+    .object({
+      id: z.string(),
+      no: z.number().int().min(1),
+      type: giftType,
+      level: z.number().int().min(1),
+      won: z.boolean(),
+      endMs: z.number(),
+      tookSec: nonNeg,
+      marginSec: nonNeg,
+      steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna']), sec: nonNeg })),
+      stepsDone: z.number().int().nonnegative(),
+      stepsTotal: z.number().int().min(1),
+      speedups: z.number().int().nonnegative(),
+      offline: z.boolean(),
+      seen: z.boolean(),
+    })
+    .nullable(),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -175,6 +220,8 @@ export const gameSaveSchema = z.object({
   telegrams: telegramStateSchema,
   /** Перевірки (004) */
   inspections: inspectionStateSchema,
+  /** Гонка з часом (005) */
+  race: raceStateSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

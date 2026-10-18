@@ -13,8 +13,10 @@ import { complete, isDone, isFullScreenStep, newOnboarding, receiveTg1, type Com
 import { inspT } from '@/features/inspections/texts';
 import { shiftInspections, buyItem as buyInsp, fromTelegramEvent as inspFromTelegram, newInspections, onSessionStart as inspSessionStart, tick as tickInsp } from '@/inspections/lifecycle';
 import type { InspectionState } from '@/inspections/types';
+import { digitalSpeedup, fromTelegram as raceFromTelegram, newRace, resume as raceResume, shiftRace, tick as tickRace } from '@/race/race';
+import type { RaceState } from '@/race/types';
 import { dayKey } from '@/telegrams/clock';
-import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
+import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
 import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } from '@/telegrams/effects';
 import { fromTelegram, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
@@ -56,6 +58,8 @@ interface Store {
   inspections: InspectionState;
   /** insp-prep відкрито (з банера, insp-warning чи «Готуватися» в tg-result); лише в пам'яті */
   inspPrepOpen: boolean;
+  /** Гонка з часом (005) */
+  race: RaceState;
   /** Репліки персонажів цієї сесії (рішення 45: ≤ 2 за сесію); лише в пам'яті */
   sessionLines: { count: number; byUid: Record<string, string> };
   /** Тапи першого акта; лише в пам'яті: після вбивства «0 з 8» (002 R4) */
@@ -123,6 +127,12 @@ interface Store {
   closeInspResult: () => void;
   /** Репліка Тумбочкіна з пулу на момент перевірки; поза лімітом сесії (рішення 45) */
   tumbLine: (key: string, slot: string) => string | null;
+  /** «Послатися на цифру» (005 FR-16); false — недоступно */
+  raceDigital: () => boolean;
+  /** gift-arrived закрито «Зареєструвати акт» (FR-6) */
+  ackGift: () => void;
+  /** race-won / race-lost закрито */
+  closeRaceResult: () => void;
 }
 
 /** Рішення 59: до закриття кроку 7 наймати можна лише діловода «Стройової частини». */
@@ -152,6 +162,7 @@ export interface Initial {
   onboarding?: OnboardingState;
   telegrams?: TelegramState;
   inspections?: InspectionState;
+  race?: RaceState;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -179,6 +190,12 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         if (r.addedItem) added.push(r.addedItem);
       }
       if (e.type === 'inspectionPrepare' && insp.active) prep = true;
+      // 005 FR-18: телеграма № 20 змінює поточну гонку
+      if (e.type === 'raceEffect') {
+        // лише на гонку, під час якої телеграма прийшла: відповідь після кінця гонки не чіпає наступну
+        const item = tg.inbox.filter((x) => x.id === e.telegramId).at(-1);
+        set({ race: raceFromTelegram(get().race, e.effect, nowMs, item?.receivedAt ?? nowMs) });
+      }
     }
     // «Готуватися» з tg-result відкриває insp-prep; insp-warning після цього не потрібен
     if (prep && insp.active) insp = { ...insp, active: { ...insp.active, warned: true } };
@@ -234,6 +251,24 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     const tg = r.scheduledArrived && !g.telegrams.firstInspectionPassed ? { ...g.telegrams, firstInspectionPassed: true } : g.telegrams;
     set({ inspections: r.s, telegrams: tg, effects: [...g.effects, ...r.effects], events: [...g.events, ...r.events].slice(-40), ...(r.s.active ? {} : { inspPrepOpen: false }) });
   };
+  /**
+   * Гонка в (from, to] (005): фінал і прихід подарунка. Іде перед доходом: множник подарунка з мітками кінця акта
+   * вже в ефектах, коли економіка ріже інтервал (FR-27).
+   */
+  const runRace = (from: number, to: number, offline: boolean) => {
+    const g = get();
+    if (to <= from) return;
+    const r = tickRace(g.race, g.state, g.cfg, { fromMs: from, nowMs: to, tzOffsetMin: tzOffsetAt(to), installMs: g.inspections.installMs, offline });
+    if (r.s === g.race && !r.events.length) return;
+    set({ race: r.s, state: r.eco, effects: [...g.effects, ...r.effects], events: [...g.events, ...r.events].slice(-40) });
+  };
+  /** № 20 вийшла з шухляди (відповідь чи повернення): акт іде далі (FR-18). */
+  const resumeRaceIfFree = (now: number) => {
+    const r = get().race.active;
+    if (!r || r.pausedAtMs == null) return;
+    const held = get().telegrams.inbox.some((x) => x.status === 'drawer' && !!telegram(x.id)?.choices.find((c) => c.id === x.choiceId)?.effects.race);
+    if (!held) set({ race: raceResume(get().race, now) });
+  };
   /** Розклад і таймери телеграм у (from, to] (003 FR-2, FR-3, FR-17): лише після № 1. */
   const runTelegrams = (from: number, to: number, away: boolean) => {
     const g = get();
@@ -245,7 +280,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       tzOffsetMin: tzOffsetAt(to),
       level: g.state.level,
       digitizations: 0, // лічильник цифровізацій з'явиться з 06
-      raceActive: null, // гонка — 05
+      raceActive: g.race.active?.type ?? null,
       away,
     });
     set({ telegrams: r.tg, state: r.eco });
@@ -258,7 +293,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (a.clockBack) {
         // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
         const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), lastMs: backAt, toast: { kind: 'clockBack' } });
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), lastMs: backAt, toast: { kind: 'clockBack' } });
         return;
       }
       const res = offline(state, c, leftAt, backAt, effects);
@@ -280,6 +315,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     telegrams: init?.telegrams ?? newTelegrams(cfg.params, `game-${nowMs}`),
     inspections: init?.inspections ?? newInspections(nowMs, `insp-${nowMs}`),
     inspPrepOpen: false,
+    race: init?.race ?? newRace(`race-${nowMs}`),
     sessionLines: { count: 0, byUid: {} },
     // крок 5 закривається кінцем анімації ПОГОДЖЕНО; якщо застосунок вбито під час неї, акт уже підписано (FR-28)
     actTaps: init?.onboarding?.step === 5 ? ACT_TAPS : 0,
@@ -295,6 +331,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     tick: (now) => {
       if (now <= get().lastMs) return;
       runInspections(get().lastMs, now, false);
+      runRace(get().lastMs, now, false);
       const { state, cfg: c, effects, lastMs, onboarding: o, playtimeMs } = get();
       const dt = now - lastMs;
       // tick іде лише на передньому плані: ігровий час і «Пташка» не рахуються у фоні (FR-12, FR-29).
@@ -307,6 +344,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         ...(o.birdLeftMs > 0 ? { onboarding: { ...o, birdLeftMs: Math.max(0, o.birdLeftMs - dt) } } : {}),
       });
       runTelegrams(lastMs, now, false);
+      resumeRaceIfFree(now);
     },
     tapSeal: (now) => {
       const { state, cfg: c, effects, onboarding: o, lastMs } = get();
@@ -342,9 +380,11 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     away: (leftAt, backAt) => {
       // перевірки без гравця — за станом чекліста на мить виходу (FR-24); до доходу, щоб ×3 потрапив у офлайн
       runInspections(leftAt, backAt, true);
+      runRace(leftAt, backAt, true);
       awayInner(leftAt, backAt);
       // 003: телеграми, що прийшли без гравця (FR-3); нова сесія — шанс «Комбата шукають» (FR-29)
       runTelegrams(leftAt, Math.max(leftAt, backAt), true);
+      resumeRaceIfFree(backAt);
       if (isNewSession(leftAt, backAt)) {
         set({ sessionLines: { count: 0, byUid: {} } });
         const g = get();
@@ -432,6 +472,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if ('error' in r) return r;
       set({ telegrams: r.tg, state: r.eco, effects: [...g.effects, ...r.effects] });
       handleEvents(r.events, now);
+      resumeRaceIfFree(now);
       // 002 FR-19: відповідь на № 1 закриває крок 8
       if (r.item.id === FIRST_TELEGRAM_ID && get().onboarding.step === 8) {
         set({ onboarding: { ...get().onboarding, tg1: { choiceId, atPlayMs: get().playtimeMs } } });
@@ -464,7 +505,23 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (item) handleEvents([{ type: 'inspectionPrepare', telegramId: item.id }], get().lastMs);
     },
     kavaLineFor: (uid) => characterLine('kava.tg_new', uid),
-    tumbLine: (key, slot) => eventLine(key, slot),
+    // перевірки — поза лімітом 2 реплік за сесію (рішення 45); Ліна (гонка) — у ліміті
+    tumbLine: (key, slot) => (key.startsWith('lina.') ? characterLine(key, slot) : eventLine(key, slot)),
+    raceDigital: () => {
+      const g = get();
+      const r = digitalSpeedup(g.race, g.lastMs, g.state.prestigePoints, g.cfg);
+      if ('error' in r) return false;
+      set({ race: r.s, events: [...g.events, ...r.events].slice(-40) });
+      return true;
+    },
+    ackGift: () => {
+      const rc = get().race;
+      if (rc.active && !rc.active.seen) set({ race: { ...rc, active: { ...rc.active, seen: true } } });
+    },
+    closeRaceResult: () => {
+      const rc = get().race;
+      if (rc.last && !rc.last.seen) set({ race: { ...rc, last: { ...rc.last, seen: true } } });
+    },
     buyInspItem: (itemId) => {
       const g = get();
       const r = buyInsp(g.inspections, g.state, itemId, g.lastMs);
@@ -509,7 +566,8 @@ export function gameSave(store: ConveyorStore): {
   onboarding: OnboardingState;
   telegrams: TelegramState;
   inspections: InspectionState;
+  race: RaceState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race };
 }
