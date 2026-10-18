@@ -146,7 +146,10 @@ export type DomainEvent =
   | { type: 'levelAdvance'; from: number; to: number; digitizationCount: number; pointsTotal: number }
   | { type: 'digitizationHint'; etaSec: number; points: number; pointsTotal: number; isFirst: boolean }
   /** Перша без зауважень після першої цифровізації: журнал № 7 (07 FR-8) */
-  | { type: 'inspectionJournal'; id: string };
+  | { type: 'inspectionJournal'; id: string }
+  // 007: музей; аналітика етапу 5 (museum_journal_unlock)
+  | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection'; ownedAfter: number; isSeriesComplete: boolean }
+  | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */
 export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };

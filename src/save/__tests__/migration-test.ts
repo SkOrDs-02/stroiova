@@ -1,5 +1,5 @@
 // 009 AC-7, AC-8; FR-9…FR-11. Фікстурні міграції 1 → 2 → 3 до появи справжніх.
-import { digitizationV6, inspectionsV4, MIGRATIONS, onboardingDone, raceV5, telegramsV3 } from '../migrations';
+import { digitizationV6, inspectionsV4, MIGRATIONS, museumV7, onboardingDone, raceV5, telegramsV3 } from '../migrations';
 import { KEY_BAK1, KEY_SAVE, loadSave, serialize, type SaveDraft } from '../repository';
 import { memoryStorage } from '../storage';
 import { draft } from '../test-saves';
@@ -14,7 +14,7 @@ function v1(): SaveDraft {
 
 const migrations = {
   1: (g: unknown) => { const x = g as { economy: object; sigs: number }; return { economy: { ...x.economy, signatures: x.sigs } }; },
-  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0) }),
+  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7() }),
 };
 
 describe('міграції', () => {
@@ -74,7 +74,7 @@ describe('справжні міграції', () => {
     const d = draft({ schemaVersion: 1, savedAt: 5000 }, { signatures: 777 });
     const { playtimeMs: _p, onboarding: _o, telegrams: _t, inspections: _i, race: _r, digitization: _d, ...gameV1 } = d.game;
     const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: gameV1 as never }) });
-    const r = loadSave(kv, { current: 6, migrations: MIGRATIONS });
+    const r = loadSave(kv, { current: 7, migrations: MIGRATIONS });
     expect(r).toMatchObject({ kind: 'ok', migratedFrom: 1 });
     if (r.kind !== 'ok') return;
     expect(r.save.game.onboarding).toEqual(onboardingDone());
@@ -90,7 +90,7 @@ describe('справжні міграції', () => {
     const { telegrams: _t, inspections: _i, race: _r, digitization: _d, ...gameV2 } = d.game;
     const onboarding = { ...gameV2.onboarding, step: 9, tg1: { choiceId: 'formal_reply', atPlayMs: 310_000 } };
     const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV2, onboarding } as never }) });
-    const r = loadSave(kv, { current: 6, migrations: MIGRATIONS });
+    const r = loadSave(kv, { current: 7, migrations: MIGRATIONS });
     expect(r).toMatchObject({ kind: 'ok', migratedFrom: 2 });
     if (r.kind !== 'ok') return;
     expect(r.save.game.telegrams.inbox).toEqual([expect.objectContaining({ id: 'tg_0001_sergeants', status: 'archive', choiceId: 'formal_reply' })]);
@@ -102,7 +102,7 @@ describe('справжні міграції', () => {
     const { telegrams: _t, inspections: _i, race: _r, digitization: _d, ...gameV2 } = d.game;
     const onboarding = { ...gameV2.onboarding, step: 8, tg1ReceivedAtPlayMs: 300_000, tg1: null };
     const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV2, onboarding } as never }) });
-    const r = loadSave(kv, { current: 6, migrations: MIGRATIONS });
+    const r = loadSave(kv, { current: 7, migrations: MIGRATIONS });
     if (r.kind !== 'ok') throw new Error(r.kind);
     expect(r.save.game.telegrams.inbox).toEqual([expect.objectContaining({ id: 'tg_0001_sergeants', status: 'new' })]);
     expect(r.save.game.telegrams.startMs).toBe(0);
@@ -113,16 +113,16 @@ describe('справжні міграції', () => {
     const { telegrams: _t, inspections: _i, race: _r, digitization: _d, ...gameV2 } = d.game;
     const onboarding = { ...gameV2.onboarding, step: 6 };
     const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV2, onboarding } as never }) });
-    const r = loadSave(kv, { current: 6, migrations: MIGRATIONS });
+    const r = loadSave(kv, { current: 7, migrations: MIGRATIONS });
     if (r.kind !== 'ok') throw new Error(r.kind);
     expect(r.save.game.telegrams.startMs).toBeNull();
   });
 
   test('3 → 4 (004): перевірок ще не було — порожній стан, встановлення = старт розкладу телеграм', () => {
     const d = draft({ schemaVersion: 3, savedAt: 5000 });
-    const { inspections: _i, race: _r, digitization: _d, ...gameV3 } = d.game;
+    const { inspections: _i, race: _r, digitization: _d, museum: _m, ...gameV3 } = d.game;
     const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV3, telegrams: { ...gameV3.telegrams, startMs: 4000 } } as never }) });
-    const r = loadSave(kv, { current: 6, migrations: MIGRATIONS });
+    const r = loadSave(kv, { current: 7, migrations: MIGRATIONS });
     expect(r).toMatchObject({ kind: 'ok', migratedFrom: 3 });
     if (r.kind !== 'ok') return;
     expect(r.save.game.inspections).toEqual(inspectionsV4(4000));
@@ -131,9 +131,9 @@ describe('справжні міграції', () => {
 
   test('4 → 5 (005): гонок ще не було — порожній стан', () => {
     const d = draft({ schemaVersion: 4, savedAt: 5000 });
-    const { race: _r, digitization: _d, ...gameV4 } = d.game;
+    const { race: _r, digitization: _d, museum: _m, ...gameV4 } = d.game;
     const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: gameV4 as never }) });
-    const r = loadSave(kv, { current: 6, migrations: MIGRATIONS });
+    const r = loadSave(kv, { current: 7, migrations: MIGRATIONS });
     expect(r).toMatchObject({ kind: 'ok', migratedFrom: 4 });
     if (r.kind !== 'ok') return;
     expect(r.save.game.race).toEqual(raceV5());
@@ -142,12 +142,24 @@ describe('справжні міграції', () => {
 
   test('5 → 6 (006): цифровізацій ще не було — порожній стан, цикл від встановлення', () => {
     const d = draft({ schemaVersion: 5, savedAt: 5000 });
-    const { digitization: _d, ...gameV5 } = d.game;
+    const { digitization: _d, museum: _m, ...gameV5 } = d.game;
     const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV5, inspections: { ...gameV5.inspections, installMs: 4000 } } as never }) });
-    const r = loadSave(kv, { current: 6, migrations: MIGRATIONS });
+    const r = loadSave(kv, { current: 7, migrations: MIGRATIONS });
     expect(r).toMatchObject({ kind: 'ok', migratedFrom: 5 });
     if (r.kind !== 'ok') return;
     expect(r.save.game.digitization).toEqual(digitizationV6(4000));
     expect(r.save.game.digitization).toMatchObject({ total: 0, counts: {}, ceremony: null, howSeen: false, cycleStartMs: 4000 });
+  });
+
+  test('6 → 7 (007): музею й курйозів ще не було - порожній стан, решта запису цілі', () => {
+    const d = draft({ schemaVersion: 6, savedAt: 5000 });
+    const { museum: _m, ...gameV6 } = d.game;
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: gameV6 as never }) });
+    const r = loadSave(kv, { current: 7, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 6 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.museum).toEqual(museumV7());
+    expect(r.save.game.museum).toEqual({ owned: [], reveal: [], curios: [], curioSeq: 0 });
+    expect(r.save.game.digitization).toEqual(d.game.digitization);
   });
 });

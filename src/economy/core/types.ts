@@ -111,6 +111,11 @@ export interface EconomyParams {
   raceAdPerDay: number;
   raceAdCut: number;
   raceDigitalCutH: number;
+  /** 007: музей. 0 - вимкнено, 1 - № 1-8, 2 - № 1-24 (016); відсотки бонусів журналів */
+  museum: number;
+  museumUnitPct: number;
+  museumStoragePct: number;
+  museumPaperPct: number;
   museumRacePct: number;
   /** 006: журнали, які скасовує цифровізація: рівень → номер цифровізації на рівні → номери журналів (sim.js, 016 FR-5) */
   digitJournals: Record<string, Record<string, number[]>>;

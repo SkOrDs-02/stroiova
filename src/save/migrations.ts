@@ -3,6 +3,7 @@
 import { DEFAULTS } from '@/economy/core';
 import { newInspections } from '@/inspections/lifecycle';
 import { newDigitization } from '@/digitization/digitization';
+import { newMuseum } from '@/museum/museum';
 import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
 
@@ -37,7 +38,14 @@ export const MIGRATIONS: Record<number, Migration> = {
   4: (game) => ({ ...(game as object), race: raceV5() }),
   // 5 → 6 (006): цифровізацій ще не було; цикл рахується від встановлення (`inspections.installMs`, як у 4 → 5)
   5: (game) => ({ ...(game as object), digitization: digitizationV6((game as { inspections?: { installMs?: number } }).inspections?.installMs ?? 0) }),
+  // 6 → 7 (007): музею й курйозів ще не було - порожній стан (006 ще не вийшла: цифровізацій, що скасували б журнали, немає)
+  6: (game) => ({ ...(game as object), museum: museumV7() }),
 };
+
+/** Порожній стан музею схеми 7. */
+export function museumV7() {
+  return newMuseum();
+}
 
 /** Порожній стан цифровізації схеми 6. */
 export function digitizationV6(cycleStartMs: number) {

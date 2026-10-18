@@ -11,6 +11,7 @@ import { createConveyorStore, gameSave, type ConveyorStore, type StoredEffect } 
 import type { OnboardingState } from '@/features/onboarding/steps';
 import type { InspectionState } from '@/inspections/types';
 import type { DigitizationState } from '@/digitization/types';
+import type { MuseumState } from '@/museum/types';
 import type { RaceState } from '@/race/types';
 import type { TelegramState } from '@/telegrams/types';
 import { MIGRATIONS } from '@/save/migrations';
@@ -57,7 +58,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum },
   };
 }
 
@@ -81,6 +82,7 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     inspections: save.game.inspections as InspectionState,
     race: save.game.race as RaceState,
     digit: save.game.digitization as DigitizationState,
+    museum: save.game.museum as MuseumState,
   });
   // новий холодний старт — нова сесія (FR-4); після міграції знімок уже зроблено в loadSave
   if (!opts.snapshotted) snapshot(kv);
