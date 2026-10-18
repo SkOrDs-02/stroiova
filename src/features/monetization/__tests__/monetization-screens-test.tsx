@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-
 
 import { bundledConfig } from '@/economy/config';
 import { multStack } from '@/economy/game/income';
+import { needsSaveNow } from '@/features/boot/useBoot';
 import { createConveyorStore } from '@/features/conveyor/store';
 import { MainScreen } from '@/features/main/MainScreen';
 import { fakeAds, fakePurchases } from '@/monetization/test-services';
@@ -332,6 +333,21 @@ describe('стартова пропозиція (AC-15)', () => {
     expect(store.getState().monetization.offer).toBe('done');
     await fireEvent.press(screen.getByTestId('tab-shop'));
     expect(screen.getByTestId('product-starter_pack')).toBeTruthy();
+  });
+});
+
+describe('запис у мить події', () => {
+  test('нагорода за ролик і куплений товар вимагають негайного запису, не 5 с автозапису', async () => {
+    const { store } = game();
+    let urgent = 0;
+    store.subscribe((st, prev) => {
+      if (needsSaveNow(st, prev)) urgent++;
+    });
+    await store.getState().watchAd('income_boost');
+    expect(urgent).toBeGreaterThan(0);
+    const before = urgent;
+    await store.getState().purchase('storage_24h');
+    expect(urgent).toBeGreaterThan(before);
   });
 });
 

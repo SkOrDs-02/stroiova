@@ -108,7 +108,10 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.digit !== prev.digit ||
     // журнал записується в мить джерела: вбивство застосунку в наступні 5 с його не губить
     st.museum.owned !== prev.museum.owned ||
-    st.museum.curios !== prev.museum.curios
+    st.museum.curios !== prev.museum.curios ||
+    // 008: нагорода за ролик і куплений товар - у мить події, не за 5 с (FR-12, крайовий випадок «Вбивство під час оплати»)
+    st.monetization !== prev.monetization ||
+    st.effects !== prev.effects
   );
 }
 
