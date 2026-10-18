@@ -519,7 +519,7 @@ function simulate(p, scenario) {
       else { var j = ev.stage ? stageIdx(ev.stage) : Math.floor(ev.pick * ST.length); if (j >= 0) fac[j] *= ev.m; }
     }
   }
-  // scheduled inspections, reputation «норма»: the schedule does not depend on the player
+  // scheduled inspections: the schedule does not depend on the player or reputation (decision 61)
   var insps = [];
   var arrWindow = function (t, rnd) { // arrival only 10:00–21:00, else 10:00 + 0–60 min
     var h = localH(t);
@@ -534,9 +534,7 @@ function simulate(p, scenario) {
       var arr = arrWindow(s0 + warn(), randI);
       insps.push({ ann: s0, arr: arr });
       for (var gi = 0; gi < 400; gi++) {
-        var tr = tierAt(arr), iMin = tr === 'low' ? p.inspIntervalLowMinH : tr === 'high' ? p.inspIntervalHighMinH : p.inspIntervalMinH,
-          iMax = tr === 'low' ? p.inspIntervalLowMaxH : tr === 'high' ? p.inspIntervalHighMaxH : p.inspIntervalMaxH;
-        arr = arrWindow(arr + (iMin + randI() * (iMax - iMin)) * H, randI);
+        arr = arrWindow(arr + (p.inspIntervalMinH + randI() * (p.inspIntervalMaxH - p.inspIntervalMinH)) * H, randI);
         if (arr > p.days * day) break;
         insps.push({ ann: arr - warn(), arr: arr });
       }
