@@ -351,6 +351,185 @@ describe('запис у мить події', () => {
   });
 });
 
+describe('доповнення за вичиткою (spec-guardian)', () => {
+  test('AC-3: ролик у магазині й у шторці ділять лічильник - «сьогодні ще 1 з 3»', async () => {
+    const { store } = game();
+    await open(store);
+    await fireEvent.press(screen.getByTestId('tab-shop'));
+    await fireEvent.press(screen.getByTestId('shop-boost-ad'));
+    await fireEvent.press(screen.getByTestId('tab-stroyova'));
+    await fireEvent.press(screen.getByTestId('income-open'));
+    await fireEvent.press(screen.getByTestId('boost-ad'));
+    expect(screen.getByTestId('boosts-sheet')).toHaveTextContent(/сьогодні ще 1 з 3/);
+  });
+
+  test('AC-2: залишок 9 год - «Межа: 12 год» і підказка в UI', async () => {
+    const { store } = game();
+    store.setState({ effects: [{ kind: 'mult', source: 'ad_boost', value: 2, startMs: T0 - HOUR, endMs: T0 + 9 * HOUR }] });
+    await open(store);
+    await fireEvent.press(screen.getByTestId('income-open'));
+    expect(screen.getByTestId('boost-ad')).toHaveTextContent(/Межа: 12 год/);
+    expect(screen.getByTestId('boosts-sheet')).toHaveTextContent(/Ще 4 год можна додати, коли лишиться 8 год/);
+  });
+
+  test('AC-13: success без активного entitlement ефекту не вмикає; з entitlement - вмикає', async () => {
+    const no = game({ shop: fakePurchases({ rights: { no_ads: false, starter_pack: false, storage_24h: false } }) });
+    await no.store.getState().purchase('no_ads');
+    expect(no.store.getState().state.hasNoAds).toBe(false);
+    expect(no.store.getState().monetization.success).toEqual([]);
+    expect(no.store.getState().events.at(-1)).toMatchObject({ type: 'purchaseFail' });
+    const yes = game({ shop: fakePurchases({ rights: { no_ads: true, starter_pack: false, storage_24h: false } }) });
+    await yes.store.getState().purchase('no_ads');
+    expect(yes.store.getState().state.hasNoAds).toBe(true);
+    expect(fakePurchases().status()).toBe('ready');
+  });
+
+  test('збій SDK (виняток) не лишає busy назавжди: ролик, оплата, відновлення', async () => {
+    const ads = fakeAds();
+    ads.show = async () => {
+      throw new Error('boom');
+    };
+    const shop = fakePurchases();
+    shop.purchase = async () => {
+      throw new Error('boom');
+    };
+    shop.restore = async () => {
+      throw new Error('boom');
+    };
+    const { store } = game({ ads, shop });
+    expect(await store.getState().watchAd('income_boost')).toBe('unavailable');
+    expect(store.getState().busy).toBeNull();
+    await store.getState().purchase('no_ads');
+    expect(store.getState().busy).toBeNull();
+    expect(store.getState().state.hasNoAds).toBe(false);
+    await store.getState().restore('shop_button');
+    expect(store.getState().busy).toBeNull();
+  });
+
+  test('AC-16/FR-22: під час оплати інші «Купити» й «Відновити» заблоковані, повторний тап ігнорується', async () => {
+    let finish: (r: { kind: 'success' }) => void = () => {};
+    const shop = fakePurchases();
+    shop.purchase = (id) => {
+      shop.bought.push(id);
+      return new Promise((res) => {
+        finish = res as typeof finish;
+      });
+    };
+    const { store } = game({ shop });
+    await open(store);
+    await fireEvent.press(screen.getByTestId('tab-shop'));
+    await fireEvent.press(screen.getByTestId('buy-no_ads'));
+    expect(store.getState().busy).toBe('purchase');
+    expect(screen.getByTestId('buy-storage_24h')).toBeDisabled();
+    expect(screen.getByTestId('shop-restore')).toBeDisabled();
+    expect(screen.getByTestId('shop-restore-note')).toHaveTextContent(/Спершу завершиться поточна покупка/);
+    await store.getState().purchase('no_ads');
+    expect(shop.bought).toEqual(['no_ads']);
+    expect(await store.getState().watchAd('income_boost')).toBe('busy');
+    await act(async () => finish({ kind: 'success' }));
+    expect(store.getState().busy).toBeNull();
+  });
+
+  test('AC-16: білінг недоступний - «Покупка недоступна», пояснення біля відновлення', async () => {
+    const { store } = game({ shop: fakePurchases({ status: 'no_billing', prices: {} }) });
+    await open(store);
+    await fireEvent.press(screen.getByTestId('tab-shop'));
+    expect(screen.getByTestId('buy-no_ads')).toHaveTextContent(/Покупка недоступна/);
+    expect(screen.getByTestId('shop-restore-note')).toHaveTextContent(/Відновити можна, коли .* відповідатиме/);
+  });
+
+  test('AC-12: «Без реклами» - «Забрати» на всіх п\'яти місцях; ліміти ті самі', async () => {
+    const { store } = game();
+    await act(async () => store.getState().purchase('no_ads'));
+    await act(async () => store.getState().closeIapSuccess());
+    store.getState().away(T0, T0 + 2 * HOUR);
+    await open(store);
+    expect(screen.getByTestId('offline-double')).toHaveTextContent(/Забрати ×2/);
+    await fireEvent.press(screen.getByTestId('offline-double'));
+    expect(store.getState().state.offlineDoubles.count).toBe(1);
+    await fireEvent.press(screen.getByTestId('tab-shop'));
+    expect(screen.getByTestId('shop-boost-ad')).toHaveTextContent(/Забрати/);
+    expect(screen.getByTestId('shop-boost')).toHaveTextContent(/Без перегляду · сьогодні ще 3 з 3/);
+    expect(store.getState().state.hasNoAds).toBe(true);
+  });
+
+  test('AC-6: «Усе за рекламу» → «Ліміт на перевірку»; «Без реклами» - «Забрати все»', async () => {
+    const mk = (noAds: boolean) => {
+      const g = game();
+      g.store.setState({ lastMs: local(9, 5), state: { ...g.store.getState().state, hasNoAds: noAds, streamLevels: [40, 0, 0, 0], signatures: 0 }, inspections: { ...g.store.getState().inspections, installMs: local(9) } });
+      g.store.getState().away(local(9, 5), local(17));
+      if (g.store.getState().offline) g.store.getState().claim();
+      g.store.getState().ackInspCall();
+      g.store.getState().ackInspWarning(true);
+      return g;
+    };
+    const a = mk(false);
+    await open(a.store);
+    await fireEvent.press(screen.getByTestId('insp-ad'));
+    expect(screen.getByTestId('insp-ad')).toHaveTextContent(/Ліміт на перевірку/);
+    expect(screen.getByTestId('insp-ad')).toBeDisabled();
+    await cleanup();
+    const b = mk(true);
+    await open(b.store);
+    expect(screen.getByTestId('insp-ad')).toHaveTextContent(/Забрати все/);
+  });
+
+  test('FR-24/FR-27: Ask to Buy, що чекав, дає iap-success; нове право без очікування - тихе відновлення з тостом', async () => {
+    const { store, shop } = game();
+    shop.set({ result: { kind: 'pending' } });
+    await store.getState().purchase('storage_24h');
+    shop.set({ rights: { no_ads: true, starter_pack: false, storage_24h: true } });
+    await act(async () => store.getState().syncPurchases());
+    expect(store.getState().monetization.success).toEqual(['storage_24h']);
+    expect(store.getState().state.hasNoAds).toBe(true);
+    expect(store.getState().events.at(-1)).toMatchObject({ type: 'purchaseRestore', trigger: 'auto_check', restoredProductIds: ['no_ads'] });
+    expect(store.getState().toast).toMatchObject({ kind: 'text' });
+    // відновлення не рахується як оплачена покупка
+    expect(store.getState().monetization.purchases).toBe(1);
+  });
+
+  test('AC-15: довідка з перевіркою, що минула офлайн - після «Забрати» стартова пропозиція; після другої перевірки - ні', async () => {
+    const { store } = game();
+    store.setState({ lastMs: local(9, 5), state: { ...store.getState().state, streamLevels: [40, 0, 0, 0], streamClerks: [true, false, false, false], stageClerks: [true, true, true] }, inspections: { ...store.getState().inspections, installMs: local(9) } });
+    store.getState().away(local(9, 5), local(17));
+    if (store.getState().offline) store.getState().claim();
+    store.getState().ackInspCall();
+    const a = store.getState().inspections.active!;
+    store.getState().away(local(17), a.arrMs + HOUR);
+    await open(store);
+    expect(screen.getByTestId('offline-return')).toBeTruthy();
+    expect(store.getState().monetization.offer).toBe('wait');
+    await fireEvent.press(screen.getByTestId('offline-claim'));
+    expect(store.getState().monetization.offer).toBe('due');
+    expect(screen.getByTestId('starter-offer')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('so-later'));
+    // друга перевірка нічого не повертає
+    store.getState().closeInspResult();
+    expect(store.getState().monetization.offer).toBe('done');
+  });
+
+  test('AC-20: старт-оферта й успіх теж без слів про фонд, відсоток чи допомогу', async () => {
+    const { store } = game();
+    store.setState({ monetization: { ...store.getState().monetization, offer: 'due' } });
+    await open(store);
+    expect(JSON.stringify(screen.toJSON())).not.toMatch(/фонд|пожертв|допомог|відсот/i);
+    await fireEvent.press(screen.getByTestId('so-buy'));
+    expect(screen.getByTestId('iap-success')).toBeTruthy();
+    expect(JSON.stringify(screen.toJSON())).not.toMatch(/фонд|пожертв|допомог|відсот|лише зараз|Найпопулярніше/i);
+  });
+
+  test('запис у мить події: ×2 за офлайн-ролик, гонка й чекліст теж вимагають негайного запису', async () => {
+    const { store } = game();
+    store.getState().away(T0, T0 + 2 * HOUR);
+    let urgent = 0;
+    store.subscribe((st, prev) => {
+      if (needsSaveNow(st, prev)) urgent++;
+    });
+    await store.getState().watchAd('offline_double');
+    expect(urgent).toBeGreaterThan(0);
+  });
+});
+
 describe('збірка без SDK', () => {
   test('типові сервіси: ролика немає, покупка недоступна, гра працює далі', async () => {
     const store = createConveyorStore(T0, bundledConfig);

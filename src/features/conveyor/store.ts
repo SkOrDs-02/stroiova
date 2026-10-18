@@ -21,7 +21,7 @@ import type { DigitizationState } from '@/digitization/types';
 import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
 import { addBoost, addPending, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
-import type { AdService, MonetizationState, Placement, ProductId, PurchaseService } from '@/monetization/types';
+import type { AdResult, AdService, MonetizationState, Placement, ProductId, PurchaseResult, PurchaseService } from '@/monetization/types';
 import { adT, iapT, shopT } from '@/features/monetization/texts';
 import { unavailableAds } from '@/services/ads';
 import { unavailablePurchases } from '@/services/purchases';
@@ -564,7 +564,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const claimEv: DomainEvent = { type: 'offlineIncomeClaim', isDoubled: doubled, doubleSource: doubled ? (state.hasNoAds ? 'no_ads_pass' : 'ad') : 'none', offlineDoublesToday: r.state.offlineDoubles.count };
       // 008 FR-19: результат перевірки побачено в довідці - час для стартової пропозиції
       const insp = last?.offline && !last.seen;
-      set({ state: r.state, offline: null, offlineBackAt: null, events: [...get().events, claimEv].slice(-40), ...(insp ? { monetization: offerDue(get().monetization) } : {}), ...seen });
+      set({ state: r.state, offline: null, offlineBackAt: null, events: [...get().events, ...(res.earned > 0 ? [claimEv] : [])].slice(-40), ...(insp ? { monetization: offerDue(get().monetization) } : {}), ...seen });
       return true;
     },
     clearToast: () => {
@@ -740,8 +740,15 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         return 'unavailable';
       }
       set({ busy: 'ad' });
-      const res = await get().services.ads.show(placement);
-      set({ busy: null });
+      // збій SDK не повинен лишити busy назавжди: виняток - це збій показу
+      let res: AdResult;
+      try {
+        res = await get().services.ads.show(placement);
+      } catch (e) {
+        res = { kind: 'fail', stage: 'show', code: e instanceof Error ? e.message : undefined };
+      } finally {
+        set({ busy: null });
+      }
       if (res.kind === 'earned') return rewardAd(placement, 'ad') ? 'granted' : 'blocked';
       if (res.kind === 'closed_early') {
         pushEvent({ type: 'adFail', placement, stage: 'closed_early' });
@@ -758,8 +765,14 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const svc = g.services.purchases;
       if (svc.status() !== 'ready' || g.monetization.rights[id]) return;
       set({ busy: 'purchase' });
-      const r = await svc.purchase(id);
-      set({ busy: null });
+      let r: PurchaseResult;
+      try {
+        r = await svc.purchase(id);
+      } catch (e) {
+        r = { kind: 'error', reason: 'unknown', code: e instanceof Error ? e.message : undefined };
+      } finally {
+        set({ busy: null });
+      }
       if (r.kind === 'cancelled') {
         pushEvent({ type: 'purchaseFail', productId: id, reason: 'user_cancelled' });
       } else if (r.kind === 'pending') {
@@ -768,21 +781,33 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         get().showToast({ kind: 'text', text: iapT.pending });
       } else if (r.kind === 'error' && r.reason === 'already_owned') {
         // «уже куплено» - це відновлення: ефект вмикається, тост rs.ok
+        pushEvent({ type: 'purchaseFail', productId: id, reason: 'already_owned' });
         grantNow(id, true);
         get().showToast({ kind: 'text', text: id === 'no_ads' ? iapT.restoreNoAds : iapT.restoreDone(`«${shopT.products[id].name}»`) });
       } else if (r.kind === 'error') {
         pushEvent({ type: 'purchaseFail', productId: id, reason: r.reason, ...(r.code ? { code: r.code } : {}) });
         get().showToast({ kind: 'text', text: iapT.fail });
       } else {
-        grantNow(id, false);
+        // ефект вмикає лише активний entitlement (FR-25): success без нього - не покупка
+        const rights = await svc.rights().catch(() => null);
+        if (rights && !rights[id]) {
+          pushEvent({ type: 'purchaseFail', productId: id, reason: 'product_unavailable' });
+          get().showToast({ kind: 'text', text: iapT.fail });
+        } else grantNow(id, false);
       }
     },
     restore: async (trigger) => {
       const g = get();
       if (g.busy) return;
       set({ busy: 'purchase' });
-      const r = await g.services.purchases.restore();
-      set({ busy: null });
+      let r: Awaited<ReturnType<PurchaseService['restore']>>;
+      try {
+        r = await g.services.purchases.restore();
+      } catch {
+        r = { kind: 'error' };
+      } finally {
+        set({ busy: null });
+      }
       if (r.kind === 'error') {
         pushEvent({ type: 'purchaseRestore', trigger, isSuccess: false, restoredProductIds: [] });
         if (trigger !== 'auto_check') get().showToast({ kind: 'text', text: iapT.restoreErr });
@@ -797,10 +822,17 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       else get().showToast({ kind: 'text', text: iapT.restoreDone(r.owned.map((id) => `«${shopT.products[id].name}»`).join(', ')) });
     },
     syncPurchases: async () => {
-      const rights = await get().services.purchases.rights();
+      const rights = await get()
+        .services.purchases.rights()
+        .catch(() => null);
       const g = get();
       const r = syncRights(g.monetization, g.state, g.cfg, rights, g.lastMs);
       if (r.ms !== g.monetization) set({ monetization: r.ms, state: r.eco });
+      // нові права без Ask to Buy - тихе відновлення з тостом (FR-27); Ask to Buy дає iap-success
+      if (r.restored.length) {
+        pushEvent({ type: 'purchaseRestore', trigger: 'auto_check', isSuccess: true, restoredProductIds: r.restored });
+        get().showToast({ kind: 'text', text: r.restored.length === 1 && r.restored[0] === 'no_ads' ? iapT.restoreNoAds : iapT.restoreDone(r.restored.map((id) => `«${shopT.products[id].name}»`).join(', ')) });
+      }
     },
     closeIapSuccess: () => set({ monetization: closeSuccess(get().monetization) }),
     ackStarterOffer: () => set({ monetization: offerShown(get().monetization) }),

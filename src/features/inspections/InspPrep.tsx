@@ -87,7 +87,7 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
             </Pressable>
           );
         })}
-        {pct < 100 ? (
+        {pct < 100 || inspAdView(s.monetization, a.id, s.state).button === 'limit' ? (
           <AdButton
             store={store}
             placement="inspection_checklist"

@@ -173,4 +173,13 @@ describe('справжні міграції', () => {
     expect(r.save.game.monetization).toMatchObject({ rights: { no_ads: true, storage_24h: true, starter_pack: false }, starterGranted: false, offer: 'wait', pending: [], ads: { date: '', boost: 0, race: 0 } });
     expect(r.save.game.museum).toEqual(d.game.museum);
   });
+
+  test('7 → 8 (008): набір, що вже діє в економіці (бак 12 год), позначає starterGranted і пропозицію як закриту', () => {
+    const d = draft({ schemaVersion: 7, savedAt: 5000 }, { fuelCapacityMs: 12 * 3_600_000 });
+    const { monetization: _mo, ...gameV7 } = d.game;
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: gameV7 as never }) });
+    const r = loadSave(kv, { current: 8, migrations: MIGRATIONS });
+    if (r.kind !== 'ok') throw new Error(r.kind);
+    expect(r.save.game.monetization).toMatchObject({ rights: { starter_pack: true, no_ads: false, storage_24h: false }, starterGranted: true, offer: 'done' });
+  });
 });

@@ -209,9 +209,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
 
   // 008: iap-success і starter-offer - після інших модалок і розкриття журналів (порядок «оцінка → журнал → оферта», 09)
   const calm =
-    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && nextReveal(s.museum) == null && s.busy !== 'ad';
-  const iapOpen = calm && s.monetization.success.length > 0;
-  const starterOpen = calm && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
+    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && nextReveal(s.museum) == null;
+  const iapOpen = calm && s.busy == null && !onboarding && s.monetization.success.length > 0;
+  // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
+  const starterOpen = calm && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
 
   const coachFor = (id: string) => {
     if (!coachOn) return undefined;
@@ -260,7 +261,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
         {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{digitT.placeR2}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.balance} testID="balance">{formatBig(s.state.signatures, 'counter')}</Text>
-        <Pressable testID="income-open" accessibilityRole="button" accessibilityLabel={boostsT.title} onPress={() => setView({ kind: 'boosts' })} disabled={coachOn}>
+        <Pressable testID="income-open" accessibilityRole="button" accessibilityLabel={boostsT.title} onPress={() => setView({ kind: 'boosts' })} disabled={coachOn} style={styles.incomeHit}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.income} testID="income">{`${formatRate(inc.perMin)} · ${formatMult(M)}`}</Text>
         </Pressable>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.flow} testID="flow-line">
@@ -476,6 +477,7 @@ const styles = StyleSheet.create({
   header: { padding: space[16], gap: space[4], backgroundColor: color.bgDeep },
   balance: { ...type('displayM'), color: color.text },
   income: { ...type('numL'), color: color.accent },
+  incomeHit: { minHeight: size.touchMin, justifyContent: 'center' },
   flow: { ...type('caption'), color: color.muted },
   tiles: { flexDirection: 'row', gap: space[8], marginTop: space[8] },
   tile: { minHeight: size.touchMin, flex: 1, borderRadius: radius[6], backgroundColor: color.surface, justifyContent: 'center', paddingHorizontal: space[8] },

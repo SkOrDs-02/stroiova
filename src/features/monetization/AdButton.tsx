@@ -55,8 +55,8 @@ export function AdButton({ store, placement, view, label, takeLabel, note, takeN
   if (view.button === 'cap')
     return (
       <View style={styles.wrap}>
-        <Button testID={testID} label={adT.cap} disabled onPress={() => {}} />
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note}>{adT.capNote(formatDuration((view.boostLeftMs ?? 0) / 1000))}</Text>
+        <Button testID={testID} label={adT.cap(s.cfg.params.adCapHours)} disabled onPress={() => {}} />
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note}>{adT.capNote(formatDuration((view.boostLeftMs ?? 0) / 1000), s.cfg.params.adHours, s.cfg.params.adCapHours - s.cfg.params.adHours)}</Text>
       </View>
     );
   if (loading)

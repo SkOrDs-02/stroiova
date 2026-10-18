@@ -47,7 +47,7 @@ export const MIGRATIONS: Record<number, Migration> = {
     const g = game as { economy?: { hasNoAds?: boolean; storageHours?: number; fuelCapacityMs?: number } };
     const m = newMonetization();
     const e = g.economy ?? {};
-    const rights = { no_ads: !!e.hasNoAds, storage_24h: (e.storageHours ?? 8) >= 24, starter_pack: (e.fuelCapacityMs ?? 0) >= 12 * 3_600_000 };
+    const rights = { no_ads: !!e.hasNoAds, storage_24h: (e.storageHours ?? DEFAULTS.storageHours) >= DEFAULTS.storageHoursPaid, starter_pack: (e.fuelCapacityMs ?? 0) >= DEFAULTS.starterFuelHours * 3_600_000 };
     return { ...(game as object), monetization: { ...m, rights, starterGranted: rights.starter_pack, offer: rights.starter_pack ? 'done' : 'wait' } };
   },
 };

@@ -48,8 +48,8 @@ export function BoostsSheet({ store, onClose, onShop }: { store: ConveyorStore; 
             store={store}
             placement="income_boost"
             view={view}
-            label={view.left === s.cfg.params.adsPerDay ? adT.boostFirst : adT.boostAdd}
-            takeLabel={adT.takeBoost}
+            label={view.left === s.cfg.params.adsPerDay ? adT.boostFirst(s.cfg.params.adHours) : adT.boostAdd(s.cfg.params.adHours)}
+            takeLabel={adT.takeBoost(s.cfg.params.adHours)}
             note={adT.note}
             takeNote={adT.takeNote}
             testID="boost-ad"

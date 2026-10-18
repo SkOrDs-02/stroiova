@@ -14,6 +14,7 @@ export function StarterOffer({ store }: { store: ConveyorStore }) {
   const s = useStore(store);
   const price = s.services.purchases.prices().starter_pack ?? '';
   const busy = s.busy === 'purchase';
+  const pending = s.monetization.pending.includes('starter_pack');
   return (
     <View style={styles.scrim} testID="starter-offer">
       <View style={styles.wrap} accessibilityViewIsModal>
@@ -34,7 +35,8 @@ export function StarterOffer({ store }: { store: ConveyorStore }) {
           </>
         ) : (
           <>
-            <Button testID="so-buy" label={shopT.buy(price)} onPress={() => void store.getState().purchase('starter_pack')} />
+            {pending ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="so-pending">{shopT.pendingLabel}</Text> : null}
+            <Button testID="so-buy" label={shopT.buy(price)} disabled={pending} onPress={() => void store.getState().purchase('starter_pack')} />
             <Button testID="so-later" variant="ghost" label={soT.later} onPress={s.ackStarterOffer} />
           </>
         )}

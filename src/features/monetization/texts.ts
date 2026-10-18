@@ -4,9 +4,9 @@ import { plural } from '@/features/telegrams/texts';
 import type { ProductId } from '@/monetization/types';
 
 export const adT = {
-  boostAdd: 'Додати 4 год до ×2',
-  boostFirst: 'Буст ×2 на 4 год',
-  takeBoost: 'Забрати +4 год до ×2',
+  boostAdd: (h: number) => `Додати ${h} год до ×2`,
+  boostFirst: (h: number) => `Буст ×2 на ${h} год`,
+  takeBoost: (h: number) => `Забрати +${h} год до ×2`,
   note: (n: number, limit: number) => `Реклама 30 секунд · сьогодні ще ${n} з ${limit}`,
   takeNote: (n: number, limit: number) => `Без реклами: без перегляду · сьогодні ще ${n} з ${limit}`,
   loading: 'Завантажуємо ролик',
@@ -16,8 +16,8 @@ export const adT = {
   naConsent: 'Реклама недоступна без згоди. Змінити можна в налаштуваннях.',
   limit: 'Ліміт на сьогодні',
   limitNote: (limit: number) => `${limit} з ${limit} використано. Нові спроби завтра.`,
-  cap: 'Межа: 12 год',
-  capNote: (hours: string) => `Буст уже на ${hours}. Ще 4 год можна додати, коли лишиться 8 год.`,
+  cap: (h: number) => `Межа: ${h} год`,
+  capNote: (hours: string, add: number, left: number) => `Буст уже на ${hours}. Ще ${add} год можна додати, коли лишиться ${left} год.`,
   reward: 'Нагороду зараховано: ×2 до підписів на 4 год.',
   rewardRace: (t: string) => `Акт прискорено: −${t}.`,
   rewardInsp: 'Чекліст виконано. Комісія може їхати.',

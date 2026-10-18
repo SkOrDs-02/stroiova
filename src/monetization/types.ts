@@ -32,7 +32,11 @@ export type AdAvailability = 'ready' | 'loading' | 'no_fill' | 'no_net' | 'no_co
 
 export type AdResult = { kind: 'earned' } | { kind: 'closed_early' } | { kind: 'fail'; stage: 'not_ready' | 'load' | 'show' | 'consent_blocked'; code?: string };
 
-/** Реклама за винагороду (AdMob, етап 2). `show` викликається лише з обробника тапу кнопки з нагородою (FR-1). */
+/**
+ * Реклама за винагороду (AdMob, етап 2). `show` викликається лише з обробника тапу кнопки з нагородою (FR-1).
+ * Контракт: промис завершується на ПЕРШІЙ з двох подій - EARNED_REWARD (`earned`) чи закриття ролика (`closed_early`), а не на закритті
+ * після нагороди: нагорода має потрапити в запис до того, як гравець закриє ролик (FR-12).
+ */
 export interface AdService {
   availability(): AdAvailability;
   show(placement: Placement): Promise<AdResult>;
@@ -44,7 +48,10 @@ export type PurchaseFailReason = 'store_problem' | 'network' | 'product_unavaila
 
 export type PurchaseResult = { kind: 'success' } | { kind: 'cancelled' } | { kind: 'pending' } | { kind: 'error'; reason: PurchaseFailReason; code?: string };
 
-/** Покупки (RevenueCat, етап 2): ціни - локалізовані рядки стору (FR-21), права - з CustomerInfo (FR-25). */
+/**
+ * Покупки (RevenueCat, етап 2): ціни - локалізовані рядки стору (FR-21), права - з CustomerInfo (FR-25).
+ * Контракт: `success` - лише коли entitlement товару активний; гра ще раз звіряє його через `rights()` перед увімкненням ефекту.
+ */
 export interface PurchaseService {
   status(): StoreStatus;
   prices(): Partial<Record<ProductId, string>>;

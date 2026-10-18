@@ -193,6 +193,8 @@ var StroiovaEconomy = (() => {
     storageHours: 8,
     adsPerDay: 3,
     adHours: 4,
+    storageHoursPaid: 24,
+    // the offline storage with «Розширене сховище» (08)
     adMult: 2,
     // the multiplier of an ad boost (sim.js models it as the average 1 + adFrac, i.e. ×2 while it runs)
     adCapHours: 12,

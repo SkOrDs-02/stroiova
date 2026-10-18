@@ -94,7 +94,7 @@ export function applyRights(eco: EconomyState, rights: Rights, cfg: EconomyConfi
   return {
     ...eco,
     hasNoAds: rights.no_ads,
-    storageHours: rights.storage_24h ? 24 : p.storageHours,
+    storageHours: rights.storage_24h ? p.storageHoursPaid : p.storageHours,
     fuelCapacityMs: (rights.starter_pack ? p.starterFuelHours : p.fuelHours) * HOUR,
   };
 }
@@ -126,7 +126,8 @@ export function grantProduct(ms: MonetizationState, eco: EconomyState, cfg: Econ
     rightsAt: nowMs,
     starterGranted,
     pending: ms.pending.filter((x) => x !== id),
-    purchases: ms.purchases + 1,
+    // purchase_number рахує лише оплачені покупки, не відновлення (VII)
+    purchases: opts.silent ? ms.purchases : ms.purchases + 1,
     success: opts.silent ? ms.success : [...ms.success, id],
     // купили набір - пропозиція більше не потрібна
     offer: id === 'starter_pack' ? 'done' : ms.offer,
@@ -138,12 +139,16 @@ export function grantProduct(ms: MonetizationState, eco: EconomyState, cfg: Econ
  * Права з стору (CustomerInfo, FR-25, FR-26): нові вмикаємо (як покупку: iap-success), відкликані (повернення коштів) вимикаємо.
  * `null` - стор недосяжний: кеш лишається.
  */
-export function syncRights(ms: MonetizationState, eco: EconomyState, cfg: EconomyConfig, rights: Rights | null, nowMs: number): PurchaseOutcome {
-  if (!rights) return { ms, eco, events: [] };
+export function syncRights(ms: MonetizationState, eco: EconomyState, cfg: EconomyConfig, rights: Rights | null, nowMs: number): PurchaseOutcome & { restored: ProductId[] } {
+  if (!rights) return { ms, eco, events: [], restored: [] };
   let cur: PurchaseOutcome = { ms, eco, events: [] };
+  const restored: ProductId[] = [];
   for (const id of PRODUCT_IDS) {
     if (rights[id] && !cur.ms.rights[id]) {
-      const r = grantProduct(cur.ms, cur.eco, cfg, id, nowMs);
+      // Ask to Buy, що чекав схвалення (FR-24), дає iap-success; інше нове право - тихе відновлення з тостом (FR-27)
+      const waited = cur.ms.pending.includes(id);
+      const r = grantProduct(cur.ms, cur.eco, cfg, id, nowMs, { silent: !waited });
+      if (!waited) restored.push(id);
       cur = { ms: r.ms, eco: r.eco, events: [...cur.events, ...r.events] };
     }
   }
@@ -154,7 +159,7 @@ export function syncRights(ms: MonetizationState, eco: EconomyState, cfg: Econom
     // видані підписи лишаються, ефекти вимикаються без повідомлення
     cur = { ms: { ...cur.ms, rights: nextRights }, eco: applyRights(cur.eco, nextRights, cfg), events: cur.events };
   }
-  return { ...cur, ms: { ...cur.ms, rightsAt: nowMs } };
+  return { ...cur, ms: { ...cur.ms, rightsAt: nowMs }, restored };
 }
 
 export function addPending(ms: MonetizationState, id: ProductId): MonetizationState {

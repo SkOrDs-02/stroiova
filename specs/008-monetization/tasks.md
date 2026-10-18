@@ -14,7 +14,7 @@ description: "Задачі: 008 Реклама й покупки - етап 1"
 - [X] T006 `store.ts`: `watchAd`, `purchase`, `restore`, `syncPurchases`, `claim(doubled)`, стартова пропозиція
 - [X] T007 `features/monetization/`: `AdButton`, `ShopScreen`, `BoostsSheet`, `StarterOffer`, `IapSuccess`, `texts.ts`; кнопки в `offline-return`, `race-sheet`, `insp-prep`; `MainScreen`
 - [X] T008 тести екранів: AC-2…AC-8, 12, 14-20
-- [ ] T009 `spec-guardian`, `content-reviewer`; CLAUDE.md; `npm run check`
+- [X] T009 `spec-guardian`, `content-reviewer`; CLAUDE.md; `npm run check`
 
 ## Поза етапом 1
 AdMob, UMP, RevenueCat, ключі й development build; `ad-offer-first` (02); кнопка «Відновити покупки» в налаштуваннях (10); PostHog (етап 5); sim v6 (відкрите питання 7).

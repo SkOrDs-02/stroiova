@@ -111,7 +111,10 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.museum.curios !== prev.museum.curios ||
     // 008: нагорода за ролик і куплений товар - у мить події, не за 5 с (FR-12, крайовий випадок «Вбивство під час оплати»)
     st.monetization !== prev.monetization ||
-    st.effects !== prev.effects
+    st.effects !== prev.effects ||
+    // ×2 за офлайн-ролик змінює лише підписи, лічильник доби й довідку
+    st.state.offlineDoubles !== prev.state.offlineDoubles ||
+    st.offline !== prev.offline
   );
 }
 

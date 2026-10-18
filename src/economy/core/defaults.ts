@@ -80,6 +80,7 @@ export const DEFAULTS: EconomyParams = {
   storageHours: 8,
   adsPerDay: 3,
   adHours: 4,
+  storageHoursPaid: 24, // the offline storage with «Розширене сховище» (08)
   adMult: 2, // the multiplier of an ad boost (sim.js models it as the average 1 + adFrac, i.e. ×2 while it runs)
   adCapHours: 12, // the boost stacks up to this much; the button is active while ≤ adCapHours − adHours is left
   offlineAdMult: 2, // offline income × this for an ad (or «Забрати» after the purchase)…

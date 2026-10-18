@@ -112,6 +112,7 @@ export interface EconomyParams {
   adsPerDay: number;
   adHours: number;
   adMult: number;
+  storageHoursPaid: number;
   adCapHours: number;
   /** 008: «Стартовий набір» - разова видача підписів і бак генератора, год */
   starterSignatures: number;

@@ -53,3 +53,11 @@ src/race/race.ts, src/inspections/lifecycle.ts   adSpeedup, completeAll
 ## Complexity Tracking
 
 Порушень немає.
+
+## Умови етапу 2 і борг
+- `AdService.show` завершується на першому з EARNED_REWARD і закриття ролика (JSDoc у `types.ts`); `PurchaseService.purchase` повертає `success` лише при активному entitlement.
+- Таймаут 10 с, звук на час ролика, UMP і ініціалізація AdMob лише без «Без реклами» (FR-10, FR-12, FR-13, FR-14); `ad-offer-first` після кроку 10 онбордингу (02); кнопка «Відновити покупки» в налаштуваннях (10).
+- Борг етапу 5 (аналітика): доменним подіям бракує `ad_flow_id`, `reward_unit/amount`, `error_domain`, `price`, `currency`, `source`, `store`, `sec_since_install`, `storage_cap_sec`, `capped_sec`, а також носіїв для `ad_offer_show`, `ad_start`, `ad_complete`, `shop_view`, `purchase_start`, `ads_consent_update`; `shop_view.source` у spec `starter_pack_card`, у плані аналітики `starter_offer` - узгодити.
+- Борг текстів: числа 8, 12, 50 000, ×1,3, ×1,25 у частині рядків зашито (`4 год` і `12 год` вже беруться з конфігу); перенести рядки в `docs/texts.md` з префіксами `ad.`, `off.`, `shop.`, `so.`, `iap.`, `rs.`; поправити артборди (довге тире, «ви» в `Toasts`, `InspPrep`; «−50% часу акта» → «−50% залишку часу»).
+- «Почати заново» після пошкодженого запису (009 FR-7) права не читає: їх повертає `syncPurchases` на запуску тихим відновленням з тостом.
+- Ролик подивлено, а акт/перевірка вже закінчились: нагороди немає, тосту немає - визначити в етапі 2.
