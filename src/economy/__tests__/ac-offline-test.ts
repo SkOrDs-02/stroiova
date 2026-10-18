@@ -1,5 +1,6 @@
 // 001 AC-7, AC-8, AC-14, AC-15 (без реклами), AC-16 (сховище); FR-23…FR-28.
 import { advance, claimOffline, offline, offlineDoublesLeft } from '../game/advance';
+import { income } from '../game/income';
 import type { EconomyState, Effect } from '../game/types';
 import { cfgV5, game, HOUR, MIN, T0 } from '../test-fixtures';
 
@@ -95,5 +96,17 @@ describe('офлайн', () => {
     const r = offline(s, cfg, T0, T0 + 3 * HOUR, [gen]);
     expect(r.fuelBonusMs).toBe(2 * HOUR);
     expect(r.earned).toBeCloseTo(6 * (120 * 1.25 + 60), 9);
+  });
+});
+
+describe('003: діловод у відрядженні (clerkAway)', () => {
+  test('офлайн одиниця з clerk_away працює як без діловода; онлайн — як завжди', () => {
+    const cfg = cfgV5();
+    const s = game(cfg, { streamClerks: [true, false, false, false], stageClerks: [true, true, true] });
+    const away = [{ kind: 'factor' as const, source: 'clerk_away' as const, value: 1, target: { type: 'stage' as const, id: cfg.params.stages[1]!.id }, startMs: T0, endMs: T0 + HOUR }];
+    expect(offline(s, cfg, T0, T0 + HOUR, []).earned).toBeGreaterThan(0);
+    expect(offline(s, cfg, T0, T0 + HOUR, away).earned).toBe(0);
+    expect(offline(s, cfg, T0, T0 + 2 * HOUR, away).earned).toBeCloseTo(offline(s, cfg, T0 + HOUR, T0 + 2 * HOUR, []).earned, 6);
+    expect(income(s, cfg, T0 + 1, away).perMin).toBe(income(s, cfg, T0 + 1, []).perMin);
   });
 });

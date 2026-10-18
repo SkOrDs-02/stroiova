@@ -69,7 +69,9 @@ export interface Effect {
     | 'telegram_slow'
     | 'telegram_stop'
     | 'kombat_away'
-    | 'inspection_fail';
+    | 'inspection_fail'
+    /** Діловод одиниці у відрядженні (003, `clerkAway`): поки триває, офлайн одиниця працює як без діловода */
+    | 'clerk_away';
   value: number;
   target?: UnitRef;
   startMs: number;
@@ -93,4 +95,23 @@ export type DomainEvent =
       incomeAfter: Big;
     }
   | { type: 'clerkHire'; target: UnitRef; cost: Big; isFirstClerk: boolean; clerksCountAfter: number }
-  | { type: 'milestone'; target: UnitRef; level: number; rateMultiplier: number };
+  | { type: 'milestone'; target: UnitRef; level: number; rateMultiplier: number }
+  // 003: телеграми й репутація; приймають 04 (перевірки), 05 (гонка), 07 (курйози, музей), 014 (сюжет), аналітика етапу 5
+  | { type: 'telegramReceive'; telegramId: string; uid: string; delivery: 'live' | 'while_away'; scripted: boolean }
+  | { type: 'telegramAnswer'; telegramId: string; uid: string; choiceId: string; choiceKind: string; repDelta: number; chancePct: number; paper: number }
+  | { type: 'reputationTierChange'; from: 'low' | 'norm' | 'high'; to: 'low' | 'norm' | 'high'; value: number }
+  | { type: 'unscheduledInspection'; telegramId: string; warnSec: number; extraItem: string | null }
+  | { type: 'inspItem'; telegramId: string; item: string | null; remarkPct: number }
+  | { type: 'kombatRequest'; maxMin: number }
+  | { type: 'kombatStart'; endMs: number }
+  | { type: 'kombatFound'; how: 'wait' | 'runner' }
+  | { type: 'raceEffect'; telegramId: string; effect: Record<string, unknown> }
+  | { type: 'arc'; id: string }
+  | { type: 'journal'; id: string }
+  | { type: 'curio'; telegramId: string; uid: string; text: string | null }
+  | { type: 'telegramFlag'; telegramId: string; reason: number | null; hasComment: boolean; afterChoice: boolean }
+  /** «Готуватися» з tg-result: 04 відкриє insp-warning */
+  | { type: 'inspectionPrepare'; telegramId: string };
+
+/** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */
+export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };

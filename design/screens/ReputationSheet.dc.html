@@ -60,7 +60,7 @@ button{font:inherit;cursor:pointer}
         </div>
       </div>
 
-      <p class="st-sub" style="color: var(--text); font-size: 14px">Що вища, то рідше планові перевірки.</p>
+      <p class="st-sub" style="color: var(--text); font-size: 14px">Що вища, то рідше помічають відписки.</p>
 
       <sc-for list="{{levels}}" as="lv" hint-placeholder-count="3">
         <div style="{{lv.box}}">
@@ -69,7 +69,6 @@ button{font:inherit;cursor:pointer}
             <span style="flex: 1; font-size: 14px; font-weight: 600">{{lv.name}}</span>
             <sc-if value="{{lv.now}}" hint-placeholder-val="{{false}}"><span class="st-tag st-tag--fill">зараз</span></sc-if>
           </div>
-          <div class="st-kv"><span>Перевірки</span><b style="font-family: var(--font-sans); font-weight: 500">{{lv.insp}}</b></div>
           <div class="st-kv"><span>Відписки</span><b style="font-family: var(--font-sans); font-weight: 500">{{lv.otp}}</b></div>
         </div>
       </sc-for>
@@ -96,14 +95,14 @@ class Component extends DCLogic {
     var st = this.props.state ?? 'норма';
     var G = { 'низька': 'M12 17L7.8 12.8', 'норма': 'M12 17v-6', 'висока': 'M12 17l4.2-4.2' };
     var D = [
-      { name: 'Низька', key: 'низька', insp: 'частіше: раз на 24–30 год', otp: 'помічають швидше' },
-      { name: 'Норма', key: 'норма', insp: 'раз на 24–48 год', otp: 'іноді помічають' },
-      { name: 'Висока', key: 'висока', insp: 'рідше: раз на 36–48 год', otp: 'помічають рідко' }
+      { name: 'Низька', key: 'низька', otp: 'помічають швидше' },
+      { name: 'Норма', key: 'норма', otp: 'іноді помічають' },
+      { name: 'Висока', key: 'висока', otp: 'помічають рідко' }
     ];
     var levels = D.map(function (d) {
       var now = d.key === st;
       return {
-        name: d.name, gauge: G[d.key], now: now, insp: d.insp, otp: d.otp,
+        name: d.name, gauge: G[d.key], now: now, otp: d.otp,
         icoStyle: now ? 'color: var(--accent)' : 'color: var(--muted)',
         box: 'display: flex; flex-direction: column; gap: 6px; padding: ' + (now ? '10.5px 12.5px' : '11px 13px') + '; border-radius: var(--radius-10); background: ' + (now ? 'var(--surface)' : 'var(--surface-2)') + '; border: ' + (now ? '1.5px solid var(--accent)' : '1px solid var(--border)')
       };

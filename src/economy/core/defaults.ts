@@ -128,6 +128,30 @@ export const DEFAULTS: EconomyParams = {
   inspFailMult: 0.5, // «Стройова частина» on a failed inspection
   inspFailHours: 1,
   inspPushVisit: 1, // minutes: the player opens the game on push № 3 (2 h before arrival) if no session falls between warning and arrival; 0 = never
+  // v7.3 (003): reputation and formal replies. repTiers 0 = off (the old model: every telegram «сумлінно», «норма» forever)
+  repTiers: 0,
+  replyShare: 0, // the bot's strategy: share of telegrams answered with a formal reply (no slowdown, no paper)
+  repStart: 50,
+  repLow: 35, // «низька» below this
+  repHigh: 70, // «висока» from this
+  repDiligent: 7, // average reputation for «сумлінно» in telegrams № 1–40 (+5…+10)
+  repReply: -5, // a formal reply
+  replyInspPct: 13, // average inspPct of a formal reply in № 1–40
+  replyChanceLow: 1.5, // the unscheduled-inspection chance × this at «низька»…
+  replyChanceHigh: 0.5, // …and × this at «висока» («норма» ×1)
+  unscheduledPerDay: 1, // unscheduled inspections a day at most; no ×3, only the failure risk (decision 28)
+  unscheduledWarnH: 2,
+  // 003: telegram schedule and events in the app (sim.js models telegrams as slowdowns at session starts, slowPerDayMin/Max a day)
+  tgFromHour: 8, // telegrams arrive 08:00–22:00 device time…
+  tgToHour: 22,
+  tgMinGapMin: 120, // …at least this far apart
+  tgMaxNew: 5, // slots are skipped while this many telegrams wait unanswered in «Нові»
+  tgRepeatMinDays: 7, // an archived telegram comes again at most this often (decision 27)
+  overrideFromDay: 2, // «Новий наказ скасовує старий»: from day 2…
+  overrideMinGapDays: 3, // …at least this many days apart…
+  overrideChance: 0.3, // …taking a telegram slot with this chance
+  kombatRunnerMin: 3, // «Відправити посильного»: the kombat is found in this many minutes…
+  kombatRunnerCostMin: 4, // …for this many minutes of base income
   // gifts and the race (05, decision 30): service hours, act steps in hours (Акти, Комбат, Стройова, Фін.), the Казначейство step on level 2+
   gifts: {
     drone: { mult: 2, serviceH: 9, steps: [1.5, 1.8333, 1.5, 2.6667] },

@@ -383,6 +383,27 @@ function simulate(p, scenario) {
     }
     slowByDay.push(evs);
   }
+  // v7.3 (003): the bot answers a share of telegrams with a formal reply (no slowdown, no paper, reputation down);
+  // reputation 0–100 is a step function of the telegram times, so it is known before the run like the slowdowns
+  var repOn = p.repTiers > 0, repT = [], repV = [], replyList = [];
+  if (repOn) {
+    var randR = lcg((p.seed || 1) * 22695477 + 3);
+    var allTg = []; slowByDay.forEach(function (evs) { evs.forEach(function (ev) { allTg.push(ev); }); });
+    allTg.sort(function (x, y) { return x.t - y.t; });
+    var R0 = p.repStart;
+    allTg.forEach(function (ev) {
+      ev.reply = randR() < (p.replyShare || 0);
+      R0 = Math.min(100, Math.max(0, R0 + (ev.reply ? p.repReply : p.repDiligent)));
+      repT.push(ev.t); repV.push(R0);
+      if (ev.reply) replyList.push(ev);
+    });
+  }
+  function repAt(t) { // reputation after every telegram answered by t
+    if (!repOn) return null;
+    var lo = 0, hi = repT.length; while (lo < hi) { var mid = (lo + hi) >> 1; if (repT[mid] <= t) lo = mid + 1; else hi = mid; }
+    return lo ? repV[lo - 1] : p.repStart;
+  }
+  function tierAt(t) { var r = repAt(t); return r == null ? 'norm' : r < p.repLow ? 'low' : r >= p.repHigh ? 'high' : 'norm'; }
   // Р5 after the 4th conversion: the script «weakens», about half the telegrams of a day (1–2)
   function lateCut() { return B.convert && nDigital >= 4; }
   function slowAt(t) {
@@ -393,7 +414,7 @@ function simulate(p, scenario) {
       var lim = lateCut() ? Math.ceil(evs3.length / 2) : evs3.length;
       for (var e4 = 0; e4 < lim; e4++) {
         var ev = evs3[e4];
-        if (ev.t <= t && t < (M24 ? slEnd(ev) : ev.end)) {
+        if (!ev.reply && ev.t <= t && t < (M24 ? slEnd(ev) : ev.end)) {
           if (!fac) { fac = []; for (var j4 = 0; j4 < ST.length; j4++) fac.push(1); }
           fac[Math.floor(ev.pick * ST.length)] *= p.slowMult;
         }
@@ -498,7 +519,7 @@ function simulate(p, scenario) {
       else { var j = ev.stage ? stageIdx(ev.stage) : Math.floor(ev.pick * ST.length); if (j >= 0) fac[j] *= ev.m; }
     }
   }
-  // scheduled inspections, reputation «норма»: the schedule does not depend on the player
+  // scheduled inspections: the schedule does not depend on the player or reputation (decision 61)
   var insps = [];
   var arrWindow = function (t, rnd) { // arrival only 10:00–21:00, else 10:00 + 0–60 min
     var h = localH(t);
@@ -519,6 +540,23 @@ function simulate(p, scenario) {
       }
     }
     insps.forEach(function (q, i) { q.n = i + 1; q.cost = null; q.paid = false; q.how = null; q.done = false; });
+    // v7.3: a formal reply after the first scheduled inspection may bring an unscheduled one (no ×3, failure risk);
+    // at most unscheduledPerDay a day, none while another inspection is announced (its checklist only grows)
+    if (repOn && insps.length) {
+      var randU = lcg((p.seed || 1) * 1103515245 + 12345), firstArr = insps[0].arr, uDay = {}, uns = [];
+      replyList.forEach(function (ev) {
+        if (ev.t < firstArr) return;
+        var tr = tierAt(ev.t), k = tr === 'low' ? p.replyChanceLow : tr === 'high' ? p.replyChanceHigh : 1;
+        var pr = Math.min(1, p.replyInspPct / 100 * k), dU = calDay(ev.t);
+        if (randU() >= pr || (uDay[dU] || 0) >= p.unscheduledPerDay) return;
+        var busy = insps.concat(uns).some(function (q) { return q.ann <= ev.t && ev.t < q.arr; });
+        if (busy) return;
+        uDay[dU] = (uDay[dU] || 0) + 1;
+        uns.push({ ann: ev.t, arr: arrWindow(ev.t + p.unscheduledWarnH * H, randU), n: 0, unsched: true, cost: null, paid: false, how: null, done: false });
+      });
+      insps = insps.concat(uns).sort(function (x, y) { return x.ann - y.ann; });
+      out.rep = { replies: replyList.length, unscheduled: uns.length };
+    }
   }
   // the final inspection: announced in the cycle after the N-th digitization on the level, once all streams are open again;
   // arrives warnH later in the 10:00–21:00 window
@@ -590,7 +628,7 @@ function simulate(p, scenario) {
     return false;
   }
   function inspMult(t) {
-    for (var i = 0; i < insps.length; i++) { var q = insps[i]; if (q.arr > t) break; if (q.paid && t < q.arr + p.inspHours * H) return p.inspMult; }
+    for (var i = 0; i < insps.length; i++) { var q = insps[i]; if (q.arr > t) break; if (q.paid && !q.unsched && t < q.arr + p.inspHours * H) return p.inspMult; }
     for (var b = bossWins.length - 1; b >= 0; b--) { var w = bossWins[b]; if (w.pass && w.t <= t && t < w.t + p.inspHours * H) return p.inspMult; }
     return 1;
   }
@@ -635,7 +673,7 @@ function simulate(p, scenario) {
     if (boss && !boss.done) { add(boss.arr); add(boss.arr + p.inspHours * H); add(boss.arr + p.inspFailHours * H); }
     if (B.packs) packEv.forEach(function (ev) { add(ev.t); add(M24 ? slEnd(ev) : ev.end); });
   }
-  var slowList = []; slowByDay.forEach(function (evs) { evs.forEach(function (ev, i) { slowList.push({ t: ev.t, i: i, n: evs.length }); }); });
+  var slowList = []; slowByDay.forEach(function (evs) { evs.forEach(function (ev, i) { slowList.push({ t: ev.t, i: i, n: evs.length, reply: !!ev.reply }); }); });
   // discrete events in (a, b]; between sessions the state is frozen, so this also works offline
   function advance(a, b) {
     settleRace(b);
@@ -655,7 +693,7 @@ function simulate(p, scenario) {
       }
       if (!q.done && q.arr <= b) {
         q.done = true;
-        out.insp.push({ n: q.n, ann: q.ann, arr: q.arr, pass: q.paid, how: q.how, cost: q.cost, level: q.level });
+        var rec = { n: q.n, ann: q.ann, arr: q.arr, pass: q.paid, how: q.how, cost: q.cost, level: q.level }; if (q.unsched) rec.unsched = true; out.insp.push(rec);
         if (q.paid && firstDigT != null && firstDigT < q.arr) grant(7, q.arr);
         if (q.n === 1) starterDue = true;
       }
@@ -667,7 +705,7 @@ function simulate(p, scenario) {
     // a diligent telegram costs paper; with too little the player would have to pick another answer
     if (p.paperPerTelegram > 0) {
       if (!B.packs) slowList.forEach(function (ev) {
-        if (ev.t > a && ev.t <= b && (!lateCut() || ev.i < Math.ceil(ev.n / 2))) { if (paper >= p.paperPerTelegram) { paper -= p.paperPerTelegram; paperSpent += p.paperPerTelegram; } else paperShort++; }
+        if (!ev.reply && ev.t > a && ev.t <= b && (!lateCut() || ev.i < Math.ceil(ev.n / 2))) { if (paper >= p.paperPerTelegram) { paper -= p.paperPerTelegram; paperSpent += p.paperPerTelegram; } else paperShort++; }
       });
       else packPaper.forEach(function (ev) { if (ev.t > a && ev.t <= b) spendPaper(ev.pk ? (ev.pk.choice === 'S' ? ev.xS : ev.xM) : ev.x); });
     }
@@ -820,6 +858,11 @@ function simulate(p, scenario) {
   var byLevel = [];
   for (var bl = 0; bl < Math.max(2, p.levels.length); bl++) byLevel.push(0);
   out.prestiges.forEach(function (x) { byLevel[x.level - 1]++; });
+  if (out.rep) { // time share of the three tiers up to the end of the run, and reputation at the end
+    var shr = { low: 0, norm: 0, high: 0 }, step = H;
+    for (var tt = 0; tt < tEnd; tt += step) shr[tierAt(tt)] += step / tEnd;
+    out.rep.share = shr; out.rep.end = repAt(tEnd);
+  }
   return {
     scenario: scenario, out: out, series: series, prestigeTotal: prestigeTotal,
     storageLostShare: offlineTotal ? lostToStorage / offlineTotal : 0,

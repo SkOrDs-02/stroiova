@@ -15,6 +15,11 @@ export function unitFactor(ref: UnitRef, t: number, effects: readonly Effect[]):
   return f;
 }
 
+/** Діловод одиниці у відрядженні в момент t (003 `clerkAway`): офлайн одиниця працює як без діловода. */
+export function clerkAwayAt(ref: UnitRef, t: number, effects: readonly Effect[]): boolean {
+  return effects.some((e) => e.source === 'clerk_away' && e.target?.type === ref.type && e.target.id === ref.id && activeAt(e, t));
+}
+
 /** Пальне: ×fuelBonus, поки бак понад поріг або служить подарунок «генератор» (FR-21). */
 export function fuelMult(state: EconomyState, cfg: EconomyConfig, t: number, effects: readonly Effect[]): number {
   const p = cfg.params;
@@ -75,12 +80,12 @@ function conveyor(state: EconomyState, cfg: EconomyConfig, t: number, effects: r
   const mus = (id: string) => state.museum.unit[id] ?? 1;
   const streams: FlowStream[] = it.streams.map((u, i) => {
     const L = state.streamLevels[i] ?? 0;
-    const on = L > 0 && (!idle || !!state.streamClerks[i]);
+    const on = L > 0 && (!idle || (!!state.streamClerks[i] && !clerkAwayAt({ type: 'stream', id: u.id }, t, effects)));
     const f = withFactors ? unitFactor({ type: 'stream', id: u.id }, t, effects) : 1;
     return { cap: on ? capAt(u, L, p) * mus(u.id) * f : 0, on };
   });
   const stages: FlowStage[] = it.stages.map((u, j) => {
-    const on = !idle || !!state.stageClerks[j];
+    const on = !idle || (!!state.stageClerks[j] && !clerkAwayAt({ type: 'stage', id: u.id }, t, effects));
     const f = withFactors ? unitFactor({ type: 'stage', id: u.id }, t, effects) : 1;
     return { cap: capAt(u, state.stageLevels[j] ?? 0, p) * mus(u.id) * f, on };
   });

@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from 'zustand';
 
-import { formatBig, formatMult, formatRate } from '@/economy/format';
+import { formatBig, formatDuration, formatMult, formatRate } from '@/economy/format';
 import { fuelMult, income, multStack, tankPct } from '@/economy/game/income';
 import { quote } from '@/economy/game/purchase';
 import { itemsFor } from '@/economy/game/state';
@@ -17,9 +17,17 @@ import { UnitRow } from '@/features/conveyor/UnitRow';
 import { CallOverlay } from '@/features/onboarding/CallOverlay';
 import { ClerkFirst } from '@/features/onboarding/ClerkFirst';
 import { ready } from '@/features/onboarding/steps';
+import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
+import { repTier } from '@/telegrams/reputation';
+import type { InboxItem } from '@/telegrams/types';
 import { t as onb } from '@/features/onboarding/texts';
-import { choiceEffects, firstTelegram, type TgChoice } from '@/features/telegrams/first';
+import { KombatSheet } from '@/features/telegrams/KombatSheet';
+import { NoteDetail } from '@/features/telegrams/NoteDetail';
+import { ReputationSheet } from '@/features/telegrams/ReputationSheet';
+import { TelegramFlag } from '@/features/telegrams/TelegramFlag';
+import { TelegramList } from '@/features/telegrams/TelegramList';
 import { TelegramDetail } from '@/features/telegrams/TelegramDetail';
+import { t as tgT } from '@/features/telegrams/texts';
 import { TelegramResult } from '@/features/telegrams/TelegramResult';
 import { color, duration, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
@@ -28,7 +36,16 @@ import { type } from '@/ui/type';
 
 const MODES: BuyMode[] = ['x1', 'x10', 'toMilestone'];
 
-type TgView = { kind: 'closed' } | { kind: 'detail' } | { kind: 'result'; choice: TgChoice };
+/** Що поверх головного екрана (003): список вхідних, телеграма, результат, позначка, записка, шторки. */
+type View3 =
+  | { kind: 'main' }
+  | { kind: 'list' }
+  | { kind: 'detail'; uid: string; coach: boolean }
+  | { kind: 'result'; uid: string; back: 'main' | 'list' }
+  | { kind: 'flag'; uid: string; back: 'detail' | 'list' }
+  | { kind: 'note'; uid: string }
+  | { kind: 'rep'; back: 'main' | 'list' }
+  | { kind: 'kombat' };
 
 function toastText(toast: Toast): string {
   switch (toast.kind) {
@@ -40,6 +57,8 @@ function toastText(toast: Toast): string {
       return onb.b9Toast(formatBig(toast.amount, 'balance'));
     case 'offline':
       return t.offToast(formatBig(toast.amount, 'balance'));
+    case 'rep':
+      return tgT.repToast(tgT.tier[toast.tier]);
   }
 }
 
@@ -56,7 +75,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const neckName = neck === 'streams' ? null : (it.stages.find((u) => u.id === neck.id)?.name ?? '');
   const tank = tankPct(s.state, now);
   const fuelM = fuelMult(s.state, s.cfg, now, eff);
-  const [tg, setTg] = useState<TgView>({ kind: 'closed' });
+  const [view, setView] = useState<View3>({ kind: 'main' });
   // дзвінок лишається на екрані й після бонусу (крок 9 уже закрито), доки гравець не натисне «До стройової»
   const [callHeld, setCallHeld] = useState(false);
   const onboarding = o.step !== 'done';
@@ -104,7 +123,17 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     return () => clearTimeout(id);
   }, [toast, store]);
 
-  const overlay = s.offline != null || s.clerkFirstOpen || tg.kind !== 'closed';
+  // «Комбата шукають» (003 FR-28): шторка відкривається сама на початку події
+  const kombat = s.telegrams.kombat.active;
+  const kombatOn = kombat != null && kombat.endMs > now;
+  // подію, яку гравець уже бачив, шторка не відкриває вдруге
+  const [kombatSeen, setKombatSeen] = useState<number | null>(null);
+  const kombatAuto = kombatOn && kombat!.startMs !== kombatSeen && view.kind === 'main' && s.offline == null;
+
+  const inbox = s.telegrams.inbox;
+  const badge = inbox.filter((x) => (x.status === 'new' && x.kind !== 'note') || (x.kind === 'note' && !x.read)).length;
+  const tier = repTier(s.telegrams.reputation.value, s.cfg.params);
+  const overlay = s.offline != null || s.clerkFirstOpen || view.kind !== 'main' || kombatAuto;
   const coachRow = !overlay && (rd === 'coachUpgrade' || rd === 'coachHire');
   const coachTab = !overlay && rd === 'coachTelegram';
   const coachOn = coachRow || coachTab;
@@ -117,17 +146,31 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     return 'dim' as const;
   };
 
+  const tg1 = inbox.find((x) => x.id === FIRST_TELEGRAM_ID);
   const onTab = (tab: TabId) => {
-    if (tab === 'telegrams' && o.step === 8 && o.tg1ReceivedAtPlayMs != null) setTg({ kind: 'detail' });
+    // 002 FR-19: на кроці 8 підсвічена вкладка відкриває саму телеграму № 1, без списку
+    if (tab === 'telegrams' && o.step === 8 && tg1?.status === 'new') setView({ kind: 'detail', uid: tg1.uid, coach: true });
+    else if (tab === 'telegrams') setView({ kind: 'list' });
+    else if (tab === 'stroyova') setView({ kind: 'main' });
   };
-
-  const onChoose = (c: TgChoice) => {
-    store.getState().answerTg1(c.id, choiceEffects(c, s.cfg, store.getState().lastMs));
-    setTg({ kind: 'result', choice: c });
+  const openItem = (item: InboxItem) => {
+    if (item.kind === 'note') {
+      s.openItem(item.uid);
+      setView({ kind: 'note', uid: item.uid });
+    } else {
+      if (item.kind === 'notice') s.openItem(item.uid);
+      if (item.kind === 'telegram' && item.status === 'new') s.kavaLineFor(item.uid);
+      setView({ kind: 'detail', uid: item.uid, coach: false });
+    }
   };
+  const tabsEnabled: TabId[] = coachRow ? [] : o.step !== 'done' && o.step < 8 ? ['stroyova'] : ['stroyova', 'telegrams'];
 
   return (
     <View style={styles.root}>
+      {view.kind === 'list' ? (
+        <TelegramList store={store} onOpen={openItem} onReputation={() => setView({ kind: 'rep', back: 'list' })} />
+      ) : (
+        <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.balance} testID="balance">{formatBig(s.state.signatures, 'counter')}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.income} testID="income">{`${formatRate(inc.perMin)} · ${formatMult(M)}`}</Text>
@@ -141,7 +184,17 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           <View style={styles.tile}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tileText}>{t.paper(Math.floor(s.state.paper))}</Text>
           </View>
+          {s.telegrams.startMs != null ? (
+            <Pressable testID="rep-tile" accessibilityRole="button" onPress={() => setView({ kind: 'rep', back: 'main' })} style={styles.tile}>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tileText}>{tgT.repTile(tgT.tier[tier])}</Text>
+            </Pressable>
+          ) : null}
         </View>
+        {kombatOn ? (
+          <Pressable testID="kombat-bar" accessibilityRole="button" onPress={() => setView({ kind: 'kombat' })} style={styles.kombatBar}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${tgT.kbTitle} · ${tgT.left(formatDuration(Math.max(0, (kombat!.endMs - now) / 1000)))}`}</Text>
+          </Pressable>
+        ) : null}
         {coachOn ? <View style={styles.scrim} /> : null}
       </View>
       <ScrollView contentContainerStyle={styles.list}>
@@ -210,11 +263,13 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         ))}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note}>{t.formula}</Text>
       </ScrollView>
+        </>
+      )}
       <TabBar
-        active="stroyova"
-        telegramsNew={o.step === 8 && o.tg1ReceivedAtPlayMs != null ? 1 : 0}
+        active={view.kind === 'list' ? 'telegrams' : 'stroyova'}
+        telegramsNew={badge}
         coachTab={coachTab ? 'telegrams' : undefined}
-        enabled={coachRow ? [] : o.step === 8 ? ['stroyova', 'telegrams'] : ['stroyova']}
+        enabled={tabsEnabled}
         bottomInset={insets.bottom}
         onChange={onTab}
       />
@@ -237,9 +292,31 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           }}
         />
       ) : null}
-      {tg.kind === 'detail' ? <TelegramDetail tg={firstTelegram} cfg={s.cfg} coachText={onb.b8Tip} onChoose={onChoose} /> : null}
-      {tg.kind === 'result' ? (
-        <TelegramResult tg={firstTelegram} choice={tg.choice} cfg={s.cfg} firstText={onb.b8Rep} onClose={() => setTg({ kind: 'closed' })} />
+      {view.kind === 'detail' ? (
+        <TelegramDetail
+          store={store}
+          uid={view.uid}
+          coachText={view.coach ? onb.b8Tip : undefined}
+          onAnswered={(uid) => setView({ kind: 'result', uid, back: view.coach ? 'main' : 'list' })}
+          onFlag={(uid) => setView({ kind: 'flag', uid, back: 'detail' })}
+          onReputation={view.coach ? undefined : () => setView({ kind: 'rep', back: 'list' })}
+          onBack={view.coach ? undefined : () => setView({ kind: 'list' })}
+        />
+      ) : null}
+      {view.kind === 'result' ? (
+        <TelegramResult store={store} uid={view.uid} firstText={onb.b8Rep} onClose={() => setView({ kind: view.back })} />
+      ) : null}
+      {view.kind === 'flag' ? <TelegramFlag store={store} uid={view.uid} onClose={() => setView(view.back === 'detail' ? { kind: 'detail', uid: view.uid, coach: false } : { kind: 'list' })} /> : null}
+      {view.kind === 'note' ? <NoteDetail store={store} uid={view.uid} onClose={() => setView({ kind: 'list' })} /> : null}
+      {view.kind === 'rep' ? <ReputationSheet store={store} onClose={() => setView(view.back === 'list' ? { kind: 'list' } : { kind: 'main' })} /> : null}
+      {view.kind === 'kombat' || kombatAuto ? (
+        <KombatSheet
+          store={store}
+          onClose={() => {
+            setKombatSeen(kombat?.startMs ?? null);
+            setView({ kind: 'main' });
+          }}
+        />
       ) : null}
       {showCall ? (
         <CallOverlay
@@ -274,6 +351,8 @@ const styles = StyleSheet.create({
   stageWrap: { gap: space[8] },
   note: { ...type('caption'), color: color.muted, marginTop: space[8] },
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: color.scrim },
+  kombatBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.surface2, borderWidth: 1, borderColor: color.accent },
+  kombatText: { ...type('bodyS'), color: color.accent },
   coachTab: { ...type('bodyS'), color: color.accent, fontWeight: typeScale.cta.fontWeight, backgroundColor: color.bgDeep, paddingHorizontal: space[16], paddingVertical: space[8] },
   bottomStack: { position: 'absolute', left: 0, right: 0, gap: space[8] },
   toast: { marginHorizontal: space[16], backgroundColor: color.surface, borderRadius: radius[6], padding: space[12] },

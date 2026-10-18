@@ -1,6 +1,8 @@
-// Рядки tg-detail і tg-result для телеграми № 1 (артборди TgDetail, TgResult; новий, на вичитку). Решту станів описує 03.
+// Рядки екранів телеграм (003): артборди TgList, TgDetail, TgResult, TgFlag, NoteDetail, ReputationSheet, KombatSheet
+// і таблиці spec 003 «Тексти» (новий, на вичитку). Без довгого тире (рішення 55).
+
 /** Українська множина: 1 хвилина, 2 хвилини, 5 хвилин, 21 хвилина, 11 хвилин. */
-function plural(n: number, one: string, few: string, many: string): string {
+export function plural(n: number, one: string, few: string, many: string): string {
   const a = Math.abs(n) % 100;
   const b = a % 10;
   if (a > 10 && a < 20) return many;
@@ -10,25 +12,114 @@ function plural(n: number, one: string, few: string, many: string): string {
 
 export const t = {
   screen: 'Телеграма',
+  screenMsg: 'Повідомлення',
   back: 'Назад',
   title: (no: string) => `Телеграма № ${no}`,
+  titleMsg: (no: string) => `Повідомлення № ${no}`,
   from: (who: string) => `Від: ${who}`,
   to: (who: string) => `Кому: ${who}`,
   rowsLabel: 'Строк виконання на кожному рівні',
-  who: { higher_hq: 'вищестоящий штаб', bn_commander: 'командиру батальйону' } as Record<string, string>,
-  // підписи наслідків варіанта (артборд TgDetail): «Стройова ×0,5 на 1 год · +10 до репутації»
+  who: {
+    higher_hq: 'вищестоящий штаб',
+    bn_chief_of_staff: 'начальник штабу батальйону',
+    bde_chief_of_staff: 'начальник штабу бригади',
+    bde_support: 'служба забезпечення бригади',
+    fin_chief: 'начальник фінансової служби',
+    info_security: 'служба захисту інформації',
+    treasury: 'Казначейство',
+    cmd_hq: 'штаб командування',
+    bn_commander: 'командиру батальйону',
+    stroy_chief: 'начальнику стройової частини',
+    bde_fin: 'фінансовій службі бригади',
+  } as Record<string, string>,
+  howReact: 'Як реагуємо?',
+  kava: 'Начштабу «Кава»',
+  isNew: 'новий варіант',
+  // наслідки варіанта (артборд TgDetail): «Стройова ×0,5 на 1 год · +10 до репутації»
   slow: (unit: string, mult: string, hours: number) => `${unit} ${mult} на ${hours} год`,
   minutes: (n: number) => `${n} ${plural(n, 'хвилина', 'хвилини', 'хвилин')}`,
-  slowFor: (mult: string, hours: number) => `${mult} на ${hours} год`,
   rep: (d: number) => `${d > 0 ? '+' : '−'}${Math.abs(d)} до репутації`,
+  sheets: (n: number) => `−${n} ${plural(n, 'аркуш', 'аркуші', 'аркушів')}`,
   insp: (pct: number) => `${pct}% шанс перевірки`,
+  noPaper: (n: number) => `Бракує ${n} ${plural(n, 'аркуша', 'аркушів', 'аркушів')}`,
+  shield: 'Є цифрові бали: без штрафу',
+  ovDisabled: 'Немає цифрових балів. Їх дає перша цифровізація.',
+  notFunny: 'Це не смішно',
+  flagged: 'Позначено',
+  // tg-result
   resMeta: (no: string) => `Відповідь на телеграму № ${no}`,
   resSigner: 'Начальник стройової',
   resDecision: 'Рішення',
   resRep: 'Репутація',
   resSpent: 'Витрачено',
-  kind: { diligent: 'сумлінно', formal_reply: 'відписка', drawer: 'шухляда', special: 'особливий' } as Record<string, string>,
+  resPaper: 'Папір',
+  resChance: 'Шанс перевірки',
+  kind: { diligent: 'сумлінно', formal_reply: 'відписка', drawer: 'у шухляду' } as Record<string, string>,
+  // журнал змін репутації (артборд ReputationSheet): «Про Excel»: виконано сумлінно
+  logKind: { diligent: 'виконано сумлінно', formal_reply: 'відписка', drawer: 'пролежала в шухляді' } as Record<string, string>,
   resStamp: 'Виконано',
   resFirstH: 'Що таке репутація',
   resCtaFirst: 'Зрозуміло',
+  resCta: 'Добре',
+  inspHit: (t: string) => `Позапланова перевірка: комісія бригади буде через ${t}`,
+  inspPrepare: 'Готуватися',
+  inspLater: 'Пізніше',
+  drawerDone: 'Зареєстровано й покладено. Деякі строки ще йдуть.',
+  info: 'до відома',
+  curioNote: 'Відповіді лежать і в журналі курйозів',
+  // tg-list
+  inbox: 'Вхідні',
+  segIn: (n: number) => (n ? `Вхідні · ${n}` : 'Вхідні'),
+  segDrawer: (n: number) => `Шухляда · ${n}`,
+  segArchive: (n: number) => `Архів · ${n}`,
+  secNew: 'Нові',
+  secWork: (n: number) => `На виконанні · ${n}`,
+  secNotes: (n: number) => `Записки · ${n}`,
+  left: (time: string) => `ще ${time}`,
+  done: 'Виконано',
+  inDrawer: 'у шухляді',
+  badgeNew: 'нова',
+  // репутація (003 FR-21, FR-22; рішення 61)
+  repToast: (tier: string) => `Репутація: ${tier}`,
+  tier: { low: 'низька', norm: 'норма', high: 'висока' } as const,
+  repTile: (tier: string) => `Репутація: ${tier}`,
+  repTitle: 'Що про стройову думають нагорі',
+  repSub: 'Що вища, то рідше помічають відписки. Перевірка репутацію не змінює.',
+  repReply: 'Відписки',
+  repLevels: [
+    { key: 'low', name: 'Низька', otp: 'помічають швидше' },
+    { key: 'norm', name: 'Норма', otp: 'іноді помічають' },
+    { key: 'high', name: 'Висока', otp: 'помічають рідко' },
+  ] as const,
+  repNow: 'зараз',
+  repLog: 'Останні зміни',
+  repLogItem: (title: string, kind: string) => `«${title}»: ${kind}`,
+  repCta: 'До телеграм',
+  // «Це не смішно» (TgFlag)
+  flagTitle: 'Це не смішно',
+  flagFor: (no: string) => `Позначка до телеграми № ${no}`,
+  flagSub: 'Скажи, що не так. Причину можна не обирати.',
+  flagReasons: ['Б’є по людях, а не по паперу', 'Неправда: так не буває', 'Образливо для військових', 'Просто не смішно'],
+  flagComment: 'Коментар, якщо хочеш',
+  flagNote: 'Надсилаємо номер телеграми, причину й коментар. Без позивного і без імені.',
+  flagSend: 'Надіслати позначку',
+  flagThanks: 'Позначку отримано',
+  flagThanksSub: 'Телеграму перечитаємо. Якщо жарт б’є по людях, а не по паперу, її замінять оновленням.',
+  flagBack: 'До телеграми',
+  // «Комбата шукають» (KombatSheet)
+  kbTitle: 'Комбата шукають',
+  kbFound: 'Комбата знайшли',
+  kbUnit: 'Резолюції комбата',
+  kbWait: (min: string) => `Чекати ${min}`,
+  kbWaitText: (t: string) => `Комбат повернеться сам за ${t}. Безкоштовно. Резолюції тим часом ідуть у чверть сили.`,
+  kbRunner: 'Відправити посильного',
+  kbRunnerText: (t: string) => `Знайде за ${t}. Підписи за папку з документами й дорогу.`,
+  kbRunning: (t: string) => `посильний · ще ${t}`,
+  kbFoundLine: 'Резолюцію поставлено. Місце підписання: капот.',
+  kbOk: 'Добре',
+  kbBack: 'До стройової',
+  // записки (NoteDetail)
+  noteOk: 'Добре',
+  noteCall: 'Дзвінок «Археологу»',
+  noteFallback: 'Записка',
 };
