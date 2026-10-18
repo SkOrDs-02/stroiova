@@ -10,12 +10,16 @@ import { color, radius, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
-import { journalTitle } from './present';
+import { count } from '@/museum/museum';
+import { muT } from '@/features/museum/texts';
+
+import { journalTitle, shownJournals } from './present';
 import { digitT } from './texts';
 
 export function DigitResult({ store }: { store: ConveyorStore }) {
   const s = useStore(store);
   const c = s.digit.ceremony!;
+  const journals = shownJournals(c.journals);
   const line = useTumbLine(store, 'digit.line', `digit:${c.no}`);
   const note = c.levelUp ? digitT.noteL2 : c.level >= 2 ? digitT.noteR2 : digitT.noteR1;
   return (
@@ -25,18 +29,21 @@ export function DigitResult({ store }: { store: ConveyorStore }) {
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{digitT.docNo(c.no)}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{digitT.docTitle}</Text>
           <Row k={digitT.rowLifetime} v={formatBig(c.lifetime, 'balance')} />
-          <Row k={digitT.rowJournals} v={String(c.journals.length)} />
+          <Row k={digitT.rowJournals} v={String(journals.length)} />
           <Row k={digitT.rowPoints} v={`+${c.points}`} testID="result-points" />
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.total} testID="result-total">{digitT.total(c.pointsTotal, formatMult(c.multAfter))}</Text>
-          {c.journals.length ? (
+          {journals.length ? (
             <>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{digitT.fly}</Text>
-              {c.journals.map((n) => (
+              {journals.map((n) => (
                 <Text key={n} maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{`№ ${n} · ${journalTitle(n)}`}</Text>
               ))}
             </>
           ) : (
-            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{digitT.none}</Text>
+            <>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{digitT.none}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc} testID="result-museum">{muT.counter(count(s.museum))}</Text>
+            </>
           )}
           <View style={styles.foot}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} numberOfLines={2}>{note}</Text>
@@ -49,7 +56,7 @@ export function DigitResult({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.quote}>{line}</Text>
           </>
         ) : null}
-        <Button testID="digit-result-ok" label={c.levelUp ? digitT.next : digitT.toMain} onPress={s.closeDigitStep} />
+        <Button testID="digit-result-ok" label={c.levelUp || journals.length ? digitT.next : digitT.toMain} onPress={s.closeDigitStep} />
       </View>
     </View>
   );

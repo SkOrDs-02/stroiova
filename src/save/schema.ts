@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 6;
+export const CURRENT_SCHEMA = 7;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -234,6 +234,37 @@ export const digitizationStateSchema = z.object({
   cycleStartMs: z.number(),
 });
 
+/** Музей й журнал курйозів (007); схема 7. */
+export const museumStateSchema = z.object({
+  owned: z.array(z.object({ no: z.number().int().min(1), atMs: z.number(), source: z.enum(['digitization', 'telegram', 'inspection']), seen: z.boolean() })),
+  reveal: z.array(z.object({ no: z.number().int().min(1), k: z.number().int().min(1), m: z.number().int().min(1), nAfter: z.number().int().min(1), via: z.enum(['insp', 'other']) })),
+  curios: z.array(
+    z.object({
+      seq: z.number().int().min(1),
+      kind: z.enum(['telegram', 'gift']),
+      atMs: z.number(),
+      telegramId: z.string().optional(),
+      uid: z.string().optional(),
+      choiceId: z.string().optional(),
+      status: z.enum(['diligent', 'formal', 'drawer', 'special', 'info']).optional(),
+      text: z.string().nullable().optional(),
+      gift: z
+        .object({
+          raceId: z.string(),
+          raceNo: z.number().int().min(1),
+          type: z.enum(['drone', 'shovel', 'generator']),
+          level: z.number().int().min(1),
+          steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna']), sec: z.number() })),
+          stepsDone: z.number().int().nonnegative(),
+          stepsTotal: z.number().int().min(1),
+          marginSec: z.number(),
+        })
+        .optional(),
+    }),
+  ),
+  curioSeq: z.number().int().nonnegative(),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -248,6 +279,8 @@ export const gameSaveSchema = z.object({
   race: raceStateSchema,
   /** Цифровізація (006) */
   digitization: digitizationStateSchema,
+  /** Музей й курйози (007) */
+  museum: museumStateSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

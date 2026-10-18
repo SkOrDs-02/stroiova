@@ -8,6 +8,10 @@ import { color, radius, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
+import { muT } from '@/features/museum/texts';
+import { titleOf } from '@/features/museum/present';
+import { journal } from '@/museum/journals';
+
 import { actRows, verdictText } from './present';
 import { inspT } from './texts';
 import { useTumbLine } from './useTumbLine';
@@ -28,6 +32,8 @@ export function InspResult({ store }: { store: ConveyorStore }) {
   const { date, time } = stampDate(o.arrMs);
   const verdict = verdictText(o);
   const p = s.cfg.params;
+  // 007 FR-19: журнал за цю перевірку розкривається блоком в акті
+  const exhibits = s.museum.reveal.filter((r) => r.via === 'insp');
   // insp-result міг чекати в черзі: залишок ×3 — від приїзду (крайовий випадок spec)
   const x3Left = Math.max(0, o.arrMs + p.inspHours * 3_600_000 - s.lastMs);
   return (
@@ -47,6 +53,13 @@ export function InspResult({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.cell, styles.strong, !o.passed && styles.bad]}>{inspT.verdict}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.cell, styles.strong, !o.passed && styles.bad]} testID="insp-verdict">{verdict}</Text>
           </View>
+          {exhibits.map((r) => (
+            <View key={r.no} style={styles.exhibit} testID="insp-exhibit">
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{muT.inspBlock(r.nAfter)}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{muT.inspLine(r.no, titleOf(r.no))}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="insp-exhibit-note">{r.no === 8 ? `${muT.rarity.legendary}. ${muT.noteSeries}` : muT.rarity[journal(r.no)?.rarity ?? 'common']}</Text>
+            </View>
+          ))}
           <View style={styles.foot}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.signer}>{inspT.signer[o.boss]}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.stamp}>{`${inspT.checked} ${date}`}</Text>
@@ -77,6 +90,7 @@ const styles = StyleSheet.create({
   cell: { ...type('docBody'), color: color.ink, flexShrink: 1 },
   strong: { fontWeight: typeScale.cta.fontWeight },
   bad: { color: color.alertPaper },
+  exhibit: { borderWidth: 1, borderColor: color.paperRule, padding: space[8], gap: space[2], marginTop: space[4] },
   foot: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space[8], marginTop: space[6] },
   signer: { ...type('docMeta'), color: color.ink2, flex: 1 },
   stamp: { ...type('stampS'), color: color.stamp, borderWidth: 2, borderColor: color.stamp, paddingHorizontal: space[6], textTransform: 'uppercase' },

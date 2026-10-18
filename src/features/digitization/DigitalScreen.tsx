@@ -11,7 +11,7 @@ import { color, radius, size, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
-import { journalTitle, track } from './present';
+import { journalTitle, shownJournals, track } from './present';
 import { digitT } from './texts';
 
 export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; onOpenConfirm: () => void }) {
@@ -73,10 +73,10 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
           </View>
         ) : null}
         <View style={styles.card} testID="digit-journals">
-          {st.journals.length ? (
+          {shownJournals(st.journals).length ? (
             <>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2}>{digitT.journals}</Text>
-              {st.journals.map((n) => (
+              {shownJournals(st.journals).map((n) => (
                 <Text key={n} maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{`№ ${n} · ${journalTitle(n)}`}</Text>
               ))}
             </>

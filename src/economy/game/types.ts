@@ -140,13 +140,27 @@ export type DomainEvent =
   | { type: 'raceSpeedup'; id: string; method: 'digital_bonus'; secSaved: number }
   | { type: 'raceFinish'; id: string; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean }
   /** Програна гонка: запис «Списано раніше, ніж поставлено на облік» (07) */
-  | { type: 'raceCurio'; id: string; giftType: 'drone' | 'shovel' | 'generator' }
+  | {
+      type: 'raceCurio';
+      id: string;
+      giftType: 'drone' | 'shovel' | 'generator';
+      raceNo: number;
+      level: number;
+      steps: { unit: 'akty' | 'kombat' | 'stroy' | 'fin' | 'kazna'; sec: number }[];
+      stepsDone: number;
+      stepsTotal: number;
+      marginSec: number;
+      endMs: number;
+    }
   // 006: цифровізація; аналітика етапу 5 (digitization_complete, level_advance), музей 07 (museum_journal_unlock)
   | { type: 'digitizationComplete'; no: number; level: number; points: number; pointsTotal: number; multiplier: number; lifetimeLog10: number; journalsCancelled: number[]; fromHint: boolean }
   | { type: 'levelAdvance'; from: number; to: number; digitizationCount: number; pointsTotal: number }
   | { type: 'digitizationHint'; etaSec: number; points: number; pointsTotal: number; isFirst: boolean }
   /** Перша без зауважень після першої цифровізації: журнал № 7 (07 FR-8) */
-  | { type: 'inspectionJournal'; id: string };
+  | { type: 'inspectionJournal'; id: string }
+  // 007: музей; аналітика етапу 5 (museum_journal_unlock)
+  | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection'; ownedAfter: number; isSeriesComplete: boolean }
+  | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */
 export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };

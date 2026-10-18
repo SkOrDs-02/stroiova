@@ -17,6 +17,8 @@ import { digitalSpeedup, fromTelegram as raceFromTelegram, newRace, resume as ra
 import type { RaceState } from '@/race/types';
 import { closeCeremonyStep, digitize as digitizeNow, newDigitization, shiftDigitization, status as digitStatus } from '@/digitization/digitization';
 import type { DigitizationState } from '@/digitization/types';
+import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
+import type { MuseumState } from '@/museum/types';
 import { digitT } from '@/features/digitization/texts';
 import { dayKey } from '@/telegrams/clock';
 import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
@@ -41,7 +43,9 @@ export type Toast =
   | { kind: 'clockBack' }
   | { kind: 'text'; text: string }
   | { kind: 'archive'; amount: number }
-  | { kind: 'rep'; tier: 'low' | 'norm' | 'high' };
+  | { kind: 'rep'; tier: 'low' | 'norm' | 'high' }
+  /** Журнал, розкриття якого перервало вбивство застосунку (007 AC-18): тост з «Відкрити» */
+  | { kind: 'exhibit'; no: number };
 
 /** Підписів за перший акт: 8 тапів × tapValue, на 8-му тапі (рішення 57). */
 export const ACT_TAPS = 8;
@@ -65,6 +69,8 @@ interface Store {
   race: RaceState;
   /** Цифровізація (006) */
   digit: DigitizationState;
+  /** Музей і курйози (007) */
+  museum: MuseumState;
   /** Підказка «Час цифровізуватися» активна (FR-9); оновлюється раз на хвилину гри, лише в пам'яті */
   digitRec: boolean;
   /** Остання перевірка підказки, мс */
@@ -136,6 +142,10 @@ interface Store {
   closeInspPrep: () => void;
   /** insp-result закрито (FR-22) */
   closeInspResult: () => void;
+  /** `journal-new` закрито: журнал переглянуто (рішення 79) */
+  closeReveal: () => void;
+  /** Вкладку «Музей» відкрито: усе переглянуто (007 FR-20) */
+  openMuseum: (source?: 'tab' | 'unlock_toast') => void;
   /** Репліка Тумбочкіна з пулу на момент перевірки; поза лімітом сесії (рішення 45) */
   tumbLine: (key: string, slot: string) => string | null;
   /** «Послатися на цифру» (005 FR-16); false — недоступно */
@@ -181,6 +191,7 @@ export interface Initial {
   inspections?: InspectionState;
   race?: RaceState;
   digit?: DigitizationState;
+  museum?: MuseumState;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -218,6 +229,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     // «Готуватися» з tg-result відкриває insp-prep; insp-warning після цього не потрібен
     if (prep && insp.active) insp = { ...insp, active: { ...insp.active, warned: true } };
     set({ telegrams: tg, inspections: insp, effects, events: [...get().events, ...out].slice(-40), ...(prep ? { inspPrepOpen: true } : {}) });
+    absorbMuseum(evs, nowMs);
     for (const id of added) {
       const short = inspT.item[id]?.short;
       if (short) get().showToast({ kind: 'text', text: inspT.toastItem(short) });
@@ -266,6 +278,23 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     set(patch);
   };
   /**
+   * Музей (007): журнали й записи курйозів з доменних подій інших фіч. Бонуси лягають у `state.museum` у мить отримання
+   * (рішення 79), тож економіка рахує їх одразу.
+   */
+  const absorbMuseum = (evs: readonly DomainEvent[], atMs: number, offline = false) => {
+    if (!evs.length) return;
+    const g = get();
+    let ms = g.museum;
+    for (const e of evs) {
+      if (e.type === 'curio') ms = curioFromTelegram(ms, e, g.telegrams, atMs);
+      if (e.type === 'raceCurio') ms = curioFromRace(ms, e);
+    }
+    // «У музеї з» - мітка самої перевірки, а не повернення гравця (крайовий випадок «Офлайн»)
+    const r = museumFromEvents(ms, g.state, g.cfg, evs, atMs, { offline, inspAtMs: g.inspections.last?.arrMs });
+    if (r.ms === g.museum && r.eco === g.state && !r.events.length) return;
+    set({ museum: r.ms, state: r.eco, events: [...get().events, ...r.events].slice(-40) });
+  };
+  /**
    * Перевірки в (from, to] (004): оголошення й приїзди. Іде перед доходом: ×3 чи сповільнення з мітками приїзду
    * вже в ефектах, коли економіка ріже інтервал (01 FR-24).
    */
@@ -284,6 +313,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     // 003 FR-15: після першої планової відписки можуть кликати позапланові
     const tg = r.scheduledArrived && !g.telegrams.firstInspectionPassed ? { ...g.telegrams, firstInspectionPassed: true } : g.telegrams;
     set({ inspections: r.s, telegrams: tg, effects: [...g.effects, ...r.effects], events: [...g.events, ...r.events].slice(-40), ...(r.s.active ? {} : { inspPrepOpen: false }) });
+    absorbMuseum(r.events, to, offline);
   };
   /**
    * Гонка в (from, to] (005): фінал і прихід подарунка. Іде перед доходом: множник подарунка з мітками кінця акта
@@ -292,9 +322,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
   const runRace = (from: number, to: number, offline: boolean) => {
     const g = get();
     if (to <= from) return;
-    const r = tickRace(g.race, g.state, g.cfg, { fromMs: from, nowMs: to, tzOffsetMin: tzOffsetAt(to), installMs: g.inspections.installMs, offline });
+    const r = tickRace(g.race, g.state, g.cfg, { fromMs: from, nowMs: to, tzOffsetMin: tzOffsetAt(to), installMs: g.inspections.installMs, offline, journals: raceJournals(g.museum) });
     if (r.s === g.race && !r.events.length) return;
     set({ race: r.s, state: r.eco, effects: [...g.effects, ...r.effects], events: [...g.events, ...r.events].slice(-40) });
+    absorbMuseum(r.events, to, offline);
   };
   /** № 20 вийшла з шухляди (відповідь чи повернення): акт іде далі (FR-18). */
   const resumeRaceIfFree = (now: number) => {
@@ -327,18 +358,22 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (a.clockBack) {
         // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
         const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), digit: shiftDigitization(get().digit, a.rawMs), digitCheckedAt: 0, lastMs: backAt, toast: { kind: 'clockBack' } });
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), digit: shiftDigitization(get().digit, a.rawMs), digitCheckedAt: 0, lastMs: backAt });
+        get().showToast({ kind: 'clockBack' });
         return;
       }
       const res = offline(state, c, leftAt, backAt, effects);
       if (res.short) {
         const r = claimOffline(state, c, res, false, localDate(backAt));
         if ('error' in r) return;
-        set({ state: r.state, lastMs: backAt, toast: r.claimed > 0 ? { kind: 'offline', amount: r.claimed } : null });
+        set({ state: r.state, lastMs: backAt });
+        if (r.claimed > 0) get().showToast({ kind: 'offline', amount: r.claimed });
       } else {
         set({ offline: res, offlineBackAt: backAt, lastMs: backAt });
       }
     };
+  // 007 AC-18: розкриття, перерване вбивством застосунку, стає тостами «Новий експонат» (рішення 79)
+  const interrupted = museumInterrupted(init?.museum ?? newMuseum());
   return {
     cfg,
     pinned: init?.pinned ?? null,
@@ -351,6 +386,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     inspPrepOpen: false,
     race: init?.race ?? newRace(`race-${nowMs}`),
     digit: init?.digit ?? newDigitization(nowMs),
+    museum: interrupted.ms,
     digitRec: false,
     digitCheckedAt: 0,
     digitHintShown: false,
@@ -363,8 +399,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     mode: 'x1',
     offline: null,
     offlineBackAt: null,
-    toast: null,
-    toastQueue: [],
+    toast: interrupted.nos.length ? ({ kind: 'exhibit', no: interrupted.nos[0]! } as Toast) : null,
+    toastQueue: interrupted.nos.slice(1).map((no) => ({ kind: 'exhibit', no }) as Toast),
     events: [],
     tick: (now) => {
       if (now <= get().lastMs) return;
@@ -565,6 +601,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if ('error' in r) return false;
       // L і підписи в нуль, нові потоки: ціни й дохід інші, тож підказка перераховується
       set({ state: r.state, digit: { ...r.ds, howSeen: true }, digitRec: false, events: [...g.events, ...r.events].slice(-40) });
+      absorbMuseum(r.events, g.lastMs);
       return true;
     },
     closeDigitStep: () => {
@@ -600,6 +637,14 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     closeInspResult: () => {
       const ins = get().inspections;
       if (ins.last && !ins.last.seen) set({ inspections: { ...ins, last: { ...ins.last, seen: true } } });
+      // блок «Новий експонат» показано в акті (007 FR-19)
+      set({ museum: closeInspReveal(get().museum) });
+    },
+    closeReveal: () => set({ museum: closeRevealMuseum(get().museum) }),
+    openMuseum: (source = 'tab') => {
+      const g = get();
+      const ev: DomainEvent = { type: 'museumOpen', source, journalsOwned: countMuseum(g.museum), journalsUnseen: unseenMuseum(g.museum) };
+      set({ museum: openMuseumTab(g.museum), events: [...g.events, ev].slice(-40) });
     },
     sendRunner: () => {
       const g = get();
@@ -626,7 +671,8 @@ export function gameSave(store: ConveyorStore): {
   inspections: InspectionState;
   race: RaceState;
   digitization: DigitizationState;
+  museum: MuseumState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum };
 }

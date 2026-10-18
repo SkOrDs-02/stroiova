@@ -22,6 +22,11 @@ import { DigitConfirm } from '@/features/digitization/DigitConfirm';
 import { DigitResult } from '@/features/digitization/DigitResult';
 import { LevelUp } from '@/features/digitization/LevelUp';
 import { digitT } from '@/features/digitization/texts';
+import { JournalNew } from '@/features/museum/JournalNew';
+import { MuseumScreen } from '@/features/museum/MuseumScreen';
+import { titleOf } from '@/features/museum/present';
+import { muT } from '@/features/museum/texts';
+import { nextReveal, unseen } from '@/museum/museum';
 import { GiftArrived } from '@/features/race/GiftArrived';
 import { offlineRaceRows } from '@/features/race/present';
 import { RaceCard } from '@/features/race/RaceCard';
@@ -64,6 +69,7 @@ type View3 =
   | { kind: 'rep'; back: 'main' | 'list' }
   | { kind: 'kombat' }
   | { kind: 'digital' }
+  | { kind: 'museum' }
   | { kind: 'digit-confirm' };
 
 function toastText(toast: Toast): string {
@@ -78,6 +84,8 @@ function toastText(toast: Toast): string {
       return t.offToast(formatBig(toast.amount, 'balance'));
     case 'rep':
       return tgT.repToast(tgT.tier[toast.tier]);
+    case 'exhibit':
+      return muT.toast(titleOf(toast.no));
   }
 }
 
@@ -138,7 +146,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const toast = s.toast;
   useEffect(() => {
     if (toast == null) return;
-    const id = setTimeout(() => store.getState().clearToast(), duration.toast);
+    // тост «Новий експонат» з «Відкрити» тримаємо втричі довше: тапнути треба встигнути
+    const id = setTimeout(() => store.getState().clearToast(), duration.toast * (toast.kind === 'exhibit' ? 3 : 1));
     return () => clearTimeout(id);
   }, [toast, store]);
 
@@ -181,6 +190,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const raceResult = raceFree && s.race.last != null && !s.race.last.seen;
   const giftOpen = raceFree && !raceResult && race != null && !race.seen;
 
+  // 007: розкриття журналів - після інших модалок; digit-result іде першим, level-up - після (FR-18, spec «Перехід рівня»)
+  const viewFree = view.kind === 'main' || view.kind === 'list';
+  const revealOpen =
+    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
+
   const coachFor = (id: string) => {
     if (!coachOn) return undefined;
     if (rd === 'coachUpgrade' && id === 'raporty') return { target: 'buy' as const, text: onb.b6Arrow };
@@ -194,6 +208,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     if (tab === 'telegrams' && o.step === 8 && tg1?.status === 'new') setView({ kind: 'detail', uid: tg1.uid, coach: true });
     else if (tab === 'telegrams') setView({ kind: 'list' });
     else if (tab === 'digital') setView({ kind: 'digital' });
+    else if (tab === 'museum') {
+      if (view.kind !== 'museum') s.openMuseum();
+      setView({ kind: 'museum' });
+    }
     else if (tab === 'stroyova') setView({ kind: 'main' });
   };
   const openItem = (item: InboxItem) => {
@@ -206,7 +224,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       setView({ kind: 'detail', uid: item.uid, coach: false });
     }
   };
-  const tabsEnabled: TabId[] = coachRow ? [] : o.step !== 'done' && o.step < 8 ? ['stroyova'] : ['stroyova', 'telegrams', 'digital'];
+  const tabsEnabled: TabId[] = coachRow ? [] : o.step !== 'done' && o.step < 8 ? ['stroyova'] : ['stroyova', 'telegrams', 'digital', 'museum'];
 
   return (
     <View style={styles.root}>
@@ -214,6 +232,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         <TelegramList store={store} onOpen={openItem} onReputation={() => setView({ kind: 'rep', back: 'list' })} />
       ) : view.kind === 'digital' || view.kind === 'digit-confirm' ? (
         <DigitalScreen store={store} onOpenConfirm={() => setView({ kind: 'digit-confirm' })} />
+      ) : view.kind === 'museum' ? (
+        <MuseumScreen store={store} insetTop={insets.top + space[16]} onToDigital={() => setView({ kind: 'digital' })} />
       ) : (
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
@@ -323,8 +343,9 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         </>
       )}
       <TabBar
-        active={view.kind === 'list' ? 'telegrams' : view.kind === 'digital' || view.kind === 'digit-confirm' ? 'digital' : 'stroyova'}
+        active={view.kind === 'list' ? 'telegrams' : view.kind === 'digital' || view.kind === 'digit-confirm' ? 'digital' : view.kind === 'museum' ? 'museum' : 'stroyova'}
         digitalDot={s.digitRec}
+        museumDot={unseen(s.museum) > 0}
         telegramsNew={badge}
         coachTab={coachTab ? 'telegrams' : undefined}
         enabled={tabsEnabled}
@@ -332,10 +353,24 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         onChange={onTab}
       />
       {/* над таббаром: тост (один, решта в черзі) і під ним підказка коуча кроку 8 */}
-      <View style={[styles.bottomStack, { bottom: insets.bottom + size.tabHeight }]} pointerEvents="none">
+      <View style={[styles.bottomStack, { bottom: insets.bottom + size.tabHeight }]} pointerEvents="box-none">
         {toast != null ? (
-          <View style={styles.toast} testID="toast">
+          <View style={styles.toast} testID="toast" pointerEvents={toast.kind === 'exhibit' ? 'auto' : 'none'}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.toastText}>{toastText(toast)}</Text>
+            {toast.kind === 'exhibit' ? (
+              <Pressable
+                testID="toast-open"
+                accessibilityRole="button"
+                onPress={() => {
+                  s.clearToast();
+                  s.openMuseum('unlock_toast');
+                  setView({ kind: 'museum' });
+                }}
+                style={styles.toastBtn}
+              >
+                <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.toastOpen}>{muT.toastOpen}</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
         {coachTab ? (
@@ -391,7 +426,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       {s.inspPrepOpen && insp ? <InspPrep store={store} /> : null}
       {view.kind === 'digit-confirm' ? <DigitConfirm store={store} onClose={() => setView({ kind: 'digital' })} onDone={() => setView({ kind: 'main' })} /> : null}
       {ceremonyOpen && ceremony!.step === 'result' ? <DigitResult store={store} /> : null}
-      {ceremonyOpen && ceremony!.step === 'levelUp' ? <LevelUp store={store} /> : null}
+      {ceremonyOpen && ceremony!.step === 'levelUp' && nextReveal(s.museum) == null ? <LevelUp store={store} /> : null}
       {raceSheet ? <RaceSheet store={store} onClose={() => setRaceSheetId(null)} /> : null}
       {giftOpen ? (
         <GiftArrived
@@ -404,6 +439,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         />
       ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
+      {revealOpen ? <JournalNew store={store} /> : null}
       {s.offline ? <OfflineReturn res={s.offline} inspRows={[...offlineRows(ins.last, s.cfg.params, s.offlineBackAt ?? now), ...offlineRaceRows(s.race.last)]} onClaim={s.claim} /> : null}
     </View>
   );
@@ -439,4 +475,6 @@ const styles = StyleSheet.create({
   bottomStack: { position: 'absolute', left: 0, right: 0, gap: space[8] },
   toast: { marginHorizontal: space[16], backgroundColor: color.surface, borderRadius: radius[6], padding: space[12] },
   toastText: { ...type('body'), color: color.text },
+  toastBtn: { minHeight: size.touchMin, justifyContent: 'center', alignSelf: 'flex-start' },
+  toastOpen: { ...type('cta'), color: color.accent },
 });

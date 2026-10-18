@@ -2,5 +2,6 @@
 export const t = {
   tabs: { stroyova: 'Стройова', telegrams: 'Телеграми', digital: 'Цифра', museum: 'Музей', shop: 'Магазин' },
   digitalDot: 'Рекомендовано цифровізуватися',
+  museumDot: 'Є новий експонат',
   tabNew: (label: string, n: string) => `${label}, нових: ${n}`,
 };

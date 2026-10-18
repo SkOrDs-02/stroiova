@@ -10,7 +10,7 @@ import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
 import { HoldButton } from './HoldButton';
-import { journalTitle } from './present';
+import { journalTitle, shownJournals } from './present';
 import { digitT } from './texts';
 
 export function DigitConfirm({ store, onClose, onDone }: { store: ConveyorStore; onClose: () => void; onDone: () => void }) {
@@ -23,7 +23,7 @@ export function DigitConfirm({ store, onClose, onDone }: { store: ConveyorStore;
       <View style={styles.sheet} accessibilityViewIsModal>
         <ScrollView contentContainerStyle={styles.body}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{level >= 2 ? digitT.confirmTitleR2 : digitT.confirmTitleR1}</Text>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{st.journals.length ? digitT.confirmSub : digitT.confirmSubNone}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{shownJournals(st.journals).length ? digitT.confirmSub : digitT.confirmSubNone}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.big} testID="confirm-points">{digitT.points(st.points)}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} testID="confirm-mult">{digitT.mult(formatMult(st.multBefore), formatMult(st.multAfter))}</Text>
           {toL2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note} testID="confirm-lvl">{digitT.confirmLvl}</Text> : null}
@@ -31,7 +31,7 @@ export function DigitConfirm({ store, onClose, onDone }: { store: ConveyorStore;
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{digitT.resetsList}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h}>{digitT.stays}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{digitT.staysList}</Text>
-          {st.journals.map((n) => (
+          {shownJournals(st.journals).map((n) => (
             <Text key={n} maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{`№ ${n} · ${journalTitle(n)}`}</Text>
           ))}
         </ScrollView>

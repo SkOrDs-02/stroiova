@@ -16,6 +16,8 @@ interface Props {
   telegramsNew?: number;
   /** Крапка на «Цифрі»: рекомендовано цифровізуватися (06 FR-9) */
   digitalDot?: boolean;
+  /** Крапка на «Музеї»: є непереглянутий журнал (07 FR-20) */
+  museumDot?: boolean;
   /** Коуч: лише ця вкладка тапається, решта приглушена (002 FR-15) */
   coachTab?: TabId;
   /** Вкладки, яких ще немає в збірці (06–08): не тапаються */
@@ -24,7 +26,7 @@ interface Props {
   onChange: (tab: TabId) => void;
 }
 
-export function TabBar({ active, telegramsNew = 0, digitalDot = false, coachTab, enabled, bottomInset = 0, onChange }: Props) {
+export function TabBar({ active, telegramsNew = 0, digitalDot = false, museumDot = false, coachTab, enabled, bottomInset = 0, onChange }: Props) {
   return (
     <View style={[styles.bar, { paddingBottom: bottomInset }]} accessibilityRole="tablist" testID="tabbar">
       {TABS.map((tab) => {
@@ -46,6 +48,7 @@ export function TabBar({ active, telegramsNew = 0, digitalDot = false, coachTab,
               {tab.label}
             </Text>
             {tab.id === 'digital' && digitalDot ? <View style={styles.dot} testID="tab-digital-dot" accessibilityLabel={t.digitalDot} /> : null}
+            {tab.id === 'museum' && museumDot ? <View style={styles.dot} testID="tab-museum-dot" accessibilityLabel={t.museumDot} /> : null}
             {badge ? (
               <View style={styles.badge} testID="tab-telegrams-badge">
                 <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.badgeText}>{badge}</Text>
