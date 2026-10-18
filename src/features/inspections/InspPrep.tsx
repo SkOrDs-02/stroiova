@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from 'zustand';
 
-import { formatBig, formatCountdown, formatDuration } from '@/economy/format';
+import { formatBig, formatCountdown, formatDuration, formatMult } from '@/economy/format';
 import { income } from '@/economy/game/income';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { readiness, shortfall } from '@/inspections/lifecycle';
@@ -23,6 +23,7 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
   if (!a) return null;
   const perMin = income(s.state, s.cfg, s.lastMs, s.effects).perMin;
   const pct = readiness(a);
+  const p = s.cfg.params;
   const left = (a.arrMs - s.lastMs) / 1000;
   return (
     <View style={[styles.root, { paddingTop: insets.top + space[8], paddingBottom: insets.bottom }]} testID="insp-prep">
@@ -76,21 +77,21 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
                 {off ? (
                   <>
                     <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.lack}>{inspT.lack(formatBig(short.lack, 'price'))}</Text>
-                    <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.eta(Number.isFinite(short.etaSec) ? formatDuration(short.etaSec) : '∞')}</Text>
+                    {Number.isFinite(short.etaSec) ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.eta(formatDuration(short.etaSec))}</Text> : null}
                   </>
                 ) : null}
               </View>
             </Pressable>
           );
         })}
-        {pct >= 100 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.ready} testID="insp-ready-line">{inspT.readyLine}</Text> : null}
+        {pct >= 100 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.ready} testID="insp-ready-line">{inspT.readyLine[a.boss]}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
           <Text style={styles.pass}>{`${inspT.passRuleK} `}</Text>
-          {a.trigger === 'unscheduled' ? inspT.passUnschedRule : inspT.passRule}
+          {a.trigger === 'unscheduled' ? inspT.passUnschedRule : inspT.passRule(formatMult(p.inspMult), p.inspHours)}
         </Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
           <Text style={styles.fail}>{`${inspT.failRuleK} `}</Text>
-          {inspT.failRule}
+          {inspT.failRule(formatMult(p.inspFailMult), p.inspFailHours)}
         </Text>
       </ScrollView>
     </View>

@@ -2,7 +2,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
-import { formatCountdown } from '@/economy/format';
+import { formatCountdown, formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
@@ -17,11 +17,11 @@ export function InspWarning({ store }: { store: ConveyorStore }) {
   const a = s.inspections.active!;
   const unsched = a.trigger === 'unscheduled';
   const first = a.no === 1;
-  const r2First = !first && !unsched && a.boss === 'command_commission';
-  // «Перша поява» й перехід у бригаду — одноразові рядки texts.md §4; решта — пули tumb.*
-  const pool = first || r2First ? null : unsched ? 'tumb.start_unsched' : `tumb.start.r${a.level}`;
+  // «Перша поява» — одноразовий рядок texts.md §4; решта — пули tumb.* (рядок переходу в бригаду показує тост рівня, 06)
+  const pool = first ? null : unsched ? 'tumb.start_unsched' : `tumb.start.r${a.level}`;
   const poolLine = useTumbLine(store, pool, `insp:${a.id}:start`);
-  const quote = first ? inspT.firstQuote : r2First ? inspT.r2Quote : poolLine;
+  const quote = first ? inspT.firstQuote : poolLine;
+  const p = s.cfg.params;
   const left = (a.arrMs - s.lastMs) / 1000;
   return (
     <View style={styles.scrim} testID="insp-warning">
@@ -42,11 +42,11 @@ export function InspWarning({ store }: { store: ConveyorStore }) {
         {first ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>{inspT.firstRule}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
           <Text style={styles.pass}>{`${inspT.passRuleK} `}</Text>
-          {unsched ? inspT.passUnschedRule : inspT.passRule}
+          {unsched ? inspT.passUnschedRule : inspT.passRule(formatMult(p.inspMult), p.inspHours)}
         </Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
           <Text style={styles.fail}>{`${inspT.failRuleK} `}</Text>
-          {inspT.failRule}
+          {inspT.failRule(formatMult(p.inspFailMult), p.inspFailHours)}
         </Text>
         {first ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.repRule}</Text> : null}
         <Button testID="insp-prepare" label={inspT.prepare} onPress={() => s.ackInspWarning(true)} />

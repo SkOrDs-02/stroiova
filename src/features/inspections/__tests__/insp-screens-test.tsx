@@ -87,7 +87,7 @@ describe('екрани перевірок', () => {
   test('AC-10: 5 з 5 — акт «пройшли», ×3 уже діє; «До стройової» закриває', async () => {
     const store = await arrive(true);
     expect(screen.getByTestId('insp-result')).toHaveTextContent(/Акт перевірки № 1/);
-    expect(screen.getByTestId('insp-verdict')).toHaveTextContent('пройшли');
+    expect(screen.getByTestId('insp-verdict')).toHaveTextContent('зауважень немає');
     expect(screen.getByTestId('insp-status')).toHaveTextContent(/×3 до підписів уже діє/);
     await fireEvent.press(screen.getByTestId('insp-result-ok'));
     expect(screen.queryByTestId('insp-result')).toBeNull();

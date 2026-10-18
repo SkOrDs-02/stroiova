@@ -2,12 +2,13 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
+import { formatDuration, formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
-import { actRows } from './present';
+import { actRows, verdictText } from './present';
 import { inspT } from './texts';
 import { useTumbLine } from './useTumbLine';
 
@@ -21,9 +22,14 @@ function stampDate(ms: number): { date: string; time: string } {
 export function InspResult({ store }: { store: ConveyorStore }) {
   const s = useStore(store);
   const o = s.inspections.last!;
-  const res = useTumbLine(store, `tumb.${o.passed ? 'pass' : 'fail'}.r${o.level}`, `insp:${o.id}:result`);
+  // із зауваженням — рядок з артборда: пул «пройшли» каже «зауважень немає»
+  const poolRes = useTumbLine(store, o.remark ? null : `tumb.${o.passed ? 'pass' : 'fail'}.r${o.level}`, `insp:${o.id}:result`);
+  const res = o.remark ? inspT.remarkRes : poolRes;
   const { date, time } = stampDate(o.arrMs);
-  const verdict = !o.passed ? inspT.failedV : o.remark ? inspT.remarkV : inspT.passed;
+  const verdict = verdictText(o);
+  const p = s.cfg.params;
+  // insp-result міг чекати в черзі: залишок ×3 — від приїзду (крайовий випадок spec)
+  const x3Left = Math.max(0, o.arrMs + p.inspHours * 3_600_000 - s.lastMs);
   return (
     <View style={styles.scrim} testID="insp-result">
       <View style={styles.wrap} accessibilityViewIsModal>
@@ -48,7 +54,11 @@ export function InspResult({ store }: { store: ConveyorStore }) {
         </View>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.status} testID="insp-status">
           {o.passed ? <Text style={styles.pass}>{`${inspT.passK} `}</Text> : <Text style={styles.fail}>{`${inspT.failK} `}</Text>}
-          {!o.passed ? inspT.fail : o.trigger === 'unscheduled' ? inspT.passUnsched : inspT.passX3}
+          {!o.passed
+            ? inspT.fail(formatMult(p.inspFailMult), p.inspFailHours)
+            : o.trigger === 'unscheduled'
+              ? inspT.passUnsched
+              : inspT.passX3(formatMult(p.inspMult), formatDuration(x3Left / 1000))}
         </Text>
         <Button testID="insp-result-ok" label={inspT.toMain} onPress={s.closeInspResult} />
       </View>
