@@ -31,4 +31,7 @@ export const t = {
   resStamp: 'Виконано',
   resFirstH: 'Що таке репутація',
   resCtaFirst: 'Зрозуміло',
+  // 003 «Тексти», нові рядки (на вичитку)
+  repToast: (tier: string) => `Репутація: ${tier}`,
+  tier: { low: 'низька', norm: 'норма', high: 'висока' } as const,
 };

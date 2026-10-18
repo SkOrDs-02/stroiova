@@ -7,16 +7,28 @@ import { baseIncomePerMin } from '@/economy/game/income';
 import { catTap, refuel, tap } from '@/economy/game/actions';
 import { buy, hire, isOk } from '@/economy/game/purchase';
 import { newGame } from '@/economy/game/state';
-import { absence, shiftTimers } from '@/economy/game/time';
+import { absence, isNewSession, shiftTimers } from '@/economy/game/time';
 import type { BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, StoredEffect, UnitRef } from '@/economy/game/types';
 import { complete, isFullScreenStep, newOnboarding, receiveTg1, type CompleteExtra, type OnboardingState, type StepNo } from '@/features/onboarding/steps';
+import { dayKey } from '@/telegrams/clock';
+import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
+import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } from '@/telegrams/effects';
+import { fromTelegram, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
+import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
+import type { TelegramState } from '@/telegrams/types';
 export type { StoredEffect } from '@/economy/game/types';
+
+/** Зсув місцевого часу пристрою, хв (= −getTimezoneOffset): розклад телеграм за годинником пристрою (003 FR-2). */
+export function tzOffsetAt(ms: number): number {
+  return -new Date(ms).getTimezoneOffset();
+}
 
 export type Toast =
   | { kind: 'offline'; amount: number }
   | { kind: 'clockBack' }
   | { kind: 'text'; text: string }
-  | { kind: 'archive'; amount: number };
+  | { kind: 'archive'; amount: number }
+  | { kind: 'rep'; tier: 'low' | 'norm' | 'high' };
 
 /** Підписів за перший акт: 8 тапів × tapValue, на 8-му тапі (рішення 57). */
 export const ACT_TAPS = 8;
@@ -30,6 +42,8 @@ interface Store {
   /** Ігровий час на передньому плані (002 FR-29) */
   playtimeMs: number;
   onboarding: OnboardingState;
+  /** Телеграми й репутація (003) */
+  telegrams: TelegramState;
   /** Тапи першого акта; лише в пам'яті: після вбивства «0 з 8» (002 R4) */
   actTaps: number;
   /** Модалка clerk-first після найму на кроці 7 */
@@ -67,9 +81,16 @@ interface Store {
   toMain: () => void;
   /** Закрити clerk-first (крок 7 уже закрито наймом) */
   closeClerkFirst: () => void;
+  /** Крок 8: телеграма № 1 у вхідних (002 FR-18, 003 FR-1) */
   receiveTg1: () => void;
-  /** Відповідь на телеграму № 1 (крок 8); ефекти з контенту готує features/telegrams/first.ts */
-  answerTg1: (choiceId: string, effects: StoredEffect[]) => void;
+  /** Відповідь на телеграму (003 FR-12…FR-20); на № 1 закриває крок 8 онбордингу */
+  answerTelegram: (uid: string, choiceId: string) => AnswerResult['item'] | { error: string };
+  /** Відкрити телеграму без вибору чи записку (FR-11, FR-27) */
+  openItem: (uid: string) => void;
+  /** «Це не смішно» (FR-26): лише позначка, без впливу на гру */
+  flagTelegram: (uid: string) => void;
+  /** «Відправити посильного» (FR-28) */
+  sendRunner: () => boolean;
   /** Бонус архіву «Археолога» (крок 9, FR-20): archiveBonusMin × базовий дохід, один раз */
   claimArchive: () => number;
 }
@@ -99,16 +120,70 @@ export interface Initial {
   pinned: EconomyConfig | null;
   playtimeMs?: number;
   onboarding?: OnboardingState;
+  telegrams?: TelegramState;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
-  return create<Store>((set, get) => ({
+  return create<Store>((set, get) => {
+  /** Доменні події телеграм → ефекти, тости, журнал подій (003). */
+  const handleEvents = (evs: DomainEvent[], nowMs: number) => {
+    if (!evs.length) return;
+    let effects = get().effects;
+    let tg = get().telegrams;
+    for (const e of evs) {
+      if (e.type === 'kombatRequest') {
+        const k = fromTelegram(tg, get().cfg, nowMs, tzOffsetAt(nowMs), e.maxMin);
+        tg = k.tg;
+        if (k.effect) effects = [...effects.filter((x) => x.source !== 'kombat_away' || x.endMs <= nowMs), k.effect];
+      }
+    }
+    set({ telegrams: tg, effects, events: [...get().events, ...evs].slice(-40) });
+    for (const e of evs) if (e.type === 'reputationTierChange') get().showToast({ kind: 'rep', tier: e.to });
+  };
+  /** Розклад і таймери телеграм у (from, to] (003 FR-2, FR-3, FR-17): лише після № 1. */
+  const runTelegrams = (from: number, to: number, away: boolean) => {
+    const g = get();
+    if (g.telegrams.startMs == null || to <= from) return;
+    const r = tickTg(g.telegrams, g.state, {
+      cfg: g.cfg,
+      fromMs: from,
+      nowMs: to,
+      tzOffsetMin: tzOffsetAt(to),
+      level: g.state.level,
+      digitizations: 0, // лічильник цифровізацій з'явиться з 06
+      raceActive: null, // гонка — 05
+      away,
+    });
+    set({ telegrams: r.tg, state: r.eco });
+    handleEvents(r.events, to);
+  };
+  /** Повернення з фону чи холодний старт (001 FR-13, FR-25; 009 FR-14). */
+  const awayInner = (leftAt: number, backAt: number) => {
+    const { state, cfg: c, effects } = get();
+    const a = absence(leftAt, backAt);
+      if (a.clockBack) {
+        // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
+        const sh = shiftTimers(state, effects, a.rawMs);
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], lastMs: backAt, toast: { kind: 'clockBack' } });
+        return;
+      }
+      const res = offline(state, c, leftAt, backAt, effects);
+      if (res.short) {
+        const r = claimOffline(state, c, res, false, localDate(backAt));
+        if ('error' in r) return;
+        set({ state: r.state, lastMs: backAt, toast: r.claimed > 0 ? { kind: 'offline', amount: r.claimed } : null });
+      } else {
+        set({ offline: res, offlineBackAt: backAt, lastMs: backAt });
+      }
+    };
+  return {
     cfg,
     pinned: init?.pinned ?? null,
     state: init?.state ?? newGame(cfg, nowMs),
     effects: init?.effects ?? [],
     playtimeMs: init?.playtimeMs ?? 0,
     onboarding: init?.onboarding ?? newOnboarding(0),
+    telegrams: init?.telegrams ?? newTelegrams(cfg.params, `game-${nowMs}`),
     // крок 5 закривається кінцем анімації ПОГОДЖЕНО; якщо застосунок вбито під час неї, акт уже підписано (FR-28)
     actTaps: init?.onboarding?.step === 5 ? ACT_TAPS : 0,
     clerkFirstOpen: false,
@@ -133,6 +208,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         playtimeMs: playtimeMs + dt,
         ...(o.birdLeftMs > 0 ? { onboarding: { ...o, birdLeftMs: Math.max(0, o.birdLeftMs - dt) } } : {}),
       });
+      runTelegrams(lastMs, now, false);
     },
     tapSeal: (now) => {
       const { state, cfg: c, effects, onboarding: o, lastMs } = get();
@@ -158,25 +234,22 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       // 002 FR-17: крок 7 — найм діловода «Стройової частини» (рішення 56), далі clerk-first
       if (ref.type === 'stage' && ref.id === 'stroy' && get().onbComplete(7)) set({ clerkFirstOpen: true });
     },
-    refuel: (now) => set({ state: refuel(get().state, get().cfg, now).state }),
+    refuel: (now) => {
+      // № 24 «у шухляду»: заправку заблоковано на годину (003 FR-20)
+      if (now < get().telegrams.refuelBlockedUntil) return;
+      set({ state: refuel(get().state, get().cfg, now).state });
+    },
     cat: (now) => set({ state: catTap(get().state, get().cfg, now).state }),
     setMode: (mode) => set({ mode }),
     away: (leftAt, backAt) => {
-      const { state, cfg: c, effects } = get();
-      const a = absence(leftAt, backAt);
-      if (a.clockBack) {
-        // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
-        const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects as StoredEffect[], lastMs: backAt, toast: { kind: 'clockBack' } });
-        return;
-      }
-      const res = offline(state, c, leftAt, backAt, effects);
-      if (res.short) {
-        const r = claimOffline(state, c, res, false, localDate(backAt));
-        if ('error' in r) return;
-        set({ state: r.state, lastMs: backAt, toast: r.claimed > 0 ? { kind: 'offline', amount: r.claimed } : null });
-      } else {
-        set({ offline: res, offlineBackAt: backAt, lastMs: backAt });
+      awayInner(leftAt, backAt);
+      // 003: телеграми, що прийшли без гравця (FR-3); нова сесія — шанс «Комбата шукають» (FR-29)
+      runTelegrams(leftAt, Math.max(leftAt, backAt), true);
+      if (isNewSession(leftAt, backAt)) {
+        const g = get();
+        const k = onSessionStart(g.telegrams, g.cfg, backAt, tzOffsetAt(backAt), false);
+        set({ telegrams: k.tg, ...(k.effect ? { effects: [...g.effects, k.effect] } : {}) });
+        handleEvents(k.events, backAt);
       }
     },
     claim: () => {
@@ -219,12 +292,11 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     },
     toMain: () => set({ actResultOpen: false }),
     closeClerkFirst: () => set({ clerkFirstOpen: false }),
-    receiveTg1: () => set({ onboarding: receiveTg1(get().onboarding, get().playtimeMs) }),
-    answerTg1: (choiceId, eff) => {
-      const o = get().onboarding;
-      if (o.step !== 8) return;
-      set({ effects: [...get().effects, ...eff], onboarding: { ...o, tg1: { choiceId, atPlayMs: get().playtimeMs } } });
-      get().onbComplete(8);
+    receiveTg1: () => {
+      const g = get();
+      const r = deliverFirst(g.telegrams, g.lastMs);
+      set({ onboarding: receiveTg1(g.onboarding, g.playtimeMs), telegrams: r.tg });
+      handleEvents(r.events, g.lastMs);
     },
     claimArchive: () => {
       const { state, cfg: c, onboarding: o } = get();
@@ -238,7 +310,46 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       get().onbComplete(9);
       return amount;
     },
-  }));
+    answerTelegram: (uid, choiceId) => {
+      const g = get();
+      const now = g.lastMs;
+      const r = answerTg(g.telegrams, g.state, uid, choiceId, { cfg: g.cfg, nowMs: now, dayKey: dayKey(now, tzOffsetAt(now)) });
+      if ('error' in r) return r;
+      set({ telegrams: r.tg, state: r.eco, effects: [...g.effects, ...r.effects] });
+      handleEvents(r.events, now);
+      // 002 FR-19: відповідь на № 1 закриває крок 8
+      if (r.item.id === FIRST_TELEGRAM_ID && get().onboarding.step === 8) {
+        set({ onboarding: { ...get().onboarding, tg1: { choiceId, atPlayMs: get().playtimeMs } } });
+        get().onbComplete(8);
+      }
+      return r.item;
+    },
+    openItem: (uid) => {
+      const g = get();
+      const item = g.telegrams.inbox.find((x) => x.uid === uid);
+      if (!item) return;
+      if (item.kind === 'notice') {
+        const r = openNoticeTg(g.telegrams, uid, g.lastMs);
+        set({ telegrams: r.tg });
+        handleEvents(r.events, g.lastMs);
+      } else if (item.kind === 'note' && !item.read) {
+        set({ telegrams: { ...g.telegrams, inbox: g.telegrams.inbox.map((x) => (x.uid === uid ? { ...x, read: true } : x)) } });
+      }
+    },
+    flagTelegram: (uid) => {
+      const tg = get().telegrams;
+      set({ telegrams: { ...tg, inbox: tg.inbox.map((x) => (x.uid === uid ? { ...x, flagged: true } : x)) } });
+    },
+    sendRunner: () => {
+      const g = get();
+      const r = sendRunnerTg(g.telegrams, g.state, g.cfg, g.lastMs);
+      if ('error' in r) return false;
+      // посильний знайде комбата раніше: кінець ефекту ×0,25 зсувається на мить знаходження
+      set({ telegrams: r.tg, state: r.eco, effects: g.effects.map((e) => (e.source === 'kombat_away' && e.endMs > g.lastMs ? { ...e, endMs: r.endMs } : e)) });
+      return true;
+    },
+  };
+  });
 }
 
 export type ConveyorStore = ReturnType<typeof createConveyorStore>;
@@ -250,7 +361,8 @@ export function gameSave(store: ConveyorStore): {
   pinned: EconomyConfig | null;
   playtimeMs: number;
   onboarding: OnboardingState;
+  telegrams: TelegramState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams };
 }

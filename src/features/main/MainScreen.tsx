@@ -18,8 +18,9 @@ import { CallOverlay } from '@/features/onboarding/CallOverlay';
 import { ClerkFirst } from '@/features/onboarding/ClerkFirst';
 import { ready } from '@/features/onboarding/steps';
 import { t as onb } from '@/features/onboarding/texts';
-import { choiceEffects, firstTelegram, type TgChoice } from '@/features/telegrams/first';
+import { firstTelegram, type TgChoice } from '@/features/telegrams/first';
 import { TelegramDetail } from '@/features/telegrams/TelegramDetail';
+import { t as tgT } from '@/features/telegrams/texts';
 import { TelegramResult } from '@/features/telegrams/TelegramResult';
 import { color, duration, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
@@ -40,6 +41,8 @@ function toastText(toast: Toast): string {
       return onb.b9Toast(formatBig(toast.amount, 'balance'));
     case 'offline':
       return t.offToast(formatBig(toast.amount, 'balance'));
+    case 'rep':
+      return tgT.repToast(tgT.tier[toast.tier]);
   }
 }
 
@@ -122,7 +125,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   };
 
   const onChoose = (c: TgChoice) => {
-    store.getState().answerTg1(c.id, choiceEffects(c, s.cfg, store.getState().lastMs));
+    const uid = store.getState().telegrams.inbox.find((x) => x.id === firstTelegram.id)?.uid;
+    if (uid) store.getState().answerTelegram(uid, c.id);
     setTg({ kind: 'result', choice: c });
   };
 
