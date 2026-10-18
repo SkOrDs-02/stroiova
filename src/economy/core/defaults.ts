@@ -127,8 +127,8 @@ export const DEFAULTS: EconomyParams = {
   inspHours: 2,
   inspFailMult: 0.5, // «Стройова частина» on a failed inspection
   inspFailHours: 1,
-  inspFirstFromHour: 8, // the first inspection: a session at 08:00–19:00 local time
-  inspFirstToHour: 19,
+  inspFirstFromHour: 8, // the first inspection: a session at 08:00–18:00 local time (decision 69)
+  inspFirstToHour: 18,
   inspArriveFromHour: 10, // arrival only 10:00–21:00, else 10:00 + 0–inspArriveJitterMin min
   inspArriveToHour: 21,
   inspArriveJitterMin: 60,

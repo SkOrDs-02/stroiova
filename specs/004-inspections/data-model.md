@@ -5,7 +5,7 @@
 | Поле | Тип | Значення |
 | --- | --- | --- |
 | `inspItems` | `{ id, level, min, fromTelegram? }[]` | таблиця «Пункти чекліста»: Р1 19, 6, 4, 11, 89 і `sergeants_count` 15 (№ 1); Р2 13, 6, 4, 28 і `where_journal` 21 (№ 29) |
-| `inspFirstFromHour` / `inspFirstToHour` | год | 8 / 19 |
+| `inspFirstFromHour` / `inspFirstToHour` | год | 8 / 18 (рішення 69) |
 | `inspArriveFromHour` / `inspArriveToHour` | год | 10 / 21 |
 | `inspArriveJitterMin` | хв | 60 |
 | `inspMinPrice` | підписи | 50 |
@@ -60,7 +60,7 @@
 ## Переходи
 
 ```text
-(немає) --старт сесії ≥ 8 год, 08–19--> active(scheduled, перша) + callPending
+(немає) --старт сесії ≥ 8 год, 08–18, після кроку 9--> active(scheduled, перша) + callPending
 (немає) --now ≥ nextArrMs − warn--> active(scheduled)
 (немає) --unscheduledInspection--> active(unscheduled), nextArrMs = вікно(arr + інтервал)
 active --inspItem(item)--> active + пункт (тост)

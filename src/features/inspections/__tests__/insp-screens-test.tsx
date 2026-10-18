@@ -25,10 +25,10 @@ function game(signatures = 1e12, level = 1) {
   return store;
 }
 
-/** Перша перевірка оголошена о 18:00 */
+/** Перша перевірка оголошена о 17:00 */
 function announced(signatures = 1e12) {
   const store = game(signatures);
-  store.getState().away(local(9, 5), local(18));
+  store.getState().away(local(9, 5), local(17));
   // спершу довідка повернення (FR-10): забрано
   store.getState().claim();
   return store;
@@ -115,7 +115,7 @@ describe('екрани перевірок', () => {
     const store = announced();
     const a = store.getState().inspections.active!;
     store.setState({ inspections: { ...store.getState().inspections, callPending: false, active: { ...a, warned: true, items: a.items.map((i) => ({ ...i, done: true })) } } });
-    await act(async () => store.getState().away(local(18), a.arrMs + HOUR));
+    await act(async () => store.getState().away(local(17), a.arrMs + HOUR));
     await render(<MainScreen store={store} />);
     const rows = screen.getAllByTestId('offline-insp');
     expect(rows[0]).toHaveTextContent(/Перевірка Тумбочкіна.*без зауважень/);
@@ -143,7 +143,7 @@ describe('екрани перевірок: позапланові й повер�
       const tg = store.getState().telegrams;
       store.setState({
         inspections: { ...store.getState().inspections, callPending: false, active: { ...a, warned: true } },
-        telegrams: { ...tg, rng: seed, firstInspectionPassed: true, inbox: [{ uid: 'tg_0001_sergeants#1', id: 'tg_0001_sergeants', kind: 'telegram', receivedAt: local(18), status: 'new' }] },
+        telegrams: { ...tg, rng: seed, firstInspectionPassed: true, inbox: [{ uid: 'tg_0001_sergeants#1', id: 'tg_0001_sergeants', kind: 'telegram', receivedAt: local(17), status: 'new' }] },
       });
       store.getState().answerTelegram('tg_0001_sergeants#1', 'formal_reply');
       if (store.getState().inspections.active!.items.some((i) => i.id === 'sergeants_count')) {
@@ -157,7 +157,7 @@ describe('екрани перевірок: позапланові й повер�
 
   test('AC-4: оголошення без гравця — спершу offline-return, потім insp-warning і банер', async () => {
     const store = game();
-    await act(async () => store.getState().away(local(9, 5), local(18)));
+    await act(async () => store.getState().away(local(9, 5), local(17)));
     await render(<MainScreen store={store} />);
     expect(screen.getByTestId('offline-return')).toBeTruthy();
     expect(screen.queryByTestId('insp-call')).toBeNull();

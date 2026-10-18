@@ -24,7 +24,7 @@ description: "Задачі: 004 Перевірки — етап 1"
 ## Phase 2: Foundational
 
 - [X] T004 `src/inspections/checklist.ts`: пункти рівня, пункт з телеграми, ціна max(`inspMinPrice`, ⌈m × `baseIncomePerMin`⌉) (FR-12, FR-13); тести AC-7, AC-21 (ціни ті самі під ×2 і сповільненням)
-- [X] T005 `src/inspections/schedule.ts`: вікно приїзду, warn у цілих хвилинах, перша (≥ 8 год, 08–19), наступна (24–48 год від приїзду) (FR-2…FR-4); тести AC-1 (5 год — немає), AC-2
+- [X] T005 `src/inspections/schedule.ts`: вікно приїзду, warn у цілих хвилинах, перша (≥ 8 год, 08–18, рішення 69), наступна (24–48 год від приїзду) (FR-2…FR-4); тести AC-1 (5 год — немає), AC-2
 - [X] T006 `src/save/schema.ts`, `migrations.ts`: `CURRENT_SCHEMA = 4`, `inspectionStateSchema`, міграція 3 → 4 (`installMs` = `telegrams.startMs` ?? `savedAt`); тест на фікстуру v3
 
 ## Phase 3: US1 + US3 — домен (P1) 🎯

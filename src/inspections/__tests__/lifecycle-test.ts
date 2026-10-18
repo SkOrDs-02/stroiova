@@ -28,16 +28,16 @@ function eco(patch: Partial<EconomyState> = {}): EconomyState {
 const ctx = (fromMs: number, nowMs: number, offline = false) => ({ fromMs, nowMs, tzOffsetMin: TZ, offline, reputation: 50, digitizations: 0 });
 const types = (evs: DomainEvent[]) => evs.map((e) => e.type);
 
-/** Перша оголошена о 18:00 після встановлення о 09:00 */
+/** Перша оголошена о 17:00 після встановлення о 09:00 */
 function firstAnnounced(e = eco()): InspectionState {
-  return onSessionStart(newInspections(at(9), 'seed-a'), e, cfg, at(18), TZ, 50).s;
+  return onSessionStart(newInspections(at(9), 'seed-a'), e, cfg, at(17), TZ, 50).s;
 }
 
 describe('розклад (FR-2…FR-4)', () => {
-  test('AC-1: сесія через 5 год — перевірки немає; о 18:00 — перша, попередження 2–3 год, call', () => {
+  test('AC-1: сесія через 5 год — перевірки немає; о 17:00 — перша, попередження 2–3 год, call', () => {
     const s0 = newInspections(at(9), 'seed-a');
     expect(onSessionStart(s0, eco(), cfg, at(14), TZ, 50).s.active).toBeNull();
-    const r = onSessionStart(s0, eco(), cfg, at(18), TZ, 50);
+    const r = onSessionStart(s0, eco(), cfg, at(17), TZ, 50);
     const a = r.s.active!;
     expect(a.id).toBe('insp_0001');
     expect(a.trigger).toBe('scheduled');
@@ -50,10 +50,11 @@ describe('розклад (FR-2…FR-4)', () => {
     expect(r.events[0]).toMatchObject({ trigger: 'scheduled', no: 1, itemsTotal: 5 });
   });
 
-  test('перша лише у вікні 08–19', () => {
+  test('перша лише у вікні 08–18 (рішення 69)', () => {
     expect(firstDue(at(0), at(7, 59), p, TZ)).toBe(false);
     expect(firstDue(at(0), at(8), p, TZ)).toBe(true);
-    expect(firstDue(at(0), at(19), p, TZ)).toBe(false);
+    expect(firstDue(at(0), at(17, 59), p, TZ)).toBe(true);
+    expect(firstDue(at(0), at(18), p, TZ)).toBe(false);
     // зсув зони: 06:00 UTC = 09:00 у Києві влітку
     expect(firstDue(at(0) - 10 * HOUR, at(6), p, 180)).toBe(true);
   });
@@ -85,7 +86,7 @@ describe('чекліст і ціни (FR-12…FR-14)', () => {
     const borders = s.active!.items.find((i) => i.id === 'paint_borders')!;
     expect(borders.price).toBe(Math.max(50, Math.ceil(19 * inc)));
     // дохід зріс — ціни оголошеної ті самі
-    const t = tick(s, { ...e, stageLevels: [80, 80, 80] }, cfg, ctx(at(18), at(18, 30)));
+    const t = tick(s, { ...e, stageLevels: [80, 80, 80] }, cfg, ctx(at(17), at(17, 30)));
     expect(t.s.active!.items.find((i) => i.id === 'paint_borders')!.price).toBe(borders.price);
   });
 
@@ -102,14 +103,14 @@ describe('чекліст і ціни (FR-12…FR-14)', () => {
   test('AC-8: «бракує 62,9 тис. · ще 30 хв»; без грошей тап нічого не списує; позначку не зняти', () => {
     expect(shortfall({ id: 'journals_stitch', price: 186_900, done: false }, 124_000, 2_100)).toEqual({ lack: 62_900, etaSec: 1798 });
     const s = firstAnnounced();
-    const poor = buyItem(s, eco({ signatures: 0 }), 'journals_stitch', at(18, 1));
+    const poor = buyItem(s, eco({ signatures: 0 }), 'journals_stitch', at(17, 1));
     expect(poor).toEqual({ error: 'short' });
     const rich = eco({ signatures: 1e12 });
-    const r = buyItem(s, rich, 'paint_borders', at(18, 1));
+    const r = buyItem(s, rich, 'paint_borders', at(17, 1));
     if ('error' in r) throw new Error(r.error);
     expect(r.eco.signatures).toBe(1e12 - s.active!.items[0]!.price);
     expect(types(r.events)).toEqual(['inspectionItemComplete']);
-    expect(buyItem(r.s, r.eco, 'paint_borders', at(18, 2))).toEqual({ error: 'done' });
+    expect(buyItem(r.s, r.eco, 'paint_borders', at(17, 2))).toEqual({ error: 'done' });
     expect(readiness(r.s.active!)).toBe(20);
   });
 });
@@ -122,7 +123,7 @@ describe('результат (FR-17…FR-21)', () => {
   test('AC-10: 5 з 5 — пройшли, ×3 на 2 год від приїзду, boostActivate; наступна запланована', () => {
     const s = allBought(firstAnnounced());
     const arr = s.active!.arrMs;
-    const r = tick(s, eco(), cfg, ctx(at(18), arr + MIN));
+    const r = tick(s, eco(), cfg, ctx(at(17), arr + MIN));
     expect(r.s.last).toMatchObject({ passed: true, remark: false, offline: false });
     expect(r.effects).toEqual([{ kind: 'mult', source: 'inspection_pass', value: 3, startMs: arr, endMs: arr + 2 * HOUR }]);
     expect(types(r.events)).toEqual(['inspectionFinish', 'boostActivate']);
@@ -134,7 +135,7 @@ describe('результат (FR-17…FR-21)', () => {
     const s0 = allBought(firstAnnounced());
     const s = { ...s0, active: { ...s0.active!, items: s0.active!.items.map((i, k) => (k === 0 ? { ...i, done: false } : i)) } };
     const arr = s.active!.arrMs;
-    const r = tick(s, eco(), cfg, ctx(at(18), arr));
+    const r = tick(s, eco(), cfg, ctx(at(17), arr));
     expect(r.s.last!.passed).toBe(false);
     expect(r.effects).toEqual([{ kind: 'factor', source: 'inspection_fail', value: 0.5, target: { type: 'stage', id: 'stroy' }, startMs: arr, endMs: arr + HOUR }]);
   });
@@ -143,8 +144,8 @@ describe('результат (FR-17…FR-21)', () => {
     const base = newInspections(at(9), 'seed-a');
     const pend = fromTelegramEvent(base, eco(), cfg, { type: 'inspItem', telegramId: 'tg_0016', item: null, remarkPct: 100 }, at(10), TZ, 50).s;
     expect(pend.pendingRemarkPct).toBe(100);
-    const s = allBought(onSessionStart(pend, eco(), cfg, at(18), TZ, 50).s);
-    const r = tick(s, eco(), cfg, { ...ctx(at(18), s.active!.arrMs), digitizations: 1 });
+    const s = allBought(onSessionStart(pend, eco(), cfg, at(17), TZ, 50).s);
+    const r = tick(s, eco(), cfg, { ...ctx(at(17), s.active!.arrMs), digitizations: 1 });
     expect(r.s.last).toMatchObject({ passed: true, remark: true });
     expect(r.effects[0]!.source).toBe('inspection_pass');
     expect(types(r.events)).not.toContain('inspectionJournal');
@@ -152,7 +153,7 @@ describe('результат (FR-17…FR-21)', () => {
 
   test('№ 7 — перша без зауважень після першої цифровізації, один раз (FR-20)', () => {
     const s = allBought(firstAnnounced());
-    const r = tick(s, eco(), cfg, { ...ctx(at(18), s.active!.arrMs), digitizations: 1 });
+    const r = tick(s, eco(), cfg, { ...ctx(at(17), s.active!.arrMs), digitizations: 1 });
     expect(types(r.events)).toContain('inspectionJournal');
     expect(r.s.journalGiven).toBe(true);
   });
@@ -160,19 +161,19 @@ describe('результат (FR-17…FR-21)', () => {
   test('AC-15, AC-16: без гравця — рядки довідки; планова дає ×3 ще T', () => {
     const s = allBought(firstAnnounced());
     const arr = s.active!.arrMs;
-    const r = tick(s, eco(), cfg, ctx(at(18), arr + HOUR, true));
+    const r = tick(s, eco(), cfg, ctx(at(17), arr + HOUR, true));
     expect(r.s.last!.offline).toBe(true);
     expect(offlineLines(r.s.last, p, arr + HOUR)).toEqual([
       { kind: 'passed', remark: false },
       { kind: 'mult', mult: 3, leftMs: HOUR },
     ]);
-    const f = tick(firstAnnounced(), eco(), cfg, ctx(at(18), arr + HOUR, true));
+    const f = tick(firstAnnounced(), eco(), cfg, ctx(at(17), arr + HOUR, true));
     expect(offlineLines(f.s.last, p, arr + HOUR)).toEqual([{ kind: 'failed', factor: 0.5, hours: 1 }]);
   });
 
   test('довга відсутність: оголошення й приїзди планових проходять по черзі', () => {
     const s = firstAnnounced();
-    const r = tick(s, eco(), cfg, ctx(at(18), at(18, 0, 6), true));
+    const r = tick(s, eco(), cfg, ctx(at(17), at(17, 0, 6), true));
     const finished = r.events.filter((e) => e.type === 'inspectionFinish');
     expect(finished.length).toBeGreaterThanOrEqual(3);
     expect(r.events.filter((e) => e.type === 'inspectionStart').length).toBe(finished.length - 1 + (r.s.active ? 1 : 0));
@@ -205,17 +206,17 @@ describe('позапланові (FR-5…FR-7)', () => {
 
   test('AC-6: під час активної — другої немає, пункт додається раз', () => {
     const s = firstAnnounced();
-    const r = fromTelegramEvent(s, eco(), cfg, unsched('tg_0001_sergeants', 'sergeants_count'), at(18, 30), TZ, 50);
+    const r = fromTelegramEvent(s, eco(), cfg, unsched('tg_0001_sergeants', 'sergeants_count'), at(17, 30), TZ, 50);
     expect(r.s.active!.id).toBe(s.active!.id);
     expect(r.s.active!.items).toHaveLength(6);
     expect(r.addedItem).toBe('sergeants_count');
-    const again = fromTelegramEvent(r.s, eco(), cfg, { type: 'inspItem', telegramId: 'tg_0001_sergeants', item: 'sergeants_count', remarkPct: 0 }, at(18, 31), TZ, 50);
+    const again = fromTelegramEvent(r.s, eco(), cfg, { type: 'inspItem', telegramId: 'tg_0001_sergeants', item: 'sergeants_count', remarkPct: 0 }, at(17, 31), TZ, 50);
     expect(again.s.active!.items).toHaveLength(6);
     expect(again.addedItem).toBeNull();
   });
 
   test('пункт іншого рівня не додається (where_journal — Р2)', () => {
-    const r = fromTelegramEvent(firstAnnounced(), eco(), cfg, { type: 'inspItem', telegramId: 'tg_0029_rewrite_order', item: 'where_journal', remarkPct: 0 }, at(18, 30), TZ, 50);
+    const r = fromTelegramEvent(firstAnnounced(), eco(), cfg, { type: 'inspItem', telegramId: 'tg_0029_rewrite_order', item: 'where_journal', remarkPct: 0 }, at(17, 30), TZ, 50);
     expect(r.s.active!.items).toHaveLength(5);
   });
 

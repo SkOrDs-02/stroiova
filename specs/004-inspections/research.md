@@ -4,12 +4,12 @@
 - **Decision**: стан тримає одну `active` перевірку й `nextArrMs` наступної планової. Перша: на старті сесії (009 `isNewSession` або холодний старт), якщо `now − installMs ≥ inspFirstAfterHours` і місцева година в [`inspFirstFromHour`, `inspFirstToHour`); приїзд = вікно(now + warn). Далі `nextArrMs` = вікно(приїзд попередньої + U(`inspIntervalMinH`, `inspIntervalMaxH`)), оголошення = `nextArrMs − warn`, warn = U(`inspWarnMinH`, `inspWarnMaxH`) у цілих хвилинах.
 - **Вікно приїзду**: година в [`inspArriveFromHour`, `inspArriveToHour`), інакше `inspArriveFromHour` наступної (або цієї, якщо до 10:00) доби + U(0, `inspArriveJitterMin`) хв — як `arrWindow` у `sim.js`.
 - **Позапланова й планова (FR-1, FR-6)**: позапланова переносить `nextArrMs` на вікно(її приїзд + інтервал). Так дві перевірки ніколи не перетинаються. `sim.js` рахує планові від попередньої планової; модель відписок у `sim.js` вимкнена за замовчуванням (`repTiers` 0), тож відбитки не змінюються. Розбіжність записано для `balance-analyst` на тижневий цикл (ВП-6).
-- **Онбординг**: першу стор оголошує лише після кроку 9 (дзвінок «Археолога» 002): інакше комісія могла б приїхати посеред першої сесії. У spec цього немає — відкрите питання 15.
+- **Онбординг**: першу стор оголошує лише після кроку 9 (дзвінок «Археолога» 002), рішення 68.
 - **Rationale**: усе від міток часу, тож офлайн (FR-4, 09 FR-13) — це той самий `tick` на проміжку.
 - **Alternatives**: окремі таймери на кожну перевірку (складніше відновлення); розклад на тиждень наперед (ламається переведенням годинника).
 
 ## R2. Числа в конфігу (принцип I)
-- **Decision**: у `DEFAULTS` додаються `inspItems` (id, рівень, хвилини, телеграма для доданих пунктів), `inspFirstFromHour` 8, `inspFirstToHour` 19, `inspArriveFromHour` 10, `inspArriveToHour` 21, `inspArriveJitterMin` 60, `inspMinPrice` 50. `sim.js` бере вікна й мінімум з параметрів замість літералів; тест: сума хвилин базових пунктів рівня = `inspChecklistMin` рівня (129, 51). Відбитки 27 — ті самі.
+- **Decision**: у `DEFAULTS` додаються `inspItems` (id, рівень, хвилини, телеграма для доданих пунктів), `inspFirstFromHour` 8, `inspFirstToHour` 18 (рішення 69), `inspArriveFromHour` 10, `inspArriveToHour` 21, `inspArriveJitterMin` 60, `inspMinPrice` 50. `sim.js` бере вікна й мінімум з параметрів замість літералів; тест: сума хвилин базових пунктів рівня = `inspChecklistMin` рівня (129, 51). Відбитки 27 — ті самі.
 - `inspRemarkPct` — з контенту № 16 (20), `unscheduledWarnH` — з 003 (2 год, як у `sim.js`).
 
 ## R3. Ціни (FR-13)
