@@ -106,7 +106,7 @@ describe('музей на екрані', () => {
     await fireEvent.press(screen.getByTestId('slot-1'));
     const d = screen.getByTestId('journal-detail');
     expect(d).toHaveTextContent(/Експонат № 1 з 8.*Книга обліку видавання мила.*Звичайний.*Бонус · діє завжди.*\+5% до швидкості Стройової частини/);
-    expect(d).toHaveTextContent(/Історія скасування.*16 паперових форм.*Джерело: тези-роз’яснення МОУ, 2024/);
+    expect(d).toHaveTextContent(/Історія скасування.*16 паперових форм.*Джерело: тези-роз'яснення МОУ, 2024/);
     expect(screen.getByTestId('jd-since')).toHaveTextContent('09.10.2025');
   });
 });

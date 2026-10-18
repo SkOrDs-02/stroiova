@@ -48,6 +48,7 @@ export function slots(ms: MuseumState, filter: Filter): Slot[] {
 
 /** Флейвор з позивним і формами «він / вона» (№ 5) */
 export function flavorOf(j: Journal, o: OnboardingState): string {
+  if (j.flavor.includes('{позивний}') && !o.callsign?.text) return muT.flavorNoCallsign;
   return gendered(j.flavor.replace(/\{позивний\}/g, o.callsign?.text ?? ''), o.gender);
 }
 
@@ -117,5 +118,5 @@ export function curioGroups(ms: MuseumState, tg: TelegramState, gender: Onboardi
 /** Рядок «Музей журналів» шторки множників (FR-12): «N з 8» і позначка «окремо»; у «Разом» не входить */
 export function multRow(ms: MuseumState): { count: string; note: string; targets: string[] } {
   const n = ms.owned.filter((o) => o.no <= MUSEUM_SIZE).length;
-  return { count: muT.countText(n), note: 'окремо', targets: museumJournals().filter((j) => has(ms, j.no)).map((j) => j.bonus.text) };
+  return { count: muT.countText(n), note: muT.multNote, targets: museumJournals().filter((j) => has(ms, j.no)).map((j) => j.bonus.text) };
 }

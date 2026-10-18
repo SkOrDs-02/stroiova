@@ -29,7 +29,7 @@ describe('музей: підписи', () => {
   });
 
   test('флейвор № 5 підставляє позивний гравця', () => {
-    const o = { ...onboardingDone(), callsign: { type: 'own' as const, text: 'Ексель' }, gender: 'f' as const };
+    const o = { ...onboardingDone(), callsign: { type: 'custom' as const, text: 'Ексель' }, gender: 'f' as const };
     expect(flavorOf(journal(5)!, o)).toBe("Арк. 47: позивний Ексель, навички «з комп'ютерами».");
   });
 

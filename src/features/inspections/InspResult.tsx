@@ -55,7 +55,7 @@ export function InspResult({ store }: { store: ConveyorStore }) {
           {exhibits.map((r) => (
             <View key={r.no} style={styles.exhibit} testID="insp-exhibit">
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{muT.inspBlock(r.nAfter)}</Text>
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{`№ ${r.no} · ${titleOf(r.no)}`}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{muT.inspLine(r.no, titleOf(r.no))}</Text>
             </View>
           ))}
           <View style={styles.foot}>
