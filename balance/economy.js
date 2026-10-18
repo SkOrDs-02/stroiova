@@ -257,6 +257,29 @@ var StroiovaEconomy = (() => {
     inspFailMult: 0.5,
     // «Стройова частина» on a failed inspection
     inspFailHours: 1,
+    inspFirstFromHour: 8,
+    // the first inspection: a session at 08:00–19:00 local time
+    inspFirstToHour: 19,
+    inspArriveFromHour: 10,
+    // arrival only 10:00–21:00, else 10:00 + 0–inspArriveJitterMin min
+    inspArriveToHour: 21,
+    inspArriveJitterMin: 60,
+    inspMinPrice: 50,
+    // a checklist item costs at least this
+    // checklist items (04 «Пункти чекліста»): minutes of base income; the base items of a level sum to inspChecklistMin
+    inspItems: [
+      { id: "paint_borders", level: 1, min: 19 },
+      { id: "lockers_cleanup", level: 1, min: 6 },
+      { id: "stove_open", level: 1, min: 4 },
+      { id: "font_check", level: 1, min: 11 },
+      { id: "journals_stitch", level: 1, min: 89 },
+      { id: "sergeants_count", level: 1, min: 15, added: true },
+      { id: "dust_glove", level: 2, min: 13 },
+      { id: "corridor_tape", level: 2, min: 6 },
+      { id: "sign_rehang", level: 2, min: 4 },
+      { id: "orders_stitch", level: 2, min: 28 },
+      { id: "where_journal", level: 2, min: 21, added: true }
+    ],
     inspPushVisit: 1,
     // minutes: the player opens the game on push № 3 (2 h before arrival) if no session falls between warning and arrival; 0 = never
     // v7.3 (003): reputation and formal replies. repTiers 0 = off (the old model: every telegram «сумлінно», «норма» forever)

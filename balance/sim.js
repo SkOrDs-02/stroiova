@@ -521,15 +521,15 @@ function simulate(p, scenario) {
   }
   // scheduled inspections: the schedule does not depend on the player or reputation (decision 61)
   var insps = [];
-  var arrWindow = function (t, rnd) { // arrival only 10:00–21:00, else 10:00 + 0–60 min
+  var arrWindow = function (t, rnd) { // arrival only inspArriveFromHour–inspArriveToHour, else the next window start + 0–inspArriveJitterMin min
     var h = localH(t);
-    if (h >= 10 && h < 21) return t;
-    return atLocal(calDay(t) + (h >= 21 ? 1 : 0), 10) + Math.floor(rnd() * 60) * 60;
+    if (h >= p.inspArriveFromHour && h < p.inspArriveToHour) return t;
+    return atLocal(calDay(t) + (h >= p.inspArriveToHour ? 1 : 0), p.inspArriveFromHour) + Math.floor(rnd() * p.inspArriveJitterMin) * 60;
   };
   if (p.inspIntervalMaxH > 0) {
     var warn = function () { return Math.round((p.inspWarnMinH + randI() * (p.inspWarnMaxH - p.inspWarnMinH)) * 60) * 60; };
     var s0 = null;
-    for (var si0 = 0; si0 < starts.length; si0++) { var h0 = localH(starts[si0]); if (starts[si0] >= p.inspFirstAfterHours * H && h0 >= 8 && h0 < 19) { s0 = starts[si0]; break; } }
+    for (var si0 = 0; si0 < starts.length; si0++) { var h0 = localH(starts[si0]); if (starts[si0] >= p.inspFirstAfterHours * H && h0 >= p.inspFirstFromHour && h0 < p.inspFirstToHour) { s0 = starts[si0]; break; } }
     if (s0 != null) {
       var arr = arrWindow(s0 + warn(), randI);
       insps.push({ ann: s0, arr: arr });
@@ -689,7 +689,7 @@ function simulate(p, scenario) {
         q.level = level;
         var qc = B.inspChecklistMin * baseInc();
         if (M24 && J[12] != null) { var qc2 = qc * cut(12, p.museumChecklistCutPct); q.saved = (qc - qc2) / Math.max(baseInc(), 1e-9); qc = qc2; }
-        q.cost = Math.max(50, Math.ceil(qc));
+        q.cost = Math.max(p.inspMinPrice, Math.ceil(qc));
       }
       if (!q.done && q.arr <= b) {
         q.done = true;

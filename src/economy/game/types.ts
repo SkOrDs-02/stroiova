@@ -111,7 +111,32 @@ export type DomainEvent =
   | { type: 'curio'; telegramId: string; uid: string; text: string | null }
   | { type: 'telegramFlag'; telegramId: string; reason: number | null; hasComment: boolean; afterChoice: boolean }
   /** «Готуватися» з tg-result: 04 відкриє insp-warning */
-  | { type: 'inspectionPrepare'; telegramId: string };
+  | { type: 'inspectionPrepare'; telegramId: string }
+  // 004: перевірки; аналітика етапу 5 (inspection_start, inspection_item_complete, inspection_finish, boost_activate), музей 07 (№ 7)
+  | {
+      type: 'inspectionStart';
+      id: string;
+      no: number;
+      boss: 'brigade_commission' | 'command_commission';
+      trigger: 'scheduled' | 'unscheduled';
+      warnSec: number;
+      reputation: number;
+      itemsTotal: number;
+    }
+  | { type: 'inspectionItemAdded'; id: string; itemId: string; telegramId: string }
+  | { type: 'inspectionItemComplete'; id: string; itemId: string; method: 'signatures'; cost: Big; secToDeadline: number }
+  | {
+      type: 'inspectionFinish';
+      id: string;
+      result: 'passed' | 'failed';
+      itemsDone: number;
+      itemsTotal: number;
+      offline: boolean;
+      secFromStart: number;
+    }
+  | { type: 'boostActivate'; boostType: 'inspection_x3'; mult: number; durationSec: number }
+  /** Перша без зауважень після першої цифровізації: журнал № 7 (07 FR-8) */
+  | { type: 'inspectionJournal'; id: string };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */
 export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };

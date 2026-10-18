@@ -9,6 +9,7 @@ import { isNewSession } from '@/economy/game/time';
 import type { EconomyConfig, EconomyState } from '@/economy/game/types';
 import { createConveyorStore, gameSave, type ConveyorStore, type StoredEffect } from '@/features/conveyor/store';
 import type { OnboardingState } from '@/features/onboarding/steps';
+import type { InspectionState } from '@/inspections/types';
 import type { TelegramState } from '@/telegrams/types';
 import { MIGRATIONS } from '@/save/migrations';
 import { reportCorruptSave } from '@/save/report';
@@ -54,7 +55,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'] },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections },
   };
 }
 
@@ -67,7 +68,8 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     return store;
   }
   const pinned = save.economyConfig as EconomyConfig | null;
-  const cfg: EconomyConfig = pinned ? { ...pinned, source: 'cached' } : bundledConfig;
+  // параметри фіч, яких не було в закріпленому конфігу (003, 004…), беруться з вбудованого: числа економіки — закріплені
+  const cfg: EconomyConfig = pinned ? { ...pinned, source: 'cached', params: { ...bundledConfig.params, ...pinned.params } } : bundledConfig;
   const store = createConveyorStore(save.savedAt, cfg, {
     state: save.game.economy as EconomyState,
     effects: save.game.effects as StoredEffect[],
@@ -75,6 +77,7 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     playtimeMs: save.game.playtimeMs,
     onboarding: save.game.onboarding as OnboardingState,
     telegrams: save.game.telegrams as TelegramState,
+    inspections: save.game.inspections as InspectionState,
   });
   // новий холодний старт — нова сесія (FR-4); після міграції знімок уже зроблено в loadSave
   if (!opts.snapshotted) snapshot(kv);
@@ -113,7 +116,9 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
     // 003 «вбивство посеред вибору»: відповідь, нова телеграма, посильний — теж одразу, не чекаючи 5 с
     const unsubStep = store.subscribe((st, prev) => {
       const tgChanged = st.telegrams.inbox !== prev.telegrams.inbox || st.telegrams.kombat !== prev.telegrams.kombat;
-      if (st.onboarding.step !== prev.onboarding.step || tgChanged) auto.saveNow();
+      // 004 FR-28: оголошення, купівля пункту, приїзд — одразу
+      const inspChanged = st.inspections.active !== prev.inspections.active || st.inspections.last !== prev.inspections.last;
+      if (st.onboarding.step !== prev.onboarding.step || tgChanged || inspChanged) auto.saveNow();
     });
     let leftAt: number | null = null;
     const sub = AppState.addEventListener('change', (s) => {

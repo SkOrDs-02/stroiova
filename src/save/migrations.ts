@@ -1,6 +1,7 @@
 // Міграції збереження (009 FR-9): чиста функція vN → vN+1 над полем `game`; ключ — версія «з».
 // Правило: нова форма запису = CURRENT_SCHEMA + 1, міграція сюди, фікстура попередньої версії в тести (принцип III).
 import { DEFAULTS } from '@/economy/core';
+import { newInspections } from '@/inspections/lifecycle';
 import { overrideStartNo } from '@/telegrams/schedule';
 
 export type Migration = (game: unknown) => unknown;
@@ -27,7 +28,15 @@ export const MIGRATIONS: Record<number, Migration> = {
     if (pastStep8 || tg.deliveries > 0) tg.startMs = 0;
     return { ...(game as object), telegrams: tg };
   },
+  // 3 → 4 (004): перевірки. Точної мітки встановлення в записі немає: беремо старт розкладу телеграм (крок 7),
+  // а для записів, де він 0 чи ще не настав, — 0 («давно»): першу перевірку стор однаково не оголосить до кінця онбордингу.
+  3: (game) => ({ ...(game as object), inspections: inspectionsV4((game as { telegrams?: { startMs?: number | null } }).telegrams?.startMs ?? 0) }),
 };
+
+/** Порожній стан перевірок схеми 4. */
+export function inspectionsV4(installMs: number) {
+  return newInspections(installMs, 'insp-migrated');
+}
 
 /** Порожній стан телеграм схеми 3: старт репутації — `DEFAULTS.repStart`, перший номер override — з контенту. */
 export function telegramsV3() {
