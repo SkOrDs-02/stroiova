@@ -14,6 +14,7 @@ import type { DigitizationState } from '@/digitization/types';
 import type { MonetizationState } from '@/monetization/types';
 import type { MuseumState } from '@/museum/types';
 import type { NotificationsState, Settings } from '@/notifications/types';
+import type { Stats } from '@/profile/stats';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
 import type { RaceState } from '@/race/types';
 import type { TelegramState } from '@/telegrams/types';
@@ -61,7 +62,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats },
   };
 }
 
@@ -73,8 +74,9 @@ function applySettingsToDevice(st: Settings): void {
 
 /** Стан гри з запису: закріплений конфіг має пріоритет над вбудованим (FR-22, source cached). */
 function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
+  const id = installId(kv, Crypto.randomUUID).id;
   if (!save) {
-    const store = createConveyorStore(now, bundledConfig);
+    const store = createConveyorStore(now, bundledConfig, { installId: id });
     const d = draftOf(store);
     if (d) writeSave(kv, d);
     return store;
@@ -95,6 +97,8 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     monetization: save.game.monetization as MonetizationState,
     settings: save.game.settings as Settings,
     notifications: save.game.notifications as NotificationsState,
+    stats: save.game.stats as Stats,
+    installId: id,
   });
   applySettingsToDevice(store.getState().settings);
   // новий холодний старт — нова сесія (FR-4); після міграції знімок уже зроблено в loadSave

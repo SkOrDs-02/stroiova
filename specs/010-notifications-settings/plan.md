@@ -22,7 +22,7 @@
 | FR-23 | ❌ | PostHog/Sentry - етап 5 |
 | FR-24 | ❌ | системне вікно оцінки - етап 2 |
 | FR-25 | ✅ посилання через сервіс `Links` (заглушка) | відкриття в зовнішньому браузері - етап 2 |
-| FR-26 | ✅ `profile`, «Рапорт на зміну позивного» | - |
+| FR-26 | ✅ `profile`, «Рапорт на зміну позивного», лічильники з `stats` (рішення 91) | рядки «Щоденника стройовика» - 014 (порожній стан) |
 | FR-27, FR-28 | ✅ `about`, `fund-reports` (порожній стан), ID з копіюванням через сервіс | CDN зі звітами - окремо |
 | FR-29 | ✅ `licenses`: шрифти, бібліотеки з `package.json` | звуки - коли з'являться (art.md) |
 | FR-30 | ✅ `menu` з бейджем курйозів | - |
@@ -50,7 +50,8 @@ TypeScript strict · zustand, zod 4 · MMKV, схема 9 (`game.settings`, `gam
 ```text
 src/notifications/        types.ts · catalog.ts · planner.ts · __tests__/
 src/services/             notifications.ts (заглушка NotificationService), links.ts
-src/features/settings/    MenuSheet · SettingsScreen · ResetConfirm · ProfileScreen · AboutScreen · FundReportsScreen · LicensesScreen · PushPreprompt · texts.ts
+src/profile/               stats.ts (лічильники перевірок і дронів)
+src/features/settings/    MenuHost · MenuSheet · SettingsScreen · ResetConfirm · ProfileScreen · AboutScreen · FundReportsScreen · LicensesScreen · PushPreprompt · texts.ts
 src/features/conveyor/store.ts   зріз settings, notifications; goBackground, comeForeground, resetProgress
 src/features/boot/useBoot.ts     AppState → планування
 content/about.json        плейсхолдери [N], [ФОНД], посилання, пошта, ілюстратор

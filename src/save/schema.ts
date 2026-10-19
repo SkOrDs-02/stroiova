@@ -306,6 +306,9 @@ export const notificationsSchema = z.object({
   sent: z.object({ day: z.string(), count: z.number().int().nonnegative(), fuel: z.number().int().nonnegative() }),
 });
 
+/** Лічильники особової справи (010 FR-26); схема 9. */
+export const statsSchema = z.object({ inspTotal: z.number().int().nonnegative(), inspPassed: z.number().int().nonnegative(), drones: z.number().int().nonnegative() });
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -327,6 +330,7 @@ export const gameSaveSchema = z.object({
   /** Налаштування й сповіщення (010) */
   settings: settingsSchema,
   notifications: notificationsSchema,
+  stats: statsSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

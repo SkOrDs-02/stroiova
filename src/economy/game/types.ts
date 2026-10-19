@@ -138,7 +138,7 @@ export type DomainEvent =
   // 005: гонка з часом; аналітика етапу 5 (race_start, race_speedup_apply, race_finish), курйози 07
   | { type: 'raceStart'; id: string; giftType: 'drone' | 'shovel' | 'generator'; docSec: number; resourceSec: number; winnable: boolean }
   | { type: 'raceSpeedup'; id: string; method: 'digital_bonus' | 'ad' | 'no_ads_pass'; secSaved: number }
-  | { type: 'raceFinish'; id: string; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean }
+  | { type: 'raceFinish'; id: string; giftType: 'drone' | 'shovel' | 'generator'; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean }
   /** Програна гонка: запис «Списано раніше, ніж поставлено на облік» (07) */
   | {
       type: 'raceCurio';

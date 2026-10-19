@@ -5,6 +5,7 @@ import { newInspections } from '@/inspections/lifecycle';
 import { newDigitization } from '@/digitization/digitization';
 import { newMonetization } from '@/monetization/monetization';
 import { newNotifications, newSettings } from '@/notifications/planner';
+import { newStats } from '@/profile/stats';
 import { newMuseum } from '@/museum/museum';
 import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
@@ -54,13 +55,13 @@ export const MIGRATIONS: Record<number, Migration> = {
   // 8 → 9 (010): налаштування за замовчуванням, нічого не заплановано; записи курйозів, що вже є, вважаються баченими (бейдж «нове» з нуля)
   8: (game) => {
     const g = game as { museum?: { curioSeq?: number } };
-    return { ...(game as object), settings: newSettings(), notifications: newNotifications(), museum: { ...(g.museum ?? {}), curiosSeen: g.museum?.curioSeq ?? 0 } };
+    return { ...(game as object), settings: newSettings(), notifications: newNotifications(), stats: newStats(), museum: { ...(g.museum ?? {}), curiosSeen: g.museum?.curioSeq ?? 0 } };
   },
 };
 
 /** Налаштування й сповіщення схеми 9. */
 export function settingsV9() {
-  return { settings: newSettings(), notifications: newNotifications() };
+  return { settings: newSettings(), notifications: newNotifications(), stats: newStats() };
 }
 
 /** Порожній стан реклами й покупок схеми 8. */

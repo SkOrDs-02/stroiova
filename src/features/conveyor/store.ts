@@ -28,6 +28,7 @@ import type { LinkService, NotificationService, NotificationsState, PushCategory
 import { pushText } from '@/features/settings/pushText';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
 import { unavailableLinks } from '@/services/links';
+import { newStats, statsFromEvents, type Stats } from '@/profile/stats';
 import { unavailableNotifications } from '@/services/notifications';
 import { unavailableAds } from '@/services/ads';
 import { unavailablePurchases } from '@/services/purchases';
@@ -90,6 +91,9 @@ interface Store {
   settings: Settings;
   /** Заплановані сповіщення й лічильник доби (010) */
   notifications: NotificationsState;
+  stats: Stats;
+  /** Анонімний ID встановлення (009): для «Про гру» й листа про видалення даних */
+  installId: string;
   /** Ролик чи оплата йде: повторні тапи ігноруються (крайовий випадок); лише в пам'яті */
   busy: 'ad' | 'purchase' | null;
   /** Підказка «Час цифровізуватися» активна (FR-9); оновлюється раз на хвилину гри, лише в пам'яті */
@@ -184,6 +188,7 @@ interface Store {
   requestPush: (trigger: 'onboarding_session_end' | 'settings') => Promise<PushPermission>;
   /** Дозвіл ОС міг змінитись поза грою (FR-12) */
   refreshPermission: () => Promise<void>;
+  declinePush: (trigger: 'onboarding_session_end' | 'settings') => void;
   /** Гра пішла у фон: сповіщення за станом (FR-5) */
   goBackground: (nowMs: number) => Promise<void>;
   /** Гра повернулась: заплановане скасовано (FR-5) */
@@ -234,9 +239,9 @@ export function localDate(ms: number): string {
 }
 
 export interface Initial {
-  state: EconomyState;
-  effects: StoredEffect[];
-  pinned: EconomyConfig | null;
+  state?: EconomyState;
+  effects?: StoredEffect[];
+  pinned?: EconomyConfig | null;
   playtimeMs?: number;
   onboarding?: OnboardingState;
   telegrams?: TelegramState;
@@ -247,6 +252,8 @@ export interface Initial {
   monetization?: MonetizationState;
   settings?: Settings;
   notifications?: NotificationsState;
+  stats?: Stats;
+  installId?: string;
   services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService }>;
 }
 
@@ -393,6 +400,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
   const absorbMuseum = (evs: readonly DomainEvent[], atMs: number, offline = false) => {
     if (!evs.length) return;
     const g = get();
+    const stats = statsFromEvents(g.stats, evs);
+    if (stats !== g.stats) set({ stats });
     let ms = g.museum;
     for (const e of evs) {
       if (e.type === 'curio') ms = curioFromTelegram(ms, e, g.telegrams, atMs);
@@ -500,6 +509,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     services: { ads: init?.services?.ads ?? unavailableAds, purchases: init?.services?.purchases ?? unavailablePurchases, notifications: init?.services?.notifications ?? unavailableNotifications, links: init?.services?.links ?? unavailableLinks },
     settings: init?.settings ?? newSettings(),
     notifications: init?.notifications ?? newNotifications(),
+    stats: init?.stats ?? newStats(),
+    installId: init?.installId ?? '',
     busy: null,
     digitRec: false,
     digitCheckedAt: 0,
@@ -895,6 +906,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       pushEvent({ type: 'pushPermissionRequest', trigger, prePromptResult: 'accepted', osResult: os === 'not_asked' ? 'not_shown' : os });
       return os;
     },
+    declinePush: (trigger) => pushEvent({ type: 'pushPermissionRequest', trigger, prePromptResult: 'declined', osResult: 'not_shown' }),
     refreshPermission: async () => {
       const p = await get().services.notifications.permission();
       const cur = get().settings.pushPermission;
@@ -946,6 +958,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         museum: newMuseum(),
         monetization: { ...g.monetization, starterGranted: false, offer: 'wait', success: [], inspAdId: null },
         notifications: newNotifications(),
+        stats: newStats(),
         sessionLines: { count: 0, byUid: {} },
         actTaps: 0,
         clerkFirstOpen: false,
@@ -998,7 +1011,8 @@ export function gameSave(store: ConveyorStore): {
   monetization: MonetizationState;
   settings: Settings;
   notifications: NotificationsState;
+  stats: Stats;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats };
 }

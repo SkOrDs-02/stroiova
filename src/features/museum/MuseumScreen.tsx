@@ -1,5 +1,5 @@
 // museum (007 FR-2, FR-13…FR-17): вкладка «Музей» із сегментами «Журнали» і «Курйози», сітка 8 слотів, фільтри, шторки.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
@@ -21,9 +21,13 @@ type Sheet = { kind: 'journal'; no: number } | { kind: 'curio'; seq: number } | 
 
 const FILTERS: Filter[] = ['all', 'property', 'personnel'];
 
-export function MuseumScreen({ store, onToDigital, insetTop }: { store: ConveyorStore; onToDigital: () => void; insetTop: number }) {
+export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journals' }: { store: ConveyorStore; onToDigital: () => void; insetTop: number; initialSeg?: Seg }) {
   const s = useStore(store);
-  const [seg, setSeg] = useState<Seg>('journals');
+  const [seg, setSeg] = useState<Seg>(initialSeg);
+  // 010 FR-30: бейдж «нове» в меню гасне, коли гравець побачив список записів
+  useEffect(() => {
+    if (seg === 'curios') store.getState().markCuriosSeen();
+  }, [seg, store, s.museum.curioSeq]);
   const [filter, setFilter] = useState<Filter>('all');
   const [sheet, setSheet] = useState<Sheet>(null);
   const n = count(s.museum);
