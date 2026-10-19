@@ -246,6 +246,40 @@ describe('Р3 (AC-9, AC-10)', () => {
   });
 });
 
+describe('перехід Р2 → Р3 (AC-8, AC-9)', () => {
+  test('репутація «висока», «Без реклами» і 2 телеграми в шухляді лишаються; тост про Нараду й Зведення замість Казначейства; ціни Р3 = Р1 × costMult', async () => {
+    const { store } = r2({ signatures: 0 });
+    const tg = store.getState().telegrams;
+    store.setState({
+      telegrams: {
+        ...tg,
+        reputation: { value: 80, history: [] },
+        inbox: [
+          { uid: 'a#1', id: 'a', kind: 'telegram', receivedAt: T0, status: 'drawer' },
+          { uid: 'b#2', id: 'b', kind: 'telegram', receivedAt: T0, status: 'drawer' },
+        ],
+      },
+      state: { ...store.getState().state, hasNoAds: true, lifetimeCycle: p.levels[1]!.prestigeDivisor * 40 * 40 },
+      digit: { ...store.getState().digit, levelExitAllowed: true },
+    });
+    const before = store.getState();
+    expect(store.getState().digitize()).toBe(true);
+    store.getState().closeDigitStep();
+    store.getState().closeDigitStep();
+    const st = store.getState();
+    expect(st.state.level).toBe(3);
+    expect(st.telegrams.reputation.value).toBe(80);
+    expect(st.telegrams.inbox.filter((x) => x.status === 'drawer')).toHaveLength(2);
+    expect(st.state.hasNoAds).toBe(true);
+    expect(st.monetization.rights).toEqual(before.monetization.rights);
+    expect(st.state.prestigePoints).toBeGreaterThan(before.state.prestigePoints);
+    expect(st.toast).toMatchObject({ kind: 'text', text: expect.stringContaining('Нарада') });
+    const l1 = itemsFor({ ...st.state, level: 1 }, cfg);
+    const l3 = itemsFor(st.state, cfg);
+    expect(l3.streams[0]!.cost).toBeCloseTo(l1.streams[0]!.cost * p.levels[2]!.costMult, 6);
+  });
+});
+
 describe('«Нарада затягнулась» (AC-17)', () => {
   const MIN = 60_000;
   test('нарада ×0,25 не довше 30 хв: шторка, "Передати записку" за підписи, кінець ефекту; комбат у цей час не стартує', async () => {

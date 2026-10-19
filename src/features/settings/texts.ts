@@ -152,7 +152,7 @@ export const setT = {
 
 export const pushT = {
   /** Підстановка `{місце}` у № 5 за кроком маршруту акта */
-  place: { akty: 'в Актах', kombat: 'у Комбата', stroy: 'у Стройовій', fin: 'у Фінслужбі', kazna: 'у Казначействі' } as Record<string, string>,
+  place: { akty: 'в Актах', kombat: 'у Комбата', stroy: 'у Стройовій', fin: 'у Фінслужбі', kazna: 'у Казначействі', narada: 'у Нараді' } as Record<string, string>,
   /** Підстановка `{предмет}` у № 10 (знахідний відмінок) */
   item: { drone: 'квадрокоптер', shovel: 'лопати', generator: 'генератор' } as Record<string, string>,
 };

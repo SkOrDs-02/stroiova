@@ -17,7 +17,9 @@ export function checklistLevel(level: number): number {
 }
 
 export function itemDef(cfg: EconomyConfig, id: string, level: number): InspItemDef | undefined {
-  return cfg.params.inspItems.find((d) => d.id === id && d.level === checklistLevel(level));
+  // пункт, доданий відпискою на телеграму попереднього рівня, діє й на вищому (011: Р3 бере телеграми Р1-Р2)
+  const cl = checklistLevel(level);
+  return cfg.params.inspItems.find((d) => d.id === id && (d.level === cl || (d.added && d.level < cl)));
 }
 
 /**

@@ -76,6 +76,11 @@ describe('маршрут і таймери (FR-7…FR-12)', () => {
     const r2 = routeFor('drone', 2, cfg);
     expect(r2.map((x) => x.unit)).toEqual(['akty', 'kombat', 'stroy', 'fin', 'kazna']);
     expect(r2.reduce((a, x) => a + x.sec, 0)).toBe(9.5 * 3600);
+    // 011 (ВП-8, рішення 94): Р3 додає крок «Нарада» тієї самої тривалості, що Казначейство
+    const r3 = routeFor('drone', 3, cfg);
+    expect(r3.map((x) => x.unit)).toEqual(['akty', 'kombat', 'stroy', 'fin', 'kazna', 'narada']);
+    expect(r3.at(-1)!.sec).toBe(Math.round(p.giftL2StepH * 3600));
+    expect(r3.reduce((a, x) => a + x.sec, 0)).toBe(11.5 * 3600);
     expect(routeFor('shovel', 1, cfg).reduce((a, x) => a + x.sec, 0)).toBe((6 * 60 + 40) * 60);
     expect(routeFor('generator', 1, cfg).reduce((a, x) => a + x.sec, 0)).toBe((11 * 60 + 20) * 60);
   });

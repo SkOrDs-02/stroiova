@@ -92,6 +92,19 @@ describe('позапланова під час підсумкової (FR-4, AC-
   });
 });
 
+describe('пункти відписки на Р3', () => {
+  test('пункт попереднього рівня (where_journal), доданий відпискою на Р3, не відкидається', () => {
+    const e = { ...eco2(), level: 3 };
+    const it = itemsFor(e, cfg);
+    const e3 = { ...e, streamLevels: it.streams.map(() => 40), stageLevels: it.stages.map(() => 40) };
+    const s0 = newInspections(at(0), 'seed-r3');
+    const reg = { ...s0, active: { id: 'insp_0001', no: 1, trigger: 'scheduled' as const, boss: 'command_commission' as const, level: 3, kind: 'regular' as const, attempt: 1, annMs: at(10), arrMs: at(14), items: [{ id: 'minutes_stitch', price: 1, done: false }], reason: null, remark: false, warned: true, modal: false }, nextNo: 2 };
+    const r = fromTelegramEvent(reg, e3, cfg, { type: 'inspItem', telegramId: 'tg_x', item: 'where_journal', remarkPct: 0 }, at(12), 0, 50);
+    expect(r.addedItem).toBe('where_journal');
+    expect(r.s.active!.items.map((i) => i.id)).toEqual(['minutes_stitch', 'where_journal']);
+  });
+});
+
 describe('«Усе за рекламу» і купівля (FR-5, AC-3)', () => {
   test('completeAll закриває 5 базових, пункт механіки - ні; купити його не можна', () => {
     const { s } = announced();
