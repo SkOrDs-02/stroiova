@@ -122,7 +122,7 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
         {final ? (
           <>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>{inspT.boss2.gives(formatMult(p.inspMult), p.inspHours)}</Text>
-            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>{inspT.boss2.fail(formatMult(p.inspFailMult), p.inspFailHours)}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>{inspT.boss2.fail(formatMult(p.inspFailMult), p.inspFailHours, p.boss.retryH)}</Text>
           </>
         ) : (
           <>

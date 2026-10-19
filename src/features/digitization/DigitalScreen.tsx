@@ -105,7 +105,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
           </View>
         ) : null}
         {waitFinal ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="digit-final-wait">{digitT.finalWait}</Text> : null}
-        {level === 2 && st.isLast && next ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tag} testID="digit-exit-ok">{digitT.exitOk(next.name)}</Text> : null}
+        {level === 2 && st.isLast && next ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tag} testID="digit-exit-ok">{digitT.exitOk(next.name.toLowerCase())}</Text> : null}
         <View style={styles.track} testID="digit-track">
           {track(level).map((x) => (
             <View key={x.key} style={[styles.step, x.state === digitT.trackState.now && styles.stepNow]}>
@@ -114,7 +114,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
             </View>
           ))}
         </View>
-        {level >= 3 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{digitT.r2Note}</Text> : null}
+        {level >= 3 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{digitT.nextLater}</Text> : null}
       </ScrollView>
       <View style={styles.foot}>
         <Button testID="digit-cta" label={cta} disabled={st.kind !== 'available'} onPress={onOpenConfirm} />

@@ -80,7 +80,7 @@ describe('оголошення (AC-1)', () => {
     expect(screen.getByTestId('boss-brief')).toBeTruthy();
     expect(screen.getByTestId('boss-title')).toHaveTextContent(has('Комісія командування. Підсумкова.'));
     expect(screen.getByTestId('boss-gives')).toHaveTextContent(has('наказ про переведення і ×3 на 2 год'));
-    expect(screen.getByTestId('boss-fail')).toHaveTextContent(has('повтор через добу'));
+    expect(screen.getByTestId('boss-fail')).toHaveTextContent(has('повтор через 24 год'));
     expect(screen.queryByTestId('boss-retry')).toBeNull();
     expect(screen.queryByTestId('insp-warning')).toBeNull();
     expect(a.arrMs - a.annMs).toBeGreaterThanOrEqual(p.boss.warnH * HOUR);
@@ -163,9 +163,9 @@ describe('результат', () => {
     expect(screen.getByTestId('insp-order')).toHaveTextContent(has('Наказ про переведення підписано. Наступна цифровізація - з переходом.'));
     await fireEvent.press(screen.getByTestId('insp-result-ok'));
     await fireEvent.press(screen.getByTestId('tab-digital'));
-    expect(screen.getByTestId('digit-exit-ok')).toHaveTextContent(has('Перехід дозволено. Наступна цифровізація переведе в Командування.'));
+    expect(screen.getByTestId('digit-exit-ok')).toHaveTextContent(has('Перехід дозволено. Наступна цифровізація переведе в командування.'));
     expect(screen.queryByTestId('digit-final')).toBeNull();
-    expect(screen.getByTestId('digit-cta')).toHaveTextContent(has('Оцифрувати бригаду і перейти в командування'));
+    expect(screen.getByTestId('digit-cta')).toHaveTextContent(has('Оцифрувати й перейти'));
     // цифровізація (як з digit-confirm): перехід на Р3
     await act(async () => store.setState({ state: { ...store.getState().state, lifetimeCycle: p.levels[1]!.prestigeDivisor * 40 * 40 } }));
     await fireEvent.press(screen.getByTestId('digit-cta'));

@@ -34,7 +34,7 @@ export function BossBrief({ store }: { store: ConveyorStore }) {
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>{b.when(formatCountdown(left))}</Text>
         {quote ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.quote}>{quote}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule} testID="boss-gives">{b.gives(formatMult(p.inspMult), p.inspHours)}</Text>
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule} testID="boss-fail">{b.fail(formatMult(p.inspFailMult), p.inspFailHours)}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule} testID="boss-fail">{b.fail(formatMult(p.inspFailMult), p.inspFailHours, p.boss.retryH)}</Text>
         <Button testID="insp-prepare" label={inspT.prepare} onPress={() => s.ackInspWarning(true)} />
         <Button testID="insp-later" variant="ghost" label={inspT.later} onPress={() => s.ackInspWarning(false)} />
       </View>
