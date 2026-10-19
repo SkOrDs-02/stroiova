@@ -2,10 +2,10 @@
 import { bundledConfig } from '@/economy/config';
 import { prestigeMult } from '@/economy/core/formulas';
 import { income } from '@/economy/game/income';
-import { newGame } from '@/economy/game/state';
+import { itemsFor, newGame } from '@/economy/game/state';
 import type { EconomyState } from '@/economy/game/types';
 
-import { closeCeremonyStep, digitize, newDigitization, pointsNow, shiftDigitization, status } from '../digitization';
+import { closeCeremonyStep, digitize, finalDue, newDigitization, pointsNow, shiftDigitization, status } from '../digitization';
 
 const cfg = bundledConfig;
 const p = cfg.params;
@@ -169,5 +169,69 @@ describe('цифровізація (FR-14…FR-19, FR-24)', () => {
   test('годинник назад зсуває початок циклу', () => {
     const ds = shiftDigitization({ ...newDigitization(T0), cycleStartMs: T0 }, -HOUR);
     expect(ds.cycleStartMs).toBe(T0 - HOUR);
+  });
+});
+
+describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
+  const l2 = (lifetime: number, patch: Partial<EconomyState> = {}) => {
+    const g = newGame(cfg, T0);
+    return { ...g, level: 2, streamLevels: [30, 20, 10, 5, 3], stageLevels: [20, 20, 20, 20], lifetimeCycle: lifetime, prestigePoints: 70, ...patch };
+  };
+
+  test('finalDue: після exitDigitizations на Р2 і поки перехід не дозволено; на Р1 і Р3 його немає', () => {
+    const n = p.levels[1]!.exitDigitizations;
+    const ds = (k: number, allowed = false) => ({ ...newDigitization(T0), counts: { '2': k }, levelExitAllowed: allowed });
+    expect(finalDue(cfg, ds(n - 1), 2)).toBe(false);
+    expect(finalDue(cfg, ds(n), 2)).toBe(true);
+    expect(finalDue(cfg, ds(n + 2), 2)).toBe(true);
+    expect(finalDue(cfg, ds(n, true), 2)).toBe(false);
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '1': 3 } }, 1)).toBe(false);
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '3': 9 } }, 3)).toBe(false);
+  });
+
+  test('AC-6: цифровізації між N-ю і пройденою підсумковою на Р2 - без переходу, лічильник росте, рівень той самий', () => {
+    const n = p.levels[1]!.exitDigitizations;
+    const ds = { ...newDigitization(T0), counts: { '2': n }, total: 6 };
+    expect(status(l2(1e18), ds, cfg, T0).isLast).toBe(false);
+    const r = digitize(l2(1e18), ds, cfg, T0, false);
+    if ('error' in r) throw new Error(r.error);
+    expect(r.state.level).toBe(2);
+    expect(r.ds.counts['2']).toBe(n + 1);
+    expect(r.ds.ceremony!.levelUp).toBe(false);
+    expect(r.events.map((x) => x.type)).toEqual(['digitizationComplete']);
+  });
+
+  test('AC-7: levelExitAllowed - наступна цифровізація з переходом на Р3, прапорець скинуто, лічильник Р3 з нуля, бали й множник лишаються', () => {
+    const n = p.levels[1]!.exitDigitizations;
+    const ds = { ...newDigitization(T0), counts: { '2': n }, total: 6, levelExitAllowed: true };
+    const e = l2(1e18);
+    expect(status(e, ds, cfg, T0).isLast).toBe(true);
+    const r = digitize(e, ds, cfg, T0, false);
+    if ('error' in r) throw new Error(r.error);
+    expect(r.state.level).toBe(3);
+    expect(r.state.prestigePoints).toBe(70 + pointsNow(e, cfg));
+    expect(r.ds.levelExitAllowed).toBe(false);
+    expect(r.ds.counts).toEqual({ '2': n + 1 });
+    expect(r.ds.ceremony).toMatchObject({ levelUp: true, level: 2 });
+    expect(r.events[1]).toMatchObject({ type: 'levelAdvance', from: 2, to: 3, digitizationCount: n + 1 });
+  });
+
+  test('Р3: 6 потоків і 5 ланок, перший рівень «Рапортів» = Р1 × rateMult; без виходу (isLast завжди false)', () => {
+    const ds = { ...newDigitization(T0), counts: { '3': 20 }, levelExitAllowed: true };
+    const e = { ...newGame(cfg, T0), level: 3, streamLevels: [1, 0, 0, 0, 0, 0], stageLevels: [1, 1, 1, 1, 1] };
+    expect(status(e, ds, cfg, T0).isLast).toBe(false);
+    expect(finalDue(cfg, { ...ds, levelExitAllowed: false }, 3)).toBe(false);
+    const it = itemsFor(e, cfg);
+    expect(it.streams.map((u) => u.id)).toEqual(['raporty', 'akty', 'dovidky', 'nakladni', 'nakazy', 'zvedennia']);
+    expect(it.stages.map((u) => u.id)).toEqual(['kombat', 'stroy', 'fin', 'kazna', 'narada']);
+    const l1 = itemsFor({ ...e, level: 1 }, cfg);
+    expect(it.streams[0]!.rate).toBeCloseTo(l1.streams[0]!.rate * p.levels[2]!.rateMult, 6);
+  });
+
+  test('AC-10: на Р3 цифровізація "замкнена", поки не відкрито всі 6 потоків; відкрито - доступна при P ≥ prestigeMinPoints', () => {
+    const base = { ...newGame(cfg, T0), level: 3, stageLevels: [1, 1, 1, 1, 1], lifetimeCycle: 6.76e11 * 40 * 40 };
+    const ds = newDigitization(T0);
+    expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 0] }, ds, cfg, T0)).toMatchObject({ kind: 'locked', lockedStreams: ['zvedennia'] });
+    expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 1] }, ds, cfg, T0)).toMatchObject({ kind: 'available', points: 40 });
   });
 });

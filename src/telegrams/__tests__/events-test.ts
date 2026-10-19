@@ -3,7 +3,7 @@ import { baseIncomePerMin } from '@/economy/game/income';
 import { T0 } from '@/economy/test-fixtures';
 
 import { answer, canChoose, telegramOf } from '../effects';
-import { onSessionStart, runnerCost, sendRunner, fromTelegram } from '../events';
+import { activeAt, hasStage, onSessionStart, runnerCost, sendRunner, fromTelegram } from '../events';
 import { cfg, ctx, eco, p, tgWith } from '../test-utils';
 
 const MIN = 60_000;
@@ -41,5 +41,54 @@ describe('«Комбата шукають»', () => {
     expect(r.endMs).toBe(T0 + MIN + p.kombatRunnerMin * MIN);
     expect(r.eco.signatures).toBe(1e9 - cost);
     expect(sendRunner(r.tg, r.eco, cfg, T0 + 2 * MIN)).toEqual({ error: 'sent' });
+  });
+});
+
+describe('«Нарада затягнулась» (011 FR-25, AC-17)', () => {
+  const always = { ...cfg, params: { ...p, kombatChance: 1, naradaChance: 1 } };
+
+  test('«Нарада» ×0,25 не довше 30 хв, ≤ 1 на добу, не в першій сесії; подія meetingStart', () => {
+    const tg = tgWith([]);
+    expect(onSessionStart(tg, always, T0, 0, true, 'meeting').effect).toBeNull();
+    const m = onSessionStart(tg, always, T0, 0, false, 'meeting');
+    expect(m.effect).toMatchObject({ source: 'meeting_overrun', value: p.naradaMult, target: { type: 'stage', id: 'narada' } });
+    expect(m.effect!.endMs - T0).toBeLessThanOrEqual(p.naradaMaxMin * MIN);
+    expect(m.effect!.endMs - T0).toBeGreaterThanOrEqual(p.naradaMinMin * MIN);
+    expect(m.events).toEqual([{ type: 'meetingStart', endMs: m.effect!.endMs }]);
+    expect(onSessionStart(m.tg, always, T0 + 3 * 3_600_000, 0, false, 'meeting').effect).toBeNull();
+  });
+
+  test('через 30 хв подія знята ефектом (кінець), «Комбата шукають» у цей час не стартує, і навпаки', () => {
+    const tg = tgWith([]);
+    const m = onSessionStart(tg, always, T0, 0, false, 'meeting');
+    const end = m.effect!.endMs;
+    expect(end - T0).toBeLessThanOrEqual(30 * MIN);
+    expect(activeAt(m.tg, 'meeting', end - 1)).not.toBeNull();
+    expect(activeAt(m.tg, 'meeting', end)).toBeNull();
+    const k = onSessionStart(m.tg, always, T0 + 1000, 0, false, 'kombat');
+    expect(k.effect).toBeNull();
+    expect(k.events).toEqual([]);
+    expect(fromTelegram(m.tg, always, T0 + 1000, 0, 30).effect).toBeNull();
+    const k2 = onSessionStart(tg, always, T0, 0, false, 'kombat');
+    expect(onSessionStart(k2.tg, always, T0 + 1000, 0, false, 'meeting').effect).toBeNull();
+  });
+
+  test('записка: за підписи, подія скінчиться за kombatRunnerMin; повторний тап нічого не робить; без активної - error none', () => {
+    const e = eco({ signatures: 1e9, streamLevels: [30, 10, 0, 0], stageLevels: [30, 30, 30] });
+    expect(sendRunner(tgWith([]), e, cfg, T0, 'meeting')).toEqual({ error: 'none' });
+    const m = onSessionStart(tgWith([]), always, T0, 0, false, 'meeting');
+    const r = sendRunner(m.tg, e, cfg, T0 + MIN, 'meeting');
+    if ('error' in r) throw new Error(r.error);
+    expect(r.endMs).toBeLessThanOrEqual(m.effect!.endMs);
+    expect(r.eco.signatures).toBe(1e9 - runnerCost(e, cfg));
+    expect(r.tg.meeting.active!.runnerAtMs).toBe(T0 + MIN);
+    expect(r.tg.kombat.active).toBeNull();
+    expect(sendRunner(r.tg, r.eco, cfg, T0 + 2 * MIN, 'meeting')).toEqual({ error: 'sent' });
+  });
+
+  test('«Нарада» є лише з Р3', () => {
+    expect(hasStage('meeting', eco({ level: 2 }))).toBe(false);
+    expect(hasStage('meeting', eco({ level: 3 }))).toBe(true);
+    expect(hasStage('kombat', eco({ level: 1 }))).toBe(true);
   });
 });
