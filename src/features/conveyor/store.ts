@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 import { bundledConfig } from '@/economy/config';
 import { formatDuration, formatMult } from '@/economy/format';
-import { advance, claimOffline, offline, type OfflineResult } from '@/economy/game/advance';
+import { advance, claimOffline, creditedAwayMs, offline, type OfflineResult } from '@/economy/game/advance';
 import { baseIncomePerMin } from '@/economy/game/income';
 import { catTap, refuel, tap } from '@/economy/game/actions';
 import { buy, hire, isOk } from '@/economy/game/purchase';
@@ -590,7 +590,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const g4 = get();
       if (!idleConveyor && g4.state.level >= 4) {
         const st0 = g4.digit.stack.sessionStartMs == null ? startStackSession(g4.digit.stack, lastMs) : g4.digit.stack;
-        const gr = growStack(st0, g4.state, c, lastMs, now);
+        const gr = growStack(st0, g4.state, c, lastMs, now, g4.effects);
         if (gr.st !== g4.digit.stack) set({ digit: { ...g4.digit, stack: gr.st } });
         stackEvents(gr.events, now);
       }
@@ -657,17 +657,16 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         const gs = get();
         if (gs.state.level >= 4) {
           const ab = absence(leftAt, backAt);
-          const credited = ab.clockBack ? 0 : Math.min(ab.deltaMs, gs.state.storageHours * 3_600_000 * gs.state.museum.storage);
-          const gr = growStackOffline(startStackSession(gs.digit.stack, backAt), gs.state, gs.cfg, credited, backAt);
+          const credited = ab.clockBack ? 0 : creditedAwayMs(gs.state, leftAt, backAt);
+          const gr = growStackOffline(startStackSession(gs.digit.stack, backAt), gs.state, gs.cfg, credited, backAt, gs.effects);
           set({ digit: { ...gs.digit, stack: gr.st } });
           stackEvents(gr.events, backAt);
           // 012 FR-17: «Доповідь тезово» - документ у «Нові», поза квотою
           const gb = get();
           const br = briefOnSessionStart(gb.telegrams, gb.cfg, gb.state, backAt, tzOffsetAt(backAt));
-          if (br.item) {
-            set({ telegrams: br.tg });
-            handleEvents(br.events, backAt);
-          }
+          // rng просувається і на промаху: наступна сесія кидає новий кубик
+          set({ telegrams: br.tg });
+          if (br.item) handleEvents(br.events, backAt);
         }
         // 004 FR-2: перша перевірка — на старті сесії, коли онбординг етапу 1 пройдено (крок 9)
         const g2 = get();

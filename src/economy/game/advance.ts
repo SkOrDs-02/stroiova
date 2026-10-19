@@ -52,11 +52,17 @@ export interface OfflineResult {
   paper: number;
 }
 
+/** Скільки відсутності зараховується: min(відсутність, сховище) (FR-15); так само рахує стос до наради (012) */
+export function creditedAwayMs(state: EconomyState, leftAtMs: number, backAtMs: number): number {
+  const awayMs = Math.max(0, backAtMs - leftAtMs);
+  return Math.min(awayMs, state.storageHours * 3_600_000 * state.museum.storage);
+}
+
 /** Офлайн-дохід (FR-15, FR-23, FR-24): лише одиниці з діловодами, перші min(Δ, сховище), відрізки за множниками. */
 export function offline(state: EconomyState, cfg: EconomyConfig, leftAtMs: number, backAtMs: number, effects: readonly Effect[] = []): OfflineResult {
   const awayMs = Math.max(0, backAtMs - leftAtMs);
   const storageMs = state.storageHours * 3_600_000 * state.museum.storage;
-  const creditedMs = Math.min(awayMs, storageMs);
+  const creditedMs = creditedAwayMs(state, leftAtMs, backAtMs);
   const end = leftAtMs + creditedMs;
   const earned = earnedBetween(state, cfg, leftAtMs, end, effects, true);
   const idle = income(state, cfg, leftAtMs, [], { idle: true }).flow.v === 0;

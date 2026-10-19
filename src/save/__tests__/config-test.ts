@@ -45,4 +45,11 @@ describe('закріплення конфігу', () => {
     expect(cfg.params.inspItems.filter((d) => d.level <= 3)).toEqual(old);
     expect(baseChecklist(newGame(cfg, T0), cfg, 4).map((i) => i.id)).toHaveLength(4);
   });
+
+  test('012: закріплений конфіг без параметрів стосу й «Доповіді тезово» бере їх із вбудованого', () => {
+    const { stack: _s, brief: _b, ...rest } = bundledConfig.params;
+    const cfg = withBundled({ ...bundledConfig, version: 'econ-old', params: rest as typeof bundledConfig.params });
+    expect(cfg.params.stack.reachCm).toBe(100);
+    expect(cfg.params.brief.chance).toBe(0.2);
+  });
 });

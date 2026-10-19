@@ -4,6 +4,7 @@ import type { EconomyConfig, EconomyState } from '@/economy/game/types';
 import { gendered } from '@/features/onboarding/callsign';
 import type { Gender } from '@/features/onboarding/steps';
 import { canChoose, paperCost } from '@/telegrams/effects';
+import { BRIEF_ID } from '@/telegrams/events';
 import { replyChance } from '@/telegrams/reputation';
 import type { Choice, InboxItem, Telegram, TelegramState } from '@/telegrams/types';
 
@@ -109,7 +110,7 @@ export function packResultRows(first: InboxItem, kind: string, cfg: EconomyConfi
 
 /** Текст документа: у події «Доповідь тезово» - рядок пулу `ev.brief_body`, стабільний для документа (012 «Тексти») */
 export function bodyOf(item: InboxItem, tel: Telegram): string {
-  if (tel.id === 'tg_event_brief' && poolSize('ev.brief_body') > 0) {
+  if (tel.id === BRIEF_ID && poolSize('ev.brief_body') > 0) {
     const n = Number(item.uid.split('#')[1] ?? 1);
     return lineAt('ev.brief_body', Math.max(0, n - 1));
   }

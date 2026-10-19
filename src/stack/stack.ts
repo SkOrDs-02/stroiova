@@ -1,7 +1,8 @@
 // Стос до наради (012 FR-13…FR-16, рішення 104): висота в сантиметрах росте від роботи «Звітів про звіти» за сесію. Чистий домен.
 import { zpzShare } from '@/economy/core';
+import { shareTenths, zpzInfo } from '@/economy/game/income';
 import { itemsFor } from '@/economy/game/state';
-import type { DomainEvent, EconomyConfig, EconomyState } from '@/economy/game/types';
+import type { DomainEvent, EconomyConfig, EconomyState, Effect } from '@/economy/game/types';
 
 const MIN = 60_000;
 
@@ -44,19 +45,19 @@ export interface StackGrow {
   events: DomainEvent[];
 }
 
-function reach(st: StackState, eco: EconomyState, cfg: EconomyConfig, nowMs: number): StackGrow {
+function reach(st: StackState, eco: EconomyState, cfg: EconomyConfig, nowMs: number, effects: readonly Effect[]): StackGrow {
   const p = cfg.params.stack;
   if (st.reached || st.cm < p.reachCm) return { st, events: [] };
   const z = zpzOf(eco, cfg);
-  const s = z ? zpzShare(z.level, cfg.params) : 0;
   return {
     st: { ...st, reached: true },
     events: [
       {
         type: 'stackReach',
-        cm: Math.floor(st.cm),
+        cm: Math.min(Math.floor(st.cm), p.counterCm),
         zpzLevel: z?.level ?? 0,
-        zpzSharePct: Math.round((s / (1 + s)) * 100),
+        // частка в сумі потоків наживо (з музеєм і сповільненнями), з десятими: та сама, що в картці й перевірці (рішення 103)
+        zpzSharePct: shareTenths(zpzInfo(eco, cfg, nowMs, effects).share) / 10,
         secSinceSessionStart: st.sessionStartMs == null ? 0 : Math.max(0, Math.round((nowMs - st.sessionStartMs) / 1000)),
         offlineSharePct: st.cm > 0 ? Math.round((st.offlineCm / st.cm) * 100) : 0,
       },
@@ -65,18 +66,18 @@ function reach(st: StackState, eco: EconomyState, cfg: EconomyConfig, nowMs: num
 }
 
 /** Стос росте за час на передньому плані (з `fromMs` до `toMs`) */
-export function grow(st: StackState, eco: EconomyState, cfg: EconomyConfig, fromMs: number, toMs: number): StackGrow {
+export function grow(st: StackState, eco: EconomyState, cfg: EconomyConfig, fromMs: number, toMs: number, effects: readonly Effect[] = []): StackGrow {
   const rate = cmPerMin(eco, cfg);
   if (rate <= 0 || toMs <= fromMs) return { st, events: [] };
-  return reach(({ ...st, cm: st.cm + ((toMs - fromMs) / MIN) * rate }), eco, cfg, toMs);
+  return reach({ ...st, cm: st.cm + ((toMs - fromMs) / MIN) * rate }, eco, cfg, toMs, effects);
 }
 
 /** Зарахований офлайн (`creditedMs`) додає стос на старті сесії; ЗпЗ без діловода без гравця не працює (FR-13) */
-export function growOffline(st: StackState, eco: EconomyState, cfg: EconomyConfig, creditedMs: number, nowMs: number): StackGrow {
+export function growOffline(st: StackState, eco: EconomyState, cfg: EconomyConfig, creditedMs: number, nowMs: number, effects: readonly Effect[] = []): StackGrow {
   const z = zpzOf(eco, cfg);
   if (!z || !z.clerk || creditedMs <= 0) return { st, events: [] };
   const add = (creditedMs / MIN) * cmPerMin(eco, cfg);
-  return reach({ ...st, cm: st.cm + add, offlineCm: st.offlineCm + add }, eco, cfg, nowMs);
+  return reach({ ...st, cm: st.cm + add, offlineCm: st.offlineCm + add }, eco, cfg, nowMs, effects);
 }
 
 /** Цифровізація: стос і прапорець циклу скидаються (крайовий випадок spec) */

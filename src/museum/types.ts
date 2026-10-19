@@ -37,9 +37,9 @@ export interface CurioEntry {
   status?: CurioStatus;
   /** Текст запису з контенту (`effects.curio`) */
   text?: string | null;
-  /** Одна відповідь пачкою Р3 = один запис (011 FR-24) */
   /** «Метр звітів» (012 FR-15): висота на мить запису, см */
   stack?: { cm: number };
+  /** Одна відповідь пачкою Р3 = один запис (011 FR-24) */
   pack?: { packId: string; no: number; kind: 'diligent' | 'formal_reply' | 'drawer'; uids: string[] };
   gift?: {
     raceId: string;

@@ -41,6 +41,23 @@ describe('старт сесії (FR-17)', () => {
     expect(hits).toBeLessThan(130);
   });
 
+  test('промах теж просуває rng: наступний старт сесії кидає новий кубик (імовірність на сесію, а не на добу)', () => {
+    const c = alwaysCfg(0);
+    const a = start();
+    const r = briefOnSessionStart(a, c, e4(), D0, 0);
+    expect(r.item).toBeNull();
+    expect(r.tg.rng).not.toBe(a.rng);
+    let tg = start({ rng: seedFrom('seq') });
+    let hits = 0;
+    for (let i = 0; i < 60; i++) {
+      const x = briefOnSessionStart(tg, alwaysCfg(0.2), e4(), D0, 0);
+      tg = { ...x.tg, brief: { lastDay: null }, inbox: x.tg.inbox.map((y) => ({ ...y, status: 'archive' as const })) };
+      if (x.item) hits++;
+    }
+    expect(hits).toBeGreaterThan(3);
+    expect(hits).toBeLessThan(25);
+  });
+
   test('до старту розкладу (startMs null) події немає', () => {
     expect(briefOnSessionStart(start({ startMs: null }), alwaysCfg(1), e4(), D0, 0).item).toBeNull();
   });

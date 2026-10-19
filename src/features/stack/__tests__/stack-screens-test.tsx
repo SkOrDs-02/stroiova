@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { bundledConfig } from '@/economy/config';
+import { income } from '@/economy/game/income';
 import { itemsFor, newGame } from '@/economy/game/state';
 import type { EconomyConfig } from '@/economy/game/types';
 import { needsSaveNow } from '@/features/boot/useBoot';
@@ -99,11 +100,23 @@ describe('«Метр звітів» (AC-11)', () => {
     expect(screen.getByTestId('curio-stack')).toHaveTextContent(has('Метр звітів. Нарада ще не почалась.'));
   });
 
-  test('стос не впливає на гру (AC-12): дохід однаковий з порожнім і повним стосом', () => {
-    const store = game(8);
-    const before = store.getState().state;
-    store.setState({ digit: { ...store.getState().digit, stack: { ...store.getState().digit.stack, cm: 500 } } });
-    expect(store.getState().state).toBe(before);
+  test('AC-12: пункт stack_meter купується за підписи при стосі 30 см і 0 см однаково, дохід не залежить від стосу', async () => {
+    const run = async (cm: number) => {
+      const store = game(8);
+      store.setState({ digit: { ...store.getState().digit, stack: { sessionStartMs: T0, cm, offlineCm: 0, reached: false } }, state: { ...store.getState().state, signatures: 1e15 } });
+      await act(async () => store.getState().tick(T0 + 61_000));
+      const insp = store.getState().inspections;
+      const items = [{ id: 'stack_meter', price: 100, done: false }];
+      store.setState({ inspections: { ...insp, active: { id: 'insp_0001', no: 1, trigger: 'scheduled', boss: 'command_commission', level: 4, kind: 'regular', attempt: 1, annMs: T0, arrMs: T0 + 5 * HOUR, items, reason: null, remark: false, warned: true, modal: false }, nextNo: 2 } });
+      const ok = store.getState().buyInspItem('stack_meter');
+      return { ok, paid: 1e15 - store.getState().state.signatures, done: store.getState().inspections.active?.items[0]?.done, income: income(store.getState().state, store.getState().cfg, T0 + 61_000).perMin };
+    };
+    const a = await run(0);
+    const b = await run(30);
+    expect(a.ok).toBe(true);
+    expect(b).toMatchObject({ ok: true, done: true });
+    expect(b.paid).toBe(a.paid);
+    expect(b.income).toBe(a.income);
   });
 });
 

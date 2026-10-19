@@ -10,4 +10,4 @@ description: "Задачі: 012 - етап 2"
 - [x] H04 стор: ріст на тіку, нова сесія і офлайн, скидання цифровізацією, `stackReach` -> курйоз і тост
 - [x] H05 `StackTower` на `main`, рядок і документ запису в курйозах
 - [x] H06 «Доповідь тезово»: старт сесії, мінімум діб, поза квотою, пул тексту; тести AC-13
-- [ ] H07 `spec-guardian`, `content-reviewer`, `npm run check`, golden
+- [x] H07 `spec-guardian`, `content-reviewer`, `npm run check`, golden

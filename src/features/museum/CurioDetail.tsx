@@ -99,7 +99,7 @@ function StackDoc({ store, seq }: { store: ConveyorStore; seq: number }) {
     <View style={styles.paper} testID="curio-stack">
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{`${muT.entryOf(e.seq)} · ${ddmmyyyy(e.atMs)}`}</Text>
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title}>{muT.stackTitle}</Text>
-      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{muT.stackRecord}</Text>
+      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{lineAt('stack.meter', 0)}</Text>
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{stackT.share(e.stack?.cm ?? 0)}</Text>
     </View>
   );

@@ -3,6 +3,7 @@ import { bundledConfig } from '@/economy/config';
 import { itemsFor, newGame } from '@/economy/game/state';
 import type { EconomyState } from '@/economy/game/types';
 
+import { digitize, newDigitization, shiftDigitization } from '@/digitization/digitization';
 import { cmPerMin, display, grow, growOffline, newStack, resetCycle, startSession } from '../stack';
 
 const cfg = bundledConfig;
@@ -57,7 +58,7 @@ describe('«Метр звітів» (FR-15, AC-11)', () => {
     const a = grow(st, e, cfg, T0, T0 + (need(e) - 1) * MIN);
     expect(a.events).toEqual([]);
     const b = grow(a.st, e, cfg, T0, T0 + 3 * MIN);
-    expect(b.events).toEqual([expect.objectContaining({ type: 'stackReach', cm: 100, zpzLevel: 8, zpzSharePct: 41, offlineSharePct: 0 })]);
+    expect(b.events).toEqual([expect.objectContaining({ type: 'stackReach', cm: 100, zpzLevel: 8, zpzSharePct: 41.3, offlineSharePct: 0 })]);
     expect(b.st.reached).toBe(true);
     // та сама сесія і наступна сесія того самого циклу: запису немає
     expect(grow(b.st, e, cfg, T0, T0 + 1000 * MIN).events).toEqual([]);
@@ -82,5 +83,23 @@ describe('AC-12: стос не впливає на гру', () => {
     const before = JSON.stringify(e);
     grow(startSession(newStack(), T0), e, cfg, T0, T0 + 60 * MIN);
     expect(JSON.stringify(e)).toBe(before);
+  });
+});
+
+describe('цифровізація і годинник (крайові випадки)', () => {
+  test('справжня цифровізація скидає стос і прапорець циклу; новий «Метр» можливий знову', () => {
+    const e = { ...eco4(8), lifetimeCycle: 22.9e12 * 40 * 40, signatures: 1e15, prestigePoints: 100 };
+    const reached = { sessionStartMs: T0, cm: 130, offlineCm: 40, reached: true };
+    const r = digitize(e, { ...newDigitization(T0), counts: { '4': 2 }, stack: reached }, cfg, T0, false);
+    if ('error' in r) throw new Error(r.error);
+    expect(r.ds.stack).toEqual({ sessionStartMs: T0, cm: 0, offlineCm: 0, reached: false });
+    const again = grow(startSession(r.ds.stack, T0), eco4(60), cfg, T0, T0 + 8 * 60 * MIN);
+    expect(again.events).toHaveLength(1);
+  });
+
+  test('годинник назад зсуває мітку початку сесії разом з іншими', () => {
+    const ds = { ...newDigitization(T0), stack: { ...newStack(), sessionStartMs: T0 } };
+    expect(shiftDigitization(ds, -3_600_000).stack.sessionStartMs).toBe(T0 - 3_600_000);
+    expect(shiftDigitization(ds, 5).stack).toBe(ds.stack);
   });
 });

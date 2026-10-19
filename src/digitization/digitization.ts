@@ -171,5 +171,11 @@ export function closeCeremonyStep(ds: DigitizationState): DigitizationState {
 /** Годинник назад (009 FR-14): мітка початку циклу зсувається. */
 export function shiftDigitization(ds: DigitizationState, rawMs: number): DigitizationState {
   if (rawMs >= 0) return ds;
-  return { ...ds, cycleStartMs: ds.cycleStartMs + rawMs, ceremony: ds.ceremony && { ...ds.ceremony, atMs: ds.ceremony.atMs + rawMs } };
+  return {
+    ...ds,
+    cycleStartMs: ds.cycleStartMs + rawMs,
+    ceremony: ds.ceremony && { ...ds.ceremony, atMs: ds.ceremony.atMs + rawMs },
+    // стос (012): мітка початку сесії зсувається разом з годинником
+    stack: ds.stack.sessionStartMs == null ? ds.stack : { ...ds.stack, sessionStartMs: ds.stack.sessionStartMs + rawMs },
+  };
 }
