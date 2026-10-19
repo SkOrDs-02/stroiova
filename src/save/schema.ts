@@ -1,13 +1,13 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 9;
+export const CURRENT_SCHEMA = 10;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
 export const effectSchema = z.object({
   kind: z.enum(['mult', 'factor']),
-  source: z.enum(['ad_boost', 'gift_drone', 'gift_shovel', 'gift_generator', 'inspection_pass', 'telegram_slow', 'telegram_stop', 'kombat_away', 'inspection_fail', 'clerk_away']),
+  source: z.enum(['ad_boost', 'gift_drone', 'gift_shovel', 'gift_generator', 'inspection_pass', 'telegram_slow', 'telegram_stop', 'kombat_away', 'meeting_overrun', 'inspection_fail', 'clerk_away']),
   value: z.number().positive(),
   target: unitRef.optional(),
   startMs: z.number(),
@@ -112,12 +112,17 @@ export const telegramStateSchema = z.object({
     lastDayKey: z.string().nullable(),
     active: z.object({ startMs: z.number(), endMs: z.number(), runnerAtMs: z.number().nullable(), found: z.boolean().optional() }).nullable(),
   }),
+  meeting: z.object({
+    lastDayKey: z.string().nullable(),
+    active: z.object({ startMs: z.number(), endMs: z.number(), runnerAtMs: z.number().nullable(), found: z.boolean().optional() }).nullable(),
+  }),
   deliveries: z.number().int().nonnegative(),
   lineBags: z.record(z.string(), z.object({ used: z.array(z.number().int().nonnegative()), last: z.number().int().nullable() })),
 });
 
 const bossId = z.enum(['brigade_commission', 'command_commission']);
 const trigger = z.enum(['scheduled', 'unscheduled']);
+const inspKind = z.enum(['regular', 'final']);
 const reason = z.object({ telegramId: z.string() }).nullable();
 
 /** Стан перевірок (004 data-model.md); схема 4. */
@@ -134,9 +139,11 @@ export const inspectionStateSchema = z.object({
       trigger,
       boss: bossId,
       level: z.number().int().min(1),
+      kind: inspKind,
+      attempt: z.number().int().min(1),
       annMs: z.number(),
       arrMs: z.number(),
-      items: z.array(z.object({ id: z.string(), price: nonNeg, done: z.boolean(), doneAtMs: z.number().optional(), fromTelegram: z.string().optional() })),
+      items: z.array(z.object({ id: z.string(), price: nonNeg, done: z.boolean(), doneAtMs: z.number().optional(), fromTelegram: z.string().optional(), mech: z.boolean().optional() })),
       reason,
       remark: z.boolean(),
       warned: z.boolean(),
@@ -150,10 +157,13 @@ export const inspectionStateSchema = z.object({
       trigger,
       boss: bossId,
       level: z.number().int().min(1),
+      kind: inspKind,
+      attempt: z.number().int().min(1),
+      exitUnlocked: z.boolean(),
       arrMs: z.number(),
       passed: z.boolean(),
       remark: z.boolean(),
-      items: z.array(z.object({ id: z.string(), done: z.boolean(), fromTelegram: z.string().optional() })),
+      items: z.array(z.object({ id: z.string(), done: z.boolean(), fromTelegram: z.string().optional(), mech: z.boolean().optional() })),
       reason,
       offline: z.boolean(),
       seen: z.boolean(),
@@ -181,7 +191,7 @@ export const raceStateSchema = z.object({
       level: z.number().int().min(1),
       startMs: z.number(),
       svcEndMs: z.number(),
-      steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna']), sec: nonNeg })),
+      steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna', 'narada']), sec: nonNeg })),
       actTotalSec: nonNeg,
       actEndMs: z.number(),
       pausedAtMs: z.number().nullable(),
@@ -200,7 +210,7 @@ export const raceStateSchema = z.object({
       endMs: z.number(),
       tookSec: nonNeg,
       marginSec: nonNeg,
-      steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna']), sec: nonNeg })),
+      steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna', 'narada']), sec: nonNeg })),
       stepsDone: z.number().int().nonnegative(),
       stepsTotal: z.number().int().min(1),
       speedups: z.number().int().nonnegative(),
@@ -232,6 +242,7 @@ export const digitizationStateSchema = z.object({
     })
     .nullable(),
   cycleStartMs: z.number(),
+  levelExitAllowed: z.boolean(),
 });
 
 /** Музей й журнал курйозів (007); схема 7. */
@@ -254,7 +265,7 @@ export const museumStateSchema = z.object({
           raceNo: z.number().int().min(1),
           type: z.enum(['drone', 'shovel', 'generator']),
           level: z.number().int().min(1),
-          steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna']), sec: z.number() })),
+          steps: z.array(z.object({ unit: z.enum(['akty', 'kombat', 'stroy', 'fin', 'kazna', 'narada']), sec: z.number() })),
           stepsDone: z.number().int().nonnegative(),
           stepsTotal: z.number().int().min(1),
           marginSec: z.number(),

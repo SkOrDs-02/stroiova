@@ -95,7 +95,7 @@ describe('гонка й чекліст за рекламу (FR-5, FR-6)', () => 
 
   test('AC-6: чекліст 2 з 5 - усе виконано, подія на кожен пункт з method = ad; раз за перевірку; пункти, додані пізніше, коштують', () => {
     const mk = (done: boolean, i: number) => ({ id: `it${i}`, price: 100, done });
-    const insp: Inspection = { id: 'insp_0001', no: 1, trigger: 'scheduled', boss: 'brigade_commission', level: 1, annMs: T - HOUR, arrMs: T + 2 * HOUR, items: [mk(true, 0), mk(true, 1), mk(false, 2), mk(false, 3), mk(false, 4)], reason: null, remark: false, warned: true, modal: false };
+    const insp: Inspection = { id: 'insp_0001', no: 1, trigger: 'scheduled', boss: 'brigade_commission', level: 1, kind: 'regular', attempt: 1, annMs: T - HOUR, arrMs: T + 2 * HOUR, items: [mk(true, 0), mk(true, 1), mk(false, 2), mk(false, 3), mk(false, 4)], reason: null, remark: false, warned: true, modal: false };
     const s = { ...newInspections(T, 'x'), active: insp };
     const r = completeAll(s, T, 'ad');
     if ('error' in r) throw new Error(r.error);

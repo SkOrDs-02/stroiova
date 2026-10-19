@@ -140,6 +140,8 @@ export interface TelegramState {
   refuelBlockedUntil: number;
   override: { lastDayKey: string | null; nextNo: number };
   kombat: { lastDayKey: string | null; active: { startMs: number; endMs: number; runnerAtMs: number | null; found?: boolean } | null };
+  /** «Нарада затягнулась» (011 FR-25): той самий шаблон на ланці «Нарада» (Р3+); runnerAtMs - записка */
+  meeting: { lastDayKey: string | null; active: { startMs: number; endMs: number; runnerAtMs: number | null; found?: boolean } | null };
   deliveries: number;
   /** Мішки реплік за пулами content/lines.json (рішення 41) */
   lineBags: Record<string, { used: number[]; last: number | null }>;

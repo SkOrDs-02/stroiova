@@ -11,9 +11,9 @@ export function bossFor(level: number): BossId {
   return level >= 2 ? 'command_commission' : 'brigade_commission';
 }
 
-/** Рівень чекліста: Р2 і вище беруть пункти Р2, доки 011 не додасть свої. */
+/** Рівень чекліста: Р1, Р2 і Р3 мають свої пункти; Р4-Р5 беруть пункти Р3, доки 012 не додасть свої. */
 export function checklistLevel(level: number): number {
-  return level >= 2 ? 2 : 1;
+  return Math.min(3, Math.max(1, level));
 }
 
 export function itemDef(cfg: EconomyConfig, id: string, level: number): InspItemDef | undefined {

@@ -57,6 +57,26 @@ export const MIGRATIONS: Record<number, Migration> = {
     const g = game as { museum?: { curioSeq?: number } };
     return { ...(game as object), settings: newSettings(), notifications: newNotifications(), stats: newStats(), museum: { ...(g.museum ?? {}), curiosSeen: g.museum?.curioSeq ?? 0 } };
   },
+  // 9 → 10 (011): вихід з рівня - прапорець у цифровізації (лічильник на рівні вже є в `counts`); перевірки - звичайні, перша спроба;
+  // «Нарада затягнулась» - порожній стан
+  9: (game) => {
+    const g = game as {
+      digitization?: object;
+      telegrams?: object;
+      inspections?: { active?: object | null; last?: { items?: object[] } | null };
+    };
+    const insp = g.inspections;
+    return {
+      ...(game as object),
+      digitization: { ...(g.digitization ?? {}), levelExitAllowed: false },
+      telegrams: { ...(g.telegrams ?? {}), meeting: { lastDayKey: null, active: null } },
+      inspections: insp && {
+        ...insp,
+        active: insp.active ? { ...insp.active, kind: 'regular', attempt: 1 } : null,
+        last: insp.last ? { ...insp.last, kind: 'regular', attempt: 1, exitUnlocked: false } : null,
+      },
+    };
+  },
 };
 
 /** Налаштування й сповіщення схеми 9. */
@@ -105,6 +125,7 @@ export function telegramsV3() {
     refuelBlockedUntil: 0,
     override: { lastDayKey: null, nextNo: overrideStartNo() },
     kombat: { lastDayKey: null, active: null },
+    meeting: { lastDayKey: null, active: null },
     deliveries: 0,
     lineBags: {},
   };

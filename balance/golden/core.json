@@ -435,6 +435,26 @@
     "level": 2,
     "min": 21,
     "added": true
+   },
+   {
+    "id": "minutes_stitch",
+    "level": 3,
+    "min": 28
+   },
+   {
+    "id": "door_plates",
+    "level": 3,
+    "min": 13
+   },
+   {
+    "id": "carafe_full",
+    "level": 3,
+    "min": 6
+   },
+   {
+    "id": "kettles_hide",
+    "level": 3,
+    "min": 4
    }
   ],
   "digitJournals": {
@@ -837,6 +857,26 @@
      "level": 2,
      "min": 21,
      "added": true
+    },
+    {
+     "id": "minutes_stitch",
+     "level": 3,
+     "min": 28
+    },
+    {
+     "id": "door_plates",
+     "level": 3,
+     "min": 13
+    },
+    {
+     "id": "carafe_full",
+     "level": 3,
+     "min": 6
+    },
+    {
+     "id": "kettles_hide",
+     "level": 3,
+     "min": 4
     }
    ],
    "digitJournals": {
@@ -1222,6 +1262,26 @@
      "level": 2,
      "min": 21,
      "added": true
+    },
+    {
+     "id": "minutes_stitch",
+     "level": 3,
+     "min": 28
+    },
+    {
+     "id": "door_plates",
+     "level": 3,
+     "min": 13
+    },
+    {
+     "id": "carafe_full",
+     "level": 3,
+     "min": 6
+    },
+    {
+     "id": "kettles_hide",
+     "level": 3,
+     "min": 4
     }
    ],
    "digitJournals": {
@@ -1685,6 +1745,26 @@
      "level": 2,
      "min": 21,
      "added": true
+    },
+    {
+     "id": "minutes_stitch",
+     "level": 3,
+     "min": 28
+    },
+    {
+     "id": "door_plates",
+     "level": 3,
+     "min": 13
+    },
+    {
+     "id": "carafe_full",
+     "level": 3,
+     "min": 6
+    },
+    {
+     "id": "kettles_hide",
+     "level": 3,
+     "min": 4
     }
    ],
    "digitJournals": {

@@ -3,6 +3,8 @@ import type { Big } from '@/economy/core/big';
 
 export type InspTrigger = 'scheduled' | 'unscheduled';
 export type BossId = 'brigade_commission' | 'command_commission';
+/** Звичайна (04) чи підсумкова рівня (011): та сама перевірка з іншими числами й пунктом механіки */
+export type InspKind = 'regular' | 'final';
 
 export interface ChecklistItem {
   id: string;
@@ -13,6 +15,8 @@ export interface ChecklistItem {
   doneAtMs?: number;
   /** Телеграма, що додала пункт (FR-7) */
   fromTelegram?: string;
+  /** Пункт механіки рівня (011 FR-5): не купується й не закривається рекламою, перевіряється на мить приїзду */
+  mech?: boolean;
 }
 
 export interface Inspection {
@@ -22,6 +26,10 @@ export interface Inspection {
   trigger: InspTrigger;
   boss: BossId;
   level: number;
+  /** Звичайна чи підсумкова (011 FR-3) */
+  kind: InspKind;
+  /** Спроба підсумкової: 1, далі +1 після кожного провалу (FR-7); у звичайної 1 */
+  attempt: number;
   annMs: number;
   arrMs: number;
   items: ChecklistItem[];
@@ -41,10 +49,14 @@ export interface InspectionOutcome {
   trigger: InspTrigger;
   boss: BossId;
   level: number;
+  kind: InspKind;
+  attempt: number;
   arrMs: number;
   passed: boolean;
+  /** Пройдена підсумкова: наступна цифровізація - з переходом (FR-6) */
+  exitUnlocked: boolean;
   remark: boolean;
-  items: { id: string; done: boolean; fromTelegram?: string }[];
+  items: { id: string; done: boolean; fromTelegram?: string; mech?: boolean }[];
   reason: { telegramId: string } | null;
   /** Вирішено без гравця: рядки довідки замість insp-result (FR-24, FR-25) */
   offline: boolean;

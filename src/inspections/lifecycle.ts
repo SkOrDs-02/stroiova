@@ -4,6 +4,7 @@ import type { DomainEvent, EconomyConfig, EconomyState, StoredEffect } from '@/e
 import { roller, seedFrom } from '@/telegrams/rng';
 
 import { baseChecklist, bossFor, itemDef, priceOf } from './checklist';
+import { finalChecklist, hasFinal, mechOk, retryChecklist, streamsOpen } from './final';
 import { arrWindow, firstDue, nextArrival, warnMin } from './schedule';
 import type { ChecklistItem, Inspection, InspectionOutcome, InspectionState, InspTrigger } from './types';
 
@@ -30,6 +31,12 @@ export function newInspections(installMs: number, seedText: string): InspectionS
 
 export function inspectionId(no: number): string {
   return `insp_${String(no).padStart(4, '0')}`;
+}
+
+/** Готовність наживо: пункт механіки рахується за станом економіки, а не за записом (011 FR-5). */
+export function readinessLive(insp: Pick<Inspection, 'items'>, eco: EconomyState, cfg: EconomyConfig): number {
+  if (!insp.items.length) return 0;
+  return Math.round((insp.items.filter((i) => (i.mech ? mechOk(i.id, eco, cfg) : i.done)).length / insp.items.length) * 100);
 }
 
 export function readiness(insp: Pick<Inspection, 'items'>): number {
@@ -68,6 +75,8 @@ function announce(s0: InspectionState, eco: EconomyState, cfg: EconomyConfig, a:
     trigger: a.trigger,
     boss,
     level,
+    kind: 'regular',
+    attempt: 1,
     annMs: a.annMs,
     arrMs: a.arrMs,
     items,
@@ -92,12 +101,46 @@ function announce(s0: InspectionState, eco: EconomyState, cfg: EconomyConfig, a:
         id: insp.id,
         no,
         boss,
+        kind: 'regular',
+        attempt: 1,
         trigger: a.trigger,
         warnSec: Math.round((a.arrMs - a.annMs) / 1000),
         reputation: a.reputation,
         itemsTotal: items.length,
       },
     ],
+  };
+}
+
+/**
+ * Підсумкова рівня (011 FR-2, FR-3): `boss.warnH` до приїзду, вікно приїзду як у звичайної, 5 базових пунктів + пункт механіки.
+ * Модалка `boss-brief` потрібна завжди. Ціни фіксуються на мить оголошення.
+ */
+function announceFinal(s0: InspectionState, eco: EconomyState, cfg: EconomyConfig, nowMs: number, tz: number, reputation: number): { s: InspectionState; events: DomainEvent[] } {
+  const rng = roller(s0.rng);
+  const rand = () => rng.next();
+  const level = eco.level;
+  const no = s0.nextNo;
+  const items = finalChecklist(eco, cfg, level);
+  const insp: Inspection = {
+    id: inspectionId(no),
+    no,
+    trigger: 'scheduled',
+    boss: bossFor(level),
+    level,
+    kind: 'final',
+    attempt: 1,
+    annMs: nowMs,
+    arrMs: arrWindow(nowMs + cfg.params.boss.warnH * HOUR, cfg.params, tz, rand),
+    items,
+    reason: null,
+    remark: false,
+    warned: false,
+    modal: true,
+  };
+  return {
+    s: { ...s0, nextNo: no + 1, active: insp, rng: rng.state },
+    events: [{ type: 'inspectionStart', id: insp.id, no, boss: insp.boss, kind: 'final', attempt: 1, trigger: 'scheduled', warnSec: Math.round((insp.arrMs - nowMs) / 1000), reputation, itemsTotal: items.length }],
   };
 }
 
@@ -119,7 +162,12 @@ export function onSessionStart(
   return { s: { ...r.s, callPending: true, rng: rng.state }, events: r.events };
 }
 
-export interface TickCtx {
+export interface TickCtxFinal {
+  /** Рівень з босом: виконано `exitDigitizations` цифровізацій, перехід ще не дозволено (`finalDue` з 006) */
+  finalDue?: boolean;
+}
+
+export interface TickCtx extends TickCtxFinal {
   fromMs: number;
   nowMs: number;
   tzOffsetMin: number;
@@ -138,18 +186,26 @@ export interface TickResult {
   scheduledArrived: boolean;
 }
 
-function resolve(s0: InspectionState, cfg: EconomyConfig, ctx: TickCtx): TickResult {
-  const insp = s0.active!;
+function resolve(s0: InspectionState, eco: EconomyState, cfg: EconomyConfig, ctx: TickCtx): TickResult {
+  const active = s0.active!;
   const p = cfg.params;
-  const arr = insp.arrMs;
+  const arr = active.arrMs;
+  // пункт механіки перевіряється на мить приїзду (011 FR-5, крайовий випадок «пункт зламався»)
+  const insp: Inspection = { ...active, items: active.items.map((i) => (i.mech ? { ...i, done: mechOk(i.id, eco, cfg) } : i)) };
   const done = insp.items.filter((i) => i.done).length;
   // рішення 65: пройшли лише на 100%
   const passed = done === insp.items.length;
+  const mechItem = insp.items.find((i) => i.mech);
+  const final = insp.kind === 'final';
   const effects: StoredEffect[] = [];
   const events: DomainEvent[] = [
     {
       type: 'inspectionFinish',
       id: insp.id,
+      kind: insp.kind,
+      attempt: insp.attempt,
+      mechDone: mechItem ? mechItem.done : null,
+      exitUnlocked: final && passed,
       result: passed ? 'passed' : 'failed',
       itemsDone: done,
       itemsTotal: insp.items.length,
@@ -162,6 +218,7 @@ function resolve(s0: InspectionState, cfg: EconomyConfig, ctx: TickCtx): TickRes
     effects.push({ kind: 'mult', source: 'inspection_pass', value: p.inspMult, startMs: arr, endMs: arr + p.inspHours * HOUR });
     events.push({ type: 'boostActivate', boostType: 'inspection_x3', mult: p.inspMult, durationSec: p.inspHours * 3600 });
   }
+  if (final && passed) events.push({ type: 'finalPassed', id: insp.id, level: insp.level, attempt: insp.attempt });
   if (!passed) {
     // FR-21, рішення 25: «Стройова частина» ×0,5 на 1 год
     effects.push({ kind: 'factor', source: 'inspection_fail', value: p.inspFailMult, target: { type: 'stage', id: 'stroy' }, startMs: arr, endMs: arr + p.inspFailHours * HOUR });
@@ -177,10 +234,13 @@ function resolve(s0: InspectionState, cfg: EconomyConfig, ctx: TickCtx): TickRes
     trigger: insp.trigger,
     boss: insp.boss,
     level: insp.level,
+    kind: insp.kind,
+    attempt: insp.attempt,
+    exitUnlocked: final && passed,
     arrMs: arr,
     passed,
     remark: passed && insp.remark,
-    items: insp.items.map((i) => ({ id: i.id, done: i.done, ...(i.fromTelegram ? { fromTelegram: i.fromTelegram } : {}) })),
+    items: insp.items.map((i) => ({ id: i.id, done: i.done, ...(i.fromTelegram ? { fromTelegram: i.fromTelegram } : {}), ...(i.mech ? { mech: true } : {}) })),
     reason: insp.reason,
     offline: ctx.offline,
     seen: false,
@@ -190,12 +250,25 @@ function resolve(s0: InspectionState, cfg: EconomyConfig, ctx: TickCtx): TickRes
   // FR-3, FR-6: наступна планова — від приїзду цієї (і планової, і позапланової)
   const nextArrMs = nextArrival(arr, p, ctx.tzOffsetMin, rand);
   const nextWarn = warnMin(p, rand);
-  return {
-    s: { ...s0, active: null, last, journalGiven, nextArrMs, nextWarnMin: nextWarn, rng: rng.state },
-    effects,
-    events,
-    scheduledArrived: insp.trigger === 'scheduled',
-  };
+  const base: InspectionState = { ...s0, active: null, last, journalGiven, nextArrMs, nextWarnMin: nextWarn, rng: rng.state };
+  // FR-7: провал підсумкової - повтор одразу, приїзд через `boss.retryH`, виконані пункти лишаються, спроб без ліміту
+  if (final && !passed) {
+    const no = base.nextNo;
+    const retry: Inspection = {
+      ...insp,
+      id: inspectionId(no),
+      no,
+      attempt: insp.attempt + 1,
+      annMs: arr,
+      arrMs: arrWindow(arr + p.boss.retryH * HOUR, p, ctx.tzOffsetMin, rand),
+      items: retryChecklist(insp),
+      warned: false,
+      modal: true,
+    };
+    events.push({ type: 'inspectionStart', id: retry.id, no, boss: retry.boss, kind: 'final', attempt: retry.attempt, trigger: 'scheduled', warnSec: Math.round((retry.arrMs - arr) / 1000), reputation: ctx.reputation, itemsTotal: retry.items.length });
+    return { s: { ...base, nextNo: no + 1, active: retry, rng: rng.state }, effects, events, scheduledArrived: false };
+  }
+  return { s: base, effects, events, scheduledArrived: insp.trigger === 'scheduled' };
 }
 
 /** Усе, що настало в (fromMs, nowMs]: оголошення планових і приїзди (FR-3, FR-4, FR-17…FR-21, FR-24). */
@@ -204,14 +277,24 @@ export function tick(s0: InspectionState, eco: EconomyState, cfg: EconomyConfig,
   const effects: StoredEffect[] = [];
   const events: DomainEvent[] = [];
   let scheduledArrived = false;
+  // пройдена в цьому ж тіку підсумкова не оголошується вдруге (стор ще не знає про `levelExitAllowed`)
+  let finalPassed = false;
   for (let i = 0; i < MAX_PER_TICK; i++) {
     if (s.active) {
       if (s.active.arrMs > ctx.nowMs) break;
-      const r = resolve(s, cfg, ctx);
+      const r = resolve(s, eco, cfg, ctx);
       s = r.s;
       effects.push(...r.effects);
       events.push(...r.events);
       scheduledArrived ||= r.scheduledArrived;
+      finalPassed ||= r.events.some((e) => e.type === 'finalPassed');
+      continue;
+    }
+    // FR-2, FR-4: підсумкова - коли в новому циклі знову відкрито всі потоки й жодна перевірка не йде
+    if (ctx.finalDue && !finalPassed && hasFinal(eco.level) && streamsOpen(eco, cfg)) {
+      const r = announceFinal(s, eco, cfg, ctx.nowMs, ctx.tzOffsetMin, ctx.reputation);
+      s = r.s;
+      events.push(...r.events);
       continue;
     }
     if (s.nextArrMs == null) break;
@@ -308,16 +391,17 @@ export function completeAll(
 ): { s: InspectionState; events: DomainEvent[] } | { error: 'no_active' | 'done' } {
   const insp = s0.active;
   if (!insp || nowMs >= insp.arrMs) return { error: 'no_active' };
-  const open = insp.items.filter((i) => !i.done);
+  // FR-5: пункт механіки рекламою не закривається
+  const open = insp.items.filter((i) => !i.done && !i.mech);
   if (!open.length) return { error: 'done' };
-  const items = insp.items.map((i) => (i.done ? i : { ...i, done: true, doneAtMs: nowMs }));
+  const items = insp.items.map((i) => (i.done || i.mech ? i : { ...i, done: true, doneAtMs: nowMs }));
   return {
     s: { ...s0, active: { ...insp, items } },
     events: open.map((i) => ({ type: 'inspectionItemComplete' as const, id: insp.id, itemId: i.id, method, cost: 0, secToDeadline: Math.round((insp.arrMs - nowMs) / 1000) })),
   };
 }
 
-export type BuyError = 'no_active' | 'unknown' | 'done' | 'short';
+export type BuyError = 'no_active' | 'unknown' | 'done' | 'short' | 'mech';
 
 /** Тап по пункту (FR-14): списує ціну без підтвердження, позначку не зняти. */
 export function buyItem(
@@ -330,6 +414,7 @@ export function buyItem(
   if (!insp || nowMs >= insp.arrMs) return { error: 'no_active' };
   const item = insp.items.find((i) => i.id === itemId);
   if (!item) return { error: 'unknown' };
+  if (item.mech) return { error: 'mech' };
   if (item.done) return { error: 'done' };
   if (eco.signatures < item.price) return { error: 'short' };
   const items = insp.items.map((i) => (i.id === itemId ? { ...i, done: true, doneAtMs: nowMs } : i));

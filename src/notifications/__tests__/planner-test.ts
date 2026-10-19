@@ -33,6 +33,8 @@ const insp = (arrMs: number, done = false): Inspection => ({
   trigger: 'scheduled',
   boss: 'brigade_commission',
   level: 1,
+  kind: 'regular',
+  attempt: 1,
   annMs: arrMs - 3 * HOUR,
   arrMs,
   items: [{ id: 'a', price: 1, done }],
