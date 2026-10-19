@@ -168,7 +168,8 @@ export type DomainEvent =
   | { type: 'purchaseRestore'; trigger: 'shop_button' | 'settings_button' | 'auto_check'; isSuccess: boolean; restoredProductIds: ('no_ads' | 'starter_pack' | 'storage_24h')[] }
   | { type: 'offlineIncomeClaim'; isDoubled: boolean; doubleSource: 'ad' | 'no_ads_pass' | 'none'; offlineDoublesToday: number }
   // 010: налаштування; аналітика етапу 5 (setting_change, push_permission_request)
-  | { type: 'settingChange'; settingName: 'sound' | 'haptics' | 'notif_storage' | 'notif_telegrams' | 'notif_inspections' | 'notif_gifts' | 'notif_boosts' | 'analytics' | 'progress_reset'; newValue: boolean | null }
+  // newValue: true/false -> on/off у tracking-plan; null (progress_reset) -> done; для progress_reset лічильники взято до стирання
+  | { type: 'settingChange'; settingName: 'sound' | 'haptics' | 'notif_storage' | 'notif_telegrams' | 'notif_inspections' | 'notif_gifts' | 'notif_boosts' | 'analytics' | 'progress_reset'; newValue: boolean | null; digitizationCount?: number; playtimeSec?: number }
   | { type: 'pushPermissionRequest'; trigger: 'onboarding_session_end' | 'settings'; prePromptResult: 'accepted' | 'declined'; osResult: 'granted' | 'denied' | 'provisional' | 'not_shown' }
   | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number };
 

@@ -44,8 +44,8 @@ export function SettingsScreen({ store, insetTop, onBack, onReset, onAskPush }: 
               label={setT.cat[c]}
               value={st.notif[c]}
               onChange={(v) => {
-                // FR-10: з налаштувань шторку показуємо, поки відповіді ОС ще немає
-                if (v && st.pushPermission === 'not_asked') onAskPush();
+                // FR-10, рішення 92: перший тап по будь-якій категорії, поки відповіді ОС ще немає
+                if (st.pushPermission === 'not_asked') onAskPush();
                 s.setNotifCategory(c, v);
               }}
             />

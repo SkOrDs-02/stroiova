@@ -1,6 +1,6 @@
 // about (010 FR-27): «Штатний розпис», «Про відсоток» (рішення 17, 87), посилання в зовнішньому браузері, версія й анонімний ID.
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
@@ -12,9 +12,13 @@ import { aboutCfg, versionLine } from './data';
 import { Frame, LinkRow } from './Parts';
 import { setT } from './texts';
 
+const TEST_TAPS = 7;
+
 export function AboutScreen({ store, installId, insetTop, onBack, onReports, onLicenses }: { store: ConveyorStore; installId: string; insetTop: number; onBack: () => void; onReports: () => void; onLicenses: () => void }) {
   const links = useStore(store, (s) => s.services.links);
   const [copied, setCopied] = useState(false);
+  // прихований вхід у тестовий режим: 7 тапів по версії (відкрите питання 15 spec 010, рішення 92)
+  const [taps, setTaps] = useState(0);
   const ab = setT.ab;
   return (
     <Frame title={ab.title} testID="about" insetTop={insetTop} onBack={onBack}>
@@ -48,7 +52,17 @@ export function AboutScreen({ store, installId, insetTop, onBack, onReports, onL
       <LinkRow id="about-licenses" label={ab.licenses} onPress={onLicenses} />
       <LinkRow id="about-contact" label={ab.contact} onPress={() => links.open(`mailto:${aboutCfg.email}`)} />
 
-      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="about-version">{ab.version(versionLine())}</Text>
+      <Pressable
+        testID="about-version"
+        accessibilityRole="text"
+        onPress={() => {
+          const n = taps + 1;
+          setTaps(n);
+          if (n === TEST_TAPS) store.getState().setSetting('testUser', true);
+        }}
+      >
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{ab.version(versionLine())}</Text>
+      </Pressable>
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="about-id" selectable>{ab.id(installId)}</Text>
       <Button
         testID="about-copy"

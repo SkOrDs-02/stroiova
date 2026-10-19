@@ -94,6 +94,8 @@ interface Store {
   stats: Stats;
   /** Анонімний ID встановлення (009): для «Про гру» й листа про видалення даних */
   installId: string;
+  /** «Пізніше» на push-preprompt у цій сесії: не перепитуємо (010 FR-10); у запис не йде */
+  pushDeclined: boolean;
   /** Ролик чи оплата йде: повторні тапи ігноруються (крайовий випадок); лише в пам'яті */
   busy: 'ad' | 'purchase' | null;
   /** Підказка «Час цифровізуватися» активна (FR-9); оновлюється раз на хвилину гри, лише в пам'яті */
@@ -511,6 +513,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     notifications: init?.notifications ?? newNotifications(),
     stats: init?.stats ?? newStats(),
     installId: init?.installId ?? '',
+    pushDeclined: false,
     busy: null,
     digitRec: false,
     digitCheckedAt: 0,
@@ -906,7 +909,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       pushEvent({ type: 'pushPermissionRequest', trigger, prePromptResult: 'accepted', osResult: os === 'not_asked' ? 'not_shown' : os });
       return os;
     },
-    declinePush: (trigger) => pushEvent({ type: 'pushPermissionRequest', trigger, prePromptResult: 'declined', osResult: 'not_shown' }),
+    declinePush: (trigger) => {
+      set({ pushDeclined: true });
+      pushEvent({ type: 'pushPermissionRequest', trigger, prePromptResult: 'declined', osResult: 'not_shown' });
+    },
     refreshPermission: async () => {
       const p = await get().services.notifications.permission();
       const cur = get().settings.pushPermission;
@@ -967,7 +973,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         offlineBackAt: null,
         toast: null,
         toastQueue: [],
-        events: [...g.events, { type: 'settingChange' as const, settingName: 'progress_reset' as const, newValue: null }].slice(-40),
+        events: [...g.events, { type: 'settingChange' as const, settingName: 'progress_reset' as const, newValue: null, digitizationCount: g.digit.total, playtimeSec: Math.floor(g.playtimeMs / 1000) }].slice(-40),
       });
       void g.services.notifications.cancelAll();
     },

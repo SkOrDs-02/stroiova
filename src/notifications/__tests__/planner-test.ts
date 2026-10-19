@@ -134,6 +134,24 @@ describe('планувальник (FR-3…FR-6)', () => {
     expect(lost?.place).toBeTruthy();
   });
 
+  test('акт закінчується в останні 2 год таймера: йдуть і № 5 (акт ще на конвеєрі), і № 6', () => {
+    const r = {
+      ...newRace('x'),
+      active: { id: 'race_0001', no: 1, type: 'drone' as const, level: 1, startMs: D(8), svcEndMs: D(17), steps: [{ unit: 'akty' as const, sec: 3600 }, { unit: 'fin' as const, sec: 3600 }], actTotalSec: 7200, actEndMs: D(16), pausedAtMs: null, digUsed: false, sped: [], seen: true },
+    };
+    const types = plan(input({ race: r }), now).map((c) => c.type);
+    expect(types).toEqual(expect.arrayContaining(['race_reminder', 'race_won']));
+  });
+
+  test('№ 4 і № 6 у тихі години не надсилаються (текст має строк «ще 2 години», «поки служить»), а не переносяться на 08:00', () => {
+    const race = {
+      ...newRace('x'),
+      active: { id: 'race_0001', no: 1, type: 'drone' as const, level: 1, startMs: D(8), svcEndMs: D(30), steps: [{ unit: 'akty' as const, sec: 3600 }], actTotalSec: 3600, actEndMs: D(23), pausedAtMs: null, digUsed: false, sped: [], seen: true },
+    };
+    const night = plan(input({ race, inspections: { ...newInspections(D(0), 'x'), active: insp(D(23, 30), true) } }), now);
+    expect(night.some((c) => c.type === 'race_won' || c.type === 'inspection_passed')).toBe(false);
+  });
+
   test('переведений часовий пояс: ліміт доби рахується за локальною датою', () => {
     // UTC+3: 22:30 UTC = 01:30 наступної місцевої доби (тихі години → 08:00 місцевої = 05:00 UTC)
     const inp = input({ tzOffsetMin: 180, telegrams: { ...tgWith([]), startMs: D(0), day: { key: '2026-10-10', slots: [D(22, 30)], used: 0 } } });

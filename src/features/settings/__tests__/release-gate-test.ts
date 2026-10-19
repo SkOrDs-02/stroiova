@@ -10,7 +10,7 @@ describe('плейсхолдери «Про гру»', () => {
   });
 
   test('поточний конфіг має щонайменше поля про фонд, відсоток і посилання', () => {
-    for (const k of ['percent', 'fund', 'receiptsUrl', 'privacyUrl', 'email', 'illustrator', 'typewriterName']) expect(typeof (aboutCfg as unknown as Record<string, unknown>)[k]).toBe('string');
+    for (const k of ['percent', 'fund', 'privacyUrl', 'email', 'illustrator', 'typewriterName']) expect(typeof (aboutCfg as unknown as Record<string, unknown>)[k]).toBe('string');
   });
 
   (process.env.STROIOVA_RELEASE === '1' ? test : test.skip)('реліз: content/about.json без плейсхолдерів', () => {

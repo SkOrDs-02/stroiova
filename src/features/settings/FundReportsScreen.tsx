@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { color, radius, space } from '@/theme';
+import { color, radius, size, space } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
   num: { ...type('displayM'), color: color.accent },
   report: { backgroundColor: color.surface, borderRadius: radius[6], padding: space[12], gap: space[4] },
   title: { ...type('body'), color: color.text, fontWeight: '600' },
-  link: { minHeight: 44, justifyContent: 'center' },
+  link: { minHeight: size.touchMin, justifyContent: 'center' },
   linkText: { ...type('body'), color: color.accent, textDecorationLine: 'underline' },
 });

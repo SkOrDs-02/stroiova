@@ -1,5 +1,6 @@
 // Меню й усе, що з нього відкривається (010): menu → profile / settings / about → fund-reports / licenses; reset-confirm і push-preprompt поверх.
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
 
@@ -18,8 +19,8 @@ export function MenuHost({ store, insetTop, onClose, onCurios }: { store: Convey
   const [page, setPage] = useState<Page>('menu');
   const [reset, setReset] = useState(false);
   const [pre, setPre] = useState(false);
-  // FR-10: «Пізніше» в тій самій сесії не перепитує
-  const declined = useRef(false);
+  // FR-10: «Пізніше» в тій самій сесії не перепитує - прапор у сторі, тож переживає закриття меню
+  const declined = useStore(store, (s) => s.pushDeclined);
   const toMenu = () => setPage('menu');
   return (
     <>
@@ -32,7 +33,7 @@ export function MenuHost({ store, insetTop, onClose, onCurios }: { store: Convey
           onBack={toMenu}
           onReset={() => setReset(true)}
           onAskPush={() => {
-            if (!declined.current) setPre(true);
+            if (!declined) setPre(true);
           }}
         />
       ) : null}
@@ -44,11 +45,7 @@ export function MenuHost({ store, insetTop, onClose, onCurios }: { store: Convey
         <PushPreprompt
           store={store}
           trigger="settings"
-          onClose={() => {
-            // «Пізніше» і відповідь ОС однаково закривають шторку; повторно в сесії не питаємо
-            declined.current = true;
-            setPre(false);
-          }}
+          onClose={() => setPre(false)}
         />
       ) : null}
     </>

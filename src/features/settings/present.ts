@@ -11,9 +11,9 @@ import type { Stats } from '@/profile/stats';
 
 import { setT } from './texts';
 
-export const DIGITS_PER_LEVEL = 3;
-
-export function profileRows(inp: { level: number; digit: DigitizationState; installMs: number; points: number; params: EconomyParams; inbox: readonly InboxItem[]; stats: Stats; gender: Gender | null }) {
+export function profileRows(inp: { level: number; digit: DigitizationState; installMs: number; points: number; params: EconomyParams;
+  /** Скільки цифровізацій веде з рівня: `levels[рівень].exitDigitizations` конфігу */
+  exit: number | null; inbox: readonly InboxItem[]; stats: Stats; gender: Gender | null }) {
   const pf = setT.pf;
   const closed = inp.inbox.filter((i) => i.status === 'archive' || i.status === 'drawer').length;
   const drawer = inp.inbox.filter((i) => i.status === 'drawer').length;
@@ -21,7 +21,7 @@ export function profileRows(inp: { level: number; digit: DigitizationState; inst
   return {
     form: inp.gender === 'f' ? pf.formF : pf.formM,
     level: `${inp.level} · ${pf.levels[inp.level - 1] ?? ''}`,
-    digitizations: `${inp.digit.counts[String(inp.level)] ?? 0} з ${DIGITS_PER_LEVEL}`,
+    digitizations: `${inp.digit.counts[String(inp.level)] ?? 0}${inp.exit != null ? ` з ${inp.exit}` : ''}`,
     arrival: ddmmyyyy(inp.installMs),
     points: String(Math.floor(inp.points)),
     pointsNote: inp.points > 0 ? pf.pointsNote(`+${pct}%`) : pf.pointsNone,

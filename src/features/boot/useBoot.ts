@@ -172,7 +172,8 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
     const sub = AppState.addEventListener('change', (s) => {
       if (s !== 'active') {
         leftAt ??= clock();
-        void store.getState().goBackground(clock());
+        // inactive (шторка, системне вікно) не вихід з гри: мішок пулів витрачаємо лише на background
+        if (s === 'background') void store.getState().goBackground(clock());
       } else {
         if (isNewSession(leftAt, clock())) snapshot(kv);
         leftAt = null;

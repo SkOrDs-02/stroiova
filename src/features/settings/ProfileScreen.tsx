@@ -6,7 +6,7 @@ import { useStore } from 'zustand';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { CallsignSheet } from '@/features/onboarding/CallsignSheet';
 import type { Gender } from '@/features/onboarding/steps';
-import { color, radius, space } from '@/theme';
+import { color, radius, size, space } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -20,7 +20,7 @@ export function ProfileScreen({ store, insetTop, onBack }: { store: ConveyorStor
   const [pick, setPick] = useState<{ text: string; gender: Gender } | null>(null);
   const o = s.onboarding;
   const gender: Gender = o.gender ?? 'm';
-  const r = profileRows({ level: s.state.level, digit: s.digit, installMs: s.inspections.installMs, points: s.state.prestigePoints, params: s.cfg.params, inbox: s.telegrams.inbox, stats: s.stats, gender });
+  const r = profileRows({ level: s.state.level, digit: s.digit, installMs: s.inspections.installMs, points: s.state.prestigePoints, params: s.cfg.params, exit: s.cfg.params.levels[s.state.level - 1]?.exitDigitizations ?? null, inbox: s.telegrams.inbox, stats: s.stats, gender });
   const pf = setT.pf;
   const rows: [string, string, string][] = [
     ['pf-form', pf.form, r.form],
@@ -122,12 +122,12 @@ const styles = StyleSheet.create({
   tileNote: { ...type('caption'), color: color.muted },
   h3: { ...type('h3'), color: color.text, marginTop: space[8] },
   note: { ...type('caption'), color: color.muted },
-  report: { borderWidth: 1.5, borderColor: color.accent, borderRadius: radius[6], padding: space[12], gap: space[2], minHeight: 56, justifyContent: 'center' },
+  report: { borderWidth: 1.5, borderColor: color.accent, borderRadius: radius[6], padding: space[12], gap: space[2], minHeight: size.ctaHeight, justifyContent: 'center' },
   reportTitle: { ...type('body'), color: color.accent, fontWeight: '600' },
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: color.scrim, justifyContent: 'flex-end' },
   sheet: { backgroundColor: color.bgDeep, borderTopLeftRadius: radius[12], borderTopRightRadius: radius[12], padding: space[16], gap: space[8] },
-  choice: { minHeight: 44, borderWidth: 1, borderColor: color.borderStrong, borderRadius: radius[6], justifyContent: 'center', paddingHorizontal: space[12] },
+  choice: { minHeight: size.touchMin, borderWidth: 1, borderColor: color.borderStrong, borderRadius: radius[6], justifyContent: 'center', paddingHorizontal: space[12] },
   choiceOn: { borderColor: color.accent, borderWidth: 2 },
-  ok: { minHeight: 48, backgroundColor: color.accent, borderRadius: radius[6], alignItems: 'center', justifyContent: 'center' },
+  ok: { minHeight: size.ctaHeightM, backgroundColor: color.accent, borderRadius: radius[6], alignItems: 'center', justifyContent: 'center' },
   okText: { ...type('cta'), color: color.accentInk },
 });

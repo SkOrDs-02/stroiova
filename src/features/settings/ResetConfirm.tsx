@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
+import { formatBig } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
@@ -14,6 +15,7 @@ export function ResetConfirm({ store, onCancel, onDone }: { store: ConveyorStore
   const [step, setStep] = useState<1 | 2>(1);
   const callsign = useStore(store, (s) => s.onboarding.callsign?.text ?? '');
   const hasStarter = useStore(store, (s) => s.monetization.rights.starter_pack);
+  const cfg = useStore(store, (s) => s.cfg);
   const rc = setT.rc;
   return (
     <View style={styles.scrim} testID="reset-confirm">
@@ -27,7 +29,7 @@ export function ResetConfirm({ store, onCancel, onDone }: { store: ConveyorStore
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>{rc.goneList}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.k}>{rc.stays}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>{rc.staysList}</Text>
-            {hasStarter ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body} testID="rc-starter">{rc.staysStarter}</Text> : null}
+            {hasStarter ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body} testID="rc-starter">{rc.staysStarter(formatBig(cfg.params.starterSignatures, 'counter'), cfg.params.starterFuelHours)}</Text> : null}
           </ScrollView>
         ) : (
           <View style={styles.paper} testID="rc-act">

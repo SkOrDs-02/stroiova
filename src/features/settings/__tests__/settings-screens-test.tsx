@@ -193,7 +193,8 @@ describe('налаштування', () => {
     await openMenu(store);
     await fireEvent.press(screen.getByTestId('menu-settings'));
     await act(async () => {});
-    await fireEvent.press(screen.getByTestId('set-notif-boosts'));
+    // рішення 92: перший тап по будь-якій категорії, навіть по вимкненню
+    await fireEvent.press(screen.getByTestId('set-notif-storage'));
     expect(screen.getByTestId('push-preprompt')).toBeTruthy();
     expect(n.log.requests).toBe(0);
     await fireEvent.press(screen.getByTestId('pp-later'));
@@ -203,6 +204,14 @@ describe('налаштування', () => {
     await fireEvent.press(screen.getByTestId('set-notif-telegrams'));
     await fireEvent.press(screen.getByTestId('set-notif-telegrams'));
     expect(screen.queryByTestId('push-preprompt')).toBeNull();
+    // меню закрили й відкрили знову - «Пізніше» діє на всю сесію
+    await fireEvent.press(screen.getByTestId('settings-back'));
+    await fireEvent.press(screen.getByTestId('menu-close'));
+    await fireEvent.press(screen.getByTestId('menu-open'));
+    await fireEvent.press(screen.getByTestId('menu-settings'));
+    await fireEvent.press(screen.getByTestId('set-notif-gifts'));
+    expect(screen.queryByTestId('push-preprompt')).toBeNull();
+    expect(n.log.requests).toBe(0);
     // прямий запит (налаштування -> «Так»)
     await act(async () => {
       await store.getState().requestPush('settings');
@@ -227,6 +236,28 @@ describe('налаштування', () => {
       store.setState({ busy: 'purchase' });
     });
     expect(screen.getByTestId('set-restore')).toBeDisabled();
+  });
+
+  test('AC-13: другий тап під час реального запиту не дає другого виклику й другої події', async () => {
+    const shop = fakePurchases();
+    let calls = 0;
+    let release: () => void = () => {};
+    shop.restore = () => {
+      calls++;
+      return new Promise((res) => {
+        release = () => res({ kind: 'ok', owned: ['no_ads'] });
+      });
+    };
+    const { store } = game({ shop });
+    await openMenu(store);
+    await fireEvent.press(screen.getByTestId('menu-settings'));
+    await act(async () => {});
+    await fireEvent.press(screen.getByTestId('set-restore'));
+    expect(screen.getByTestId('set-restore')).toBeDisabled();
+    await store.getState().restore('settings_button');
+    await act(async () => release());
+    expect(calls).toBe(1);
+    expect(store.getState().events.filter((e) => e.type === 'purchaseRestore')).toHaveLength(1);
   });
 
   test('анонімна статистика: вимкнення пише setting_change (analytics, off) і лишається в записі', async () => {
@@ -267,6 +298,7 @@ describe('скидання прогресу', () => {
     const n = fakeNotifications({ permission: 'granted' });
     const { store } = game({ notifications: n });
     store.setState({ state: { ...store.getState().state, signatures: 5000, hasNoAds: true }, monetization: { ...store.getState().monetization, rights: { ...store.getState().monetization.rights, no_ads: true } } });
+    store.setState({ digit: { ...store.getState().digit, total: 2 }, playtimeMs: 90_500 });
     await sign(store);
     await fireEvent.press(screen.getByTestId('rc-next'));
     const cancels = n.log.cancels;
@@ -278,7 +310,7 @@ describe('скидання прогресу', () => {
     expect(st.onboarding.callsign).toBeNull();
     expect(st.monetization.rights.no_ads).toBe(true);
     expect(st.settings.sound).toBe(true);
-    expect(st.events.at(-1)).toEqual({ type: 'settingChange', settingName: 'progress_reset', newValue: null });
+    expect(st.events.at(-1)).toEqual({ type: 'settingChange', settingName: 'progress_reset', newValue: null, digitizationCount: 2, playtimeSec: 90 });
     expect(n.log.cancels).toBeGreaterThan(cancels);
     expect(st.museum.curios).toEqual([]);
     expect(st.stats).toEqual({ inspTotal: 0, inspPassed: 0, drones: 0 });
@@ -313,6 +345,19 @@ describe('Про гру', () => {
     expect(screen.getByTestId('about-id')).toHaveTextContent(has('id-1234'));
     await fireEvent.press(screen.getByTestId('about-copy'));
     expect(links.log.copied).toEqual(['id-1234']);
+  });
+
+  test('приховане: 7 тапів по версії вмикають тестовий режим (is_test_user), раніше - ні; у налаштуваннях з\'являється перемикач', async () => {
+    const { store } = game();
+    await toAbout(store);
+    for (let i = 0; i < 6; i++) await fireEvent.press(screen.getByTestId('about-version'));
+    expect(store.getState().settings.testUser).toBe(false);
+    await fireEvent.press(screen.getByTestId('about-version'));
+    expect(store.getState().settings.testUser).toBe(true);
+    await fireEvent.press(screen.getByTestId('about-back'));
+    await fireEvent.press(screen.getByTestId('menu-settings'));
+    await act(async () => {});
+    expect(screen.getByTestId('set-test')).toBeTruthy();
   });
 
   test('AC-18: політика приватності й лист розробнику - у зовнішньому браузері через LinkService', async () => {

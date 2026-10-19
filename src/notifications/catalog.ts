@@ -28,8 +28,16 @@ export function def(type: PushType): PushDef {
   return BY_TYPE.get(type)!;
 }
 
-/** Сповіщення, чий час прив'язаний до події: у тихі години не надсилаються, а не переносяться (рішення 86) */
-export const DROP_IN_QUIET: readonly PushType[] = ['inspection', 'race_reminder'];
+/**
+ * Сповіщення, чий час прив'язаний до події або чий текст має строк («×3 ще 2 години», «поки служить»): у тихі години
+ * не надсилаються, а не переносяться на 08:00 (рішення 86, 92)
+ */
+export const DROP_IN_QUIET: readonly PushType[] = ['inspection', 'inspection_passed', 'race_reminder', 'race_won'];
+
+/** За скільки до події йдуть № 3 (комісія) і № 5 (кінець таймера ресурсу): spec 010 «Параметри» */
+export const LEAD_MS = 2 * 3_600_000;
+/** Як далеко наперед шукаємо подарунок для № 10: у межах доби планування, рішення 92 */
+export const GIFT_HORIZON_MS = 3 * 86_400_000;
 
 /** Ліміти (FR-3): 2 на добу, № 8 - 1 на добу */
 export const DAILY_LIMIT = 2;

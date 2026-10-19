@@ -8,7 +8,7 @@ import type { RaceState } from '@/race/types';
 import { dayKey, dayStart, DAY, HOUR, localMs } from '@/telegrams/clock';
 import type { TelegramState } from '@/telegrams/types';
 
-import { CATALOG, DAILY_LIMIT, def, DROP_IN_QUIET, FUEL_DAILY_LIMIT, QUIET_FROM_HOUR, QUIET_TO_HOUR } from './catalog';
+import { CATALOG, DAILY_LIMIT, def, DROP_IN_QUIET, FUEL_DAILY_LIMIT, GIFT_HORIZON_MS, LEAD_MS, QUIET_FROM_HOUR, QUIET_TO_HOUR } from './catalog';
 import type { Candidate, NotificationsState, Settings } from './types';
 
 export function newNotifications(): NotificationsState {
@@ -74,7 +74,7 @@ export function candidates(inp: PlanInput, nowMs: number): Candidate[] {
   // № 3, 4: комісія
   const insp = inspections.active;
   if (insp) {
-    add('inspection', insp.arrMs - 2 * HOUR, { target: 'insp-prep' });
+    add('inspection', insp.arrMs - LEAD_MS, { target: 'insp-prep' });
     if (insp.trigger === 'scheduled' && readiness(insp) >= 100) add('inspection_passed', insp.arrMs);
   }
   // № 5, 6: гонка
@@ -82,7 +82,8 @@ export function candidates(inp: PlanInput, nowMs: number): Candidate[] {
   if (r) {
     const paused = r.pausedAtMs != null;
     if (!paused && r.actEndMs <= r.svcEndMs) add('race_won', r.actEndMs, { item: r.type });
-    else if (r.actEndMs > r.svcEndMs - 2 * HOUR) add('race_reminder', r.svcEndMs - 2 * HOUR, { ref: r.id, item: r.type, place: placeAt(r, r.svcEndMs - 2 * HOUR) });
+    // № 5 не залежить від № 6: акт, що закінчиться в останні 2 год таймера, до тієї миті ще на конвеєрі
+    if (r.actEndMs > r.svcEndMs - LEAD_MS) add('race_reminder', r.svcEndMs - LEAD_MS, { ref: r.id, item: r.type, place: placeAt(r, r.svcEndMs - LEAD_MS) });
   }
   // № 7: кінець буста ×2
   const boostEnd = effects.filter((e) => e.source === 'ad_boost').reduce((m, e) => Math.max(m, e.endMs), -Infinity);
@@ -93,7 +94,7 @@ export function candidates(inp: PlanInput, nowMs: number): Candidate[] {
   const k = telegrams.kombat.active;
   if (k && !k.found) add('kombat_found', k.endMs);
   // № 10: подарунок
-  const at = giftTime(race, p, nowMs, nowMs + 3 * DAY, tz, inp.installMs, (eco.streamLevels[1] ?? 0) > 0);
+  const at = giftTime(race, p, nowMs, nowMs + GIFT_HORIZON_MS, tz, inp.installMs, (eco.streamLevels[1] ?? 0) > 0);
   if (at != null) add('gift_arrived', at, { item: p.giftOrder[race.giftIdx % p.giftOrder.length] });
   return out;
 }

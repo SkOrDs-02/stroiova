@@ -185,7 +185,7 @@ describe('справжні міграції', () => {
 
   test('8 → 9 (010): налаштування за замовчуванням, нічого не заплановано; наявні записи курйозів вважаються баченими', () => {
     const d = draft({ schemaVersion: 8, savedAt: 5000 });
-    const { settings: _s, notifications: _n, ...gameV8 } = d.game;
+    const { settings: _s, notifications: _n, stats: _st, ...gameV8 } = d.game;
     const museum = { owned: [], reveal: [], curios: [], curioSeq: 3 };
     const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV8, museum } as never }) });
     const r = loadSave(kv, { current: 9, migrations: MIGRATIONS });
@@ -195,6 +195,7 @@ describe('справжні міграції', () => {
     expect(r.save.game.settings).toMatchObject({ sound: true, haptics: true, analytics: true, pushPermission: 'not_asked', testUser: false });
     expect(r.save.game.notifications).toEqual({ planned: [], sent: { day: '', count: 0, fuel: 0 } });
     expect(r.save.game.museum).toMatchObject({ curioSeq: 3, curiosSeen: 3 });
+    expect(r.save.game.stats).toEqual({ inspTotal: 0, inspPassed: 0, drones: 0 });
     expect(r.save.game.monetization).toEqual(d.game.monetization);
   });
 });

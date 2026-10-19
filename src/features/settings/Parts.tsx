@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   chev: { ...type('h2'), color: color.muted },
   badge: { backgroundColor: color.accent, borderRadius: radius[6], paddingHorizontal: space[8], paddingVertical: space[2] },
   badgeText: { ...type('caption'), color: color.accentInk },
-  track: { width: 44, height: 26, borderRadius: 13, backgroundColor: color.surface2, borderWidth: 1, borderColor: color.borderStrong, justifyContent: 'center', paddingHorizontal: 2 },
+  track: { width: size.touchMin, height: 26, borderRadius: 13, backgroundColor: color.surface2, borderWidth: 1, borderColor: color.borderStrong, justifyContent: 'center', paddingHorizontal: 2 },
   trackOn: { backgroundColor: color.accent, borderColor: color.accent },
   knob: { width: 20, height: 20, borderRadius: 10, backgroundColor: color.muted },
   knobOn: { backgroundColor: color.accentInk, alignSelf: 'flex-end' },
