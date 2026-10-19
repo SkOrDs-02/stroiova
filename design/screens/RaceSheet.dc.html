@@ -136,7 +136,7 @@ button{font:inherit;cursor:pointer}
       <sc-if value="{{s.adOn}}" hint-placeholder-val="{{true}}">
         <button class="st-btn st-btn--primary st-btn--l" aria-label="{{t.adAria}}">
           <svg class="st-ico" width="20" height="20" viewBox="0 0 24 24" style="stroke-width: 2" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
-          −50% часу акта
+          −50% залишку часу
         </button>
         <span class="st-btn-note">{{t.adNote}}</span>
       </sc-if>
@@ -168,7 +168,7 @@ class Component extends DCLogic {
       res: '6 год', resP: '67%', resN: '67',
       margin: '1 год 30 хв',
       adNote: 'Реклама 30 секунд · −2 год 15 хв · сьогодні ще 3 з 3',
-      adAria: 'Мінус 50 відсотків часу акта за рекламу 30 секунд'
+      adAria: 'Мінус 50 відсотків залишку часу акта за рекламу 30 секунд'
     };
     if (late) {
       t.act = '5 год 12 хв'; t.actP = '45%'; t.actN = '45';
