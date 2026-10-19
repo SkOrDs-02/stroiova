@@ -116,6 +116,7 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.onboarding.step !== prev.onboarding.step ||
     st.telegrams.inbox !== prev.telegrams.inbox ||
     st.telegrams.kombat !== prev.telegrams.kombat ||
+    st.telegrams.meeting !== prev.telegrams.meeting ||
     st.inspections.active !== prev.inspections.active ||
     st.inspections.last !== prev.inspections.last ||
     st.race.active !== prev.race.active ||

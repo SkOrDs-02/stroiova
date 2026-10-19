@@ -6,11 +6,11 @@ import type { DomainEvent, EconomyConfig, EconomyState, Effect } from '@/economy
 
 import type { Ceremony, DigitizationState } from './types';
 
-/** Рівні, які можна пройти в цій збірці: Р3–Р5 відкриє 011 (рішення 71). */
-export const PLAYABLE_LEVELS = 2;
+/** Рівні, які можна пройти в цій збірці: Р3 відкрито 011 (етап 1, рішення 93); Р4-Р5 - 012, 013. На Р3 виходу ще немає. */
+export const PLAYABLE_LEVELS = 3;
 
 export function newDigitization(nowMs: number): DigitizationState {
-  return { counts: {}, total: 0, howSeen: false, ceremony: null, cycleStartMs: nowMs };
+  return { counts: {}, total: 0, howSeen: false, ceremony: null, cycleStartMs: nowMs, levelExitAllowed: false };
 }
 
 /** Скільки цифровізацій уже зроблено на рівні. */
@@ -52,9 +52,24 @@ export function journalsFor(cfg: EconomyConfig, level: number, nth: number): num
   return cfg.params.digitJournals[String(level)]?.[String(nth)] ?? [];
 }
 
-/** Остання на рівні: Р1, і це вже `exitDigitizations`-та (FR-24). */
-export function isLastOnLevel(cfg: EconomyConfig, level: number, nth: number): boolean {
-  return level < PLAYABLE_LEVELS && nth >= cfg.params.levels[level - 1]!.exitDigitizations;
+/**
+ * Остання на рівні, тобто з переходом: на рівні без боса (Р1) - `exitDigitizations`-та (06 FR-24); на рівні з босом
+ * (Р2) - перша після пройденої підсумкової (011 FR-9). Рівнів без виходу в збірці (Р3) немає.
+ */
+export function isLastOnLevel(cfg: EconomyConfig, ds: DigitizationState, level: number, nth: number): boolean {
+  const L = cfg.params.levels[level - 1];
+  if (!L || level >= PLAYABLE_LEVELS || L.exitDigitizations <= 0) return false;
+  return L.boss ? ds.levelExitAllowed : nth >= L.exitDigitizations;
+}
+
+/**
+ * Пора оголошувати підсумкову (011 FR-2): рівень з босом, виконано `exitDigitizations` цифровізацій на рівні, перехід ще не
+ * дозволено. Чи відкрито потоки й чи немає активної перевірки - справа перевірок (004).
+ */
+export function finalDue(cfg: EconomyConfig, ds: DigitizationState, level: number): boolean {
+  const L = cfg.params.levels[level - 1];
+  if (!L || !L.boss || level >= PLAYABLE_LEVELS || L.exitDigitizations <= 0) return false;
+  return countOn(ds, level) >= L.exitDigitizations && !ds.levelExitAllowed;
 }
 
 export function status(state: EconomyState, ds: DigitizationState, cfg: EconomyConfig, nowMs: number, effects: readonly Effect[] = []): DigitStatus {
@@ -83,7 +98,7 @@ export function status(state: EconomyState, ds: DigitizationState, cfg: EconomyC
     multBefore,
     multAfter,
     levelCount,
-    isLast: isLastOnLevel(cfg, state.level, nth),
+    isLast: isLastOnLevel(cfg, ds, state.level, nth),
     recommended,
     etaSec,
     journals: journalsFor(cfg, state.level, nth),
@@ -135,7 +150,7 @@ export function digitize(
   if (up) events.push({ type: 'levelAdvance', from: level, to: level + 1, digitizationCount: nth, pointsTotal });
   return {
     state: next,
-    ds: { ...ds, counts: { ...ds.counts, [String(level)]: nth }, total: no, ceremony, cycleStartMs: nowMs },
+    ds: { ...ds, counts: { ...ds.counts, [String(level)]: nth }, total: no, ceremony, cycleStartMs: nowMs, levelExitAllowed: up ? false : ds.levelExitAllowed },
     events,
   };
 }

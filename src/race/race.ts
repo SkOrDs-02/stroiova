@@ -30,8 +30,9 @@ export function routeFor(type: GiftType, level: number, cfg: EconomyConfig, j: J
   const m = j.j8 ? 2 : 1;
   const k6 = j.j6 ? 1 - (p.museumRacePct / 100) * m : 1;
   const k7 = j.j7 ? 1 - (p.museumRacePct / 100) * m : 1;
-  const hours = [...p.gifts[type].steps, ...(level >= 2 ? [p.giftL2StepH] : [])];
-  const units: RouteUnit[] = [...ROUTE, ...(level >= 2 ? ['kazna' as const] : [])];
+  // Р2 додає крок «Казначейство», Р3 - «Нарада» тієї самої тривалості (011 ВП-8, рішення 94)
+  const hours = [...p.gifts[type].steps, ...(level >= 2 ? [p.giftL2StepH] : []), ...(level >= 3 ? [p.giftL2StepH] : [])];
+  const units: RouteUnit[] = [...ROUTE, ...(level >= 2 ? ['kazna' as const] : []), ...(level >= 3 ? ['narada' as const] : [])];
   return hours.map((h, i) => ({ unit: units[i]!, sec: Math.round(h * 3600 * k6 * (units[i] === 'fin' ? k7 : 1)) }));
 }
 

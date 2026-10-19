@@ -45,6 +45,17 @@ export interface GiftDef {
   steps: number[];
 }
 
+/** Підсумкова перевірка рівня: попередження, повтор, ціна чекліста в хвилинах базового доходу, пункти (5 базових + 1 механіки) */
+export interface BossParams {
+  warnH: number;
+  retryH: number;
+  checklistMin: number;
+  items: number;
+  adItems: number;
+  saveH: number;
+  zpzMin: number;
+}
+
 export interface EconomyParams {
   streams: UnitDef[];
   stages: UnitDef[];
@@ -83,6 +94,11 @@ export interface EconomyParams {
   kombatMaxMin: number;
   kombatRunnerMin: number;
   kombatRunnerCostMin: number;
+  /** 011: «Нарада затягнулась» (Р3+) - шаблон «Комбата шукають» на ланці «Нарада» */
+  naradaChance: number;
+  naradaMult: number;
+  naradaMinMin: number;
+  naradaMaxMin: number;
   /** 004: перевірки (рішення 25, 28, 61, 65); хвилини пунктів — таблиця «Пункти чекліста» */
   inspFirstAfterHours: number;
   inspIntervalMinH: number;
@@ -100,6 +116,8 @@ export interface EconomyParams {
   inspArriveJitterMin: number;
   inspMinPrice: number;
   inspItems: InspItemDef[];
+  /** 011: підсумкова перевірка рівня (рішення 95, 96) */
+  boss: BossParams;
   /** 005: подарунки й гонка (рішення 29–31); кроки акта — години (Акти, Комбат, Стройова, Фін.) */
   gifts: Record<'drone' | 'shovel' | 'generator', GiftDef>;
   giftOrder: ('drone' | 'shovel' | 'generator')[];

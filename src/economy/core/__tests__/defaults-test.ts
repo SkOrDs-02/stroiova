@@ -37,8 +37,8 @@ describe('параметри', () => {
 });
 
 describe('пункти чекліста (04)', () => {
-  test('базові пункти рівня в сумі дають inspChecklistMin (Р1 129, Р2 51)', () => {
-    for (const level of [1, 2]) {
+  test('базові пункти рівня в сумі дають inspChecklistMin (Р1 129, Р2 51, Р3 51)', () => {
+    for (const level of [1, 2, 3]) {
       const sum = DEFAULTS.inspItems.filter((i) => i.level === level && !i.added).reduce((a, i) => a + i.min, 0);
       expect(sum).toBe(DEFAULTS.levels[level - 1]!.inspChecklistMin);
     }

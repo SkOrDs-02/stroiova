@@ -5,6 +5,8 @@ import type { Inspection } from '@/inspections/types';
 import { newRace } from '@/race/race';
 import { cfg, eco, HOUR, tgWith } from '@/telegrams/test-utils';
 
+import { pushT } from '@/features/settings/texts';
+
 import { CATALOG, def } from '../catalog';
 import { newNotifications, newSettings, plan, settle, type PlanInput } from '../planner';
 import type { NotificationsState } from '../types';
@@ -33,6 +35,8 @@ const insp = (arrMs: number, done = false): Inspection => ({
   trigger: 'scheduled',
   boss: 'brigade_commission',
   level: 1,
+  kind: 'regular',
+  attempt: 1,
   annMs: arrMs - 3 * HOUR,
   arrMs,
   items: [{ id: 'a', price: 1, done }],
@@ -157,6 +161,18 @@ describe('планувальник (FR-3…FR-6)', () => {
     const inp = input({ tzOffsetMin: 180, telegrams: { ...tgWith([]), startMs: D(0), day: { key: '2026-10-10', slots: [D(22, 30)], used: 0 } } });
     const r = plan(inp, now).find((c) => c.type === 'telegram_new')!;
     expect(r.atMs).toBe(D(5, 0, 11));
+  });
+});
+
+describe('гонка Р3 (011 ВП-8)', () => {
+  test('№ 5 у кроці «Нарада»: місце акта підставляється, текст без порожніх місць', () => {
+    const race = {
+      ...newRace('x'),
+      active: { id: 'race_0001', no: 1, type: 'drone' as const, level: 3, startMs: D(8), svcEndMs: D(17), steps: [{ unit: 'akty' as const, sec: 600 }, { unit: 'narada' as const, sec: 7200 }], actTotalSec: 7800, actEndMs: D(16), pausedAtMs: null, digUsed: false, sped: [], seen: true },
+    };
+    const r = plan(input({ race }), D(10)).find((c) => c.type === 'race_reminder');
+    expect(r?.place).toBe('narada');
+    expect(pushT.place['narada']).toBe('у Нараді');
   });
 });
 

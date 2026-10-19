@@ -1,10 +1,13 @@
 // Пули телеграм (003 FR-7; 09 FR-35): вбудований контент, індекс за id, пул рівня.
 import tgMain from '../../content/telegrams.json';
 import tgL12 from '../../content/tg/level1-2.json';
+import tgL3 from '../../content/tg/level3.json';
 
 import type { Telegram } from './types';
 
-const ALL: Telegram[] = [...(tgMain as unknown as Telegram[]), ...(tgL12 as unknown as Telegram[])];
+// Р3 (011): до пачок (наступний PR) беремо лише окремі телеграми без `pack`; пачки лежать у файлі й чекають FR-17…FR-24
+const L3_SINGLE = (tgL3.telegrams as unknown as (Telegram & { pack?: unknown })[]).filter((t) => !t.pack);
+const ALL: Telegram[] = [...(tgMain as unknown as Telegram[]), ...(tgL12 as unknown as Telegram[]), ...L3_SINGLE];
 const BY_ID = new Map(ALL.map((t) => [t.id, t]));
 
 export const FIRST_TELEGRAM_ID = 'tg_0001_sergeants';

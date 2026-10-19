@@ -31,6 +31,7 @@ export function newTelegrams(p: EconomyParams, seedText: string): TelegramState 
     refuelBlockedUntil: 0,
     override: { lastDayKey: null, nextNo: overrideStartNo() },
     kombat: { lastDayKey: null, active: null },
+    meeting: { lastDayKey: null, active: null },
     deliveries: 0,
     lineBags: {},
   };
@@ -203,6 +204,13 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
   if (k && !k.found && k.endMs <= ctx.nowMs) {
     tg = { ...tg, kombat: { ...tg.kombat, active: { ...k, found: true } } };
     events.push({ type: 'kombatFound', how: k.runnerAtMs != null ? 'runner' : 'wait' });
+  }
+
+  // «Нарада закінчилась» (011 FR-25): так само, один раз
+  const m = tg.meeting.active;
+  if (m && !m.found && m.endMs <= ctx.nowMs) {
+    tg = { ...tg, meeting: { ...tg.meeting, active: { ...m, found: true } } };
+    events.push({ type: 'meetingFound', how: m.runnerAtMs != null ? 'note' : 'wait' });
   }
 
   // «на виконанні» → архів (FR-9)

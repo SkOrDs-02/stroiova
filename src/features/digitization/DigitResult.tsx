@@ -21,7 +21,7 @@ export function DigitResult({ store }: { store: ConveyorStore }) {
   const c = s.digit.ceremony!;
   const journals = shownJournals(c.journals);
   const line = useTumbLine(store, 'digit.line', `digit:${c.no}`);
-  const note = c.levelUp ? digitT.noteL2 : c.level >= 2 ? digitT.noteR2 : digitT.noteR1;
+  const note = c.levelUp ? (c.level >= 2 ? digitT.noteR3 : digitT.noteL2) : c.level >= 2 ? digitT.noteR2 : digitT.noteR1;
   return (
     <View style={styles.scrim} testID="digit-result">
       <View style={styles.wrap} accessibilityViewIsModal>

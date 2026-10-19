@@ -31,4 +31,6 @@ export interface DigitizationState {
   ceremony: Ceremony | null;
   /** Мітка початку поточного циклу (sec_since_cycle_start) */
   cycleStartMs: number;
+  /** Підсумкова рівня пройдена: наступна цифровізація - з переходом (011 FR-1, FR-9); скидається на переході */
+  levelExitAllowed: boolean;
 }

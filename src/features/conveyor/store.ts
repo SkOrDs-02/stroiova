@@ -16,7 +16,7 @@ import { completeAll, shiftInspections, buyItem as buyInsp, fromTelegramEvent as
 import type { InspectionState } from '@/inspections/types';
 import { adSpeedup, digitalSpeedup, fromTelegram as raceFromTelegram, newRace, resume as raceResume, shiftRace, tick as tickRace } from '@/race/race';
 import type { RaceState } from '@/race/types';
-import { closeCeremonyStep, digitize as digitizeNow, newDigitization, shiftDigitization, status as digitStatus } from '@/digitization/digitization';
+import { closeCeremonyStep, digitize as digitizeNow, finalDue, newDigitization, shiftDigitization, status as digitStatus } from '@/digitization/digitization';
 import type { DigitizationState } from '@/digitization/types';
 import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, markCuriosSeen, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
@@ -36,7 +36,7 @@ import { digitT } from '@/features/digitization/texts';
 import { dayKey } from '@/telegrams/clock';
 import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
 import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } from '@/telegrams/effects';
-import { fromTelegram, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
+import { fromTelegram, hasStage, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
 import type { TelegramState } from '@/telegrams/types';
 import { lineAt, poolSize } from '@/features/telegrams/lines';
@@ -156,6 +156,8 @@ interface Store {
   prepareInspection: (uid: string) => void;
   /** «Відправити посильного» (FR-28) */
   sendRunner: () => boolean;
+  /** «Передати записку на нараду» (011 FR-25) */
+  sendNote: () => boolean;
   /** Репліка Кави над новою телеграмою: одна на телеграму, ≤ 2 реплік за сесію (рішення 41, 45) */
   kavaLineFor: (uid: string) => string | null;
   /** Бонус архіву «Археолога» (крок 9, FR-20): archiveBonusMin × базовий дохід, один раз */
@@ -303,6 +305,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (e.type === 'reputationTierChange') get().showToast({ kind: 'rep', tier: e.to });
       // Граніт у «знайшли» — репліка персонажа, у ліміті сесії
       if (e.type === 'kombatFound' && get().telegrams.kombat.active) characterLine('granit.success', `kombat:${get().telegrams.kombat.active!.startMs}`);
+      if (e.type === 'meetingFound' && get().telegrams.meeting.active) characterLine('kava.narada_found', `meeting:${get().telegrams.meeting.active!.startMs}`);
     }
   };
   /** «Стартовий набір» після скидання: 50 000 знову, щойно онбординг пройдено (рішення 88) */
@@ -428,11 +431,21 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       offline,
       reputation: g.telegrams.reputation.value,
       digitizations: g.digit.total,
+      finalDue: finalDue(g.cfg, g.digit, g.state.level),
     });
     if (r.s === g.inspections && !r.events.length) return;
     // 003 FR-15: після першої планової відписки можуть кликати позапланові
     const tg = r.scheduledArrived && !g.telegrams.firstInspectionPassed ? { ...g.telegrams, firstInspectionPassed: true } : g.telegrams;
-    set({ inspections: r.s, telegrams: tg, effects: [...g.effects, ...r.effects], events: [...g.events, ...r.events].slice(-40), ...(r.s.active ? {} : { inspPrepOpen: false }) });
+    // 011 FR-6: пройдена підсумкова дозволяє перехід; наступна цифровізація - з переходом
+    const exit = r.events.some((e) => e.type === 'finalPassed');
+    set({
+      inspections: r.s,
+      telegrams: tg,
+      effects: [...g.effects, ...r.effects],
+      events: [...g.events, ...r.events].slice(-40),
+      ...(exit ? { digit: { ...g.digit, levelExitAllowed: true } } : {}),
+      ...(r.s.active ? {} : { inspPrepOpen: false }),
+    });
     absorbMuseum(r.events, to, offline);
   };
   /**
@@ -598,6 +611,13 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         // чинна подія не накладається: ×0,25 не множиться вдруге (рішення 25)
         set({ telegrams: k.tg, ...(k.effect ? { effects: [...g.effects.filter((x) => x.source !== 'kombat_away' || x.endMs <= backAt), k.effect] } : {}) });
         handleEvents(k.events, backAt);
+        // 011 FR-25: «Нарада затягнулась» - з Р3, той самий шаблон; поки йде комбат, не стартує
+        const g1 = get();
+        if (hasStage('meeting', g1.state)) {
+          const m = onSessionStart(g1.telegrams, g1.cfg, backAt, tzOffsetAt(backAt), false, 'meeting');
+          set({ telegrams: m.tg, ...(m.effect ? { effects: [...g1.effects.filter((x) => x.source !== 'meeting_overrun' || x.endMs <= backAt), m.effect] } : {}) });
+          handleEvents(m.events, backAt);
+        }
         // 004 FR-2: перша перевірка — на старті сесії, коли онбординг етапу 1 пройдено (крок 9)
         const g2 = get();
         if (isDone(g2.onboarding, 9)) {
@@ -743,7 +763,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const next = closeCeremonyStep(g.digit);
       set({ digit: next });
       // перехід на Р2: unit-unlock і coach Казначейства замінює тост k.tip (рішення 71, 73)
-      if (c?.step === 'levelUp') get().showToast({ kind: 'text', text: digitT.kTip });
+      // перехід на Р3: так само тост замість unit-unlock і coach (011 FR-15, відкладено, рішення 97)
+      if (c?.step === 'levelUp') get().showToast({ kind: 'text', text: c.level >= 2 ? digitT.kTipR3 : digitT.kTip });
     },
     ackDigitHow: () => set({ digit: { ...get().digit, howSeen: true } }),
     closeRaceResult: () => {
@@ -994,6 +1015,14 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if ('error' in r) return false;
       // посильний знайде комбата раніше: кінець ефекту ×0,25 зсувається на мить знаходження
       set({ telegrams: r.tg, state: r.eco, effects: g.effects.map((e) => (e.source === 'kombat_away' && e.endMs > g.lastMs ? { ...e, endMs: r.endMs } : e)) });
+      return true;
+    },
+    sendNote: () => {
+      const g = get();
+      const r = sendRunnerTg(g.telegrams, g.state, g.cfg, g.lastMs, 'meeting');
+      if ('error' in r) return false;
+      // записка закриває нараду раніше: кінець ефекту ×0,25 зсувається на мить кінця
+      set({ telegrams: r.tg, state: r.eco, effects: g.effects.map((e) => (e.source === 'meeting_overrun' && e.endMs > g.lastMs ? { ...e, endMs: r.endMs } : e)) });
       return true;
     },
   };

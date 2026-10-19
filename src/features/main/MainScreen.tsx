@@ -13,6 +13,7 @@ import { OfflineReturn } from '@/features/conveyor/OfflineReturn';
 import { InspCall } from '@/features/inspections/InspCall';
 import { InspPrep } from '@/features/inspections/InspPrep';
 import { InspResult } from '@/features/inspections/InspResult';
+import { BossBrief } from '@/features/inspections/BossBrief';
 import { InspWarning } from '@/features/inspections/InspWarning';
 import { offlineRows } from '@/features/inspections/present';
 import { inspT } from '@/features/inspections/texts';
@@ -75,6 +76,7 @@ type View3 =
   | { kind: 'note'; uid: string }
   | { kind: 'rep'; back: 'main' | 'list' }
   | { kind: 'kombat' }
+  | { kind: 'meeting' }
   | { kind: 'digital' }
   | { kind: 'museum'; seg?: 'journals' | 'curios' }
   | { kind: 'menu' }
@@ -172,13 +174,18 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // подію, яку гравець уже бачив, шторка не відкриває вдруге
   const [kombatSeen, setKombatSeen] = useState<number | null>(null);
   const kombatAuto = kombatOn && kombat!.startMs !== kombatSeen && view.kind === 'main' && s.offline == null;
+  // «Нарада затягнулась» (011 FR-25): так само, на Р3+
+  const meeting = s.telegrams.meeting.active;
+  const meetingOn = meeting != null && meeting.endMs > now;
+  const [meetingSeen, setMeetingSeen] = useState<number | null>(null);
+  const meetingAuto = meetingOn && meeting!.startMs !== meetingSeen && view.kind === 'main' && s.offline == null && !kombatAuto;
 
   const inbox = s.telegrams.inbox;
   const badge = inbox.filter((x) => (x.status === 'new' && x.kind !== 'note') || (x.kind === 'note' && !x.read)).length;
   const tier = repTier(s.telegrams.reputation.value, s.cfg.params);
   // 006 FR-22: церемонія цифровізації (акт, наказ про переведення) показується, поки гравець її не закрив, і при запуску
   const ceremony = s.digit.ceremony;
-  const overlay = s.offline != null || s.clerkFirstOpen || view.kind !== 'main' || kombatAuto;
+  const overlay = s.offline != null || s.clerkFirstOpen || view.kind !== 'main' || kombatAuto || meetingAuto;
   const coachRow = !overlay && (rd === 'coachUpgrade' || rd === 'coachHire');
   const coachTab = !overlay && rd === 'coachTelegram';
   const coachOn = coachRow || coachTab;
@@ -190,9 +197,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const ceremonyOpen = ceremony != null && s.offline == null && !s.clerkFirstOpen;
   const inspFree = !overlay && !showCall && !ceremonyOpen;
   const inspCall = inspFree && insp != null && ins.callPending;
-  const inspWarn = inspFree && !inspCall && insp != null && insp.modal && !insp.warned;
-  // без гравця результат іде в довідку й позначається показаним (FR-25); коротка відсутність без довідки — акт
-  const inspResult = inspFree && !inspCall && !inspWarn && ins.last != null && !ins.last.seen;
+  // без гравця результат іде в довідку й позначається показаним (FR-25); коротка відсутність без довідки — акт.
+  // Хронологічно: непоказаний результат іде раніше за оголошення нової (011: провал підсумкової оголошує повтор одразу)
+  const inspResult = inspFree && !inspCall && ins.last != null && !ins.last.seen;
+  const inspWarn = inspFree && !inspCall && !inspResult && insp != null && insp.modal && !insp.warned;
   const inspBanner = insp != null && (insp.warned || !insp.modal);
   const digitEta = s.digitRec ? digitStatus(s.state, s.digit, s.cfg, now, s.effects).etaSec : null;
   // 005: gift-arrived і результат гонки — у тій самій черзі, після перевірок (крайовий випадок spec)
@@ -208,11 +216,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // 007: розкриття журналів - після інших модалок; digit-result іде першим, level-up - після (FR-18, spec «Перехід рівня»)
   const viewFree = view.kind === 'main' || view.kind === 'list';
   const revealOpen =
-    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
+    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
 
   // 008: iap-success і starter-offer - після інших модалок і розкриття журналів (порядок «оцінка → журнал → оферта», 09)
   const calm =
-    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && nextReveal(s.museum) == null;
+    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && nextReveal(s.museum) == null;
   const iapOpen = calm && s.busy == null && !onboarding && s.monetization.success.length > 0;
   // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
   const starterOpen = calm && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
@@ -262,7 +270,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : (
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
-        {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{digitT.placeR2}</Text> : null}
+        {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{s.state.level >= 3 ? digitT.placeR3 : digitT.placeR2}</Text> : null}
         {!onboarding ? (
           <Pressable testID="menu-open" accessibilityRole="button" accessibilityLabel={setT.menuOpen} onPress={() => setView({ kind: 'menu' })} style={[styles.menuBtn, { top: insets.top + space[8] }]}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.menuText}>{setT.menu}</Text>
@@ -302,6 +310,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         {kombatOn ? (
           <Pressable testID="kombat-bar" accessibilityRole="button" onPress={() => setView({ kind: 'kombat' })} style={styles.kombatBar}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${tgT.kbTitle} · ${tgT.left(formatDuration(Math.max(0, (kombat!.endMs - now) / 1000)))}`}</Text>
+          </Pressable>
+        ) : null}
+        {meetingOn ? (
+          <Pressable testID="meeting-bar" accessibilityRole="button" onPress={() => setView({ kind: 'meeting' })} style={styles.kombatBar}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${tgT.mtTitle} · ${tgT.left(formatDuration(Math.max(0, (meeting!.endMs - now) / 1000)))}`}</Text>
           </Pressable>
         ) : null}
         {coachOn ? <View style={styles.scrim} /> : null}
@@ -443,6 +456,16 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           }}
         />
       ) : null}
+      {view.kind === 'meeting' || meetingAuto ? (
+        <KombatSheet
+          store={store}
+          kind="meeting"
+          onClose={() => {
+            setMeetingSeen(meeting?.startMs ?? null);
+            setView({ kind: 'main' });
+          }}
+        />
+      ) : null}
       {showCall ? (
         <CallOverlay
           onClaim={() => {
@@ -453,7 +476,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         />
       ) : null}
       {inspCall ? <InspCall onClose={s.ackInspCall} /> : null}
-      {inspWarn ? <InspWarning store={store} /> : null}
+      {inspWarn ? (s.inspections.active?.kind === 'final' ? <BossBrief store={store} /> : <InspWarning store={store} />) : null}
       {inspResult ? <InspResult store={store} /> : null}
       {s.inspPrepOpen && insp ? <InspPrep store={store} /> : null}
       {view.kind === 'digit-confirm' ? <DigitConfirm store={store} onClose={() => setView({ kind: 'digital' })} onDone={() => setView({ kind: 'main' })} /> : null}

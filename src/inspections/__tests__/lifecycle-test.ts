@@ -164,11 +164,11 @@ describe('результат (FR-17…FR-21)', () => {
     const r = tick(s, eco(), cfg, ctx(at(17), arr + HOUR, true));
     expect(r.s.last!.offline).toBe(true);
     expect(offlineLines(r.s.last, p, arr + HOUR)).toEqual([
-      { kind: 'passed', remark: false },
+      { kind: 'passed', remark: false, final: false },
       { kind: 'mult', mult: 3, leftMs: HOUR },
     ]);
     const f = tick(firstAnnounced(), eco(), cfg, ctx(at(17), arr + HOUR, true));
-    expect(offlineLines(f.s.last, p, arr + HOUR)).toEqual([{ kind: 'failed', factor: 0.5, hours: 1 }]);
+    expect(offlineLines(f.s.last, p, arr + HOUR)).toEqual([{ kind: 'failed', factor: 0.5, hours: 1, final: false, retryH: 24 }]);
   });
 
   test('довга відсутність: оголошення й приїзди планових проходять по черзі', () => {

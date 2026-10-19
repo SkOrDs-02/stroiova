@@ -69,6 +69,8 @@ export interface Effect {
     | 'telegram_slow'
     | 'telegram_stop'
     | 'kombat_away'
+    /** «Нарада затягнулась» (011 FR-25): «Нарада» ×naradaMult */
+    | 'meeting_overrun'
     | 'inspection_fail'
     /** Діловод одиниці у відрядженні (003, `clerkAway`): поки триває, офлайн одиниця працює як без діловода */
     | 'clerk_away';
@@ -105,6 +107,9 @@ export type DomainEvent =
   | { type: 'kombatRequest'; maxMin: number }
   | { type: 'kombatStart'; endMs: number }
   | { type: 'kombatFound'; how: 'wait' | 'runner' }
+  /** «Нарада затягнулась» (011 FR-25): random_event_resolve, event_type = meeting_overrun, choice = send_note */
+  | { type: 'meetingStart'; endMs: number }
+  | { type: 'meetingFound'; how: 'wait' | 'note' }
   | { type: 'raceEffect'; telegramId: string; effect: Record<string, unknown> }
   | { type: 'arc'; id: string }
   | { type: 'journal'; id: string }
@@ -118,16 +123,27 @@ export type DomainEvent =
       id: string;
       no: number;
       boss: 'brigade_commission' | 'command_commission';
+      /** inspection_kind (011): звичайна чи підсумкова; attempt_number - спроба підсумкової */
+      kind: 'regular' | 'final';
+      attempt: number;
       trigger: 'scheduled' | 'unscheduled';
       warnSec: number;
       reputation: number;
       itemsTotal: number;
     }
+  /** Пройдена підсумкова рівня: стор дозволяє перехід (`levelExitAllowed`) */
+  | { type: 'finalPassed'; id: string; level: number; attempt: number }
   | { type: 'inspectionItemAdded'; id: string; itemId: string; telegramId: string }
   | { type: 'inspectionItemComplete'; id: string; itemId: string; method: 'signatures' | 'ad' | 'no_ads_pass'; cost: Big; secToDeadline: number }
   | {
       type: 'inspectionFinish';
       id: string;
+      kind: 'regular' | 'final';
+      attempt: number;
+      /** Пункт механіки виконано на мить приїзду; null - у звичайної його немає */
+      mechDone: boolean | null;
+      /** Пройдена підсумкова відкрила перехід на наступний рівень (011 FR-6) */
+      exitUnlocked: boolean;
       result: 'passed' | 'failed';
       itemsDone: number;
       itemsTotal: number;
@@ -146,7 +162,7 @@ export type DomainEvent =
       giftType: 'drone' | 'shovel' | 'generator';
       raceNo: number;
       level: number;
-      steps: { unit: 'akty' | 'kombat' | 'stroy' | 'fin' | 'kazna'; sec: number }[];
+      steps: { unit: 'akty' | 'kombat' | 'stroy' | 'fin' | 'kazna' | 'narada'; sec: number }[];
       stepsDone: number;
       stepsTotal: number;
       marginSec: number;
