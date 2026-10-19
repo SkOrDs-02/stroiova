@@ -182,9 +182,9 @@ export function visibleCurios(ms: MuseumState): CurioEntry[] {
   return ms.curios.filter((c) => c.kind === 'gift' || (c.kind === 'pack' && c.pack != null && packDef(c.pack.packId) != null) || (c.telegramId != null && telegram(c.telegramId) != null));
 }
 
-export function curioSummary(ms: MuseumState): { total: number; telegrams: number; gifts: number } {
+export function curioSummary(ms: MuseumState): { total: number; telegrams: number; gifts: number; packs: number } {
   const v = visibleCurios(ms);
-  return { total: v.length, telegrams: v.filter((c) => c.kind === 'telegram').length, gifts: v.filter((c) => c.kind === 'gift').length };
+  return { total: v.length, telegrams: v.filter((c) => c.kind === 'telegram').length, gifts: v.filter((c) => c.kind === 'gift').length, packs: v.filter((c) => c.kind === 'pack').length };
 }
 
 /** Список курйозів відкрито: усе побачено, бейдж «нове» гасне (010 FR-30) */

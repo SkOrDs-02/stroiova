@@ -56,12 +56,14 @@ export const muT = {
   curiosTitle: 'Журнал курйозів',
   curiosEmptyTitle: 'Записів поки немає',
   curiosEmptyBody: 'Сюди лягають усі телеграми згори й подарунки Ліни, списані раніше, ніж їх поставили на облік. Будь-яким записом можна поділитися картинкою.',
-  summary: (n: number, t: number, d: number) =>
-    `${n} ${plural(n, 'запис', 'записи', 'записів')} · ${t} ${plural(t, 'телеграма', 'телеграми', 'телеграм')} · ${d} ${plural(d, 'списаний подарунок', 'списані подарунки', 'списаних подарунків')}`,
+  summary: (n: number, t: number, d: number, p = 0) =>
+    `${n} ${plural(n, 'запис', 'записи', 'записів')} · ${t} ${plural(t, 'телеграма', 'телеграми', 'телеграм')} · ${d} ${plural(d, 'списаний подарунок', 'списані подарунки', 'списаних подарунків')}${p ? ` · ${p} ${plural(p, 'пачка', 'пачки', 'пачок')}` : ''}`,
   today: 'Сьогодні',
   yesterday: 'Учора',
   tgNum: (no: string, time: string) => `ТЕЛЕГРАМА № ${no} · ${time}`,
   actNum: (no: number, time: string) => `АКТ № ${no} · ${time}`,
+  packNum: (no: number, time: string) => `ЗВЕДЕННЯ № ${no} · ${time}`,
+  packNos: (nos: string) => `Телеграми: ${nos}`,
   status: { diligent: 'сумлінно', formal: 'відписка', drawer: 'у шухляді', special: 'особливо', info: 'до відома', gift: 'списано' },
   curioDetailTitle: 'Запис курйозу',
   curioNo: (n: number) => `Запис № ${n}`,

@@ -74,3 +74,34 @@ export function resultRows(item: InboxItem, tel: Telegram, cfg: EconomyConfig, t
 export function inspWarn(cfg: EconomyConfig): string {
   return formatDuration(cfg.params.unscheduledWarnH * HOUR / 1000);
 }
+
+/** Рядок прогнозу: «−3 аркуші · +5 до репутації · 20% шанс перевірки» */
+export function forecastLine(paper: number, rep: number, chancePct: number): string {
+  const parts: string[] = [];
+  if (paper) parts.push(t.sheets(paper));
+  if (rep) parts.push(t.rep(rep));
+  if (chancePct > 0) parts.push(t.insp(chancePct));
+  return parts.length ? parts.join(' · ') : t.pkNothing;
+}
+
+/** Рядок суми окремих відповідей: кидок на кожну телеграму окремо */
+export function separateLine(sep: { paper: number; rep: number; chances: number[] }): string {
+  const parts: string[] = [];
+  if (sep.paper) parts.push(t.sheets(sep.paper));
+  if (sep.rep) parts.push(t.rep(sep.rep));
+  const ch = sep.chances.filter((c) => c > 0);
+  if (ch.length) parts.push(`${ch.map((c) => `${c}%`).join(' + ')} шанс перевірки`);
+  return parts.length ? parts.join(' · ') : t.pkNothing;
+}
+
+/** Рядки tg-result зведеної відповіді: числа лежать на першій телеграмі пачки (`answerPack`) */
+export function packResultRows(first: InboxItem, kind: string, cfg: EconomyConfig, tierWord: string): [string, string][] {
+  const r = first.result;
+  if (!r) return [];
+  const rows: [string, string][] = [[t.resDecision, t.kind[kind] ?? kind]];
+  for (const s of r.slow) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${s.hours} год`]);
+  if (r.paper) rows.push([t.resPaper, t.sheets(r.paper)]);
+  rows.push([t.resRep, `${r.rep > 0 ? '+' : r.rep < 0 ? '−' : ''}${Math.abs(r.rep)} · ${tierWord}`]);
+  if (r.chancePct > 0) rows.push([t.resChance, `${r.chancePct}%`]);
+  return rows;
+}

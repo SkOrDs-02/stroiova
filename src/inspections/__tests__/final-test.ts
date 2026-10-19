@@ -6,7 +6,8 @@ import type { EconomyState } from '@/economy/game/types';
 
 import { offlineLines } from '../offline';
 import { buyItem, completeAll, fromTelegramEvent, newInspections, readinessLive, tick } from '../lifecycle';
-import { finalItemPrice, itemDone, mechOk, streamsOpen } from '../final';
+import { FINAL_LEVELS } from '@/digitization/digitization';
+import { FINALS, finalItemPrice, itemDone, mechOk, streamsOpen } from '../final';
 import type { InspectionState } from '../types';
 
 const cfg = bundledConfig;
@@ -240,5 +241,11 @@ describe('підсумкова Р3 «Перевірка зі столиці» (0
     expect(itemDone(mech, eco3(), cfg, null)).toBe(false);
     expect(itemDone(mech, eco3(), cfg, { no: 2, closed: true, diligent: true })).toBe(true);
     expect(readinessLive(s.active!, eco3(), cfg, { no: 2, closed: true, diligent: true })).toBe(Math.round((1 / 6) * 100));
+  });
+});
+
+describe('рівні з підсумковою перевіркою', () => {
+  test('кожен рівень з FINAL_LEVELS має запис у FINALS і навпаки', () => {
+    expect(Object.keys(FINALS).map(Number).sort()).toEqual([...FINAL_LEVELS].sort());
   });
 });

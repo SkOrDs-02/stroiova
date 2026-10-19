@@ -7,6 +7,7 @@ import { useStore } from 'zustand';
 import { formatDuration } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { telegramOf } from '@/telegrams/effects';
+import { packGroups, packPlace, type PackGroup } from '@/telegrams/packs';
 import { repTier } from '@/telegrams/reputation';
 import type { InboxItem } from '@/telegrams/types';
 import { color, radius, size, space, typeScale } from '@/theme';
@@ -23,19 +24,32 @@ type Seg = 'in' | 'drawer' | 'archive';
 interface Props {
   store: ConveyorStore;
   onOpen: (item: InboxItem) => void;
+  /** Пачка Р3: рядок «Зведення № N» відкриває tg-pack (011 FR-18) */
+  onOpenPack?: (no: number) => void;
   onReputation: () => void;
 }
 
-export function TelegramList({ store, onOpen, onReputation }: Props) {
+export function TelegramList({ store, onOpen, onOpenPack, onReputation }: Props) {
   const insets = useSafeAreaInsets();
   const s = useStore(store);
   const [seg, setSeg] = useState<Seg>('in');
   const inbox = s.telegrams.inbox;
-  const fresh = inbox.filter((x) => x.status === 'new' && x.kind !== 'note').sort((a, b) => b.receivedAt - a.receivedAt);
-  const work = inbox.filter((x) => x.status === 'work');
+  // телеграми пачки показуємо одним рядком «Зведення № N» (011 FR-18)
+  const solo = inbox.filter((x) => !x.pack);
+  const packs = packGroups(s.telegrams);
+  const at = (place: ReturnType<typeof packPlace>) => packs.filter((p) => packPlace(p) === place);
+  const startOf = (p: PackGroup) => p.items[0]!.receivedAt;
+  const fresh = [
+    ...solo.filter((x) => x.status === 'new' && x.kind !== 'note').map((x) => ({ at: x.receivedAt, item: x, pack: null as PackGroup | null })),
+    ...at('new').map((p) => ({ at: startOf(p), item: null, pack: p })),
+  ].sort((a, b) => b.at - a.at);
+  const work = solo.filter((x) => x.status === 'work');
+  const workPacks = at('work');
   const notes = inbox.filter((x) => x.kind === 'note');
-  const drawer = inbox.filter((x) => x.status === 'drawer');
-  const archive = inbox.filter((x) => x.status === 'archive' && x.kind !== 'note').sort((a, b) => (b.answeredAt ?? 0) - (a.answeredAt ?? 0));
+  const drawer = solo.filter((x) => x.status === 'drawer');
+  const drawerPacks = at('drawer');
+  const archive = solo.filter((x) => x.status === 'archive' && x.kind !== 'note').sort((a, b) => (b.answeredAt ?? 0) - (a.answeredAt ?? 0));
+  const archivePacks = at('archive');
   const tier = t.tier[repTier(s.telegrams.reputation.value, s.cfg.params)];
   const g = s.onboarding.gender;
   const now = s.lastMs;
@@ -58,6 +72,17 @@ export function TelegramList({ store, onOpen, onReputation }: Props) {
     return tel?.from ? t.from(t.who[tel.from] ?? tel.from) : '';
   };
 
+  const packRow = (p: PackGroup, badge?: string) => (
+    <Pressable key={`pack-${p.no}`} testID={`tg-pack-${p.no}`} accessibilityRole="button" onPress={() => onOpenPack?.(p.no)} style={styles.row}>
+      <View style={styles.rowMain}>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} numberOfLines={1} style={styles.rowTitle}>{t.pkCover(p.no, p.answered)}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} numberOfLines={1} style={styles.rowSub}>{t.pkRowSub}</Text>
+      </View>
+      {badge ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.badge}>{badge}</Text> : null}
+    </Pressable>
+  );
+  const workLeft = (p: PackGroup) => t.left(formatDuration(Math.max(0, (Math.max(...p.items.map((i) => i.workUntil ?? 0)) - now) / 1000)));
+
   return (
     <View style={[styles.root, { paddingTop: insets.top + space[8] }]} testID="tg-list">
       <View style={styles.head}>
@@ -70,8 +95,8 @@ export function TelegramList({ store, onOpen, onReputation }: Props) {
         {(
           [
             ['in', t.segIn(fresh.length)],
-            ['drawer', t.segDrawer(drawer.length)],
-            ['archive', t.segArchive(archive.length)],
+            ['drawer', t.segDrawer(drawer.length + drawerPacks.length)],
+            ['archive', t.segArchive(archive.length + archivePacks.length)],
           ] as [Seg, string][]
         ).map(([k, label]) => (
           <Pressable key={k} testID={`tg-seg-${k}`} accessibilityRole="tab" accessibilityState={{ selected: seg === k }} onPress={() => setSeg(k)} style={[styles.seg, seg === k && styles.segOn]}>
@@ -83,16 +108,23 @@ export function TelegramList({ store, onOpen, onReputation }: Props) {
         {seg === 'in' ? (
           <>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4}>{t.secNew}</Text>
-            {fresh.length ? fresh.map((x) => row(x, fromLine(x), t.badgeNew)) : <Text style={styles.empty} testID="tg-empty-new">{emptyLine(s.telegrams, 'tg.empty_new')}</Text>}
-            {work.length ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4}>{t.secWork(work.length)}</Text> : null}
+            {fresh.length ? fresh.map((x) => (x.pack ? packRow(x.pack, x.pack.answered === 0 ? t.badgeNew : undefined) : row(x.item!, fromLine(x.item!), t.badgeNew))) : <Text style={styles.empty} testID="tg-empty-new">{emptyLine(s.telegrams, 'tg.empty_new')}</Text>}
+            {work.length + workPacks.length ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4}>{t.secWork(work.length + workPacks.length)}</Text> : null}
             {work.map((x) => row(x, fromLine(x), t.left(formatDuration(Math.max(0, ((x.workUntil ?? now) - now) / 1000)))))}
+            {workPacks.map((p) => packRow(p, workLeft(p)))}
             {notes.length ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4}>{t.secNotes(notes.length)}</Text> : null}
             {notes.map((x) => row(x, '', x.read ? undefined : t.badgeNew))}
           </>
         ) : seg === 'drawer' ? (
-          drawer.length ? drawer.map((x) => row(x, fromLine(x), t.inDrawer)) : <Text style={styles.empty}>{emptyLine(s.telegrams, 'tg.empty_drawer')}</Text>
+          drawer.length + drawerPacks.length ? (
+            <>
+              {drawerPacks.map((p) => packRow(p, t.inDrawer))}
+              {drawer.map((x) => row(x, fromLine(x), t.inDrawer))}
+            </>
+          ) : <Text style={styles.empty}>{emptyLine(s.telegrams, 'tg.empty_drawer')}</Text>
         ) : (
           <>
+            {archivePacks.map((p) => packRow(p, t.done))}
             {archive.map((x) => row(x, x.kind === 'notice' ? t.info : fromLine(x), t.done))}
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note}>{t.curioNote}</Text>
           </>

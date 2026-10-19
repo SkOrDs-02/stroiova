@@ -25,7 +25,7 @@ export function CuriosList({ store, onOpen }: { store: ConveyorStore; onOpen: (s
         </View>
       ) : (
         <>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="curios-summary">{muT.summary(sum.total, sum.telegrams, sum.gifts)}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="curios-summary">{muT.summary(sum.total, sum.telegrams, sum.gifts, sum.packs)}</Text>
           {groups.map((g) => (
             <View key={g.day} style={styles.group}>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.day}>{g.day}</Text>

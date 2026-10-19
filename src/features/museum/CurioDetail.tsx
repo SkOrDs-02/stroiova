@@ -9,7 +9,7 @@ import { raceT } from '@/features/race/texts';
 import { fill, resultRows } from '@/features/telegrams/present';
 import { lineAt, poolSize } from '@/features/telegrams/lines';
 import { t as tgT } from '@/features/telegrams/texts';
-import { telegram } from '@/telegrams/content';
+import { packDef, telegram } from '@/telegrams/content';
 import { repTier } from '@/telegrams/reputation';
 import { color, radius, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
@@ -27,7 +27,7 @@ export function CurioDetail({ store, seq, onClose }: { store: ConveyorStore; seq
       <View style={styles.sheet} accessibilityViewIsModal>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2} accessibilityRole="header">{muT.curioDetailTitle}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{muT.curioNo(e.seq)}</Text>
-        <ScrollView contentContainerStyle={styles.scroll}>{e.kind === 'gift' ? <GiftDoc store={store} seq={seq} /> : <TelegramDoc store={store} seq={seq} />}</ScrollView>
+        <ScrollView contentContainerStyle={styles.scroll}>{e.kind === 'gift' ? <GiftDoc store={store} seq={seq} /> : e.kind === 'pack' ? <PackDoc store={store} seq={seq} /> : <TelegramDoc store={store} seq={seq} />}</ScrollView>
         <Button testID="curio-detail-ok" label={muT.curioBack} variant="secondary" onPress={onClose} />
       </View>
     </View>
@@ -67,6 +67,26 @@ function TelegramDoc({ store, seq }: { store: ConveyorStore; seq: number }) {
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{v}</Text>
         </View>
       ))}
+    </View>
+  );
+}
+
+function PackDoc({ store, seq }: { store: ConveyorStore; seq: number }) {
+  const s = useStore(store);
+  const e = s.museum.curios.find((c) => c.seq === seq)!;
+  const pk = e.pack!;
+  const def = packDef(pk.packId);
+  if (!def) return null;
+  const sum = def.summary[pk.kind];
+  const nos = pk.uids.map((u) => s.telegrams.inbox.find((x) => x.uid === u)).map((i) => (i ? telegram(i.id)?.no : undefined)).filter(Boolean).join(', ');
+  return (
+    <View style={styles.paper} testID="curio-pack">
+      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{`${tgT.pkResultMeta(pk.no)} · ${ddmmyyyy(e.atMs)}`}</Text>
+      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title}>{tgT.pkResultTitle(pk.no)}</Text>
+      {nos ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{muT.packNos(nos)}</Text> : null}
+      {sum?.reply ?? sum?.note ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{(sum.reply ?? sum.note)!}</Text> : null}
+      {sum?.result ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{sum.result}</Text> : null}
+      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{muT.status[e.status ?? 'info']}</Text>
     </View>
   );
 }

@@ -2,13 +2,14 @@
 import { gendered } from '@/features/onboarding/callsign';
 import type { OnboardingState } from '@/features/onboarding/steps';
 import { fill } from '@/features/telegrams/present';
+import { t as tgT } from '@/features/telegrams/texts';
 import { raceT } from '@/features/race/texts';
 import type { Journal } from '@/museum/journals';
 import { journal, museumJournals, MUSEUM_SIZE } from '@/museum/journals';
 import { has, visibleCurios } from '@/museum/museum';
 import type { CurioEntry, MuseumState, OwnedJournal } from '@/museum/types';
 import { color } from '@/theme';
-import { telegram } from '@/telegrams/content';
+import { packDef, telegram } from '@/telegrams/content';
 import type { InboxItem, TelegramState } from '@/telegrams/types';
 
 import { muT } from './texts';
@@ -85,6 +86,14 @@ function tgRow(e: CurioEntry, inbox: InboxItem[], g: OnboardingState['gender']):
   };
 }
 
+function packRow(e: CurioEntry): CurioRow | null {
+  const pk = e.pack;
+  const def = pk ? packDef(pk.packId) : undefined;
+  if (!pk || !def) return null;
+  const sum = def.summary[pk.kind];
+  return { entry: e, num: muT.packNum(pk.no, hhmm(e.atMs)), status: muT.status[e.status ?? 'info'], title: tgT.pkResultTitle(pk.no), meta: sum?.result ?? sum?.note ?? sum?.reply ?? '' };
+}
+
 function giftRow(e: CurioEntry): CurioRow {
   const gft = e.gift!;
   return { entry: e, num: muT.actNum(gft.raceNo, hhmm(e.atMs)), status: muT.status.gift, title: raceT.lostTitle, meta: raceT.item[gft.type] };
@@ -102,7 +111,7 @@ export function curioGroups(ms: MuseumState, tg: TelegramState, gender: Onboardi
   const rows = visibleCurios(ms)
     .slice()
     .sort((a, b) => b.seq - a.seq)
-    .map((e) => (e.kind === 'gift' ? giftRow(e) : tgRow(e, tg.inbox, gender)))
+    .map((e) => (e.kind === 'gift' ? giftRow(e) : e.kind === 'pack' ? packRow(e) : tgRow(e, tg.inbox, gender)))
     .filter((r): r is CurioRow => r != null);
   const groups: CurioGroup[] = [];
   for (const r of rows) {
