@@ -30,18 +30,18 @@ const ok = <T>(r: T): Exclude<T, { error: unknown }> => {
 
 describe('числа зведеної відповіді (FR-21)', () => {
   test('AC-13: паперу 2, 1, 3 - мінус 4 аркуші; репутація +5, +10, +5 - +10', () => {
-    expect(mergeNumbers([{ paper: 2, rep: 5, pct: 0 }, { paper: 1, rep: 10, pct: 0 }, { paper: 3, rep: 5, pct: 0 }])).toEqual({ paper: 4, rep: 10, pct: 0 });
+    expect(mergeNumbers([{ paper: 2, rep: 5, pct: 0 }, { paper: 1, rep: 10, pct: 0 }, { paper: 3, rep: 5, pct: 0 }], 2)).toEqual({ paper: 4, rep: 10, pct: 0 });
   });
 
   test('AC-14: шанси 10%, 20%, 15% - один кидок з 30%; репутація −5, −5, −3 - −6 (до нуля)', () => {
-    const m = mergeNumbers([{ paper: 0, rep: -5, pct: 10 }, { paper: 0, rep: -5, pct: 20 }, { paper: 0, rep: -3, pct: 15 }]);
+    const m = mergeNumbers([{ paper: 0, rep: -5, pct: 10 }, { paper: 0, rep: -5, pct: 20 }, { paper: 0, rep: -3, pct: 15 }], 2);
     expect(m).toEqual({ paper: 0, rep: -6, pct: 30 });
   });
 
   test('папір не стає від\'ємним; шанс не вище 100; без жодного шансу кидка немає', () => {
-    expect(mergeNumbers([{ paper: 1, rep: 0, pct: 0 }, { paper: 0, rep: 0, pct: 0 }, { paper: 0, rep: 0, pct: 0 }]).paper).toBe(0);
-    expect(mergeNumbers([{ paper: 0, rep: 0, pct: 95 }]).pct).toBe(100);
-    expect(mergeNumbers([{ paper: 0, rep: 0, pct: 0 }]).pct).toBe(0);
+    expect(mergeNumbers([{ paper: 1, rep: 0, pct: 0 }, { paper: 0, rep: 0, pct: 0 }, { paper: 0, rep: 0, pct: 0 }], 2).paper).toBe(0);
+    expect(mergeNumbers([{ paper: 0, rep: 0, pct: 95 }], 2).pct).toBe(100);
+    expect(mergeNumbers([{ paper: 0, rep: 0, pct: 0 }], 2).pct).toBe(0);
   });
 });
 
@@ -119,6 +119,24 @@ describe('відписка й шухляда', () => {
   });
 });
 
+describe('прогноз «Окремо» і цифровий щит', () => {
+  test('щит гасить мінус репутації в сумі окремих відповідей (як у answer), без балів - ні', () => {
+    const tg = withPack('pack_06');
+    const withShield = packForecast(tg, eco({ prestigePoints: 5 }), cfg, 1).find((f) => f.kind === 'formal_reply')!;
+    const noShield = packForecast(tg, eco({ prestigePoints: 0 }), cfg, 1).find((f) => f.kind === 'formal_reply')!;
+    expect(withShield.separate.rep).toBeGreaterThan(noShield.separate.rep);
+    // фактичні окремі відповіді збігаються з прогнозом
+    let state = tg;
+    let e = eco({ prestigePoints: 5 });
+    for (const item of tg.inbox) {
+      const r = ok(answer(state, e, item.uid, 'formal_reply', ctx));
+      state = r.tg;
+      e = r.eco;
+    }
+    expect(state.reputation.value - tg.reputation.value).toBe(withShield.separate.rep);
+  });
+});
+
 describe('окремі відповіді (ВП-7, рішення 100)', () => {
   const answerAll = (tg: TelegramState, kinds: ('diligent' | 'formal_reply' | 'drawer')[]) => {
     let e = eco();
@@ -129,17 +147,18 @@ describe('окремі відповіді (ВП-7, рішення 100)', () => {
       const r = ok(answer(state, e, item.uid, kinds[i]!, ctx));
       state = r.tg;
       e = r.eco;
-      last = resolvedSeparately(state, item.uid);
+      last = resolvedSeparately(state, item.uid, NOW);
     });
     return { tg: state, last };
   };
 
   test('три окремі diligent - закрито сумлінно (summary_beats ок), packResolve separate; різні види - mixed, не сумлінно', () => {
     const a = answerAll(withPack('pack_01'), ['diligent', 'diligent', 'diligent']);
-    expect(a.last).toMatchObject({ type: 'packResolve', mode: 'separate', choiceKind: 'diligent', isBeats: false });
+    expect(a.last).toMatchObject({ type: 'packResolve', mode: 'separate', isBeats: true, secSinceReceived: 3600 });
+    expect(a.last).not.toHaveProperty('choiceKind');
     expect(lastPack(a.tg)).toEqual({ no: 1, closed: true, diligent: true });
     const b = answerAll(withPack('pack_01'), ['diligent', 'formal_reply', 'diligent']);
-    expect(b.last).toMatchObject({ mode: 'mixed', choiceKind: 'mixed' });
+    expect(b.last).toMatchObject({ mode: 'mixed', isBeats: false });
     expect(lastPack(b.tg)).toEqual({ no: 1, closed: true, diligent: false });
   });
 

@@ -711,12 +711,14 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     answerTelegram: (uid, choiceId) => {
       const g = get();
       const now = g.lastMs;
+      // повторна відповідь на запис із шухляди пачку вдруге не закриває (packResolve один раз)
+      const wasNew = g.telegrams.inbox.find((x) => x.uid === uid)?.status === 'new';
       const r = answerTg(g.telegrams, g.state, uid, choiceId, { cfg: g.cfg, nowMs: now, dayKey: dayKey(now, tzOffsetAt(now)) });
       if ('error' in r) return r;
       set({ telegrams: r.tg, state: r.eco, effects: [...g.effects, ...r.effects] });
       handleEvents(r.events, now);
       // 011: остання з трьох відповідей пачки окремо - пачку закрито (summary_beats, аналітика)
-      const sep = resolvedSeparately(get().telegrams, uid);
+      const sep = wasNew ? resolvedSeparately(get().telegrams, uid, now) : null;
       if (sep) handleEvents([sep], now);
       resumeRaceIfFree(now);
       // 002 FR-19: відповідь на № 1 закриває крок 8

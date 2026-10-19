@@ -12,8 +12,6 @@ export const PACK_HOUR = 3;
 /** Види, у які можна звести пачку (FR-20) */
 export const SUMMARY_KINDS = ['diligent', 'formal_reply', 'drawer'] as const;
 export type SummaryKind = (typeof SUMMARY_KINDS)[number];
-/** Зведена відповідь заощаджує стільки аркушів (FR-21) */
-const MERGE_PAPER_SAVING = 2;
 /** Кидок зведеної відповіді: max(pᵢ) + стільки п. п. (FR-21) */
 const MERGE_CHANCE_BONUS = 10;
 
@@ -143,12 +141,12 @@ function flat(e: Effects, flags: Record<string, true>): { paper: number; rep: nu
   return { paper: paperCost(e, flags), rep: (e.rep ?? 0) + (f?.rep ?? 0), pct: Math.max(e.inspPct ?? 0, f?.inspPct ?? 0), extra: e.inspExtraItem ?? f?.inspExtraItem ?? null };
 }
 
-/** Зведені числа (FR-21): папір - сума мінус 2 (≥ 0); репутація - половина суми з відкиданням дробу до нуля; кидок - max(pᵢ) + 10 п. п. (≤ 100), 0 без жодного pᵢ */
-export function mergeNumbers(items: { paper: number; rep: number; pct: number }[]): { paper: number; rep: number; pct: number } {
+/** Зведені числа (FR-21): папір - сума мінус `saving` = `pack.size − 1` (≥ 0, як у sim.js); репутація - половина суми з відкиданням дробу до нуля; кидок - max(pᵢ) + 10 п. п. (≤ 100), 0 без жодного pᵢ */
+export function mergeNumbers(items: { paper: number; rep: number; pct: number }[], saving: number): { paper: number; rep: number; pct: number } {
   const sumPaper = items.reduce((n, x) => n + x.paper, 0);
   const sumRep = items.reduce((n, x) => n + x.rep, 0);
   const top = Math.max(0, ...items.map((x) => x.pct));
-  return { paper: Math.max(0, sumPaper - MERGE_PAPER_SAVING), rep: Math.trunc(sumRep / 2), pct: top > 0 ? Math.min(100, top + MERGE_CHANCE_BONUS) : 0 };
+  return { paper: Math.max(0, sumPaper - saving), rep: Math.trunc(sumRep / 2), pct: top > 0 ? Math.min(100, top + MERGE_CHANCE_BONUS) : 0 };
 }
 
 export interface KindForecast {
@@ -182,11 +180,12 @@ export function packForecast(tg: TelegramState, eco: EconomyState, cfg: EconomyC
     const fl = choices.map((c) => flat(c!.effects, tg.flags));
     for (let i = 0; i < choices.length; i++) {
       sep.paper += fl[i]!.paper;
-      sep.rep += fl[i]!.rep;
+      // цифровий щит окремої відповіді гасить мінус репутації (як в `answer`); зведена відповідь щит не використовує (рішення 100)
+      sep.rep += fl[i]!.rep < 0 && choices[i]!.effects.digitalShield && eco.prestigePoints >= 1 ? 0 : fl[i]!.rep;
       sep.slows += (choices[i]!.effects.slow ?? []).length;
       sep.chances.push(Math.round(replyChance(tg, p, fl[i]!.pct, !!choices[i]!.effects.digitalShield, eco.prestigePoints) * 100));
     }
-    const m = mergeNumbers(fl);
+    const m = mergeNumbers(fl, p.pack.size - 1);
     const paper = m.paper;
     const rep = m.rep;
     const chancePct = Math.round(replyChance(tg, p, m.pct, false, eco.prestigePoints) * 100);
@@ -272,7 +271,7 @@ export function answerPack(tg0: TelegramState, eco0: EconomyState, no: number, k
 
   const tierAfter = repTier(tg.reputation.value, p);
   if (tierAfter !== tierBefore) events.push({ type: 'reputationTierChange', from: tierBefore, to: tierAfter, value: tg.reputation.value });
-  events.push({ type: 'packResolve', packId: g.id, no, mode: 'summary', choiceKind: kind, paperSpent: f.paper, repDelta: f.rep, chancePct: f.chancePct, isBeats: kind === 'diligent' });
+  events.push({ type: 'packResolve', packId: g.id, no, mode: 'summary', choiceKind: kind, paperSpent: f.paper, repDelta: f.rep, chancePct: f.chancePct, isBeats: kind === 'diligent', secSinceReceived: Math.max(0, Math.round((nowMs - g.items[0]!.receivedAt) / 1000)) });
   events.push({ type: 'packCurio', packId: g.id, no, kind, uids: g.items.map((i) => i.uid) });
   if (kind === 'diligent') {
     effects.push({ kind: 'factor', source: 'pack_beats', value: p.pack.summaryBuff, target: { type: 'stream', id: 'zvedennia' }, startMs: nowMs, endMs: nowMs + p.pack.summaryBuffHours * 3_600_000 });
@@ -285,14 +284,13 @@ export function answerPack(tg0: TelegramState, eco0: EconomyState, no: number, k
  * Пачку закрито окремими відповідями: подія `packResolve` (mode separate / mixed) — щойно відповіли на останню з трьох (FR-19, ВП-4).
  * Викликається після кожної окремої відповіді на телеграму пачки.
  */
-export function resolvedSeparately(tg: TelegramState, uid: string): DomainEvent | null {
+export function resolvedSeparately(tg: TelegramState, uid: string, nowMs: number): DomainEvent | null {
   const item = tg.inbox.find((x) => x.uid === uid);
   if (!item?.pack || item.pack.summary) return null;
   const g = packByNo(tg, item.pack.no);
   if (!g || g.status !== 'done' || !g.mode) return null;
-  const kinds = g.items.map((i) => (i.choiceId ? telegramOf(i)?.choices.find((c) => c.id === i.choiceId)?.kind : undefined));
   const paper = g.items.reduce((n, i) => n + (i.result?.paper ?? 0), 0);
   const rep = g.items.reduce((n, i) => n + (i.result?.rep ?? 0), 0);
-  return { type: 'packResolve', packId: g.id, no: g.no, mode: g.mode === 'mixed' ? 'mixed' : 'separate', choiceKind: g.mode === 'mixed' ? 'mixed' : (kinds[0] ?? 'diligent'), paperSpent: paper, repDelta: rep, chancePct: 0, isBeats: false };
+  const chance = Math.max(0, ...g.items.map((i) => i.result?.chancePct ?? 0));
+  return { type: 'packResolve', packId: g.id, no: g.no, mode: g.mode === 'mixed' ? 'mixed' : 'separate', paperSpent: paper, repDelta: rep, chancePct: chance, isBeats: g.diligent, secSinceReceived: Math.max(0, Math.round((nowMs - g.items[0]!.receivedAt) / 1000)) };
 }
-

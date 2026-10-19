@@ -32,3 +32,5 @@ src/museum/                  запис курйозів "pack"
 src/features/telegrams/      TelegramList (рядок пачки), PackScreen, PackResult
 src/save/                    схема 11, міграція
 ```
+
+Поза етапом: індикатор «Зведення б'ється» на `main` (є тост і фактор у шторці множників); негативні тести `gen_tg.py` для пачки (CI перевіряє валідний файл).

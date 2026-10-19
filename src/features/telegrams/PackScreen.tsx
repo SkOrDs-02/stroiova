@@ -30,8 +30,10 @@ export function PackScreen({ store, no, onBack, onOpen, onSummed }: Props) {
   const s = useStore(store);
   const g = packByNo(s.telegrams, no);
   const forecast = g && g.status === 'new' ? packForecast(s.telegrams, s.state, s.cfg, no) : [];
-  const [sel, setSel] = useState<SummaryKind | null>(() => forecast.find((f) => f.available)?.kind ?? null);
+  const [picked, setSel] = useState<SummaryKind | null>(() => forecast.find((f) => f.available)?.kind ?? null);
   if (!g) return null;
+  // обраний вид міг стати недоступним (папір змінився): тоді кнопка неактивна, причина видна на картці
+  const sel = picked && forecast.find((f) => f.kind === picked)?.available ? picked : null;
   const gender = s.onboarding.gender;
   const summable = g.status === 'new';
   const sum = () => {

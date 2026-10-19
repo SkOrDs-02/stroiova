@@ -105,7 +105,7 @@ export type DomainEvent =
   | { type: 'telegramAnswer'; telegramId: string; uid: string; choiceId: string; choiceKind: string; repDelta: number; chancePct: number; paper: number; packId?: string; isPackSummary?: boolean }
   // 011: пачки Р3; аналітика етапу 5 (telegram_pack_receive, telegram_pack_resolve), музей 07 (один запис на пачку)
   | { type: 'packReceive'; packId: string; no: number; isRepeat: boolean; delivery: 'live' | 'while_away' }
-  | { type: 'packResolve'; packId: string; no: number; mode: 'summary' | 'separate' | 'mixed'; choiceKind: string; paperSpent: number; repDelta: number; chancePct: number; isBeats: boolean }
+  | { type: 'packResolve'; packId: string; no: number; mode: 'summary' | 'separate' | 'mixed'; /** лише для summary */ choiceKind?: string; paperSpent: number; repDelta: number; chancePct: number; isBeats: boolean; secSinceReceived: number }
   | { type: 'packBeats'; mult: number; hours: number }
   | { type: 'packCurio'; packId: string; no: number; kind: 'diligent' | 'formal_reply' | 'drawer'; uids: string[] }
   | { type: 'reputationTierChange'; from: 'low' | 'norm' | 'high'; to: 'low' | 'norm' | 'high'; value: number }

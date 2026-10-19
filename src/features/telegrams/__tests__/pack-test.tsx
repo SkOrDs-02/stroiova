@@ -91,3 +91,21 @@ describe('пачка Р3 на екрані', () => {
     await act(async () => {});
   });
 });
+
+describe('подія закриття пачки', () => {
+  test('packResolve йде один раз: відповідь на запис із шухляди пачку вдруге не закриває', async () => {
+    const store = storeWithPack('pack_01');
+    const { uid } = store.getState().telegrams.inbox[0]!;
+    await act(async () => {
+      store.getState().answerTelegram(uid, 'drawer');
+      store.getState().answerTelegram(store.getState().telegrams.inbox[1]!.uid, 'diligent');
+      store.getState().answerTelegram(store.getState().telegrams.inbox[2]!.uid, 'diligent');
+    });
+    const count = () => store.getState().events.filter((e) => e.type === 'packResolve').length;
+    expect(count()).toBe(1);
+    await act(async () => {
+      store.getState().answerTelegram(uid, 'diligent');
+    });
+    expect(count()).toBe(1);
+  });
+});
