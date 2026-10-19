@@ -102,7 +102,7 @@ describe('журнал курйозів', () => {
     expect(r.save.game.museum.curios).toHaveLength(2);
     expect(r.save.game.museum.curios[1]!.gift).toMatchObject({ raceNo: 1, stepsTotal: 5 });
     const fresh = createConveyorStore(local(9), bundledConfig);
-    expect(fresh.getState().museum).toEqual({ owned: [], reveal: [], curios: [], curioSeq: 0 });
+    expect(fresh.getState().museum).toEqual({ owned: [], reveal: [], curios: [], curioSeq: 0, curiosSeen: 0 });
   });
 
   test('журнали № 6 і № 7 скорочують кроки акта у гонці, що стартує після їх отримання (005 FR-17)', () => {

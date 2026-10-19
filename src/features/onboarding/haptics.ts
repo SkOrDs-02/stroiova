@@ -15,7 +15,20 @@ const quiet = (p: Promise<void>) => {
 
 let lastTapAt = -Infinity;
 
+// Перемикачі «Вібрація» і «Звук» з налаштувань (010 FR-14): сторі вмикає й вимикає їх одразу
+let hapticsOn = true;
+let soundOn = true;
+export function setHapticsEnabled(on: boolean): void {
+  hapticsOn = on;
+}
+export function setSoundEnabled(on: boolean): void {
+  soundOn = on;
+}
+export const isHapticsEnabled = () => hapticsOn;
+export const isSoundEnabled = () => soundOn;
+
 export function tapHaptic(nowMs: number): boolean {
+  if (!hapticsOn) return false;
   if (nowMs - lastTapAt < TAP_HAPTIC_GAP_MS) return false;
   lastTapAt = nowMs;
   quiet(Platform.OS === 'android' ? Haptics.performAndroidHapticsAsync(Haptics.AndroidHaptics.Keyboard_Tap) : Haptics.selectionAsync());
@@ -23,17 +36,21 @@ export function tapHaptic(nowMs: number): boolean {
 }
 
 export function stampHaptic(): void {
+  if (!hapticsOn) return;
   quiet(Platform.OS === 'android' ? Haptics.performAndroidHapticsAsync(Haptics.AndroidHaptics.Confirm) : Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy));
 }
 
 export function successHaptic(): void {
+  if (!hapticsOn) return;
   quiet(Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success));
 }
 
 export type SfxId = 'SFX-01' | 'SFX-03' | 'SFX-21';
 
 /** Звук із docs/art-and-sound.md; файли з'являться на етапі 8. */
-export function sfx(_id: SfxId): void {}
+export function sfx(_id: SfxId): void {
+  if (!soundOn) return;
+}
 
 export function useReduceMotion(): boolean {
   const [on, setOn] = useState(false);

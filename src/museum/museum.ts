@@ -8,7 +8,7 @@ import { journal, journalNo, MUSEUM_SIZE } from './journals';
 import type { CurioEntry, CurioStatus, JournalSource, MuseumState, RevealItem } from './types';
 
 export function newMuseum(): MuseumState {
-  return { owned: [], reveal: [], curios: [], curioSeq: 0 };
+  return { owned: [], reveal: [], curios: [], curioSeq: 0, curiosSeen: 0 };
 }
 
 export function has(ms: MuseumState, no: number): boolean {
@@ -180,4 +180,14 @@ export function visibleCurios(ms: MuseumState): CurioEntry[] {
 export function curioSummary(ms: MuseumState): { total: number; telegrams: number; gifts: number } {
   const v = visibleCurios(ms);
   return { total: v.length, telegrams: v.filter((c) => c.kind === 'telegram').length, gifts: v.filter((c) => c.kind === 'gift').length };
+}
+
+/** Список курйозів відкрито: усе побачено, бейдж «нове» гасне (010 FR-30) */
+export function markCuriosSeen(ms: MuseumState): MuseumState {
+  return ms.curiosSeen === ms.curioSeq ? ms : { ...ms, curiosSeen: ms.curioSeq };
+}
+
+/** Є запис, якого гравець ще не бачив у списку (і він видимий) */
+export function hasNewCurio(ms: MuseumState): boolean {
+  return visibleCurios(ms).some((c) => c.seq > ms.curiosSeen);
 }

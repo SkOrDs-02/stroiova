@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 8;
+export const CURRENT_SCHEMA = 9;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -263,6 +263,7 @@ export const museumStateSchema = z.object({
     }),
   ),
   curioSeq: z.number().int().nonnegative(),
+  curiosSeen: z.number().int().nonnegative(),
 });
 
 const productId = z.enum(['no_ads', 'starter_pack', 'storage_24h']);
@@ -279,6 +280,34 @@ export const monetizationStateSchema = z.object({
   purchases: z.number().int().nonnegative(),
   success: z.array(productId),
 });
+
+/** Налаштування (010); схема 9. */
+export const settingsSchema = z.object({
+  sound: z.boolean(),
+  haptics: z.boolean(),
+  notif: z.object({ storage: z.boolean(), telegrams: z.boolean(), inspections: z.boolean(), gifts: z.boolean(), boosts: z.boolean() }),
+  analytics: z.boolean(),
+  pushPermission: z.enum(['not_asked', 'granted', 'denied', 'provisional']),
+  testUser: z.boolean(),
+});
+
+/** Заплановані сповіщення й лічильник доби (010); схема 9. */
+export const notificationsSchema = z.object({
+  planned: z.array(
+    z.object({
+      type: z.enum(['storage_full', 'telegram_new', 'inspection', 'inspection_passed', 'race_reminder', 'race_won', 'boost_end', 'fuel_bonus_end', 'kombat_found', 'gift_arrived']),
+      atMs: z.number(),
+      title: z.string(),
+      body: z.string(),
+      target: z.enum(['offline-return', 'tg-detail', 'insp-prep', 'main', 'race-sheet', 'boosts-sheet', 'resource-sheet']),
+      ref: z.string().optional(),
+    }),
+  ),
+  sent: z.object({ day: z.string(), count: z.number().int().nonnegative(), fuel: z.number().int().nonnegative() }),
+});
+
+/** Лічильники особової справи (010 FR-26); схема 9. */
+export const statsSchema = z.object({ inspTotal: z.number().int().nonnegative(), inspPassed: z.number().int().nonnegative(), drones: z.number().int().nonnegative() });
 
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
@@ -298,6 +327,10 @@ export const gameSaveSchema = z.object({
   museum: museumStateSchema,
   /** Реклама й покупки (008) */
   monetization: monetizationStateSchema,
+  /** Налаштування й сповіщення (010) */
+  settings: settingsSchema,
+  notifications: notificationsSchema,
+  stats: statsSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

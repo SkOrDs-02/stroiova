@@ -28,6 +28,8 @@ import { ShopScreen } from '@/features/monetization/ShopScreen';
 import { StarterOffer } from '@/features/monetization/StarterOffer';
 import { JournalNew } from '@/features/museum/JournalNew';
 import { MuseumScreen } from '@/features/museum/MuseumScreen';
+import { MenuHost } from '@/features/settings/MenuHost';
+import { setT } from '@/features/settings/texts';
 import { titleOf } from '@/features/museum/present';
 import { muT } from '@/features/museum/texts';
 import { boostsT } from '@/features/monetization/texts';
@@ -74,7 +76,8 @@ type View3 =
   | { kind: 'rep'; back: 'main' | 'list' }
   | { kind: 'kombat' }
   | { kind: 'digital' }
-  | { kind: 'museum' }
+  | { kind: 'museum'; seg?: 'journals' | 'curios' }
+  | { kind: 'menu' }
   | { kind: 'shop' }
   | { kind: 'boosts' }
   | { kind: 'digit-confirm' };
@@ -255,11 +258,16 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : view.kind === 'shop' ? (
         <ShopScreen store={store} insetTop={insets.top + space[16]} />
       ) : view.kind === 'museum' ? (
-        <MuseumScreen store={store} insetTop={insets.top + space[16]} onToDigital={() => setView({ kind: 'digital' })} />
+        <MuseumScreen store={store} initialSeg={view.seg} insetTop={insets.top + space[16]} onToDigital={() => setView({ kind: 'digital' })} />
       ) : (
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
         {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{digitT.placeR2}</Text> : null}
+        {!onboarding ? (
+          <Pressable testID="menu-open" accessibilityRole="button" accessibilityLabel={setT.menuOpen} onPress={() => setView({ kind: 'menu' })} style={[styles.menuBtn, { top: insets.top + space[8] }]}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.menuText}>{setT.menu}</Text>
+          </Pressable>
+        ) : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.balance} testID="balance">{formatBig(s.state.signatures, 'counter')}</Text>
         <Pressable testID="income-open" accessibilityRole="button" accessibilityLabel={boostsT.title} onPress={() => setView({ kind: 'boosts' })} disabled={coachOn} style={styles.incomeHit}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.income} testID="income">{`${formatRate(inc.perMin)} · ${formatMult(M)}`}</Text>
@@ -464,6 +472,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
       {revealOpen ? <JournalNew store={store} /> : null}
+      {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} /> : null}
       {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => setView({ kind: 'shop' })} /> : null}
       {iapOpen ? <IapSuccess store={store} /> : null}
       {starterOpen ? <StarterOffer store={store} /> : null}
@@ -495,6 +504,8 @@ const styles = StyleSheet.create({
   kombatBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.surface2, borderWidth: 1, borderColor: color.accent },
   kombatText: { ...type('bodyS'), color: color.accent },
   place: { ...type('caption'), color: color.muted },
+  menuBtn: { position: 'absolute', right: space[16], minHeight: size.touchMin, minWidth: size.touchMin, justifyContent: 'center', alignItems: 'center', zIndex: 2 },
+  menuText: { ...type('bodyS'), color: color.accent },
   hintBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.surface2, borderWidth: 1, borderColor: color.accent },
   hintText: { ...type('bodyS'), color: color.accent },
   inspBar: { minHeight: size.touchMin, justifyContent: 'center', marginTop: space[8], paddingHorizontal: space[12], borderRadius: radius[6], backgroundColor: color.alertBg, borderWidth: 1, borderColor: color.alertLine },
