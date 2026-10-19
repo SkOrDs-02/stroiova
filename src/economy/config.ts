@@ -14,5 +14,9 @@ export const bundledConfig: EconomyConfig = {
  * яких у ньому ще не було (003, 004…), беруться з вбудованого.
  */
 export function withBundled(pinned: EconomyConfig): EconomyConfig {
-  return { ...pinned, source: 'cached', params: { ...bundledConfig.params, ...pinned.params } };
+  const params = { ...bundledConfig.params, ...pinned.params };
+  // пункти перевірок нових рівнів (Р3 - 011, Р4 - 012) допоповнюємо з вбудованого за (id, рівень): закріплений список їх не мав
+  const have = pinned.params.inspItems ?? [];
+  params.inspItems = [...have, ...bundledConfig.params.inspItems.filter((b) => !have.some((x) => x.id === b.id && x.level === b.level))];
+  return { ...pinned, source: 'cached', params };
 }

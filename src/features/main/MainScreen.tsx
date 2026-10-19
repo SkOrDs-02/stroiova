@@ -22,6 +22,7 @@ import { DigitalScreen } from '@/features/digitization/DigitalScreen';
 import { DigitConfirm } from '@/features/digitization/DigitConfirm';
 import { DigitResult } from '@/features/digitization/DigitResult';
 import { LevelUp } from '@/features/digitization/LevelUp';
+import { byLevel } from '@/features/digitization/present';
 import { digitT } from '@/features/digitization/texts';
 import { BoostsSheet } from '@/features/monetization/BoostsSheet';
 import { IapSuccess } from '@/features/monetization/IapSuccess';
@@ -276,7 +277,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : (
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
-        {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{s.state.level >= 3 ? digitT.placeR3 : digitT.placeR2}</Text> : null}
+        {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{byLevel.place(s.state.level)}</Text> : null}
         {!onboarding ? (
           <Pressable testID="menu-open" accessibilityRole="button" accessibilityLabel={setT.menuOpen} onPress={() => setView({ kind: 'menu' })} style={[styles.menuBtn, { top: insets.top + space[8] }]}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.menuText}>{setT.menu}</Text>

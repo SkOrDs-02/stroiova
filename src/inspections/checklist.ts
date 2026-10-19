@@ -11,9 +11,9 @@ export function bossFor(level: number): BossId {
   return level >= 2 ? 'command_commission' : 'brigade_commission';
 }
 
-/** Рівень чекліста: Р1, Р2 і Р3 мають свої пункти; Р4-Р5 беруть пункти Р3, доки 012 не додасть свої. */
+/** Рівень чекліста: Р1-Р4 мають свої пункти; Р5 бере пункти Р4, доки 013 не додасть свої. */
 export function checklistLevel(level: number): number {
-  return Math.min(3, Math.max(1, level));
+  return Math.min(4, Math.max(1, level));
 }
 
 export function itemDef(cfg: EconomyConfig, id: string, level: number): InspItemDef | undefined {
@@ -30,7 +30,7 @@ export function priceOf(def: InspItemDef, eco: EconomyState, cfg: EconomyConfig)
   return Math.max(cfg.params.inspMinPrice, Math.ceil(def.min * baseIncomePerMin(eco, cfg)));
 }
 
-/** Базові пункти рівня (Р1 — 5, Р2 — 4), ціни зафіксовано. */
+/** Базові пункти рівня (Р1 — 5, Р2-Р4 — 4), ціни зафіксовано. */
 export function baseChecklist(eco: EconomyState, cfg: EconomyConfig, level: number): ChecklistItem[] {
   return cfg.params.inspItems
     .filter((d) => d.level === checklistLevel(level) && !d.added)

@@ -1,5 +1,5 @@
 // Дохід гри (001 FR-4…FR-6, FR-15, FR-17, FR-18, FR-21, FR-31): ядро flow() + множники й фактори з ефектів.
-import { capAt, flow, prestigeMult } from '../core';
+import { capAt, flow, prestigeMult, zpzShare } from '../core';
 import type { FlowResult, FlowStage, FlowStream } from '../core';
 import { itemsFor } from './state';
 import type { Big, EconomyConfig, EconomyState, Effect, UnitRef } from './types';
@@ -82,6 +82,8 @@ function conveyor(state: EconomyState, cfg: EconomyConfig, t: number, effects: r
     const L = state.streamLevels[i] ?? 0;
     const on = L > 0 && (!idle || (!!state.streamClerks[i] && !clerkAwayAt({ type: 'stream', id: u.id }, t, effects)));
     const f = withFactors ? unitFactor({ type: 'stream', id: u.id }, t, effects) : 1;
+    // Р4: «Звіти про звіти» не мають власного виробітку - s(n) від суми інших потоків, далі музей і фактор події (012 FR-7…FR-9)
+    if (u.share) return { cap: 0, on, share: { base: on ? zpzShare(L, p) : 0, factors: [mus(u.id), f] } };
     return { cap: on ? capAt(u, L, p) * mus(u.id) * f : 0, on };
   });
   const stages: FlowStage[] = it.stages.map((u, j) => {
@@ -104,4 +106,39 @@ export function income(state: EconomyState, cfg: EconomyConfig, t: number, effec
 export function baseIncomePerMin(state: EconomyState, cfg: EconomyConfig): Big {
   const fl = conveyor(state, cfg, 0, [], false, false);
   return fl.v * prestigeMult(state.prestigePoints, cfg.params) * (state.hasNoAds ? cfg.params.paidMult : 1);
+}
+
+export interface ZpzInfo {
+  /** s(n): частка від суми інших потоків */
+  s: number;
+  /** Частка ЗпЗ у сумі всіх потоків: rate_ЗпЗ / (Σ інших + rate_ЗпЗ) з усіма факторами (рішення 103) */
+  share: number;
+  /** Виробіток ЗпЗ, /хв, без загального множника M */
+  rate: Big;
+}
+
+/** «Звіти про звіти» на мить t: частка й виробіток (unit-sheet, `zpz_level`); без потоку на рівні - нулі. */
+export function zpzInfo(state: EconomyState, cfg: EconomyConfig, t: number, effects: readonly Effect[] = []): ZpzInfo {
+  const it = itemsFor(state, cfg);
+  const zi = it.streams.findIndex((u) => u.share);
+  if (zi < 0 || (state.streamLevels[zi] ?? 0) <= 0) return { s: 0, share: 0, rate: 0 };
+  const withZ = conveyor(state, cfg, t, effects, false, true);
+  const without = conveyor({ ...state, streamLevels: state.streamLevels.map((l, i) => (i === zi ? 0 : l)) }, cfg, t, effects, false, true);
+  const rate = withZ.sum - without.sum;
+  return { s: zpzShare(state.streamLevels[zi] ?? 0, cfg.params), share: withZ.sum > 0 ? rate / withZ.sum : 0, rate };
+}
+
+/** Частка (0…1) у десятих відсотка з відкиданням дробу: показ і перевірка `zpz_level` беруть це саме число */
+export function shareTenths(share: number): number {
+  return Math.floor(share * 1000 + 1e-9);
+}
+
+/** Приріст частки ЗпЗ (десяті відсотка) від покупки `levels` рівнів потоку з урахуванням музею й сповільнень */
+export function zpzGainTenths(state: EconomyState, cfg: EconomyConfig, t: number, effects: readonly Effect[], levels: number): number {
+  const it = itemsFor(state, cfg);
+  const zi = it.streams.findIndex((u) => u.share);
+  if (zi < 0) return 0;
+  const cur = state.streamLevels[zi] ?? 0;
+  const after = { ...state, streamLevels: state.streamLevels.map((l, i) => (i === zi ? cur + levels : l)) };
+  return Math.max(0, shareTenths(zpzInfo(after, cfg, t, effects).share) - shareTenths(zpzInfo(state, cfg, t, effects).share));
 }

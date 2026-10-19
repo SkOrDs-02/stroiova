@@ -1,6 +1,6 @@
 // Гонка з часом (005): стан у записі (схема 5). Час — мітки UTC, мс.
 export type GiftType = 'drone' | 'shovel' | 'generator';
-export type RouteUnit = 'akty' | 'kombat' | 'stroy' | 'fin' | 'kazna' | 'narada';
+export type RouteUnit = 'akty' | 'kombat' | 'stroy' | 'fin' | 'kazna' | 'narada' | 'dopovid';
 export type SpeedMethod = 'digital_bonus' | 'telegram' | 'ad';
 
 export interface Race {

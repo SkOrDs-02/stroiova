@@ -5,13 +5,13 @@ import { useStore } from 'zustand';
 
 import { formatBig, formatCountdown, formatMult } from '@/economy/format';
 import { itemsFor } from '@/economy/game/state';
-import { FINAL_LEVELS, finalDue, status } from '@/digitization/digitization';
+import { FINAL_LEVELS, PLAYABLE_LEVELS, finalDue, status } from '@/digitization/digitization';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, size, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
-import { journalTitle, shownJournals, track } from './present';
+import { byLevel, journalTitle, shownJournals, track } from './present';
 import { digitT } from './texts';
 
 export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; onOpenConfirm: () => void }) {
@@ -24,7 +24,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
   const L = s.cfg.params.levels[level - 1];
   const total = L?.exitDigitizations ?? 0;
   const next = s.cfg.params.levels[level];
-  const cta = level >= 3 ? digitT.ctaR3 : level === 2 ? (st.isLast ? digitT.ctaToR3 : digitT.ctaR2) : st.isLast ? digitT.ctaLast : digitT.ctaR1;
+  const cta = byLevel.cta(level, st.isLast);
   // 011 FR-11: підсумкова рівня - оголошена / чекає потоків / повтор / перехід дозволено
   const fin = s.inspections.active?.kind === 'final' ? s.inspections.active : null;
   const hasFinalHere = FINAL_LEVELS.includes(level);
@@ -38,7 +38,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.body}>
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{level >= 3 ? digitT.subR3 : level === 2 ? digitT.subR2 : digitT.subR1}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{byLevel.sub(level)}</Text>
         {showHow ? (
           <View style={styles.card} testID="digit-how">
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2}>{digitT.how.title}</Text>
@@ -115,7 +115,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
             </View>
           ))}
         </View>
-        {level >= 3 && !st.isLast ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="digit-later">{digitT.nextLater}</Text> : null}
+        {level >= PLAYABLE_LEVELS && !st.isLast ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="digit-later">{digitT.nextLater}</Text> : null}
       </ScrollView>
       <View style={styles.foot}>
         <Button testID="digit-cta" label={cta} disabled={st.kind !== 'available'} onPress={onOpenConfirm} />

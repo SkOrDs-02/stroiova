@@ -169,7 +169,7 @@ export type DomainEvent =
       giftType: 'drone' | 'shovel' | 'generator';
       raceNo: number;
       level: number;
-      steps: { unit: 'akty' | 'kombat' | 'stroy' | 'fin' | 'kazna' | 'narada'; sec: number }[];
+      steps: { unit: 'akty' | 'kombat' | 'stroy' | 'fin' | 'kazna' | 'narada' | 'dopovid'; sec: number }[];
       stepsDone: number;
       stepsTotal: number;
       marginSec: number;

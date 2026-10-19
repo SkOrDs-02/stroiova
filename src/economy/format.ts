@@ -89,3 +89,8 @@ export function formatCountdown(sec: number): string {
   const ss = String(s % 60).padStart(2, '0');
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
 }
+
+/** Десяті відсотка → «38,5» (без «,0»): частка «Звітів про звіти» і поріг підсумкової показують те саме число, що в перевірці */
+export function formatTenths(tenths: number): string {
+  return (tenths / 10).toFixed(tenths % 10 === 0 ? 0 : 1).replace('.', ',');
+}

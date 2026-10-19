@@ -2,12 +2,13 @@
 import { bundledConfig } from '@/economy/config';
 import { baseIncomePerMin } from '@/economy/game/income';
 import { itemsFor, newGame } from '@/economy/game/state';
-import type { EconomyState } from '@/economy/game/types';
+import type { Effect, EconomyState } from '@/economy/game/types';
 
+import { baseChecklist } from '../checklist';
 import { offlineLines } from '../offline';
 import { buyItem, completeAll, fromTelegramEvent, newInspections, readinessLive, tick } from '../lifecycle';
 import { FINAL_LEVELS } from '@/digitization/digitization';
-import { FINALS, finalItemPrice, itemDone, mechOk, streamsOpen } from '../final';
+import { FINALS, finalItemPrice, itemDone, mechOk, streamsOpen, zpzTenths } from '../final';
 import type { InspectionState } from '../types';
 
 const cfg = bundledConfig;
@@ -241,6 +242,59 @@ describe('підсумкова Р3 «Перевірка зі столиці» (0
     expect(itemDone(mech, eco3(), cfg, null)).toBe(false);
     expect(itemDone(mech, eco3(), cfg, { no: 2, closed: true, diligent: true })).toBe(true);
     expect(readinessLive(s.active!, eco3(), cfg, { no: 2, closed: true, diligent: true })).toBe(Math.round((1 / 6) * 100));
+  });
+});
+
+describe('підсумкова Р4 «Аудит усього» (012 FR-19…FR-22, AC-14…AC-16)', () => {
+  const eco4 = (z: number): EconomyState => {
+    const g = { ...newGame(cfg, at(0)), level: 4 };
+    const it = itemsFor(g, cfg);
+    return { ...g, streamLevels: it.streams.map((u) => (u.share ? z : 30)), stageLevels: it.stages.map(() => 30), streamClerks: it.streams.map(() => true), stageClerks: it.stages.map(() => true) };
+  };
+  const announced4 = (z = 8) => tick(newInspections(at(0), 'seed-r4'), eco4(z), cfg, ctx(at(12)));
+  const closeAll = (s: InspectionState) => {
+    const r = completeAll(s, at(13), 'ad');
+    if ('error' in r) throw new Error(r.error);
+    return r.s;
+  };
+
+  test('AC-15: оголошення - 5 базових (slides_number, stack_meter, report_prep, brief_onepage, audit_acts) + zpz_level без ціни', () => {
+    const a = announced4().s.active!;
+    expect(a).toMatchObject({ kind: 'final', level: 4, attempt: 1 });
+    expect(a.items.map((i) => i.id)).toEqual(['slides_number', 'stack_meter', 'report_prep', 'brief_onepage', 'audit_acts', 'zpz_level']);
+    expect(a.items.find((i) => i.mech)).toMatchObject({ id: 'zpz_level', price: 0 });
+  });
+
+  test('звичайна перевірка Р4: 4 базові пункти без audit_acts (AC-14)', () => {
+    expect(baseChecklist(eco4(8), cfg, 4).map((i) => i.id)).toEqual(['slides_number', 'stack_meter', 'report_prep', 'brief_onepage']);
+  });
+
+  test('AC-16: частка 39,6% < 40% - "Ще ні" (округлення вниз), 41,3% - виконано', () => {
+    const { s } = announced4(8);
+    const mech = s.active!.items.find((i) => i.mech)!;
+    expect(zpzTenths(eco4(7), cfg)).toBe(396);
+    expect(zpzTenths(eco4(8), cfg)).toBe(413);
+    expect(itemDone(mech, eco4(7), cfg)).toBe(false);
+    expect(itemDone(mech, eco4(8), cfg)).toBe(true);
+  });
+
+  test('сповільнення з ціллю zpz на мить приїзду враховано: ×0,5 знижує частку нижче порогу', () => {
+    const { s } = announced4(8);
+    const mech = s.active!.items.find((i) => i.mech)!;
+    const slow: Effect = { kind: 'factor', source: 'telegram_slow', value: 0.5, target: { type: 'stream', id: 'zpz' }, startMs: at(0), endMs: at(30) };
+    expect(itemDone(mech, eco4(8), cfg, null, { nowMs: at(12), effects: [slow] })).toBe(false);
+    expect(itemDone(mech, eco4(8), cfg, null, { nowMs: at(12), effects: [] })).toBe(true);
+  });
+
+  test('приїзд: усі базові + частка 41,3% - пройдено, перехід дозволено; частка 27% - провал і повтор', () => {
+    const win = announced4(8);
+    const arr = win.s.active!.arrMs;
+    const ok = tick(closeAll(win.s), eco4(8), cfg, ctx(arr + 1000, { fromMs: arr - HOUR, effects: [] }));
+    expect(ok.events.find((x) => x.type === 'inspectionFinish')).toMatchObject({ kind: 'final', result: 'passed', mechDone: true, exitUnlocked: true });
+    const lose = announced4(8);
+    const bad = tick(closeAll(lose.s), eco4(3), cfg, ctx(arr + 1000, { fromMs: arr - HOUR, effects: [] }));
+    expect(bad.events.find((x) => x.type === 'inspectionFinish')).toMatchObject({ result: 'failed', mechDone: false });
+    expect(bad.s.active).toMatchObject({ kind: 'final', level: 4, attempt: 2 });
   });
 });
 

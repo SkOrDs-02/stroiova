@@ -1,10 +1,10 @@
 // Перебіг перевірки (004): оголошення, пункти з телеграм, купівля, результат у грі й без гравця.
 import type { Big } from '@/economy/core/big';
-import type { DomainEvent, EconomyConfig, EconomyState, StoredEffect } from '@/economy/game/types';
+import type { DomainEvent, EconomyConfig, EconomyState, Effect, StoredEffect } from '@/economy/game/types';
 import { roller, seedFrom } from '@/telegrams/rng';
 
 import { baseChecklist, bossFor, itemDef, priceOf } from './checklist';
-import { finalChecklist, hasFinal, type LastPack, mechOk, retryChecklist, streamsOpen } from './final';
+import { finalChecklist, hasFinal, type LastPack, type MechLive, mechOk, retryChecklist, streamsOpen } from './final';
 import { arrWindow, firstDue, nextArrival, warnMin } from './schedule';
 import type { ChecklistItem, Inspection, InspectionOutcome, InspectionState, InspTrigger } from './types';
 
@@ -34,9 +34,9 @@ export function inspectionId(no: number): string {
 }
 
 /** Готовність наживо: пункт механіки рахується за станом економіки, а не за записом (011 FR-5). */
-export function readinessLive(insp: Pick<Inspection, 'items'>, eco: EconomyState, cfg: EconomyConfig, pack: LastPack | null = null): number {
+export function readinessLive(insp: Pick<Inspection, 'items'>, eco: EconomyState, cfg: EconomyConfig, pack: LastPack | null = null, live?: MechLive): number {
   if (!insp.items.length) return 0;
-  return Math.round((insp.items.filter((i) => (i.mech ? mechOk(i.id, eco, cfg, pack) : i.done)).length / insp.items.length) * 100);
+  return Math.round((insp.items.filter((i) => (i.mech ? mechOk(i.id, eco, cfg, pack, live) : i.done)).length / insp.items.length) * 100);
 }
 
 export function readiness(insp: Pick<Inspection, 'items'>): number {
@@ -167,6 +167,8 @@ export interface TickCtxFinal {
   finalDue?: boolean;
   /** Остання видана пачка Р3 (для пункту `summary_beats`) */
   lastPack?: LastPack | null;
+  /** Ефекти гри: сповільнення рахуються в пункті `zpz_level` (Р4) */
+  effects?: readonly Effect[];
 }
 
 export interface TickCtx extends TickCtxFinal {
@@ -193,7 +195,7 @@ function resolve(s0: InspectionState, eco: EconomyState, cfg: EconomyConfig, ctx
   const p = cfg.params;
   const arr = active.arrMs;
   // пункт механіки перевіряється на мить приїзду (011 FR-5, крайовий випадок «пункт зламався»)
-  const insp: Inspection = { ...active, items: active.items.map((i) => (i.mech ? { ...i, done: mechOk(i.id, eco, cfg, ctx.lastPack ?? null) } : i)) };
+  const insp: Inspection = { ...active, items: active.items.map((i) => (i.mech ? { ...i, done: mechOk(i.id, eco, cfg, ctx.lastPack ?? null, { nowMs: arr, effects: ctx.effects ?? [] }) } : i)) };
   const done = insp.items.filter((i) => i.done).length;
   // рішення 65: пройшли лише на 100%
   const passed = done === insp.items.length;

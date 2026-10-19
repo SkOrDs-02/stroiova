@@ -69,6 +69,12 @@ export interface PackParams {
   summaryBuffHours: number;
 }
 
+/** Р4 «Звіти про звіти» (012): s(n) = shareMax · n / (n + K) - частка від суми інших потоків */
+export interface ZpzParams {
+  shareMax: number;
+  K: number;
+}
+
 export interface EconomyParams {
   streams: UnitDef[];
   stages: UnitDef[];
@@ -132,6 +138,7 @@ export interface EconomyParams {
   /** 011: підсумкова перевірка рівня (рішення 95, 96) */
   boss: BossParams;
   pack: PackParams;
+  zpz: ZpzParams;
   /** 005: подарунки й гонка (рішення 29–31); кроки акта — години (Акти, Комбат, Стройова, Фін.) */
   gifts: Record<'drone' | 'shovel' | 'generator', GiftDef>;
   giftOrder: ('drone' | 'shovel' | 'generator')[];

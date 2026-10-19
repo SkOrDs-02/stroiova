@@ -14,7 +14,7 @@ export const raceT = {
   short: { drone: 'Квадрокоптер', shovel: 'Лопати', generator: 'Генератор' } satisfies Record<GiftType, string>,
   act: (no: number) => `Акт № ${no}`,
   actOnWay: (no: number) => `Акт № ${no} · у дорозі`,
-  route: { akty: 'Акти', kombat: 'Комбат', stroy: 'Стройова', fin: 'Фін.', kazna: 'Казна', narada: 'Нарада' } satisfies Record<RouteUnit, string>,
+  route: { akty: 'Акти', kombat: 'Комбат', stroy: 'Стройова', fin: 'Фін.', kazna: 'Казна', narada: 'Нарада', dopovid: 'Доповідь' } satisfies Record<RouteUnit, string>,
   serve: { drone: 'Прослужить на фронті', shovel: 'Прослужать на фронті', generator: 'Прослужить на фронті' } satisfies Record<GiftType, string>,
   actEta: 'Акт пройде маршрут за',
   bonusLabel: { drone: 'Поки служить', shovel: 'Поки служать', generator: 'Поки служить' } satisfies Record<GiftType, string>,

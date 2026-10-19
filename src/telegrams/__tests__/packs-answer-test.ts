@@ -1,5 +1,6 @@
 // 011 зведена відповідь пачки: числа (AC-13, AC-14), види (AC-12), ефекти й баф (FR-21, FR-22), одна відповідь на пачку (FR-24), окремі відповіді (ВП-7).
-import { newGame } from '@/economy/game/state';
+import { zpzInfo } from '@/economy/game/income';
+import { itemsFor, newGame } from '@/economy/game/state';
 import type { EconomyState } from '@/economy/game/types';
 
 import { packDef } from '../content';
@@ -169,5 +170,19 @@ describe('окремі відповіді (ВП-7, рішення 100)', () => {
     const d = ok(answerPack(withPack('pack_01'), eco(), 1, 'diligent', ctx));
     expect(lastPack(d.tg)).toEqual({ no: 1, closed: true, diligent: true });
     expect(lastPack(tgWith([]))).toBeNull();
+  });
+});
+
+describe('Р4: зведена «сумлінно» і ЗпЗ (012 AC-18, FR-8)', () => {
+  test('пачка Р3 у вхідних на Р4 зводиться; «Зведення б\'ється» піднімає потік «Зведення» і rate_ЗпЗ разом з ним', () => {
+    const it = itemsFor({ ...eco(), level: 4 }, cfg);
+    const e4 = eco({ level: 4, streamLevels: it.streams.map((u) => (u.share ? 8 : 20)), stageLevels: it.stages.map(() => 20), prestigePoints: 5 });
+    const before = zpzInfo(e4, cfg, NOW, []);
+    const r = ok(answerPack(withPack('pack_01'), e4, 1, 'diligent', ctx));
+    const beats = r.effects.filter((x) => x.source === 'pack_beats');
+    expect(beats).toHaveLength(1);
+    expect(beats[0]).toMatchObject({ target: { type: 'stream', id: 'zvedennia' }, value: p.pack.summaryBuff });
+    const after = zpzInfo(r.eco, cfg, NOW, r.effects as never);
+    expect(after.rate).toBeGreaterThan(before.rate);
   });
 });

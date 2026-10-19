@@ -246,6 +246,42 @@ describe('Р3 (AC-9, AC-10)', () => {
   });
 });
 
+describe('Р4 «Аудит усього» (012 AC-15, AC-16)', () => {
+  /** Р4: усі 7 потоків і 6 ланок, ЗпЗ на рівні `z`; 23 акти в особовій справі */
+  const r4 = (z: number) => {
+    const { store } = r2({ level: 4, counts: { '1': 3, '2': 5, '3': 6, '4': p.levels[3]!.exitDigitizations } });
+    const g = store.getState().state;
+    const it = itemsFor(g, cfg);
+    store.setState({ state: { ...g, streamLevels: it.streams.map((u) => (u.share ? z : 40)) }, stats: { inspTotal: 23, inspPassed: 20, drones: 0 } });
+    return store;
+  };
+
+  test('boss-brief «Аудит усього. Підсумкова.»; insp-prep: 6 пунктів, «23 акти, з № 1», «Зараз 39,6% · потрібно 40%» і «Ще ні: підніми Звіти про звіти до 40%»', async () => {
+    const store = r4(7);
+    await announce(store);
+    expect(store.getState().inspections.active).toMatchObject({ kind: 'final', level: 4 });
+    await render(<MainScreen store={store} />);
+    expect(screen.getByTestId('boss-title')).toHaveTextContent(has('Аудит усього. Підсумкова.'));
+    await fireEvent.press(screen.getByTestId('insp-prepare'));
+    for (const id of ['slides_number', 'stack_meter', 'report_prep', 'brief_onepage', 'audit_acts', 'zpz_level']) expect(screen.getByTestId(`insp-item-${id}`)).toBeTruthy();
+    expect(screen.getByTestId('insp-item-audit_acts')).toHaveTextContent(has('23 акти, з № 1'));
+    expect(screen.getByTestId('insp-zpz-now')).toHaveTextContent('Зараз 39,6% · потрібно 40%');
+    expect(screen.getByTestId('insp-mech-state')).toHaveTextContent(has('Ще ні: підніми Звіти про звіти до 40%'));
+  });
+
+  test('частка 41,3% - «Виконано на цю мить»; піднімається наживо разом з рівнем потоку', async () => {
+    const store = r4(7);
+    await announce(store);
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('insp-prepare'));
+    const g = store.getState().state;
+    const zi = itemsFor(g, cfg).streams.findIndex((u) => u.share);
+    await act(async () => store.setState({ state: { ...g, streamLevels: g.streamLevels.map((l, k) => (k === zi ? 8 : l)) } }));
+    expect(screen.getByTestId('insp-zpz-now')).toHaveTextContent('Зараз 41,3% · потрібно 40%');
+    expect(screen.getByTestId('insp-mech-state')).toHaveTextContent(has('Виконано на цю мить'));
+  });
+});
+
 describe('перехід Р2 → Р3 (AC-8, AC-9)', () => {
   test('репутація «висока», «Без реклами» і 2 телеграми в шухляді лишаються; тост про Нараду й Зведення замість Казначейства; ціни Р3 = Р1 × costMult', async () => {
     const { store } = r2({ signatures: 0 });

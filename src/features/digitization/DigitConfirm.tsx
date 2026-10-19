@@ -10,7 +10,7 @@ import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
 import { HoldButton } from './HoldButton';
-import { journalTitle, shownJournals } from './present';
+import { byLevel, journalTitle, shownJournals } from './present';
 import { digitT } from './texts';
 
 export function DigitConfirm({ store, onClose, onDone }: { store: ConveyorStore; onClose: () => void; onDone: () => void }) {
@@ -23,11 +23,11 @@ export function DigitConfirm({ store, onClose, onDone }: { store: ConveyorStore;
     <View style={styles.scrim} testID="digit-confirm">
       <View style={styles.sheet} accessibilityViewIsModal>
         <ScrollView contentContainerStyle={styles.body}>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{level >= 3 ? digitT.confirmTitleR3 : level === 2 ? digitT.confirmTitleR2 : digitT.confirmTitleR1}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{byLevel.confirmTitle(level)}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{shownJournals(st.journals).length ? digitT.confirmSub : digitT.confirmSubNone}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.big} testID="confirm-points">{digitT.points(st.points)}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} testID="confirm-mult">{digitT.mult(formatMult(st.multBefore), formatMult(st.multAfter))}</Text>
-          {toNext ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note} testID="confirm-lvl">{level === 2 ? digitT.confirmLvlR3 : digitT.confirmLvl}</Text> : null}
+          {toNext ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note} testID="confirm-lvl">{byLevel.confirmLvl(level)}</Text> : null}
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h}>{digitT.resets}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{digitT.resetsList}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h}>{digitT.stays}</Text>
