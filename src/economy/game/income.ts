@@ -127,3 +127,18 @@ export function zpzInfo(state: EconomyState, cfg: EconomyConfig, t: number, effe
   const rate = withZ.sum - without.sum;
   return { s: zpzShare(state.streamLevels[zi] ?? 0, cfg.params), share: withZ.sum > 0 ? rate / withZ.sum : 0, rate };
 }
+
+/** Частка (0…1) у десятих відсотка з відкиданням дробу: показ і перевірка `zpz_level` беруть це саме число */
+export function shareTenths(share: number): number {
+  return Math.floor(share * 1000 + 1e-9);
+}
+
+/** Приріст частки ЗпЗ (десяті відсотка) від покупки `levels` рівнів потоку з урахуванням музею й сповільнень */
+export function zpzGainTenths(state: EconomyState, cfg: EconomyConfig, t: number, effects: readonly Effect[], levels: number): number {
+  const it = itemsFor(state, cfg);
+  const zi = it.streams.findIndex((u) => u.share);
+  if (zi < 0) return 0;
+  const cur = state.streamLevels[zi] ?? 0;
+  const after = { ...state, streamLevels: state.streamLevels.map((l, i) => (i === zi ? cur + levels : l)) };
+  return Math.max(0, shareTenths(zpzInfo(after, cfg, t, effects).share) - shareTenths(zpzInfo(state, cfg, t, effects).share));
+}

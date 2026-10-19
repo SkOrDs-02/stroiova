@@ -1,5 +1,5 @@
 // Підсумкова перевірка рівня (011 FR-2…FR-8): оголошення, чекліст 5 + 1, пункт механіки, повтор. Чисті функції без годинника.
-import { baseIncomePerMin, zpzInfo } from '@/economy/game/income';
+import { baseIncomePerMin, shareTenths, zpzInfo } from '@/economy/game/income';
 import { itemsFor } from '@/economy/game/state';
 import type { EconomyConfig, EconomyState, Effect } from '@/economy/game/types';
 
@@ -29,7 +29,7 @@ export interface MechLive {
  * (012 крайовий випадок «Частка на межі порогу»). Без живого контексту - за станом без ефектів.
  */
 export function zpzTenths(eco: EconomyState, cfg: EconomyConfig, live?: MechLive): number {
-  return Math.floor(zpzInfo(eco, cfg, live?.nowMs ?? 0, live?.effects ?? []).share * 1000 + 1e-9);
+  return shareTenths(zpzInfo(eco, cfg, live?.nowMs ?? 0, live?.effects ?? []).share);
 }
 
 /** Поріг пункту `zpz_level` у десятих відсотка (`boss.zpzMin`) */

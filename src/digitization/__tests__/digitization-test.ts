@@ -253,6 +253,15 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     expect(it.streams.map((u) => u.id)).toEqual(['raporty', 'akty', 'dovidky', 'nakladni', 'nakazy', 'zvedennia', 'zpz']);
     expect(it.stages.map((u) => u.id)).toEqual(['kombat', 'stroy', 'fin', 'kazna', 'narada', 'dopovid']);
     expect(it.streams[6]!.share).toBe(1);
+    // AC-2: числа Р4 = числа Р1 × level4.rateMult / costMult; «Доповідь» і потоки після переходу - на 1-му рівні
+    const l1 = itemsFor({ ...e, level: 1 }, cfg);
+    expect(it.streams[0]!.rate).toBeCloseTo(l1.streams[0]!.rate * p.levels[3]!.rateMult, 6);
+    expect(it.streams[0]!.cost).toBeCloseTo(l1.streams[0]!.cost * p.levels[3]!.costMult, 6);
+    const r = digitize({ ...e, level: 3, streamLevels: [30, 20, 10, 5, 3, 2], stageLevels: [30, 30, 30, 30, 30], signatures: 1e12, lifetimeCycle: 2.7e15, prestigePoints: 50 }, { ...newDigitization(T0), counts: { '3': 6 }, levelExitAllowed: true }, cfg, T0, false);
+    if ('error' in r) throw new Error(r.error);
+    expect(r.state.level).toBe(4);
+    expect(r.state.streamLevels).toEqual([1, 0, 0, 0, 0, 0, 0]);
+    expect(r.state.stageLevels).toEqual([1, 1, 1, 1, 1, 1]);
     const base = { ...newGame(cfg, T0), level: 4, stageLevels: [1, 1, 1, 1, 1, 1], lifetimeCycle: 2.29e13 * 40 * 40 };
     expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 2, 0] }, newDigitization(T0), cfg, T0)).toMatchObject({ kind: 'locked', lockedStreams: ['zpz'] });
     expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 2, 1] }, newDigitization(T0), cfg, T0)).toMatchObject({ kind: 'available' });
