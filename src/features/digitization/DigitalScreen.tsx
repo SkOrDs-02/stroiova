@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
-import { formatBig, formatMult } from '@/economy/format';
+import { formatBig, formatCountdown, formatMult } from '@/economy/format';
 import { itemsFor } from '@/economy/game/state';
 import { finalDue, status } from '@/digitization/digitization';
-import { formatCountdown } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, size, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';

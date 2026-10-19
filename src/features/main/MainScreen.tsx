@@ -197,9 +197,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const ceremonyOpen = ceremony != null && s.offline == null && !s.clerkFirstOpen;
   const inspFree = !overlay && !showCall && !ceremonyOpen;
   const inspCall = inspFree && insp != null && ins.callPending;
-  const inspWarn = inspFree && !inspCall && insp != null && insp.modal && !insp.warned;
-  // без гравця результат іде в довідку й позначається показаним (FR-25); коротка відсутність без довідки — акт
-  const inspResult = inspFree && !inspCall && !inspWarn && ins.last != null && !ins.last.seen;
+  // без гравця результат іде в довідку й позначається показаним (FR-25); коротка відсутність без довідки — акт.
+  // Хронологічно: непоказаний результат іде раніше за оголошення нової (011: провал підсумкової оголошує повтор одразу)
+  const inspResult = inspFree && !inspCall && ins.last != null && !ins.last.seen;
+  const inspWarn = inspFree && !inspCall && !inspResult && insp != null && insp.modal && !insp.warned;
   const inspBanner = insp != null && (insp.warned || !insp.modal);
   const digitEta = s.digitRec ? digitStatus(s.state, s.digit, s.cfg, now, s.effects).etaSec : null;
   // 005: gift-arrived і результат гонки — у тій самій черзі, після перевірок (крайовий випадок spec)
