@@ -196,6 +196,20 @@ export function digitalSpeedup(s: RaceState, nowMs: number, prestigePoints: numb
   };
 }
 
+/** Ролик (чи «Забрати» з «Без реклами») у гонці (008 FR-5): −raceAdCut залишку часу акта; ліміт на добу веде монетизація. */
+export function adSpeedup(s: RaceState, nowMs: number, cfg: EconomyConfig, method: 'ad' | 'no_ads_pass' = 'ad'): { s: RaceState; events: DomainEvent[] } | { error: SpeedError } {
+  const r = s.active;
+  if (!r) return { error: 'no_race' };
+  const at = r.pausedAtMs ?? nowMs;
+  if (r.actEndMs <= at) return { error: 'done' };
+  const actEndMs = at + Math.round((r.actEndMs - at) * (1 - cfg.params.raceAdCut));
+  const saved = r.actEndMs - actEndMs;
+  return {
+    s: { ...s, active: { ...r, actEndMs, sped: [...r.sped, { method: 'ad', sec: -Math.round(saved / 1000) }] } },
+    events: [{ type: 'raceSpeedup', id: r.id, method, secSaved: Math.round(saved / 1000) }],
+  };
+}
+
 /** Телеграма № 20 (FR-18): docHours — акт довший; pauseDoc — акт стоїть, поки вона в шухляді. */
 export function fromTelegram(s: RaceState, effect: Record<string, unknown>, nowMs: number, receivedAtMs: number = nowMs): RaceState {
   const r = s.active;

@@ -13,7 +13,7 @@ const presets = {
 type Name = keyof typeof presets;
 
 const strip = <T extends object>(x: T) => {
-  const { tapRateMax: _t, offlineReturnMin: _o, ...rest } = x as T & { tapRateMax?: number; offlineReturnMin?: number };
+  const { tapRateMax: _t, offlineReturnMin: _o, adMult: _a, adCapHours: _c, storageHoursPaid: _s, ...rest } = x as T & { tapRateMax?: number; offlineReturnMin?: number; adMult?: number; adCapHours?: number; storageHoursPaid?: number };
   return rest;
 };
 
@@ -22,6 +22,8 @@ describe('параметри', () => {
     expect(strip(DEFAULTS)).toEqual(core.DEFAULTS);
     expect(DEFAULTS.tapRateMax).toBe(10);
     expect(DEFAULTS.offlineReturnMin).toBe(5);
+    // 008: sim.js рахує буст середнім 1 + adFrac (×2); застосунок бере множник і межу з конфігу
+    expect([DEFAULTS.adMult, DEFAULTS.adCapHours, DEFAULTS.storageHoursPaid]).toEqual([2, 12, 24]);
     expect(SCENARIOS).toEqual(core.SCENARIOS);
   });
 

@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 7;
+export const CURRENT_SCHEMA = 8;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -186,7 +186,7 @@ export const raceStateSchema = z.object({
       actEndMs: z.number(),
       pausedAtMs: z.number().nullable(),
       digUsed: z.boolean(),
-      sped: z.array(z.object({ method: z.enum(['digital_bonus', 'telegram']), sec: z.number() })),
+      sped: z.array(z.object({ method: z.enum(['digital_bonus', 'telegram', 'ad']), sec: z.number() })),
       seen: z.boolean(),
     })
     .nullable(),
@@ -265,6 +265,21 @@ export const museumStateSchema = z.object({
   curioSeq: z.number().int().nonnegative(),
 });
 
+const productId = z.enum(['no_ads', 'starter_pack', 'storage_24h']);
+
+/** Реклама й покупки (008); схема 8. */
+export const monetizationStateSchema = z.object({
+  rights: z.object({ no_ads: z.boolean(), starter_pack: z.boolean(), storage_24h: z.boolean() }),
+  rightsAt: z.number().nullable(),
+  starterGranted: z.boolean(),
+  offer: z.enum(['wait', 'due', 'done']),
+  pending: z.array(productId),
+  ads: z.object({ date: z.string(), boost: z.number().int().nonnegative(), race: z.number().int().nonnegative() }),
+  inspAdId: z.string().nullable(),
+  purchases: z.number().int().nonnegative(),
+  success: z.array(productId),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -281,6 +296,8 @@ export const gameSaveSchema = z.object({
   digitization: digitizationStateSchema,
   /** Музей й курйози (007) */
   museum: museumStateSchema,
+  /** Реклама й покупки (008) */
+  monetization: monetizationStateSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

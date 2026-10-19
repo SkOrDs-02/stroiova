@@ -108,6 +108,15 @@ export interface EconomyParams {
   giftGapHours: number;
   giftFromHour: number;
   giftToHour: number;
+  /** 008: реклама - буст підписів: нагорода, множник, межа накопичення, добовий ліміт */
+  adsPerDay: number;
+  adHours: number;
+  adMult: number;
+  storageHoursPaid: number;
+  adCapHours: number;
+  /** 008: «Стартовий набір» - разова видача підписів і бак генератора, год */
+  starterSignatures: number;
+  starterFuelHours: number;
   raceAdPerDay: number;
   raceAdCut: number;
   raceDigitalCutH: number;

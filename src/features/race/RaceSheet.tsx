@@ -7,6 +7,10 @@ import { view } from '@/race/race';
 import { telegram } from '@/telegrams/content';
 import { color, radius, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
+import { localDate } from '@/features/conveyor/store';
+import { AdButton } from '@/features/monetization/AdButton';
+import { adT } from '@/features/monetization/texts';
+import { raceAdView } from '@/monetization/monetization';
 import { type } from '@/ui/type';
 
 import { dur, multText } from './present';
@@ -47,6 +51,18 @@ export function RaceSheet({ store, onClose }: { store: ConveyorStore; onClose: (
         <Button testID="race-digital" label={raceT.digital} disabled={!canDigital} onPress={() => s.raceDigital()} />
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{raceT.digitalCut(p.raceDigitalCutH)}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{raceT.digitalNote}</Text>
+        {v.actLeftMs > 0 ? (
+          <AdButton
+            store={store}
+            placement="race_speedup"
+            view={raceAdView(s.monetization, s.state, s.cfg, localDate(s.lastMs))}
+            label={adT.raceCut}
+            takeLabel={adT.raceTake}
+            note={adT.raceCutNote}
+            takeNote={adT.raceTakeNote}
+            testID="race-ad"
+          />
+        ) : null}
         <Button testID="race-close" variant="ghost" label={raceT.close} onPress={onClose} />
       </View>
     </View>

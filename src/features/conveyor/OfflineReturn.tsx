@@ -3,11 +3,18 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatBig, formatDuration } from '@/economy/format';
 import type { OfflineResult } from '@/economy/game/advance';
+import { AdButton } from '@/features/monetization/AdButton';
+import { adT } from '@/features/monetization/texts';
+import { offlineView } from '@/monetization/monetization';
 import { color, radius, size, space, typeScale, zIndex } from '@/theme';
+
+import type { ConveyorStore } from './store';
+import { localDate } from './store';
 
 import { t } from './texts';
 
-export function OfflineReturn({ res, inspRows = [], onClaim }: { res: OfflineResult; inspRows?: { k: string; v: string; bad: boolean }[]; onClaim: () => void }) {
+export function OfflineReturn({ res, inspRows = [], onClaim, store }: { res: OfflineResult; inspRows?: { k: string; v: string; bad: boolean }[]; onClaim: () => void; store?: ConveyorStore }) {
+  const eco = store?.getState();
   return (
     <View style={styles.scrim} accessibilityViewIsModal>
         <View style={styles.sheet} testID="offline-return">
@@ -29,6 +36,19 @@ export function OfflineReturn({ res, inspRows = [], onClaim }: { res: OfflineRes
               <Text style={[styles.body, r.bad && styles.bad]}>{r.v}</Text>
             </View>
           ))}
+          {store && eco && !res.idle ? (
+            <AdButton
+              store={store}
+              placement="offline_double"
+              view={offlineView(eco.state, eco.cfg, localDate(eco.offlineBackAt ?? eco.lastMs))}
+              label={adT.off.x2(formatBig(res.earned * eco.cfg.params.offlineAdMult, 'balance'))}
+              takeLabel={adT.off.x2(formatBig(res.earned * eco.cfg.params.offlineAdMult, 'balance'))}
+              note={adT.note}
+              takeNote={adT.takeNote}
+              limitLabel={adT.off.limit}
+              testID="offline-double"
+            />
+          ) : null}
           <Pressable testID="offline-claim" accessibilityRole="button" onPress={onClaim} style={styles.btn}>
             <Text style={styles.btnText}>{res.idle ? t.offBack : t.offTake(formatBig(res.earned, 'balance'))}</Text>
           </Pressable>

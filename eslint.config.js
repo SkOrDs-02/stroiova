@@ -9,8 +9,8 @@ module.exports = defineConfig([
   },
   {
     // Економіка — чистий модуль (конституція, принцип II; 001 FR-1, AC-1)
-    files: ['src/economy/**/*.ts', 'src/telegrams/**/*.ts', 'src/inspections/**/*.ts', 'src/race/**/*.ts', 'src/digitization/**/*.ts', 'src/museum/**/*.ts'],
-    ignores: ['src/economy/**/__tests__/**', 'src/telegrams/**/__tests__/**', 'src/inspections/**/__tests__/**', 'src/race/**/__tests__/**', 'src/digitization/**/__tests__/**', 'src/museum/**/__tests__/**'],
+    files: ['src/economy/**/*.ts', 'src/telegrams/**/*.ts', 'src/inspections/**/*.ts', 'src/race/**/*.ts', 'src/digitization/**/*.ts', 'src/museum/**/*.ts', 'src/monetization/**/*.ts'],
+    ignores: ['src/economy/**/__tests__/**', 'src/telegrams/**/__tests__/**', 'src/inspections/**/__tests__/**', 'src/race/**/__tests__/**', 'src/digitization/**/__tests__/**', 'src/museum/**/__tests__/**', 'src/monetization/**/__tests__/**'],
     rules: {
       'no-restricted-imports': [
         'error',

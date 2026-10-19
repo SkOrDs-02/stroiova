@@ -22,10 +22,15 @@ import { DigitConfirm } from '@/features/digitization/DigitConfirm';
 import { DigitResult } from '@/features/digitization/DigitResult';
 import { LevelUp } from '@/features/digitization/LevelUp';
 import { digitT } from '@/features/digitization/texts';
+import { BoostsSheet } from '@/features/monetization/BoostsSheet';
+import { IapSuccess } from '@/features/monetization/IapSuccess';
+import { ShopScreen } from '@/features/monetization/ShopScreen';
+import { StarterOffer } from '@/features/monetization/StarterOffer';
 import { JournalNew } from '@/features/museum/JournalNew';
 import { MuseumScreen } from '@/features/museum/MuseumScreen';
 import { titleOf } from '@/features/museum/present';
 import { muT } from '@/features/museum/texts';
+import { boostsT } from '@/features/monetization/texts';
 import { nextReveal, unseen } from '@/museum/museum';
 import { GiftArrived } from '@/features/race/GiftArrived';
 import { offlineRaceRows } from '@/features/race/present';
@@ -70,6 +75,8 @@ type View3 =
   | { kind: 'kombat' }
   | { kind: 'digital' }
   | { kind: 'museum' }
+  | { kind: 'shop' }
+  | { kind: 'boosts' }
   | { kind: 'digit-confirm' };
 
 function toastText(toast: Toast): string {
@@ -143,6 +150,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     if (onboarding && neckId === 'kombat') store.getState().showToast({ kind: 'text', text: onb.b6Toast2 });
   }, [neckId, onboarding, store]);
 
+  // 008 FR-26, FR-27: на запуску тихо звіряємо права зі стором
+  useEffect(() => {
+    void store.getState().syncPurchases();
+  }, [store]);
+
   const toast = s.toast;
   useEffect(() => {
     if (toast == null) return;
@@ -195,6 +207,13 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const revealOpen =
     viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
 
+  // 008: iap-success і starter-offer - після інших модалок і розкриття журналів (порядок «оцінка → журнал → оферта», 09)
+  const calm =
+    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && nextReveal(s.museum) == null;
+  const iapOpen = calm && s.busy == null && !onboarding && s.monetization.success.length > 0;
+  // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
+  const starterOpen = calm && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
+
   const coachFor = (id: string) => {
     if (!coachOn) return undefined;
     if (rd === 'coachUpgrade' && id === 'raporty') return { target: 'buy' as const, text: onb.b6Arrow };
@@ -208,6 +227,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     if (tab === 'telegrams' && o.step === 8 && tg1?.status === 'new') setView({ kind: 'detail', uid: tg1.uid, coach: true });
     else if (tab === 'telegrams') setView({ kind: 'list' });
     else if (tab === 'digital') setView({ kind: 'digital' });
+    else if (tab === 'shop') setView({ kind: 'shop' });
     else if (tab === 'museum') {
       if (view.kind !== 'museum') s.openMuseum();
       setView({ kind: 'museum' });
@@ -224,7 +244,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       setView({ kind: 'detail', uid: item.uid, coach: false });
     }
   };
-  const tabsEnabled: TabId[] = coachRow ? [] : o.step !== 'done' && o.step < 8 ? ['stroyova'] : ['stroyova', 'telegrams', 'digital', 'museum'];
+  const tabsEnabled: TabId[] = coachRow ? [] : o.step !== 'done' && o.step < 8 ? ['stroyova'] : ['stroyova', 'telegrams', 'digital', 'museum', 'shop'];
 
   return (
     <View style={styles.root}>
@@ -232,6 +252,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         <TelegramList store={store} onOpen={openItem} onReputation={() => setView({ kind: 'rep', back: 'list' })} />
       ) : view.kind === 'digital' || view.kind === 'digit-confirm' ? (
         <DigitalScreen store={store} onOpenConfirm={() => setView({ kind: 'digit-confirm' })} />
+      ) : view.kind === 'shop' ? (
+        <ShopScreen store={store} insetTop={insets.top + space[16]} />
       ) : view.kind === 'museum' ? (
         <MuseumScreen store={store} insetTop={insets.top + space[16]} onToDigital={() => setView({ kind: 'digital' })} />
       ) : (
@@ -239,7 +261,9 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
         {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{digitT.placeR2}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.balance} testID="balance">{formatBig(s.state.signatures, 'counter')}</Text>
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.income} testID="income">{`${formatRate(inc.perMin)} · ${formatMult(M)}`}</Text>
+        <Pressable testID="income-open" accessibilityRole="button" accessibilityLabel={boostsT.title} onPress={() => setView({ kind: 'boosts' })} disabled={coachOn} style={styles.incomeHit}>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.income} testID="income">{`${formatRate(inc.perMin)} · ${formatMult(M)}`}</Text>
+        </Pressable>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.flow} testID="flow-line">
           {neck === 'streams' ? t.flowStreams : t.flow(formatBig(inc.flow.sum), formatBig(inc.flow.pipe), neckName ?? '')}
         </Text>
@@ -343,7 +367,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         </>
       )}
       <TabBar
-        active={view.kind === 'list' ? 'telegrams' : view.kind === 'digital' || view.kind === 'digit-confirm' ? 'digital' : view.kind === 'museum' ? 'museum' : 'stroyova'}
+        active={view.kind === 'list' ? 'telegrams' : view.kind === 'digital' || view.kind === 'digit-confirm' ? 'digital' : view.kind === 'museum' ? 'museum' : view.kind === 'shop' ? 'shop' : 'stroyova'}
         digitalDot={s.digitRec}
         museumDot={unseen(s.museum) > 0}
         telegramsNew={badge}
@@ -440,7 +464,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
       {revealOpen ? <JournalNew store={store} /> : null}
-      {s.offline ? <OfflineReturn res={s.offline} inspRows={[...offlineRows(ins.last, s.cfg.params, s.offlineBackAt ?? now), ...offlineRaceRows(s.race.last)]} onClaim={s.claim} /> : null}
+      {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => setView({ kind: 'shop' })} /> : null}
+      {iapOpen ? <IapSuccess store={store} /> : null}
+      {starterOpen ? <StarterOffer store={store} /> : null}
+      {s.offline ? <OfflineReturn store={store} res={s.offline} inspRows={[...offlineRows(ins.last, s.cfg.params, s.offlineBackAt ?? now), ...offlineRaceRows(s.race.last)]} onClaim={() => s.claim()} /> : null}
     </View>
   );
 }
@@ -450,6 +477,7 @@ const styles = StyleSheet.create({
   header: { padding: space[16], gap: space[4], backgroundColor: color.bgDeep },
   balance: { ...type('displayM'), color: color.text },
   income: { ...type('numL'), color: color.accent },
+  incomeHit: { minHeight: size.touchMin, justifyContent: 'center' },
   flow: { ...type('caption'), color: color.muted },
   tiles: { flexDirection: 'row', gap: space[8], marginTop: space[8] },
   tile: { minHeight: size.touchMin, flex: 1, borderRadius: radius[6], backgroundColor: color.surface, justifyContent: 'center', paddingHorizontal: space[8] },

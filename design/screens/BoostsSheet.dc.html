@@ -107,7 +107,7 @@ button{font:inherit;cursor:pointer}
       </sc-if>
       <span class="st-btn-note">{{b.note}}</span>
       <sc-if value="{{shopLink}}" hint-placeholder-val="{{true}}">
-        <a href="Shop.dc.html" class="st-btn st-btn--quiet" style="align-self: center">Постійний ×1,3 — у магазині</a>
+        <a href="Shop.dc.html" class="st-btn st-btn--quiet" style="align-self: center">Постійний ×1,3 - у магазині</a>
       </sc-if>
     </div>
   </div>
@@ -147,10 +147,10 @@ class Component extends DCLogic {
     var P = {
       'буст з таймером': { total: '×2,5', totalSub: 'з двох джерел', act: [AD, FUEL], idle: [I_BIRD, I_INSP, I_DIG, I_MUS], b: ready, shop: true },
       'лише постійні': { total: '×2,2', totalSub: 'з двох джерел', act: [DIG38, FUEL, MUS], idle: [I_AD, I_BIRD, I_INSP], b: { kind: 'ready', label: 'Буст ×2 на 4 год', note: 'Реклама 30 секунд · сьогодні ще 3 з 3' }, shop: true },
-      'накопичено 12 год': { total: '×2,5', totalSub: 'з двох джерел', act: [R('ad', 'Буст за рекламу', 'Межа накопичення — 12 год', '×2', 'ще 11:58:40'), FUEL], idle: [I_BIRD, I_INSP, I_DIG, I_MUS], b: { kind: 'cap', note: 'Буст уже на 12 год, більше не накопичується.' }, shop: true },
+      'накопичено 12 год': { total: '×2,5', totalSub: 'з двох джерел', act: [R('ad', 'Буст за рекламу', 'Межа накопичення: 12 год', '×2', 'ще 11:58:40'), FUEL], idle: [I_BIRD, I_INSP, I_DIG, I_MUS], b: { kind: 'cap', note: 'Буст уже на 12 год, більше не накопичується.' }, shop: true },
       'Без реклами: Забрати': { total: '×3,25', totalSub: 'з трьох джерел', act: [NOAD, R('ad', 'Буст без перегляду', 'Ті самі ліміти, що й у ролика', '×2', 'ще 3:41:12'), FUEL], idle: [I_BIRD, I_INSP, I_DIG], b: { kind: 'take', label: 'Забрати +4 год до ×2', note: 'Без реклами: без перегляду · сьогодні ще 2 з 3' }, shop: false },
       'ролик вантажиться': { total: '×2,2', totalSub: 'з двох джерел', act: [DIG38, FUEL, MUS], idle: [I_AD, I_BIRD, I_INSP], b: { kind: 'loading', note: 'Зазвичай кілька секунд' }, shop: true },
-      'реклама недоступна': { total: '×2,2', totalSub: 'з двох джерел', act: [DIG38, FUEL, MUS], idle: [I_AD, I_BIRD, I_INSP], b: { kind: 'na', note: 'Немає звʼязку. Гра працює далі, спробуй пізніше.' }, shop: true },
+      'реклама недоступна': { total: '×2,2', totalSub: 'з двох джерел', act: [DIG38, FUEL, MUS], idle: [I_AD, I_BIRD, I_INSP], b: { kind: 'na', note: 'Немає зв’язку. Гра працює далі, спробуй пізніше.' }, shop: true },
       'ліміт на сьогодні': { total: '×2,5', totalSub: 'з двох джерел', act: [R('ad', 'Буст за рекламу', 'Накопичується до 12 год', '×2', 'ще 0:52:10'), FUEL], idle: [I_BIRD, I_INSP, I_DIG, I_MUS], b: { kind: 'limit', note: '3 з 3 використано. Нові спроби завтра.' }, shop: true },
       'кілька джерел ×8': { total: '×8', totalSub: 'з чотирьох джерел', act: [R('drone', 'Пташка в небі', 'Квадрокоптер служить', '×2', 'ще 9 год 15 хв'), AD, R('dig', 'Цифрові бали', '30 балів · +2% за бал', '×1,6', 'назавжди'), FUEL, R('mus', 'Музей журналів', 'Бонуси окремим ланкам', '2 з 8', 'окремо')], idle: [I_INSP], b: ready, shop: true },
       'усі джерела': { total: '×34,3', totalSub: 'з шести джерел', act: [R('drone', 'Пташка в небі', 'Квадрокоптер служить', '×2', 'ще 9 год 15 хв'), R('ad', 'Буст без перегляду', 'Накопичується до 12 год', '×2', 'ще 3:41:12'), R('insp', 'Перевірку пройдено', 'Зауважень немає', '×3', 'ще 1 год 12 хв'), DIG38, NOAD, FUEL, MUS], idle: [], b: { kind: 'take', label: 'Забрати +4 год до ×2', note: 'Без реклами: без перегляду · сьогодні ще 2 з 3' }, shop: false }
