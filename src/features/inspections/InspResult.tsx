@@ -26,6 +26,8 @@ function stampDate(ms: number): { date: string; time: string } {
 export function InspResult({ store }: { store: ConveyorStore }) {
   const s = useStore(store);
   const o = s.inspections.last!;
+  // провал підсумкової: повтор уже оголошено (011 FR-7)
+  const retry = s.inspections.active?.kind === 'final' ? s.inspections.active : null;
   // із зауваженням — рядок з артборда: пул «пройшли» каже «зауважень немає»
   const poolRes = useTumbLine(store, o.remark ? null : `tumb.${o.passed ? 'pass' : 'fail'}.r${o.level}`, `insp:${o.id}:result`);
   const res = o.remark ? inspT.remarkRes : poolRes;
@@ -73,6 +75,8 @@ export function InspResult({ store }: { store: ConveyorStore }) {
               ? inspT.passUnsched
               : inspT.passX3(formatMult(p.inspMult), formatDuration(x3Left / 1000))}
         </Text>
+        {o.kind === 'final' && o.passed ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.status} testID="insp-order">{inspT.boss2.passOrder}</Text> : null}
+        {o.kind === 'final' && !o.passed && retry ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.status} testID="insp-retry">{inspT.boss2.retry(formatDuration(Math.max(0, retry.arrMs - s.lastMs) / 1000))}</Text> : null}
         <Button testID="insp-result-ok" label={inspT.toMain} onPress={s.closeInspResult} />
       </View>
     </View>

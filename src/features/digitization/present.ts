@@ -19,11 +19,16 @@ export function journalTitle(no: number): string {
 export type TrackKey = keyof typeof digitT.track;
 const KEYS: TrackKey[] = ['batalion', 'bryhada', 'command', 'general', 'paperless'];
 
-/** Доріжка з 5 рівнів (FR-11, FR-28): пройдено / зараз / після 3-ї / пізніше. */
+/**
+ * Доріжка з 5 рівнів (06 FR-11, 011 FR-11): пройдено / зараз / після 3-ї (Р1) / після підсумкової (Р2) / пізніше.
+ * Р3 не має виходу в цій збірці: Р4 «пізніше».
+ */
 export function track(level: number): { key: TrackKey; name: string; state: string }[] {
   return KEYS.map((key, i) => {
     const n = i + 1;
-    const state = n < level ? digitT.trackState.done : n === level ? digitT.trackState.now : n === level + 1 && level === 1 ? digitT.trackState.after3 : digitT.trackState.later;
+    const next = n === level + 1;
+    const state =
+      n < level ? digitT.trackState.done : n === level ? digitT.trackState.now : next && level === 1 ? digitT.trackState.after3 : next && level === 2 ? digitT.trackState.afterFinal : digitT.trackState.later;
     return { key, name: digitT.track[key], state };
   });
 }

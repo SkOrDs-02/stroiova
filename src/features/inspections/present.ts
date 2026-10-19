@@ -12,6 +12,10 @@ export function reasonText(telegramId: string): string {
   return inspT.reason(tel?.no ?? '', tel?.title ?? '');
 }
 
+export function finalTitle(level: number): string {
+  return level >= 3 ? inspT.boss2.titleR3 : inspT.boss2.titleR2;
+}
+
 export function itemTitle(id: string): string {
   return inspT.item[id]?.title ?? '';
 }
@@ -41,8 +45,10 @@ export function verdictText(o: InspectionOutcome): string {
 /** Рядки довідки повернення (FR-25). */
 export function offlineRows(last: InspectionOutcome | null, p: EconomyParams, backAtMs: number): { k: string; v: string; bad: boolean }[] {
   return offlineLines(last, p, backAtMs).map((l) => {
+    if (l.kind === 'passed' && l.final) return { k: inspT.offInsp, v: inspT.boss2.offPassed, bad: false };
     if (l.kind === 'passed') return { k: inspT.offInsp, v: l.remark ? inspT.offRemark : inspT.offPassed, bad: false };
     if (l.kind === 'mult') return { k: inspT.offMult, v: inspT.offMultV(formatMult(l.mult), formatDuration(l.leftMs / 1000)), bad: false };
+    if (l.final) return { k: inspT.offFail, v: `${inspT.offFailV(formatMult(l.factor), l.hours)}. ${inspT.boss2.offFailed(l.retryH)}`, bad: true };
     return { k: inspT.offFail, v: inspT.offFailV(formatMult(l.factor), l.hours), bad: true };
   });
 }

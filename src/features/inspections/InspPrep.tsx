@@ -6,7 +6,8 @@ import { useStore } from 'zustand';
 import { formatBig, formatCountdown, formatDuration, formatMult } from '@/economy/format';
 import { income } from '@/economy/game/income';
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { readiness, shortfall } from '@/inspections/lifecycle';
+import { mechOk } from '@/inspections/final';
+import { readinessLive, shortfall } from '@/inspections/lifecycle';
 import { color, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
 import { AdButton } from '@/features/monetization/AdButton';
@@ -25,7 +26,10 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
   const line = useTumbLine(store, a && a.trigger === 'scheduled' ? `tumb.start.r${a.level}` : a ? 'tumb.start_unsched' : null, `insp:${a?.id}:start`);
   if (!a) return null;
   const perMin = income(s.state, s.cfg, s.lastMs, s.effects).perMin;
-  const pct = readiness(a);
+  const pct = readinessLive(a, s.state, s.cfg);
+  const final = a.kind === 'final';
+  // реклама закриває лише базові пункти (011 FR-5): коли їх не лишилось, кнопки немає
+  const baseOpen = a.items.some((i) => !i.done && !i.mech);
   const p = s.cfg.params;
   const left = (a.arrMs - s.lastMs) / 1000;
   return (
@@ -34,7 +38,7 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
         <Pressable testID="insp-back" accessibilityRole="button" accessibilityLabel={inspT.backLabel} onPress={s.closeInspPrep} style={styles.back}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.backText}>{`← ${inspT.back}`}</Text>
         </Pressable>
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h} accessibilityRole="header">{inspT.prepTitle}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h} accessibilityRole="header">{final ? inspT.boss2.prepTitle : inspT.prepTitle}</Text>
       </View>
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.timer} accessibilityRole="timer" accessibilityLabel={inspT.untilArrivalLabel(formatCountdown(left))}>
@@ -58,6 +62,20 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.have(formatBig(s.state.signatures, 'balance'), inspT.rate(formatBig(perMin)))}</Text>
         </View>
         {a.items.map((it) => {
+          if (it.mech) {
+            // пункт механіки (011 FR-5): не купується, стан наживо
+            const ok = mechOk(it.id, s.state, s.cfg);
+            return (
+              <View key={it.id} testID={`insp-item-${it.id}`} accessibilityState={{ checked: ok }} style={[styles.item, ok && styles.itemDone]}>
+                <View style={[styles.box, ok && styles.boxOn]}>{ok ? <Text style={styles.tick}>✓</Text> : null}</View>
+                <View style={styles.itemText}>
+                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.itemTitle}>{itemTitle(it.id)}</Text>
+                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.boss2.mechTag}</Text>
+                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={ok ? styles.ready : styles.lack} testID="insp-mech-state">{ok ? inspT.boss2.mechOk : inspT.boss2.mechNo(inspT.mechTodo[it.id] ?? '')}</Text>
+                </View>
+              </View>
+            );
+          }
           const short = shortfall(it, s.state.signatures, perMin);
           const off = !it.done && short != null;
           return (
@@ -87,7 +105,7 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
             </Pressable>
           );
         })}
-        {pct < 100 || inspAdView(s.monetization, a.id, s.state).button === 'limit' ? (
+        {(pct < 100 && baseOpen) || inspAdView(s.monetization, a.id, s.state).button === 'limit' ? (
           <AdButton
             store={store}
             placement="inspection_checklist"
@@ -101,14 +119,23 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
           />
         ) : null}
         {pct >= 100 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.ready} testID="insp-ready-line">{inspT.readyLine[a.boss]}</Text> : null}
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
-          <Text style={styles.pass}>{`${inspT.passRuleK} `}</Text>
-          {a.trigger === 'unscheduled' ? inspT.passUnschedRule : inspT.passRule(formatMult(p.inspMult), p.inspHours)}
-        </Text>
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
-          <Text style={styles.fail}>{`${inspT.failRuleK} `}</Text>
-          {inspT.failRule(formatMult(p.inspFailMult), p.inspFailHours)}
-        </Text>
+        {final ? (
+          <>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>{inspT.boss2.gives(formatMult(p.inspMult), p.inspHours)}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>{inspT.boss2.fail(formatMult(p.inspFailMult), p.inspFailHours)}</Text>
+          </>
+        ) : (
+          <>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
+              <Text style={styles.pass}>{`${inspT.passRuleK} `}</Text>
+              {a.trigger === 'unscheduled' ? inspT.passUnschedRule : inspT.passRule(formatMult(p.inspMult), p.inspHours)}
+            </Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.rule}>
+              <Text style={styles.fail}>{`${inspT.failRuleK} `}</Text>
+              {inspT.failRule(formatMult(p.inspFailMult), p.inspFailHours)}
+            </Text>
+          </>
+        )}
       </ScrollView>
     </View>
   );

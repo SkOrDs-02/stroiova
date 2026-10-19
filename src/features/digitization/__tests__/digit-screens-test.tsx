@@ -70,12 +70,12 @@ describe('digital', () => {
     expect(screen.getByTestId('digit-how')).toBeTruthy();
   });
 
-  test('AC-20: на Р2 — «Цифровізацій у бригаді: 1», примітка «Наступний рівень відкриється пізніше», доріжка «пройдено»', async () => {
+  test('AC-20 (011 FR-11): на Р2 — «Цифровізацій на рівні: 1 з 4», без примітки про пізніший рівень, доріжка «пройдено», Р3 «після підсумкової»', async () => {
     const store = game(6.27e9 * 1600, { level: 2, streamLevels: [30, 20, 10, 5, 3], stageLevels: [20, 20, 20, 20], prestigePoints: 100 }, { '1': 3, '2': 1 });
     await openDigital(store);
-    expect(screen.getByTestId('digit-counter')).toHaveTextContent('Цифровізацій у бригаді: 1');
-    expect(screen.getByTestId('digit-track')).toHaveTextContent(/Батальйонпройдено.*Бригадазараз/);
-    expect(screen.getByText(/Наступний рівень відкриється пізніше/)).toBeTruthy();
+    expect(screen.getByTestId('digit-counter')).toHaveTextContent('Цифровізацій на рівні: 1 з 4');
+    expect(screen.getByTestId('digit-track')).toHaveTextContent(/Батальйонпройдено.*Бригадазараз.*Командуванняпісля підсумкової/);
+    expect(screen.queryByText(/Наступний рівень відкриється пізніше/)).toBeNull();
   });
 });
 
