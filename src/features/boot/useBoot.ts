@@ -13,6 +13,8 @@ import type { InspectionState } from '@/inspections/types';
 import type { DigitizationState } from '@/digitization/types';
 import type { MonetizationState } from '@/monetization/types';
 import type { MuseumState } from '@/museum/types';
+import type { NotificationsState, Settings } from '@/notifications/types';
+import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
 import type { RaceState } from '@/race/types';
 import type { TelegramState } from '@/telegrams/types';
 import { MIGRATIONS } from '@/save/migrations';
@@ -59,8 +61,14 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications },
   };
+}
+
+/** Звук і вібрація з налаштувань (010 FR-3): прапорці живуть у модулі haptics. */
+function applySettingsToDevice(st: Settings): void {
+  setSoundEnabled(st.sound);
+  setHapticsEnabled(st.haptics);
 }
 
 /** Стан гри з запису: закріплений конфіг має пріоритет над вбудованим (FR-22, source cached). */
@@ -85,7 +93,10 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     digit: save.game.digitization as DigitizationState,
     museum: save.game.museum as MuseumState,
     monetization: save.game.monetization as MonetizationState,
+    settings: save.game.settings as Settings,
+    notifications: save.game.notifications as NotificationsState,
   });
+  applySettingsToDevice(store.getState().settings);
   // новий холодний старт — нова сесія (FR-4); після міграції знімок уже зроблено в loadSave
   if (!opts.snapshotted) snapshot(kv);
   store.getState().away(save.savedAt, now); // офлайн чи годинник назад (01, FR-13, FR-14)
@@ -114,7 +125,10 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.effects !== prev.effects ||
     // ×2 за офлайн-ролик змінює лише підписи, лічильник доби й довідку
     st.state.offlineDoubles !== prev.state.offlineDoubles ||
-    st.offline !== prev.offline
+    st.offline !== prev.offline ||
+    // 010: налаштування й планувальник - зміна одразу (вбивство застосунку не губить вимкнений пуш)
+    st.settings !== prev.settings ||
+    st.notifications !== prev.notifications
   );
 }
 
@@ -152,10 +166,13 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
     });
     let leftAt: number | null = null;
     const sub = AppState.addEventListener('change', (s) => {
-      if (s !== 'active') leftAt ??= clock();
-      else {
+      if (s !== 'active') {
+        leftAt ??= clock();
+        void store.getState().goBackground(clock());
+      } else {
         if (isNewSession(leftAt, clock())) snapshot(kv);
         leftAt = null;
+        void store.getState().comeForeground(clock());
       }
     });
     return () => {

@@ -167,6 +167,9 @@ export type DomainEvent =
   | { type: 'purchaseFail'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; reason: 'user_cancelled' | 'payment_pending' | 'store_problem' | 'network' | 'product_unavailable' | 'already_owned' | 'not_allowed' | 'unknown' }
   | { type: 'purchaseRestore'; trigger: 'shop_button' | 'settings_button' | 'auto_check'; isSuccess: boolean; restoredProductIds: ('no_ads' | 'starter_pack' | 'storage_24h')[] }
   | { type: 'offlineIncomeClaim'; isDoubled: boolean; doubleSource: 'ad' | 'no_ads_pass' | 'none'; offlineDoublesToday: number }
+  // 010: налаштування; аналітика етапу 5 (setting_change, push_permission_request)
+  | { type: 'settingChange'; settingName: 'sound' | 'haptics' | 'notif_storage' | 'notif_telegrams' | 'notif_inspections' | 'notif_gifts' | 'notif_boosts' | 'analytics' | 'progress_reset'; newValue: boolean | null }
+  | { type: 'pushPermissionRequest'; trigger: 'onboarding_session_end' | 'settings'; prePromptResult: 'accepted' | 'declined'; osResult: 'granted' | 'denied' | 'provisional' | 'not_shown' }
   | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */

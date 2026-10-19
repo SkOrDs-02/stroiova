@@ -18,11 +18,17 @@ import { adSpeedup, digitalSpeedup, fromTelegram as raceFromTelegram, newRace, r
 import type { RaceState } from '@/race/types';
 import { closeCeremonyStep, digitize as digitizeNow, newDigitization, shiftDigitization, status as digitStatus } from '@/digitization/digitization';
 import type { DigitizationState } from '@/digitization/types';
-import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
+import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, markCuriosSeen, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
-import { addBoost, addPending, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
+import { addBoost, addPending, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, applyRights, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
 import type { AdResult, AdService, MonetizationState, Placement, ProductId, PurchaseResult, PurchaseService } from '@/monetization/types';
 import { adT, iapT, shopT } from '@/features/monetization/texts';
+import { newNotifications, newSettings, plan as planPushes, settle } from '@/notifications/planner';
+import type { LinkService, NotificationService, NotificationsState, PushCategory, PushPermission, Settings } from '@/notifications/types';
+import { pushText } from '@/features/settings/pushText';
+import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
+import { unavailableLinks } from '@/services/links';
+import { unavailableNotifications } from '@/services/notifications';
 import { unavailableAds } from '@/services/ads';
 import { unavailablePurchases } from '@/services/purchases';
 import { digitT } from '@/features/digitization/texts';
@@ -79,7 +85,11 @@ interface Store {
   museum: MuseumState;
   /** Реклама й покупки (008) */
   monetization: MonetizationState;
-  services: { ads: AdService; purchases: PurchaseService };
+  services: { ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService };
+  /** Налаштування (010) */
+  settings: Settings;
+  /** Заплановані сповіщення й лічильник доби (010) */
+  notifications: NotificationsState;
   /** Ролик чи оплата йде: повторні тапи ігноруються (крайовий випадок); лише в пам'яті */
   busy: 'ad' | 'purchase' | null;
   /** Підказка «Час цифровізуватися» активна (FR-9); оновлюється раз на хвилину гри, лише в пам'яті */
@@ -166,6 +176,24 @@ interface Store {
   closeIapSuccess: () => void;
   /** starter-offer закрито (FR-19) */
   ackStarterOffer: () => void;
+  /** Перемикачі налаштувань (010 FR-14, FR-16) */
+  setSetting: (key: 'sound' | 'haptics' | 'analytics' | 'testUser', value: boolean) => void;
+  /** Категорія сповіщень (FR-15) */
+  setNotifCategory: (cat: PushCategory, value: boolean) => void;
+  /** Системний запит дозволу після `push-preprompt` (FR-9…FR-11); повертає відповідь ОС */
+  requestPush: (trigger: 'onboarding_session_end' | 'settings') => Promise<PushPermission>;
+  /** Дозвіл ОС міг змінитись поза грою (FR-12) */
+  refreshPermission: () => Promise<void>;
+  /** Гра пішла у фон: сповіщення за станом (FR-5) */
+  goBackground: (nowMs: number) => Promise<void>;
+  /** Гра повернулась: заплановане скасовано (FR-5) */
+  comeForeground: (nowMs: number) => Promise<void>;
+  /** «Підписати й скинути» (FR-19, FR-20, рішення 88) */
+  resetProgress: () => void;
+  /** Рапорт на зміну позивного (FR-26) */
+  changeCallsign: (text: string, gender: 'm' | 'f') => void;
+  /** Список курйозів відкрито: бейдж «нове» гасне (FR-30) */
+  markCuriosSeen: () => void;
   /** `journal-new` закрито: журнал переглянуто (рішення 79) */
   closeReveal: () => void;
   /** Вкладку «Музей» відкрито: усе переглянуто (007 FR-20) */
@@ -217,7 +245,9 @@ export interface Initial {
   digit?: DigitizationState;
   museum?: MuseumState;
   monetization?: MonetizationState;
-  services?: { ads: AdService; purchases: PurchaseService };
+  settings?: Settings;
+  notifications?: NotificationsState;
+  services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService }>;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -265,6 +295,12 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       // Граніт у «знайшли» — репліка персонажа, у ліміті сесії
       if (e.type === 'kombatFound' && get().telegrams.kombat.active) characterLine('granit.success', `kombat:${get().telegrams.kombat.active!.startMs}`);
     }
+  };
+  /** «Стартовий набір» після скидання: 50 000 знову, щойно онбординг пройдено (рішення 88) */
+  const grantStarterIfDue = () => {
+    const g = get();
+    if (!g.monetization.rights.starter_pack || g.monetization.starterGranted || g.onboarding.step !== 'done') return;
+    set({ state: { ...g.state, signatures: g.state.signatures + g.cfg.params.starterSignatures }, monetization: { ...g.monetization, starterGranted: true } });
   };
   const pushEvent = (e: DomainEvent) => set({ events: [...get().events, e].slice(-40) });
   /** Товар отримано: права, ефект, події (008 FR-17, FR-18, FR-23); `silent` - відновлення без iap-success */
@@ -461,7 +497,9 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     digit: init?.digit ?? newDigitization(nowMs),
     museum: interrupted.ms,
     monetization: init?.monetization ?? newMonetization(),
-    services: init?.services ?? { ads: unavailableAds, purchases: unavailablePurchases },
+    services: { ads: init?.services?.ads ?? unavailableAds, purchases: init?.services?.purchases ?? unavailablePurchases, notifications: init?.services?.notifications ?? unavailableNotifications, links: init?.services?.links ?? unavailableLinks },
+    settings: init?.settings ?? newSettings(),
+    notifications: init?.notifications ?? newNotifications(),
     busy: null,
     digitRec: false,
     digitCheckedAt: 0,
@@ -496,6 +534,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       runTelegrams(lastMs, now, false);
       resumeRaceIfFree(now);
       checkDigitHint(now);
+      grantStarterIfDue();
     },
     tapSeal: (now) => {
       const { state, cfg: c, effects, onboarding: o, lastMs } = get();
@@ -836,6 +875,94 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     },
     closeIapSuccess: () => set({ monetization: closeSuccess(get().monetization) }),
     ackStarterOffer: () => set({ monetization: offerShown(get().monetization) }),
+    setSetting: (key, value) => {
+      const g = get();
+      if (g.settings[key] === value) return;
+      set({ settings: { ...g.settings, [key]: value } });
+      if (key === 'haptics') setHapticsEnabled(value);
+      if (key === 'sound') setSoundEnabled(value);
+      if (key !== 'testUser') pushEvent({ type: 'settingChange', settingName: key, newValue: value });
+    },
+    setNotifCategory: (cat, value) => {
+      const g = get();
+      if (g.settings.notif[cat] === value) return;
+      set({ settings: { ...g.settings, notif: { ...g.settings.notif, [cat]: value } } });
+      pushEvent({ type: 'settingChange', settingName: `notif_${cat}` as 'notif_storage', newValue: value });
+    },
+    requestPush: async (trigger) => {
+      const os = await get().services.notifications.request();
+      set({ settings: { ...get().settings, pushPermission: os } });
+      pushEvent({ type: 'pushPermissionRequest', trigger, prePromptResult: 'accepted', osResult: os === 'not_asked' ? 'not_shown' : os });
+      return os;
+    },
+    refreshPermission: async () => {
+      const p = await get().services.notifications.permission();
+      const cur = get().settings.pushPermission;
+      // not_asked від сервісу не затирає вже відому відповідь
+      if (p !== cur && !(p === 'not_asked' && cur !== 'not_asked')) set({ settings: { ...get().settings, pushPermission: p } });
+    },
+    goBackground: async (nowMs) => {
+      const g = get();
+      await g.services.notifications.cancelAll();
+      const tz = tzOffsetAt(nowMs);
+      const cands = planPushes(
+        { cfg: g.cfg, eco: g.state, effects: g.effects, telegrams: g.telegrams, inspections: g.inspections, race: g.race, settings: g.settings, notifications: g.notifications, tzOffsetMin: tz, installMs: g.inspections.installMs },
+        nowMs,
+      );
+      let tg = get().telegrams;
+      const planned = cands.map((c) => {
+        const t = pushText(tg, c);
+        tg = t.tg;
+        return { type: c.type, atMs: c.atMs, title: t.title, body: t.body, target: c.target, ...(c.ref ? { ref: c.ref } : {}) };
+      });
+      set({ telegrams: tg, notifications: { ...get().notifications, planned } });
+      if (planned.length) await g.services.notifications.schedule(planned);
+    },
+    comeForeground: async (nowMs) => {
+      await get().services.notifications.cancelAll();
+      set({ notifications: settle(get().notifications, nowMs, tzOffsetAt(nowMs)) });
+      await get().refreshPermission();
+    },
+    resetProgress: () => {
+      const g = get();
+      const now = g.lastMs;
+      const c = g.cfg;
+      // покупки лишаються (рішення 88): права, лічильники реклами; «Стартовий набір» видасть 50 000 після онбордингу
+      const fresh = applyRights(newGame(c, now), g.monetization.rights, c);
+      set({
+        pinned: null,
+        state: fresh,
+        effects: [],
+        playtimeMs: 0,
+        onboarding: newOnboarding(0),
+        telegrams: newTelegrams(c.params, `game-${now}`),
+        inspections: newInspections(now, `insp-${now}`),
+        inspPrepOpen: false,
+        race: newRace(`race-${now}`),
+        digit: newDigitization(now),
+        digitRec: false,
+        digitCheckedAt: 0,
+        digitHintShown: false,
+        museum: newMuseum(),
+        monetization: { ...g.monetization, starterGranted: false, offer: 'wait', success: [], inspAdId: null },
+        notifications: newNotifications(),
+        sessionLines: { count: 0, byUid: {} },
+        actTaps: 0,
+        clerkFirstOpen: false,
+        actResultOpen: false,
+        offline: null,
+        offlineBackAt: null,
+        toast: null,
+        toastQueue: [],
+        events: [...g.events, { type: 'settingChange' as const, settingName: 'progress_reset' as const, newValue: null }].slice(-40),
+      });
+      void g.services.notifications.cancelAll();
+    },
+    changeCallsign: (text, gender) => {
+      const o = get().onboarding;
+      set({ onboarding: { ...o, callsign: { type: 'custom', text }, gender } });
+    },
+    markCuriosSeen: () => set({ museum: markCuriosSeen(get().museum) }),
     closeReveal: () => set({ museum: closeRevealMuseum(get().museum) }),
     openMuseum: (source = 'tab') => {
       const g = get();
@@ -869,7 +996,9 @@ export function gameSave(store: ConveyorStore): {
   digitization: DigitizationState;
   museum: MuseumState;
   monetization: MonetizationState;
+  settings: Settings;
+  notifications: NotificationsState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications };
 }

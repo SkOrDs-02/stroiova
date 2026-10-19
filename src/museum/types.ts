@@ -54,4 +54,6 @@ export interface MuseumState {
   reveal: RevealItem[];
   curios: CurioEntry[];
   curioSeq: number;
+  /** Номер останнього запису, який гравець бачив у списку: бейдж «нове» в меню (010 FR-30, рішення 89) */
+  curiosSeen: number;
 }

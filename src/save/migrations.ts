@@ -4,6 +4,7 @@ import { DEFAULTS } from '@/economy/core';
 import { newInspections } from '@/inspections/lifecycle';
 import { newDigitization } from '@/digitization/digitization';
 import { newMonetization } from '@/monetization/monetization';
+import { newNotifications, newSettings } from '@/notifications/planner';
 import { newMuseum } from '@/museum/museum';
 import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
@@ -50,7 +51,17 @@ export const MIGRATIONS: Record<number, Migration> = {
     const rights = { no_ads: !!e.hasNoAds, storage_24h: (e.storageHours ?? DEFAULTS.storageHours) >= DEFAULTS.storageHoursPaid, starter_pack: (e.fuelCapacityMs ?? 0) >= DEFAULTS.starterFuelHours * 3_600_000 };
     return { ...(game as object), monetization: { ...m, rights, starterGranted: rights.starter_pack, offer: rights.starter_pack ? 'done' : 'wait' } };
   },
+  // 8 → 9 (010): налаштування за замовчуванням, нічого не заплановано; записи курйозів, що вже є, вважаються баченими (бейдж «нове» з нуля)
+  8: (game) => {
+    const g = game as { museum?: { curioSeq?: number } };
+    return { ...(game as object), settings: newSettings(), notifications: newNotifications(), museum: { ...(g.museum ?? {}), curiosSeen: g.museum?.curioSeq ?? 0 } };
+  },
 };
+
+/** Налаштування й сповіщення схеми 9. */
+export function settingsV9() {
+  return { settings: newSettings(), notifications: newNotifications() };
+}
 
 /** Порожній стан реклами й покупок схеми 8. */
 export function monetizationV8() {
