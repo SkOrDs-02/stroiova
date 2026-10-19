@@ -4,6 +4,7 @@ import { baseIncomePerMin } from '@/economy/game/income';
 import { itemsFor, newGame } from '@/economy/game/state';
 import type { EconomyState } from '@/economy/game/types';
 
+import { offlineLines } from '../offline';
 import { buyItem, completeAll, fromTelegramEvent, newInspections, readinessLive, tick } from '../lifecycle';
 import { finalItemPrice, itemDone, mechOk, streamsOpen } from '../final';
 import type { InspectionState } from '../types';
@@ -166,5 +167,18 @@ describe('результат (FR-6, FR-7)', () => {
     const r = tick(s, e, cfg, ctx(at(12) + 10 * 24 * HOUR, { offline: true, fromMs: at(12) }));
     expect(r.s.active?.attempt).toBeGreaterThan(1);
     expect(r.events.filter((x) => x.type === 'inspectionFinish').length).toBeGreaterThan(1);
+  });
+});
+
+describe('довідка повернення (FR-25 004 + 011)', () => {
+  test('підсумкова без гравця: пройдена - рядок "перехід дозволено" і ×3; провалена - рядок з повтором через boss.retryH', () => {
+    const { s, e } = announced();
+    const arr = s.active!.arrMs;
+    const done = completeAll(s, at(14), 'ad');
+    if ('error' in done) throw new Error(done.error);
+    const pass = tick(done.s, e, cfg, ctx(arr + HOUR, { offline: true, fromMs: arr - HOUR }));
+    expect(offlineLines(pass.s.last, p, arr + HOUR)[0]).toEqual({ kind: 'passed', remark: false, final: true });
+    const fail = tick(s, e, cfg, ctx(arr + HOUR, { offline: true, fromMs: arr - HOUR }));
+    expect(offlineLines(fail.s.last, p, arr + HOUR)).toEqual([{ kind: 'failed', factor: p.inspFailMult, hours: p.inspFailHours, final: true, retryH: p.boss.retryH }]);
   });
 });

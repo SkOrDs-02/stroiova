@@ -4,10 +4,14 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react-
 
 import { bundledConfig } from '@/economy/config';
 import { itemsFor } from '@/economy/game/state';
+import { draftOf, needsSaveNow } from '@/features/boot/useBoot';
 import { createConveyorStore } from '@/features/conveyor/store';
 import { MainScreen } from '@/features/main/MainScreen';
 import { fakeAds } from '@/monetization/test-services';
-import { onboardingDone } from '@/save/migrations';
+import { MIGRATIONS, onboardingDone } from '@/save/migrations';
+import { KEY_SAVE, loadSave, serialize } from '@/save/repository';
+import { CURRENT_SCHEMA } from '@/save/schema';
+import { memoryStorage } from '@/save/storage';
 
 jest.mock('@/features/conveyor/useGameLoop', () => ({ useGameLoop: () => {} }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
@@ -264,5 +268,26 @@ describe('«Нарада затягнулась» (AC-17)', () => {
     await act(async () => store.getState().tick(end + 1000));
     expect(store.getState().telegrams.meeting.active!.found).toBe(true);
     expect(screen.queryByTestId('meeting-bar')).toBeNull();
+  });
+});
+
+describe('збереження (AC-19)', () => {
+  test('оголошена підсумкова з пунктом механіки, прапорець виходу і нарада переживають запис і читання; вони ж запускають негайний запис', async () => {
+    const { store } = r2();
+    await announce(store);
+    const prev = store.getState();
+    store.setState({
+      digit: { ...prev.digit, levelExitAllowed: true },
+      telegrams: { ...prev.telegrams, meeting: { lastDayKey: '2025-10-10', active: { startMs: T0, endMs: T0 + 20 * 60_000, runnerAtMs: null } } },
+    });
+    expect(needsSaveNow(store.getState(), prev)).toBe(true);
+    const kv = memoryStorage({ [KEY_SAVE]: serialize(draftOf(store)!) });
+    const r = loadSave(kv, { current: CURRENT_SCHEMA, migrations: MIGRATIONS });
+    if (r.kind !== 'ok') throw new Error(r.kind);
+    const a = r.save.game.inspections.active!;
+    expect(a).toMatchObject({ kind: 'final', attempt: 1 });
+    expect(a.items.filter((i) => i.mech).map((i) => i.id)).toEqual(['nakazy_open']);
+    expect(r.save.game.digitization.levelExitAllowed).toBe(true);
+    expect(r.save.game.telegrams.meeting.active).toMatchObject({ startMs: T0 });
   });
 });
