@@ -75,6 +75,20 @@ export interface ZpzParams {
   K: number;
 }
 
+/** Стос до наради Р4 (012 FR-13…FR-15): висота h = Σ хвилини · s(n) / shareMinPerCm, см */
+export interface StackParams {
+  shareMinPerCm: number;
+  reachCm: number;
+  showCm: number;
+  counterCm: number;
+}
+
+/** «Доповідь тезово» (012 FR-17): імовірність на старті сесії і мінімум діб між подіями */
+export interface BriefParams {
+  chance: number;
+  minGapDays: number;
+}
+
 export interface EconomyParams {
   streams: UnitDef[];
   stages: UnitDef[];
@@ -139,6 +153,8 @@ export interface EconomyParams {
   boss: BossParams;
   pack: PackParams;
   zpz: ZpzParams;
+  stack: StackParams;
+  brief: BriefParams;
   /** 005: подарунки й гонка (рішення 29–31); кроки акта — години (Акти, Комбат, Стройова, Фін.) */
   gifts: Record<'drone' | 'shovel' | 'generator', GiftDef>;
   giftOrder: ('drone' | 'shovel' | 'generator')[];

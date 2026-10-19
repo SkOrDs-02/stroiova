@@ -34,6 +34,7 @@ export function newTelegrams(p: EconomyParams, seedText: string): TelegramState 
     kombat: { lastDayKey: null, active: null },
     meeting: { lastDayKey: null, active: null },
     packs: { day: null, seq: 0 },
+    brief: { lastDay: null },
     deliveries: 0,
     lineBags: {},
   };

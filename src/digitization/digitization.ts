@@ -4,6 +4,8 @@ import { nextPurchaseEtaSec } from '@/economy/game/purchase';
 import { itemsFor, newCycle } from '@/economy/game/state';
 import type { DomainEvent, EconomyConfig, EconomyState, Effect } from '@/economy/game/types';
 
+import { newStack, resetCycle } from '@/stack/stack';
+
 import type { Ceremony, DigitizationState } from './types';
 
 /** Рівні, які можна пройти в цій збірці: Р3 відкрито 011, Р4 - 012 (етап 1); Р5 - 013. На останньому виходу ще немає. */
@@ -13,7 +15,7 @@ export const PLAYABLE_LEVELS = 4;
 export const FINAL_LEVELS = [2, 3, 4];
 
 export function newDigitization(nowMs: number): DigitizationState {
-  return { counts: {}, total: 0, howSeen: false, ceremony: null, cycleStartMs: nowMs, levelExitAllowed: false };
+  return { counts: {}, total: 0, howSeen: false, ceremony: null, cycleStartMs: nowMs, levelExitAllowed: false, stack: newStack() };
 }
 
 /** Скільки цифровізацій уже зроблено на рівні. */
@@ -153,7 +155,7 @@ export function digitize(
   if (up) events.push({ type: 'levelAdvance', from: level, to: level + 1, digitizationCount: nth, pointsTotal });
   return {
     state: next,
-    ds: { ...ds, counts: { ...ds.counts, [String(level)]: nth }, total: no, ceremony, cycleStartMs: nowMs, levelExitAllowed: up ? false : ds.levelExitAllowed },
+    ds: { ...ds, counts: { ...ds.counts, [String(level)]: nth }, total: no, ceremony, cycleStartMs: nowMs, levelExitAllowed: up ? false : ds.levelExitAllowed, stack: resetCycle(ds.stack) },
     events,
   };
 }

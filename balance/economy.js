@@ -171,6 +171,10 @@ var StroiovaEconomy = (() => {
     // Р4: «Звіти про звіти» = s(n) × sum of the other streams, s(n) = shareMax · n / (n + K)
     zpz: { shareMax: 1.5, K: 9 },
     // s(1) = 0,15 → 13% of all streams on entry; the bot keeps it at 57–60% (s → 1,5 = 60%)
+    // Р4 (012 етап 2, рішення 104): стос до наради росте на 1 см за shareMinPerCm «хвилин частки»; запис «Метр звітів» на reachCm; показ ≤ showCm, лічильник ≤ counterCm. Баланс не змінює
+    stack: { shareMinPerCm: 3.5, reachCm: 100, showCm: 120, counterCm: 999 },
+    // Р4: подія «Доповідь тезово» - імовірність на старті сесії й мінімум діб між подіями
+    brief: { chance: 0.2, minGapDays: 3 },
     // Р5: stage conversions to digital in this order; k opens after the (k−1)-th digitization on the level, once all streams
     // are open in the cycle; cost in minutes of base income at that moment; a digital stage gives ×mult, immune to slowdowns
     convert: { order: ["kombat", "stroy", "fin", "kazna", "narada", "dopovid"], mult: 3, costMin: 120 },
@@ -512,7 +516,7 @@ var StroiovaEconomy = (() => {
     delete src.prestigeDivisor;
     delete src.inspChecklistMin;
     delete src.inspChecklistMinL2;
-    ["boss", "pack", "zpz", "convert", "gifts"].forEach(function(k) {
+    ["boss", "pack", "zpz", "stack", "brief", "convert", "gifts"].forEach(function(k) {
       if (src[k]) {
         copyInto(base[k], src[k]);
         delete src[k];

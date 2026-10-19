@@ -1,4 +1,6 @@
 // Цифровізація (006): стан у записі (схема 6).
+import type { StackState } from '@/stack/stack';
+
 export interface Ceremony {
   /** Наскрізний номер цифровізації (digitization_number) */
   no: number;
@@ -33,4 +35,6 @@ export interface DigitizationState {
   cycleStartMs: number;
   /** Підсумкова рівня пройдена: наступна цифровізація - з переходом (011 FR-1, FR-9); скидається на переході */
   levelExitAllowed: boolean;
+  /** Стос до наради Р4 (012 етап 2): скидається разом із циклом, схема 12 */
+  stack: StackState;
 }

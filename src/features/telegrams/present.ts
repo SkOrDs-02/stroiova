@@ -7,6 +7,7 @@ import { canChoose, paperCost } from '@/telegrams/effects';
 import { replyChance } from '@/telegrams/reputation';
 import type { Choice, InboxItem, Telegram, TelegramState } from '@/telegrams/types';
 
+import { lineAt, poolSize } from './lines';
 import { hoursText, t } from './texts';
 
 const HOUR = 3_600_000;
@@ -104,4 +105,13 @@ export function packResultRows(first: InboxItem, kind: string, cfg: EconomyConfi
   rows.push([t.resRep, `${r.rep > 0 ? '+' : r.rep < 0 ? '−' : ''}${Math.abs(r.rep)} · ${tierWord}`]);
   if (r.chancePct > 0) rows.push([t.resChance, `${r.chancePct}%`]);
   return rows;
+}
+
+/** Текст документа: у події «Доповідь тезово» - рядок пулу `ev.brief_body`, стабільний для документа (012 «Тексти») */
+export function bodyOf(item: InboxItem, tel: Telegram): string {
+  if (tel.id === 'tg_event_brief' && poolSize('ev.brief_body') > 0) {
+    const n = Number(item.uid.split('#')[1] ?? 1);
+    return lineAt('ev.brief_body', Math.max(0, n - 1));
+  }
+  return tel.body;
 }

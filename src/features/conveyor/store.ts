@@ -18,7 +18,7 @@ import { adSpeedup, digitalSpeedup, fromTelegram as raceFromTelegram, newRace, r
 import type { RaceState } from '@/race/types';
 import { closeCeremonyStep, digitize as digitizeNow, finalDue, newDigitization, shiftDigitization, status as digitStatus } from '@/digitization/digitization';
 import type { DigitizationState } from '@/digitization/types';
-import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromPack, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, markCuriosSeen, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
+import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromPack, curioFromRace, curioFromStack, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, markCuriosSeen, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
 import { addBoost, addPending, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, applyRights, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
 import type { AdResult, AdService, MonetizationState, Placement, ProductId, PurchaseResult, PurchaseService } from '@/monetization/types';
@@ -37,7 +37,8 @@ import { dayKey } from '@/telegrams/clock';
 import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
 import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } from '@/telegrams/effects';
 import { answerPack as answerPackTg, lastPack, resolvedSeparately, type SummaryKind } from '@/telegrams/packs';
-import { fromTelegram, hasStage, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
+import { briefOnSessionStart, fromTelegram, hasStage, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
+import { grow as growStack, growOffline as growStackOffline, startSession as startStackSession } from '@/stack/stack';
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
 import type { TelegramState } from '@/telegrams/types';
 import { lineAt, poolSize } from '@/features/telegrams/lines';
@@ -325,6 +326,17 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     if (!g.monetization.rights.starter_pack || g.monetization.starterGranted || g.onboarding.step !== 'done') return;
     set({ state: { ...g.state, signatures: g.state.signatures + g.cfg.params.starterSignatures }, monetization: { ...g.monetization, starterGranted: true } });
   };
+  /** Стос до наради (012): події росту - у журнал курйозів, тост із пулу `stack.meter`, подія аналітики */
+  const stackEvents = (evs: DomainEvent[], atMs: number) => {
+    if (!evs.length) return;
+    set({ events: [...get().events, ...evs].slice(-40) });
+    absorbMuseum(evs, atMs);
+    const r = pickLine(get().telegrams, 'stack.meter', poolSize('stack.meter'));
+    if (r.index != null) {
+      set({ telegrams: r.tg });
+      get().showToast({ kind: 'text', text: lineAt('stack.meter', r.index) });
+    }
+  };
   const pushEvent = (e: DomainEvent) => set({ events: [...get().events, e].slice(-40) });
   /** Товар отримано: права, ефект, події (008 FR-17, FR-18, FR-23); `silent` - відновлення без iap-success */
   const grantNow = (id: ProductId, silent: boolean) => {
@@ -423,6 +435,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (e.type === 'curio') ms = curioFromTelegram(ms, e, g.telegrams, atMs);
       if (e.type === 'raceCurio') ms = curioFromRace(ms, e);
       if (e.type === 'packCurio') ms = curioFromPack(ms, e, atMs);
+      if (e.type === 'stackReach') ms = curioFromStack(ms, e, atMs);
     }
     // «У музеї з» - мітка самої перевірки, а не повернення гравця (крайовий випадок «Офлайн»)
     const r = museumFromEvents(ms, g.state, g.cfg, evs, atMs, { offline, inspAtMs: g.inspections.last?.arrMs });
@@ -573,6 +586,14 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         ...(o.birdLeftMs > 0 ? { onboarding: { ...o, birdLeftMs: Math.max(0, o.birdLeftMs - dt) } } : {}),
       });
       runTelegrams(lastMs, now, false);
+      // 012 FR-13, FR-14: стос росте від роботи «Звітів про звіти» на передньому плані
+      const g4 = get();
+      if (!idleConveyor && g4.state.level >= 4) {
+        const st0 = g4.digit.stack.sessionStartMs == null ? startStackSession(g4.digit.stack, lastMs) : g4.digit.stack;
+        const gr = growStack(st0, g4.state, c, lastMs, now);
+        if (gr.st !== g4.digit.stack) set({ digit: { ...g4.digit, stack: gr.st } });
+        stackEvents(gr.events, now);
+      }
       resumeRaceIfFree(now);
       checkDigitHint(now);
       grantStarterIfDue();
@@ -631,6 +652,22 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
           const m = onSessionStart(g1.telegrams, g1.cfg, backAt, tzOffsetAt(backAt), false, 'meeting');
           set({ telegrams: m.tg, ...(m.effect ? { effects: [...g1.effects.filter((x) => x.source !== 'meeting_overrun' || x.endMs <= backAt), m.effect] } : {}) });
           handleEvents(m.events, backAt);
+        }
+        // 012 FR-13: нова сесія - стос з нуля; зарахований офлайн додає висоту одразу
+        const gs = get();
+        if (gs.state.level >= 4) {
+          const ab = absence(leftAt, backAt);
+          const credited = ab.clockBack ? 0 : Math.min(ab.deltaMs, gs.state.storageHours * 3_600_000 * gs.state.museum.storage);
+          const gr = growStackOffline(startStackSession(gs.digit.stack, backAt), gs.state, gs.cfg, credited, backAt);
+          set({ digit: { ...gs.digit, stack: gr.st } });
+          stackEvents(gr.events, backAt);
+          // 012 FR-17: «Доповідь тезово» - документ у «Нові», поза квотою
+          const gb = get();
+          const br = briefOnSessionStart(gb.telegrams, gb.cfg, gb.state, backAt, tzOffsetAt(backAt));
+          if (br.item) {
+            set({ telegrams: br.tg });
+            handleEvents(br.events, backAt);
+          }
         }
         // 004 FR-2: перша перевірка — на старті сесії, коли онбординг етапу 1 пройдено (крок 9)
         const g2 = get();
