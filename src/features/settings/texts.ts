@@ -1,5 +1,6 @@
 // Тексти меню, налаштувань, профілю, «Про гру», звітів і ліцензій (010 «Тексти»): артборди Menu, Settings, ResetConfirm, PushPreprompt, Profile,
 // About, FundReports, Licenses і stores.md 7.3; нові - на вичитку. Без довгого тире (рішення 55).
+import { plural } from '@/features/telegrams/texts';
 import type { PushCategory, PushType } from '@/notifications/types';
 
 export const setT = {
@@ -8,7 +9,7 @@ export const setT = {
   menuSub: { profile: 'Позивний, посада, лічильники, щоденник', settings: 'Звук, сповіщення, статистика, покупки', about: 'Хто робить, приватність, ліцензії' },
   items: { profile: 'Особова справа', curios: 'Журнал курйозів', settings: 'Налаштування', about: 'Про гру' },
   newBadge: 'нове',
-  curiosSub: (n: number) => `Телеграми й списані подарунки · ${n} записів`,
+  curiosSub: (n: number) => `Телеграми й списані подарунки · ${n} ${plural(n, 'запис', 'записи', 'записів')}`,
   curiosSubNew: 'Є новий запис',
   menuFoot: (version: string) => `Stroiova ${version} · прогрес зберігається на телефоні`,
   back: 'Назад',
