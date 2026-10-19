@@ -77,6 +77,11 @@ export const MIGRATIONS: Record<number, Migration> = {
       },
     };
   },
+  // 10 → 11 (011 етап 2): пачок ще не було - порожній стан доби й лічильника
+  10: (game) => {
+    const g = game as { telegrams?: object };
+    return { ...(game as object), telegrams: { ...(g.telegrams ?? {}), packs: { day: null, seq: 0 } } };
+  },
 };
 
 /** Налаштування й сповіщення схеми 9. */
@@ -126,6 +131,7 @@ export function telegramsV3() {
     override: { lastDayKey: null, nextNo: overrideStartNo() },
     kombat: { lastDayKey: null, active: null },
     meeting: { lastDayKey: null, active: null },
+    packs: { day: null, seq: 0 },
     deliveries: 0,
     lineBags: {},
   };

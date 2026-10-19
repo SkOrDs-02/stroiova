@@ -23,9 +23,9 @@ function withPack(packId: string, patch: Partial<TelegramState> = {}): TelegramS
   return { ...tgWith([]), startMs: NOW - 10 * 86_400_000, inbox, deliveries: 3, firstInspectionPassed: true, packs: { day: '2025-10-11', seq: 1 }, ...patch };
 }
 
-const ok = <T extends object>(r: T | { error: string }): T => {
-  if ('error' in r) throw new Error(String(r.error));
-  return r;
+const ok = <T>(r: T): Exclude<T, { error: unknown }> => {
+  if (typeof r === 'object' && r != null && 'error' in r) throw new Error(String((r as { error: unknown }).error));
+  return r as Exclude<T, { error: unknown }>;
 };
 
 describe('числа зведеної відповіді (FR-21)', () => {

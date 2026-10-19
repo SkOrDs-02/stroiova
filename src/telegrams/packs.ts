@@ -5,7 +5,7 @@ import { allPacks, type PackDef } from './content';
 import { answer, paperCost, telegramOf, unitRef, type AnswerCtx } from './effects';
 import { applyRep, replyChance, repTier } from './reputation';
 import { roller } from './rng';
-import type { Choice, ChoiceKind, Effects, InboxItem, TelegramState } from './types';
+import type { Choice, ChoiceKind, Effects, InboxItem, ItemResult, TelegramState } from './types';
 
 /** Пачка приходить рівно о 03:00 за часом пристрою (FR-17) */
 export const PACK_HOUR = 3;
@@ -64,6 +64,14 @@ export function packGroups(tg: TelegramState): PackGroup[] {
 export function packByNo(tg: TelegramState, no: number): PackGroup | null {
   const items = tg.inbox.filter((i) => i.pack?.no === no);
   return items.length ? groupOf(items) : null;
+}
+
+/** Де пачка лежить у списку: «Нові», поки є невідповідані; далі шухляда (ще можна відповісти), «На виконанні», архів */
+export function packPlace(g: PackGroup): 'new' | 'drawer' | 'work' | 'archive' {
+  if (g.items.some((i) => i.status === 'new')) return 'new';
+  if (g.items.some((i) => i.status === 'drawer')) return 'drawer';
+  if (g.items.some((i) => i.status === 'work')) return 'work';
+  return 'archive';
 }
 
 /** Остання видана пачка й чи закрита вона сумлінно (пункт механіки `summary_beats`, FR-27) */
@@ -246,6 +254,9 @@ export function answerPack(tg0: TelegramState, eco0: EconomyState, no: number, k
     tg = { ...tg, rng: rng.state };
   }
 
+  const repAfter = tg.reputation.value;
+  const zeroResult: ItemResult = { rep: 0, repAfter, paper: 0, slow: [], chancePct: 0, inspHit: false, shield: false };
+  const mergedResult: ItemResult = { ...zeroResult, rep: f.rep, paper: f.paper, chancePct: f.chancePct, inspHit: hit, slow: f.slow ? [{ target: 'narada', mult: f.slow.mult, hours: f.slow.hours }] : [] };
   // записи пачки: вид зведеної відповіді; діти в роботі, поки триває сповільнення
   const uids = new Set(g.items.map((i) => i.uid));
   tg = {
@@ -253,7 +264,9 @@ export function answerPack(tg0: TelegramState, eco0: EconomyState, no: number, k
     inbox: tg.inbox.map((x) => {
       if (!x.pack || !uids.has(x.uid)) return x;
       const work = workEnd > nowMs && x.status !== 'drawer';
-      return { ...x, pack: { ...x.pack, summary: kind }, ...(work ? { status: 'work' as const, workUntil: Math.max(x.workUntil ?? 0, workEnd) } : {}) };
+      // зведені числа лежать на першій телеграмі пачки: tg-result складає з них рядки, решта нулі
+      const result = x.pack.index === 1 ? mergedResult : { ...zeroResult };
+      return { ...x, pack: { ...x.pack, summary: kind }, result, ...(work ? { status: 'work' as const, workUntil: Math.max(x.workUntil ?? 0, workEnd) } : {}) };
     }),
   };
 

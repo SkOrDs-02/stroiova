@@ -178,7 +178,7 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     return { ...g, level: 2, streamLevels: [30, 20, 10, 5, 3], stageLevels: [20, 20, 20, 20], lifetimeCycle: lifetime, prestigePoints: 70, ...patch };
   };
 
-  test('finalDue: після exitDigitizations на Р2 і поки перехід не дозволено; на Р1 і Р3 його немає', () => {
+  test('finalDue: після exitDigitizations на Р2 і поки перехід не дозволено; на Р1 його немає', () => {
     const n = p.levels[1]!.exitDigitizations;
     const ds = (k: number, allowed = false) => ({ ...newDigitization(T0), counts: { '2': k }, levelExitAllowed: allowed });
     expect(finalDue(cfg, ds(n - 1), 2)).toBe(false);
@@ -186,7 +186,12 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     expect(finalDue(cfg, ds(n + 2), 2)).toBe(true);
     expect(finalDue(cfg, ds(n, true), 2)).toBe(false);
     expect(finalDue(cfg, { ...newDigitization(T0), counts: { '1': 3 } }, 1)).toBe(false);
-    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '3': 9 } }, 3)).toBe(false);
+    // Р3 (011 етап 2): підсумкова після exitDigitizations Р3
+    const n3 = p.levels[2]!.exitDigitizations;
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '3': n3 - 1 } }, 3)).toBe(false);
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '3': n3 } }, 3)).toBe(true);
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '3': n3 }, levelExitAllowed: true }, 3)).toBe(false);
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '4': 9 } }, 4)).toBe(false);
   });
 
   test('AC-6: цифровізації між N-ю і пройденою підсумковою на Р2 - без переходу, лічильник росте, рівень той самий', () => {
@@ -220,7 +225,7 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     const ds = { ...newDigitization(T0), counts: { '3': 20 }, levelExitAllowed: true };
     const e = { ...newGame(cfg, T0), level: 3, streamLevels: [1, 0, 0, 0, 0, 0], stageLevels: [1, 1, 1, 1, 1] };
     expect(status(e, ds, cfg, T0).isLast).toBe(false);
-    expect(finalDue(cfg, { ...ds, levelExitAllowed: false }, 3)).toBe(false);
+    expect(finalDue(cfg, { ...ds, levelExitAllowed: false, counts: { '3': 5 } }, 3)).toBe(false);
     const it = itemsFor(e, cfg);
     expect(it.streams.map((u) => u.id)).toEqual(['raporty', 'akty', 'dovidky', 'nakladni', 'nakazy', 'zvedennia']);
     expect(it.stages.map((u) => u.id)).toEqual(['kombat', 'stroy', 'fin', 'kazna', 'narada']);

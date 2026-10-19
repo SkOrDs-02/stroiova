@@ -1,7 +1,7 @@
 // Музей й журнал курйозів (007): отримання журналів, бонуси для економіки, записи курйозів.
 import type { DomainEvent, EconomyConfig, EconomyState } from '@/economy/game/types';
 import type { Journals } from '@/race/race';
-import { telegram } from '@/telegrams/content';
+import { packDef, telegram } from '@/telegrams/content';
 import type { InboxItem, TelegramState } from '@/telegrams/types';
 
 import { journal, journalNo, MUSEUM_SIZE } from './journals';
@@ -163,6 +163,11 @@ export function curioFromTelegram(ms: MuseumState, ev: Extract<DomainEvent, { ty
   });
 }
 
+/** Зведена відповідь пачки: один запис на пачку, а не три (011 FR-24, 07 FR-21) */
+export function curioFromPack(ms: MuseumState, ev: Extract<DomainEvent, { type: 'packCurio' }>, atMs: number): MuseumState {
+  return push(ms, { kind: 'pack', atMs, pack: { packId: ev.packId, no: ev.no, kind: ev.kind, uids: ev.uids }, status: ev.kind === 'formal_reply' ? 'formal' : ev.kind });
+}
+
 /** Програна гонка: запис про подарунок, списаний раніше, ніж поставлений на облік (FR-21) */
 export function curioFromRace(ms: MuseumState, ev: Extract<DomainEvent, { type: 'raceCurio' }>): MuseumState {
   return push(ms, {
@@ -174,7 +179,7 @@ export function curioFromRace(ms: MuseumState, ev: Extract<DomainEvent, { type: 
 
 /** Записи, які видно: телеграму, вилучену оновленням контенту, ховаємо зі списку й підсумку (крайовий випадок spec) */
 export function visibleCurios(ms: MuseumState): CurioEntry[] {
-  return ms.curios.filter((c) => c.kind === 'gift' || (c.telegramId != null && telegram(c.telegramId) != null));
+  return ms.curios.filter((c) => c.kind === 'gift' || (c.kind === 'pack' && c.pack != null && packDef(c.pack.packId) != null) || (c.telegramId != null && telegram(c.telegramId) != null));
 }
 
 export function curioSummary(ms: MuseumState): { total: number; telegrams: number; gifts: number } {

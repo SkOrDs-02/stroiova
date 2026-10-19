@@ -7,6 +7,7 @@ import { formatBig, formatCountdown, formatDuration, formatMult } from '@/econom
 import { income } from '@/economy/game/income';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { mechOk } from '@/inspections/final';
+import { lastPack } from '@/telegrams/packs';
 import { readinessLive, shortfall } from '@/inspections/lifecycle';
 import { color, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
@@ -26,7 +27,8 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
   const line = useTumbLine(store, a && a.trigger === 'scheduled' ? `tumb.start.r${a.level}` : a ? 'tumb.start_unsched' : null, `insp:${a?.id}:start`);
   if (!a) return null;
   const perMin = income(s.state, s.cfg, s.lastMs, s.effects).perMin;
-  const pct = readinessLive(a, s.state, s.cfg);
+  const pack = lastPack(s.telegrams);
+  const pct = readinessLive(a, s.state, s.cfg, pack);
   const final = a.kind === 'final';
   // реклама закриває лише базові пункти (011 FR-5): коли їх не лишилось, кнопки немає
   const baseOpen = a.items.some((i) => !i.done && !i.mech);
@@ -64,14 +66,14 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
         {a.items.map((it) => {
           if (it.mech) {
             // пункт механіки (011 FR-5): не купується, стан наживо
-            const ok = mechOk(it.id, s.state, s.cfg);
+            const ok = mechOk(it.id, s.state, s.cfg, pack);
             return (
               <View key={it.id} testID={`insp-item-${it.id}`} accessibilityState={{ checked: ok }} style={[styles.item, ok && styles.itemDone]}>
                 <View style={[styles.box, ok && styles.boxOn]}>{ok ? <Text style={styles.tick}>✓</Text> : null}</View>
                 <View style={styles.itemText}>
                   <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.itemTitle}>{itemTitle(it.id)}</Text>
                   <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.boss2.mechTag}</Text>
-                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={ok ? styles.ready : styles.lack} testID="insp-mech-state">{ok ? inspT.boss2.mechOk : inspT.boss2.mechNo(inspT.mechTodo[it.id] ?? '')}</Text>
+                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={ok ? styles.ready : styles.lack} testID="insp-mech-state">{ok ? inspT.boss2.mechOk : inspT.boss2.mechNo(inspT.mechTodo(it.id, pack?.no ?? null))}</Text>
                 </View>
               </View>
             );

@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 10;
+export const CURRENT_SCHEMA = 11;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -74,6 +74,7 @@ export const telegramStateSchema = z.object({
       read: z.boolean().optional(),
       flagged: z.boolean().optional(),
       vars: z.object({ n: z.number(), n1: z.number() }).optional(),
+      pack: z.object({ id: z.string(), no: z.number().int().min(1), index: z.number().int().min(1).max(3), summary: z.enum(['diligent', 'formal_reply', 'drawer', 'special']).optional() }).optional(),
       result: z
         .object({
           rep: z.number(),
@@ -116,6 +117,7 @@ export const telegramStateSchema = z.object({
     lastDayKey: z.string().nullable(),
     active: z.object({ startMs: z.number(), endMs: z.number(), runnerAtMs: z.number().nullable(), found: z.boolean().optional() }).nullable(),
   }),
+  packs: z.object({ day: z.string().nullable(), seq: z.number().int().nonnegative() }),
   deliveries: z.number().int().nonnegative(),
   lineBags: z.record(z.string(), z.object({ used: z.array(z.number().int().nonnegative()), last: z.number().int().nullable() })),
 });
@@ -252,13 +254,14 @@ export const museumStateSchema = z.object({
   curios: z.array(
     z.object({
       seq: z.number().int().min(1),
-      kind: z.enum(['telegram', 'gift']),
+      kind: z.enum(['telegram', 'gift', 'pack']),
       atMs: z.number(),
       telegramId: z.string().optional(),
       uid: z.string().optional(),
       choiceId: z.string().optional(),
       status: z.enum(['diligent', 'formal', 'drawer', 'special', 'info']).optional(),
       text: z.string().nullable().optional(),
+      pack: z.object({ packId: z.string(), no: z.number().int().min(1), kind: z.enum(['diligent', 'formal_reply', 'drawer']), uids: z.array(z.string()) }).optional(),
       gift: z
         .object({
           raceId: z.string(),
