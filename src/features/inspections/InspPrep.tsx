@@ -75,8 +75,13 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
                 <View style={styles.itemText}>
                   <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.itemTitle}>{itemTitle(it.id)}</Text>
                   <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.boss2.mechTag}</Text>
-                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={ok ? styles.ready : styles.lack} testID="insp-mech-state">{ok ? inspT.boss2.mechOk : inspT.boss2.mechNo(inspT.mechTodo(it.id, pack?.no ?? null, Number(need.replace(',', '.'))))}</Text>
-                  {it.id === 'zpz_level' ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="insp-zpz-now">{inspT.boss2.zpzNow(tenthsText(zpzTenths(s.state, s.cfg, live)), need)}</Text> : null}
+                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={ok ? styles.ready : styles.lack} testID="insp-mech-state">{ok ? inspT.boss2.mechOk : inspT.boss2.mechNo(inspT.mechTodo(it.id, pack?.no ?? null, need))}</Text>
+                  {it.id === 'zpz_level' ? (
+                    <>
+                      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="insp-zpz-now">{inspT.boss2.zpzNow(tenthsText(zpzTenths(s.state, s.cfg, live)), need)}</Text>
+                      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.boss2.zpzAtArrival}</Text>
+                    </>
+                  ) : null}
                 </View>
               </View>
             );

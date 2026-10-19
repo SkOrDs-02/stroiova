@@ -10,6 +10,8 @@ export const t = {
   // Р4 «Звіти про звіти» (012 FR-12; zpz.share, zpz.next, zpz.cap)
   levelNoRate: (L: number, who: string) => `Рів. ${L} · ${who}`,
   zpzShare: (pct: string, rate: string) => `${pct}% від суми потоків · ${rate}`,
+  zpzGain: (d: string) => `Приріст від покупки: +${d} п. п.`,
+  zpzTiny: 'менше 0,1 п. п.',
   zpzNext: (d: string) => `Наступний рівень: +${d} п. п.`,
   zpzCap: (max: string) => `Більше ${max}% не буває: звітувати треба й про щось.`,
   streams: 'Потоки',

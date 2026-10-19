@@ -65,7 +65,7 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
         {opened && zpz ? (
           <>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="zpz-share">{t.zpzShare(formatTenths(Math.floor(zpz.share * 1000 + 1e-9)), formatRate(rate))}</Text>
-            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="zpz-next">{t.zpzNext(formatTenths(zpzNext))}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="zpz-next">{(q.levels === 1 ? t.zpzNext : t.zpzGain)(zpzNext > 0 ? formatTenths(zpzNext) : t.zpzTiny)}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="zpz-cap">{t.zpzCap(formatTenths(zpzMax))}</Text>
           </>
         ) : null}
