@@ -7,7 +7,7 @@ const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
 export const effectSchema = z.object({
   kind: z.enum(['mult', 'factor']),
-  source: z.enum(['ad_boost', 'gift_drone', 'gift_shovel', 'gift_generator', 'inspection_pass', 'telegram_slow', 'telegram_stop', 'kombat_away', 'meeting_overrun', 'inspection_fail', 'clerk_away']),
+  source: z.enum(['ad_boost', 'gift_drone', 'gift_shovel', 'gift_generator', 'inspection_pass', 'telegram_slow', 'telegram_stop', 'kombat_away', 'meeting_overrun', 'pack_beats', 'inspection_fail', 'clerk_away']),
   value: z.number().positive(),
   target: unitRef.optional(),
   startMs: z.number(),

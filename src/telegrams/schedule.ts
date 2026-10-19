@@ -5,6 +5,7 @@ import type { DomainEvent, EconomyConfig, EconomyState, EconomyParams } from '@/
 import { pick } from './bag';
 import { dayKey, dayNumber, dayStart, DAY, HOUR, monthOf } from './clock';
 import { FIRST_TELEGRAM_ID, OVERRIDE_ID, telegram } from './content';
+import { deliverPack, newRows, PACK_HOUR } from './packs';
 import { applyRep, replyChance } from './reputation';
 import { roller, seedFrom } from './rng';
 import type { InboxItem, ItemKind, TelegramState, Timer } from './types';
@@ -32,13 +33,15 @@ export function newTelegrams(p: EconomyParams, seedText: string): TelegramState 
     override: { lastDayKey: null, nextNo: overrideStartNo() },
     kombat: { lastDayKey: null, active: null },
     meeting: { lastDayKey: null, active: null },
+    packs: { day: null, seq: 0 },
     deliveries: 0,
     lineBags: {},
   };
 }
 
+/** Місць у «Нових»: пачка Р3 - одне (011 FR-18) */
 export function newCount(tg: TelegramState): number {
-  return tg.inbox.filter((x) => x.status === 'new' && x.kind !== 'note').length;
+  return newRows(tg);
 }
 
 function makeItem(tg: TelegramState, id: string, kind: ItemKind, atMs: number): { tg: TelegramState; item: InboxItem } {
@@ -60,8 +63,9 @@ export function deliverFirst(tg: TelegramState, nowMs: number): { tg: TelegramSt
  * План доби (R2): N = slotsMin…slotsMax рівномірно, моменти у вікні tgFromHour–tgToHour з інтервалом ≥ tgMinGapMin;
  * доба 1 — лише після startMs, а № 1 уже з'їла один слот квоти.
  */
-export function planDay(p: EconomyParams, start: number, notBefore: number, quotaUsed: number, rand: () => number): number[] {
-  const n = p.slowPerDayMin + Math.floor(rand() * (p.slowPerDayMax - p.slowPerDayMin + 1)) - quotaUsed;
+export function planDay(p: EconomyParams, start: number, notBefore: number, quotaUsed: number, rand: () => number, level = 1): number[] {
+  // Р3: пачка о 03:00 + 0-1 окрема телеграма у вікні (011 FR-17); раніше 2-4 на добу
+  const n = level >= 3 ? (rand() < p.pack.singleChance ? 1 : 0) : p.slowPerDayMin + Math.floor(rand() * (p.slowPerDayMax - p.slowPerDayMin + 1)) - quotaUsed;
   const from = Math.max(start + p.tgFromHour * HOUR, notBefore);
   const to = start + p.tgToHour * HOUR;
   const gap = p.tgMinGapMin * MIN;
@@ -98,7 +102,7 @@ export interface TickResult {
 }
 
 /** Слоти доби в (from, to]: план будується для кожної доби, яку зачепив проміжок (не більше 30 діб). */
-function dueSlots(tg0: TelegramState, p: EconomyParams, from: number, to: number, tz: number, rand: () => number): { tg: TelegramState; slots: { at: number; dayKey: string; dayNo: number }[] } {
+function dueSlots(tg0: TelegramState, p: EconomyParams, from: number, to: number, tz: number, rand: () => number, level = 1): { tg: TelegramState; slots: { at: number; dayKey: string; dayNo: number }[] } {
   let tg = tg0;
   const slots: { at: number; dayKey: string; dayNo: number }[] = [];
   if (tg.startMs == null || to <= from) return { tg, slots };
@@ -110,7 +114,7 @@ function dueSlots(tg0: TelegramState, p: EconomyParams, from: number, to: number
       // годинник назад: доба з меншою датою не перебудовується
       if (tg.day && key < tg.day.key) continue;
       const isFirst = d === firstDay;
-      const plan = planDay(p, d, isFirst ? tg.startMs! : d, isFirst ? 1 : 0, rand);
+      const plan = planDay(p, d, isFirst ? tg.startMs! : d, isFirst ? 1 : 0, rand, level);
       tg = { ...tg, day: { key, slots: plan, used: 0 } };
     }
     const day = tg.day!;
@@ -129,16 +133,32 @@ function dueSlots(tg0: TelegramState, p: EconomyParams, from: number, to: number
 export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): TickResult {
   const p = ctx.cfg.params;
   const rng = roller(tg0.rng);
-  const planned = dueSlots(tg0, p, ctx.fromMs, ctx.nowMs, ctx.tzOffsetMin, () => rng.next());
+  const planned = dueSlots(tg0, p, ctx.fromMs, ctx.nowMs, ctx.tzOffsetMin, () => rng.next(), ctx.level);
   let tg = planned.tg;
   let eco = eco0;
   const events: DomainEvent[] = [];
   const delivered: InboxItem[] = [];
   const delivery = ctx.away ? 'while_away' : 'live';
 
-  type Step = { at: number; slot?: (typeof planned.slots)[number]; timer?: Timer };
+  // 011 FR-17: пачка Р3 о 03:00 кожної доби; перша - після 03:00 наступної доби від входу на Р3
+  const packDays: { at: number }[] = [];
+  if (ctx.level >= 3 && tg.startMs != null && ctx.nowMs > ctx.fromMs) {
+    let last = tg.packs.day ?? dayKey(ctx.fromMs, ctx.tzOffsetMin);
+    for (let d = dayStart(ctx.fromMs, ctx.tzOffsetMin); d <= ctx.nowMs; d += DAY) {
+      const key = dayKey(d + HOUR, ctx.tzOffsetMin);
+      const at = d + PACK_HOUR * HOUR;
+      if (key > last && at > ctx.fromMs && at <= ctx.nowMs) {
+        packDays.push({ at });
+        last = key;
+      }
+    }
+    tg = { ...tg, packs: { ...tg.packs, day: last } };
+  }
+
+  type Step = { at: number; slot?: (typeof planned.slots)[number]; timer?: Timer; pack?: boolean };
   const steps: Step[] = [
     ...planned.slots.map((s) => ({ at: s.at, slot: s })),
+    ...packDays.map((d) => ({ at: d.at, pack: true })),
     ...tg.timers.filter((t) => t.atMs <= ctx.nowMs).map((t) => ({ at: t.atMs, timer: t })),
   ].sort((a, b) => a.at - b.at);
   tg = { ...tg, timers: tg.timers.filter((t) => t.atMs > ctx.nowMs) };
@@ -156,6 +176,16 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
   };
 
   for (const st of steps) {
+    if (st.pack) {
+      // FR-4 (011): у «Нових» уже п'ять - пачку пропущено як слот, наступна завтра
+      if (newCount(tg) >= p.tgMaxNew) continue;
+      const r = deliverPack(tg, st.at, () => rng.next(), delivery);
+      if (!r) continue;
+      tg = r.tg;
+      delivered.push(...r.items);
+      events.push(...r.events);
+      continue;
+    }
     if (st.slot) {
       const { at, dayKey: key, dayNo } = st.slot;
       if (newCount(tg) >= p.tgMaxNew) continue; // FR-4: слот пропускається, а не відкладається

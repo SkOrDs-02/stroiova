@@ -71,6 +71,8 @@ export interface Effect {
     | 'kombat_away'
     /** «Нарада затягнулась» (011 FR-25): «Нарада» ×naradaMult */
     | 'meeting_overrun'
+    /** «Зведення б'ється» (011 FR-22): потік «Зведення» ×pack.summaryBuff */
+    | 'pack_beats'
     | 'inspection_fail'
     /** Діловод одиниці у відрядженні (003, `clerkAway`): поки триває, офлайн одиниця працює як без діловода */
     | 'clerk_away';
@@ -100,7 +102,12 @@ export type DomainEvent =
   | { type: 'milestone'; target: UnitRef; level: number; rateMultiplier: number }
   // 003: телеграми й репутація; приймають 04 (перевірки), 05 (гонка), 07 (курйози, музей), 014 (сюжет), аналітика етапу 5
   | { type: 'telegramReceive'; telegramId: string; uid: string; delivery: 'live' | 'while_away'; scripted: boolean }
-  | { type: 'telegramAnswer'; telegramId: string; uid: string; choiceId: string; choiceKind: string; repDelta: number; chancePct: number; paper: number }
+  | { type: 'telegramAnswer'; telegramId: string; uid: string; choiceId: string; choiceKind: string; repDelta: number; chancePct: number; paper: number; packId?: string; isPackSummary?: boolean }
+  // 011: пачки Р3; аналітика етапу 5 (telegram_pack_receive, telegram_pack_resolve), музей 07 (один запис на пачку)
+  | { type: 'packReceive'; packId: string; no: number; isRepeat: boolean; delivery: 'live' | 'while_away' }
+  | { type: 'packResolve'; packId: string; no: number; mode: 'summary' | 'separate' | 'mixed'; choiceKind: string; paperSpent: number; repDelta: number; chancePct: number; isBeats: boolean }
+  | { type: 'packBeats'; mult: number; hours: number }
+  | { type: 'packCurio'; packId: string; no: number; kind: 'diligent' | 'formal_reply' | 'drawer'; uids: string[] }
   | { type: 'reputationTierChange'; from: 'low' | 'norm' | 'high'; to: 'low' | 'norm' | 'high'; value: number }
   | { type: 'unscheduledInspection'; telegramId: string; warnSec: number; extraItem: string | null }
   | { type: 'inspItem'; telegramId: string; item: string | null; remarkPct: number }

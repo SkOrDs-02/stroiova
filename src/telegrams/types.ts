@@ -62,6 +62,8 @@ export interface Telegram {
   kicker?: string;
   from?: string;
   to?: string;
+  /** Пачка Р3 (011 FR-18): id пачки й місце 1-3 */
+  pack?: { id: string; index: number };
   title: string;
   body: string;
   deadline?: [string, string, string][] | 'std';
@@ -108,6 +110,8 @@ export interface InboxItem {
   flagged?: boolean;
   /** Номери наказу override: {n}, {n1} */
   vars?: { n: number; n1: number };
+  /** Телеграма з пачки Р3 (011 FR-18): no - номер «Зведення № N»; summary - вид зведеної відповіді (FR-21) */
+  pack?: { id: string; no: number; index: number; summary?: ChoiceKind };
   result?: ItemResult;
 }
 
@@ -142,6 +146,8 @@ export interface TelegramState {
   kombat: { lastDayKey: string | null; active: { startMs: number; endMs: number; runnerAtMs: number | null; found?: boolean } | null };
   /** «Нарада затягнулась» (011 FR-25): той самий шаблон на ланці «Нарада» (Р3+); runnerAtMs - записка */
   meeting: { lastDayKey: string | null; active: { startMs: number; endMs: number; runnerAtMs: number | null; found?: boolean } | null };
+  /** Пачки Р3 (011 FR-17): остання доба доставки (РРРР-ММ-ДД) і скільки видано */
+  packs: { day: string | null; seq: number };
   deliveries: number;
   /** Мішки реплік за пулами content/lines.json (рішення 41) */
   lineBags: Record<string, { used: number[]; last: number | null }>;
