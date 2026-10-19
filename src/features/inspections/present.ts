@@ -1,5 +1,5 @@
 // Підписи екранів перевірок (004): причина, пункти, рядки акта й довідки.
-import { formatDuration, formatMult } from '@/economy/format';
+import { formatDuration, formatMult, formatTenths } from '@/economy/format';
 import type { EconomyParams } from '@/economy/core/types';
 import { offlineLines } from '@/inspections/offline';
 import type { ChecklistItem, InspectionOutcome } from '@/inspections/types';
@@ -13,7 +13,7 @@ export function reasonText(telegramId: string): string {
 }
 
 export function finalTitle(level: number): string {
-  return level >= 3 ? inspT.boss2.titleR3 : inspT.boss2.titleR2;
+  return level >= 4 ? inspT.boss2.titleR4 : level === 3 ? inspT.boss2.titleR3 : inspT.boss2.titleR2;
 }
 
 export function itemTitle(id: string): string {
@@ -21,7 +21,8 @@ export function itemTitle(id: string): string {
 }
 
 /** Підпис пункту: з артборда, а для доданого з телеграми — «Додано після відписки на № N» (insp.added). */
-export function itemMeta(it: Pick<ChecklistItem, 'id' | 'fromTelegram'>): string {
+export function itemMeta(it: Pick<ChecklistItem, 'id' | 'fromTelegram'>, acts = 0): string {
+  if (it.id === 'audit_acts') return inspT.boss2.actsMeta(acts);
   if (it.fromTelegram) return inspT.added(telegram(it.fromTelegram)?.no ?? '');
   return inspT.item[it.id]?.meta ?? '';
 }
@@ -52,3 +53,5 @@ export function offlineRows(last: InspectionOutcome | null, p: EconomyParams, ba
     return { k: inspT.offFail, v: inspT.offFailV(formatMult(l.factor), l.hours), bad: true };
   });
 }
+
+export const tenthsText = formatTenths;

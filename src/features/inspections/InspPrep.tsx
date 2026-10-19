@@ -6,7 +6,7 @@ import { useStore } from 'zustand';
 import { formatBig, formatCountdown, formatDuration, formatMult } from '@/economy/format';
 import { income } from '@/economy/game/income';
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { mechOk } from '@/inspections/final';
+import { mechOk, zpzNeedTenths, zpzTenths } from '@/inspections/final';
 import { lastPack } from '@/telegrams/packs';
 import { readinessLive, shortfall } from '@/inspections/lifecycle';
 import { color, radius, size, space, typeScale } from '@/theme';
@@ -16,7 +16,7 @@ import { adT } from '@/features/monetization/texts';
 import { inspAdView } from '@/monetization/monetization';
 import { type } from '@/ui/type';
 
-import { itemMeta, itemTitle } from './present';
+import { itemMeta, itemTitle, tenthsText } from './present';
 import { inspT } from './texts';
 import { useTumbLine } from './useTumbLine';
 
@@ -28,7 +28,8 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
   if (!a) return null;
   const perMin = income(s.state, s.cfg, s.lastMs, s.effects).perMin;
   const pack = lastPack(s.telegrams);
-  const pct = readinessLive(a, s.state, s.cfg, pack);
+  const live = { nowMs: s.lastMs, effects: s.effects };
+  const pct = readinessLive(a, s.state, s.cfg, pack, live);
   const final = a.kind === 'final';
   // реклама закриває лише базові пункти (011 FR-5): коли їх не лишилось, кнопки немає
   const baseOpen = a.items.some((i) => !i.done && !i.mech);
@@ -66,14 +67,16 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
         {a.items.map((it) => {
           if (it.mech) {
             // пункт механіки (011 FR-5): не купується, стан наживо
-            const ok = mechOk(it.id, s.state, s.cfg, pack);
+            const ok = mechOk(it.id, s.state, s.cfg, pack, live);
+            const need = tenthsText(zpzNeedTenths(s.cfg));
             return (
               <View key={it.id} testID={`insp-item-${it.id}`} accessibilityState={{ checked: ok }} style={[styles.item, ok && styles.itemDone]}>
                 <View style={[styles.box, ok && styles.boxOn]}>{ok ? <Text style={styles.tick}>✓</Text> : null}</View>
                 <View style={styles.itemText}>
                   <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.itemTitle}>{itemTitle(it.id)}</Text>
                   <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{inspT.boss2.mechTag}</Text>
-                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={ok ? styles.ready : styles.lack} testID="insp-mech-state">{ok ? inspT.boss2.mechOk : inspT.boss2.mechNo(inspT.mechTodo(it.id, pack?.no ?? null))}</Text>
+                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={ok ? styles.ready : styles.lack} testID="insp-mech-state">{ok ? inspT.boss2.mechOk : inspT.boss2.mechNo(inspT.mechTodo(it.id, pack?.no ?? null, Number(need.replace(',', '.'))))}</Text>
+                  {it.id === 'zpz_level' ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="insp-zpz-now">{inspT.boss2.zpzNow(tenthsText(zpzTenths(s.state, s.cfg, live)), need)}</Text> : null}
                 </View>
               </View>
             );
@@ -93,7 +96,7 @@ export function InspPrep({ store }: { store: ConveyorStore }) {
               <View style={[styles.box, it.done && styles.boxOn]}>{it.done ? <Text style={styles.tick}>✓</Text> : null}</View>
               <View style={styles.itemText}>
                 <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.itemTitle}>{itemTitle(it.id)}</Text>
-                {itemMeta(it) ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{itemMeta(it)}</Text> : null}
+                {itemMeta(it, s.stats.inspTotal) ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{itemMeta(it, s.stats.inspTotal)}</Text> : null}
               </View>
               <View style={styles.cost}>
                 <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.costText}>{formatBig(it.price, 'price')}</Text>

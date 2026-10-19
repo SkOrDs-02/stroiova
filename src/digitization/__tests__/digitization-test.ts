@@ -191,7 +191,11 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     expect(finalDue(cfg, { ...newDigitization(T0), counts: { '3': n3 - 1 } }, 3)).toBe(false);
     expect(finalDue(cfg, { ...newDigitization(T0), counts: { '3': n3 } }, 3)).toBe(true);
     expect(finalDue(cfg, { ...newDigitization(T0), counts: { '3': n3 }, levelExitAllowed: true }, 3)).toBe(false);
-    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '4': 9 } }, 4)).toBe(false);
+    // Р4 (012): те саме; Р5 підсумкової не має
+    const n4 = p.levels[3]!.exitDigitizations;
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '4': n4 - 1 } }, 4)).toBe(false);
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '4': n4 } }, 4)).toBe(true);
+    expect(finalDue(cfg, { ...newDigitization(T0), counts: { '5': 9 } }, 5)).toBe(false);
   });
 
   test('AC-6: цифровізації між N-ю і пройденою підсумковою на Р2 - без переходу, лічильник росте, рівень той самий', () => {
@@ -221,10 +225,11 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     expect(r.events[1]).toMatchObject({ type: 'levelAdvance', from: 2, to: 3, digitizationCount: n + 1 });
   });
 
-  test('Р3: 6 потоків і 5 ланок, перший рівень «Рапортів» = Р1 × rateMult; без виходу (isLast завжди false)', () => {
+  test('Р3: 6 потоків і 5 ланок, перший рівень «Рапортів» = Р1 × rateMult; вихід на Р4 лише після пройденої підсумкової', () => {
     const ds = { ...newDigitization(T0), counts: { '3': 20 }, levelExitAllowed: true };
     const e = { ...newGame(cfg, T0), level: 3, streamLevels: [1, 0, 0, 0, 0, 0], stageLevels: [1, 1, 1, 1, 1] };
-    expect(status(e, ds, cfg, T0).isLast).toBe(false);
+    expect(status(e, ds, cfg, T0).isLast).toBe(true);
+    expect(status(e, { ...ds, levelExitAllowed: false }, cfg, T0).isLast).toBe(false);
     expect(finalDue(cfg, { ...ds, levelExitAllowed: false, counts: { '3': 5 } }, 3)).toBe(false);
     const it = itemsFor(e, cfg);
     expect(it.streams.map((u) => u.id)).toEqual(['raporty', 'akty', 'dovidky', 'nakladni', 'nakazy', 'zvedennia']);
@@ -238,5 +243,18 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     const ds = newDigitization(T0);
     expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 0] }, ds, cfg, T0)).toMatchObject({ kind: 'locked', lockedStreams: ['zvedennia'] });
     expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 1] }, ds, cfg, T0)).toMatchObject({ kind: 'available', points: 40 });
+  });
+
+  test('Р4 (012): 7 потоків і 6 ланок, ЗпЗ - потік-частка; вихід на Р5 ще немає (isLast завжди false)', () => {
+    const ds = { ...newDigitization(T0), counts: { '4': 20 }, levelExitAllowed: true };
+    const e = { ...newGame(cfg, T0), level: 4, streamLevels: [1, 0, 0, 0, 0, 0, 0], stageLevels: [1, 1, 1, 1, 1, 1] };
+    expect(status(e, ds, cfg, T0).isLast).toBe(false);
+    const it = itemsFor(e, cfg);
+    expect(it.streams.map((u) => u.id)).toEqual(['raporty', 'akty', 'dovidky', 'nakladni', 'nakazy', 'zvedennia', 'zpz']);
+    expect(it.stages.map((u) => u.id)).toEqual(['kombat', 'stroy', 'fin', 'kazna', 'narada', 'dopovid']);
+    expect(it.streams[6]!.share).toBe(1);
+    const base = { ...newGame(cfg, T0), level: 4, stageLevels: [1, 1, 1, 1, 1, 1], lifetimeCycle: 2.29e13 * 40 * 40 };
+    expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 2, 0] }, newDigitization(T0), cfg, T0)).toMatchObject({ kind: 'locked', lockedStreams: ['zpz'] });
+    expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 2, 1] }, newDigitization(T0), cfg, T0)).toMatchObject({ kind: 'available' });
   });
 });

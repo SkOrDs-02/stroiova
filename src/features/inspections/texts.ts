@@ -1,6 +1,7 @@
 // Тексти перевірок (004 «Тексти»): з артбордів InspWarning, InspPrep, InspResult, OfflineReturn і нові з spec.
 // Нові рядки й короткі назви пунктів для акта — на вичитку (text-review).
 import type { BossId } from '@/inspections/types';
+import { plural } from '@/features/telegrams/texts';
 
 interface ItemText {
   title: string;
@@ -101,14 +102,26 @@ export const inspT = {
     carafe_full: { title: 'Наповнити графин на столі наради', meta: 'Воду не пити', short: 'Графин', ok: 'повний' },
     kettles_hide: { title: 'Прибрати чайники з кабінетів', meta: 'У шафу, не під стіл', short: 'Чайники', ok: 'у шафі' },
     summary_check: { title: 'Звірити зведення зі зведенням про зведення', meta: '', short: 'Зведення', ok: 'збігається', no: 'не збігається' },
+    // 012: пункти Р4 (spec «Пункти перевірок», на вичитку)
+    slides_number: { title: 'Пронумерувати слайди', meta: 'У правому верхньому куті, олівцем', short: 'Слайди', ok: 'пронумеровано', no: 'без номерів' },
+    stack_meter: { title: 'Вирівняти стос до одного метра', meta: 'Лінійкою Наталі', short: 'Стос', ok: 'рівно метр', no: 'не вирівняно' },
+    report_prep: { title: 'Звіт про підготовку до аудиту', meta: 'У двох примірниках', short: 'Звіт', ok: 'у двох примірниках', no: 'не подано' },
+    brief_onepage: { title: 'Доповідь тезово', meta: 'Одна сторінка, кегль чотирнадцятий', short: 'Доповідь', ok: 'на одній сторінці', no: 'на трьох' },
+    audit_acts: { title: 'Пред\'явити акти всіх попередніх перевірок', meta: 'З № 1', short: 'Акти', ok: 'пред\'явлено', no: 'не пред\'явлено' },
+    zpz_level: { title: 'Звіти про звіти', meta: '', short: 'Звіти про звіти', ok: 'достатньо', no: 'замало' },
     summary_beats: { title: 'Зведення б\'ється', meta: 'Останню пачку закрито сумлінно', short: 'Остання пачка', ok: 'закрито сумлінно', no: 'не закрито' },
   } as Record<string, ItemText>,
   /** Що зробити, щоб пункт механіки став виконаним (boss.mech_no) */
-  mechTodo: (id: string, packNo: number | null): string => (id === 'summary_beats' ? (packNo != null ? `закрий Зведення № ${packNo} сумлінно` : 'закрий Зведення сумлінно') : id === 'nakazy_open' ? 'відкрий «Накази по частині»' : ''),
+  mechTodo: (id: string, packNo: number | null, need = 0): string => (id === 'zpz_level' ? `підніми Звіти про звіти до ${need}%` : id === 'summary_beats' ? (packNo != null ? `закрий Зведення № ${packNo} сумлінно` : 'закрий Зведення сумлінно') : id === 'nakazy_open' ? 'відкрий «Накази по частині»' : ''),
   // підсумкова рівня (011): boss-brief, insp-prep, insp-result
   boss2: {
     titleR2: 'Комісія командування. Підсумкова.',
     titleR3: 'Перевірка зі столиці. Підсумкова.',
+    titleR4: 'Аудит усього. Підсумкова.',
+    /** boss.zpz_now */
+    zpzNow: (now: string, need: string) => `Зараз ${now}% · потрібно ${need}%`,
+    /** audit_acts: «23 акти, з № 1» */
+    actsMeta: (n: number) => `${n} ${plural(n, 'акт', 'акти', 'актів')}, з № 1`,
     retryHead: (n: number) => `Повтор, спроба ${n}`,
     when: (t: string) => `Приїзд через ${t}. Готуватися можна кілька разів.`,
     gives: (mult: string, hours: number) => `Пройдеш: наказ про переведення і ${mult} на ${hours} год.`,

@@ -7,6 +7,11 @@ export const t = {
   short: (n: string) => `Бракує ${n}`,
   level: (L: number, rate: string, who: string) => `Рів. ${L} · ${rate} · ${who}`,
   firstLevel: (rate: string) => `1-й рівень: ${rate}`,
+  // Р4 «Звіти про звіти» (012 FR-12; zpz.share, zpz.next, zpz.cap)
+  levelNoRate: (L: number, who: string) => `Рів. ${L} · ${who}`,
+  zpzShare: (pct: string, rate: string) => `${pct}% від суми потоків · ${rate}`,
+  zpzNext: (d: string) => `Наступний рівень: +${d} п. п.`,
+  zpzCap: (max: string) => `Більше ${max}% не буває: звітувати треба й про щось.`,
   streams: 'Потоки',
   stages: 'Погодження',
   upgrade: 'Покращити',

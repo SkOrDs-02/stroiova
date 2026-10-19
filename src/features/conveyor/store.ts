@@ -445,6 +445,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       digitizations: g.digit.total,
       finalDue: finalDue(g.cfg, g.digit, g.state.level),
       lastPack: lastPack(g.telegrams),
+      effects: g.effects,
     });
     if (r.s === g.inspections && !r.events.length) return;
     // 003 FR-15: після першої планової відписки можуть кликати позапланові
@@ -795,7 +796,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({ digit: next });
       // перехід на Р2: unit-unlock і coach Казначейства замінює тост k.tip (рішення 71, 73)
       // перехід на Р3: так само тост замість unit-unlock і coach (011 FR-15, відкладено, рішення 97)
-      if (c?.step === 'levelUp') get().showToast({ kind: 'text', text: c.level >= 2 ? digitT.kTipR3 : digitT.kTip });
+      if (c?.step === 'levelUp') get().showToast({ kind: 'text', text: c.level >= 3 ? digitT.kTipR4 : c.level >= 2 ? digitT.kTipR3 : digitT.kTip });
     },
     ackDigitHow: () => set({ digit: { ...get().digit, howSeen: true } }),
     closeRaceResult: () => {

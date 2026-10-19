@@ -290,7 +290,12 @@ var StroiovaEconomy = (() => {
       { id: "minutes_stitch", level: 3, min: 28 },
       { id: "door_plates", level: 3, min: 13 },
       { id: "carafe_full", level: 3, min: 6 },
-      { id: "kettles_hide", level: 3, min: 4 }
+      { id: "kettles_hide", level: 3, min: 4 },
+      // 012 (рішення 103): Р4 - дзеркало Р3 за вагою пунктів, разом inspChecklistMin = 51
+      { id: "slides_number", level: 4, min: 28 },
+      { id: "stack_meter", level: 4, min: 13 },
+      { id: "report_prep", level: 4, min: 6 },
+      { id: "brief_onepage", level: 4, min: 4 }
     ],
     digitJournals: { "1": { "1": [1, 2, 3], "2": [4, 5] }, "2": { "1": [9], "2": [10], "3": [11] } },
     inspPushVisit: 1,

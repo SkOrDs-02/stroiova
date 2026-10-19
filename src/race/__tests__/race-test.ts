@@ -81,6 +81,11 @@ describe('маршрут і таймери (FR-7…FR-12)', () => {
     expect(r3.map((x) => x.unit)).toEqual(['akty', 'kombat', 'stroy', 'fin', 'kazna', 'narada']);
     expect(r3.at(-1)!.sec).toBe(Math.round(p.giftL2StepH * 3600));
     expect(r3.reduce((a, x) => a + x.sec, 0)).toBe(11.5 * 3600);
+    // 012 (ВП-7): Р4 додає крок «Доповідь» тієї самої тривалості
+    const r4 = routeFor('drone', 4, cfg);
+    expect(r4.map((x) => x.unit)).toEqual(['akty', 'kombat', 'stroy', 'fin', 'kazna', 'narada', 'dopovid']);
+    expect(r4.at(-1)!.sec).toBe(Math.round(p.giftL2StepH * 3600));
+    expect(r4.reduce((a, x) => a + x.sec, 0)).toBe(13.5 * 3600);
     expect(routeFor('shovel', 1, cfg).reduce((a, x) => a + x.sec, 0)).toBe((6 * 60 + 40) * 60);
     expect(routeFor('generator', 1, cfg).reduce((a, x) => a + x.sec, 0)).toBe((11 * 60 + 20) * 60);
   });

@@ -1,8 +1,9 @@
 // Рядок потоку чи ланки на головному екрані (001 FR-8…FR-11, FR-14). Коуч онбордингу (002 FR-15) підсвічує одну кнопку й блокує решту.
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { capAt } from '@/economy/core';
-import { formatBig, formatDuration, formatRate } from '@/economy/format';
+import { capAt, zpzShare } from '@/economy/core';
+import { formatBig, formatDuration, formatRate, formatTenths } from '@/economy/format';
+import { zpzInfo } from '@/economy/game/income';
 import { quote } from '@/economy/game/purchase';
 import type { BuyMode, EconomyConfig, EconomyState, Effect, UnitDef, UnitRef } from '@/economy/game/types';
 import { color, radius, size, space, typeScale } from '@/theme';
@@ -33,7 +34,12 @@ interface Props {
 
 export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effects, mode, nowMs, onBuy, onHire, coach, needsClerk, hireLocked }: Props) {
   const q = quote(state, cfg, unit, mode, nowMs, effects);
-  const rate = capAt(def, level, cfg.params) * (state.museum.unit[def.id] ?? 1);
+  // Р4: «Звіти про звіти» не мають власного виробітку - показуємо частку й виробіток наживо (012 FR-12)
+  const zpz = def.share ? zpzInfo(state, cfg, nowMs, effects) : null;
+  const rate = zpz ? zpz.rate : capAt(def, level, cfg.params) * (state.museum.unit[def.id] ?? 1);
+  const totalShare = (n: number) => { const x = zpzShare(n, cfg.params); return x / (1 + x); };
+  const zpzNext = zpz && level > 0 ? Math.floor((totalShare(level + q.levels) - totalShare(level)) * 1000 + 1e-9) : 0;
+  const zpzMax = Math.floor((cfg.params.zpz.shareMax / (1 + cfg.params.zpz.shareMax)) * 1000 + 1e-9);
   const opened = level > 0;
   const canHire = state.signatures >= def.manager && !hireLocked;
   const label = opened ? `${t.upgrade} · ${formatBig(q.price, 'price')}` : `${t.open} · ${formatBig(q.price, 'price')}`;
@@ -54,9 +60,16 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
       <View style={styles.head}>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.name}>{def.name}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>
-          {opened ? t.level(level, formatRate(rate), hasClerk ? t.clerk : t.manual) : q.locked ? t.locked : t.firstLevel(formatRate(capAt(def, 1, cfg.params)))}
+          {opened && zpz ? t.levelNoRate(level, hasClerk ? t.clerk : t.manual) : opened ? t.level(level, formatRate(rate), hasClerk ? t.clerk : t.manual) : q.locked ? t.locked : t.firstLevel(formatRate(capAt(def, 1, cfg.params)))}
         </Text>
-        {opened && q.levels > 1 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{`${formatRate(q.rateBefore)} → ${formatRate(q.rateAfter)}`}</Text> : null}
+        {opened && zpz ? (
+          <>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="zpz-share">{t.zpzShare(formatTenths(Math.floor(zpz.share * 1000 + 1e-9)), formatRate(rate))}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="zpz-next">{t.zpzNext(formatTenths(zpzNext))}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="zpz-cap">{t.zpzCap(formatTenths(zpzMax))}</Text>
+          </>
+        ) : null}
+        {opened && q.levels > 1 && !zpz ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{`${formatRate(q.rateBefore)} → ${formatRate(q.rateAfter)}`}</Text> : null}
         {!q.affordable && !q.locked && q.etaSec != null ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.wait}>{t.wait(formatDuration(q.etaSec))}</Text> : null}
       </View>
       {target?.target === 'buy' ? coachText : null}

@@ -64,8 +64,8 @@ export function deliverFirst(tg: TelegramState, nowMs: number): { tg: TelegramSt
  * доба 1 — лише після startMs, а № 1 уже з'їла один слот квоти.
  */
 export function planDay(p: EconomyParams, start: number, notBefore: number, quotaUsed: number, rand: () => number, level = 1): number[] {
-  // Р3: пачка о 03:00 + 0-1 окрема телеграма у вікні (011 FR-17); раніше 2-4 на добу
-  const n = level >= 3 ? (rand() < p.pack.singleChance ? 1 : 0) : p.slowPerDayMin + Math.floor(rand() * (p.slowPerDayMax - p.slowPerDayMin + 1)) - quotaUsed;
+  // Р3: пачка о 03:00 + 0-1 окрема телеграма у вікні (011 FR-17); на Р4 знову 2-4 окремі на добу без пачок (012 FR-24)
+  const n = level === 3 ? (rand() < p.pack.singleChance ? 1 : 0) : p.slowPerDayMin + Math.floor(rand() * (p.slowPerDayMax - p.slowPerDayMin + 1)) - quotaUsed;
   const from = Math.max(start + p.tgFromHour * HOUR, notBefore);
   const to = start + p.tgToHour * HOUR;
   const gap = p.tgMinGapMin * MIN;
@@ -140,9 +140,9 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
   const delivered: InboxItem[] = [];
   const delivery = ctx.away ? 'while_away' : 'live';
 
-  // 011 FR-17: пачка Р3 о 03:00 кожної доби; перша - після 03:00 наступної доби від входу на Р3
+  // 011 FR-17: пачка Р3 о 03:00 кожної доби; перша - після 03:00 наступної доби від входу на Р3. На Р4 пачок немає (012 FR-24)
   const packDays: { at: number }[] = [];
-  if (ctx.level >= 3 && tg.startMs != null && ctx.nowMs > ctx.fromMs) {
+  if (ctx.level === 3 && tg.startMs != null && ctx.nowMs > ctx.fromMs) {
     let last = tg.packs.day ?? dayKey(ctx.fromMs, ctx.tzOffsetMin);
     for (let d = dayStart(ctx.fromMs, ctx.tzOffsetMin); d <= ctx.nowMs; d += DAY) {
       const key = dayKey(d + HOUR, ctx.tzOffsetMin);

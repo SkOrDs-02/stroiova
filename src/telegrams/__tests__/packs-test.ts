@@ -97,6 +97,43 @@ describe('доставка (FR-17, FR-18)', () => {
   });
 });
 
+describe('Р4 без пачок (012 FR-24, FR-25, AC-18)', () => {
+  const eco4 = (): EconomyState => ({ ...newGame(cfg, D0), level: 4 });
+  const ctx4 = (fromMs: number, nowMs: number) => ({ ...ctx(fromMs, nowMs), level: 4 });
+
+  test('на Р4 пачки не приходять; телеграми поодинці 2-4 на добу лише з рівня 4 без сюжетних', () => {
+    let tg = start();
+    let max = 0;
+    let min = 99;
+    for (let d = 1; d <= 20; d++) {
+      tg = { ...tg, inbox: tg.inbox.map((x) => ({ ...x, status: 'archive' as const })) };
+      const r = tick(tg, eco4(), ctx4(at(0, d), at(24, d)));
+      tg = r.tg;
+      const singles = r.delivered.filter((i) => i.kind === 'telegram' && telegram(i.id)?.kind !== 'override');
+      max = Math.max(max, singles.length);
+      min = Math.min(min, singles.length);
+      for (const s of singles) {
+        expect(s.pack).toBeUndefined();
+        expect(telegram(s.id)!.level).toBe(4);
+        expect(telegram(s.id)!.schedule?.scripted).toBeFalsy();
+        expect(telegram(s.id)!.kind ?? 'standard').toBe('standard');
+      }
+    }
+    expect(packGroups(tg)).toHaveLength(0);
+    expect(max).toBeLessThanOrEqual(p.slowPerDayMax);
+    expect(min).toBeGreaterThanOrEqual(1);
+  });
+
+  test('пачка Р3, що лишилась у вхідних, залишається і зводиться (FR-24): нових пачок немає, стара на місці', () => {
+    const tg3 = tick(start(), eco3(), ctx(at(15, 0), at(16, 0), false)).tg;
+    const withPack = tick(tg3, eco3(), ctx(at(16, 0), at(5, 1))).tg;
+    expect(packGroups(withPack)).toHaveLength(1);
+    const later = tick(withPack, eco4(), ctx4(at(5, 1), at(24, 5))).tg;
+    expect(packGroups(later)).toHaveLength(1);
+    expect(packByNo(later, 1)!.items).toHaveLength(3);
+  });
+});
+
 describe('контент пачок (FR-30, AC-20)', () => {
   test('20 пачок по pack.size телеграм рівня 3 без override, кожна телеграма має pack з її id та місцем, спільна packDetail', () => {
     const packs = allPacks();

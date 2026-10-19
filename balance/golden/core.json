@@ -455,6 +455,26 @@
     "id": "kettles_hide",
     "level": 3,
     "min": 4
+   },
+   {
+    "id": "slides_number",
+    "level": 4,
+    "min": 28
+   },
+   {
+    "id": "stack_meter",
+    "level": 4,
+    "min": 13
+   },
+   {
+    "id": "report_prep",
+    "level": 4,
+    "min": 6
+   },
+   {
+    "id": "brief_onepage",
+    "level": 4,
+    "min": 4
    }
   ],
   "digitJournals": {
@@ -877,6 +897,26 @@
      "id": "kettles_hide",
      "level": 3,
      "min": 4
+    },
+    {
+     "id": "slides_number",
+     "level": 4,
+     "min": 28
+    },
+    {
+     "id": "stack_meter",
+     "level": 4,
+     "min": 13
+    },
+    {
+     "id": "report_prep",
+     "level": 4,
+     "min": 6
+    },
+    {
+     "id": "brief_onepage",
+     "level": 4,
+     "min": 4
     }
    ],
    "digitJournals": {
@@ -1281,6 +1321,26 @@
     {
      "id": "kettles_hide",
      "level": 3,
+     "min": 4
+    },
+    {
+     "id": "slides_number",
+     "level": 4,
+     "min": 28
+    },
+    {
+     "id": "stack_meter",
+     "level": 4,
+     "min": 13
+    },
+    {
+     "id": "report_prep",
+     "level": 4,
+     "min": 6
+    },
+    {
+     "id": "brief_onepage",
+     "level": 4,
      "min": 4
     }
    ],
@@ -1764,6 +1824,26 @@
     {
      "id": "kettles_hide",
      "level": 3,
+     "min": 4
+    },
+    {
+     "id": "slides_number",
+     "level": 4,
+     "min": 28
+    },
+    {
+     "id": "stack_meter",
+     "level": 4,
+     "min": 13
+    },
+    {
+     "id": "report_prep",
+     "level": 4,
+     "min": 6
+    },
+    {
+     "id": "brief_onepage",
+     "level": 4,
      "min": 4
     }
    ],

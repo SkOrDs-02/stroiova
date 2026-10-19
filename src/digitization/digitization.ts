@@ -6,11 +6,11 @@ import type { DomainEvent, EconomyConfig, EconomyState, Effect } from '@/economy
 
 import type { Ceremony, DigitizationState } from './types';
 
-/** Рівні, які можна пройти в цій збірці: Р3 відкрито 011 (етап 1, рішення 93); Р4-Р5 - 012, 013. На Р3 виходу ще немає. */
-export const PLAYABLE_LEVELS = 3;
+/** Рівні, які можна пройти в цій збірці: Р3 відкрито 011, Р4 - 012 (етап 1); Р5 - 013. На останньому виходу ще немає. */
+export const PLAYABLE_LEVELS = 4;
 
-/** Рівні, де підсумкова вже реалізована: Р2 (011 етап 1) і Р3 (етап 2); збігається з `FINALS` перевірок. Перехід на Р4 дасть 012 */
-export const FINAL_LEVELS = [2, 3];
+/** Рівні, де підсумкова вже реалізована: Р2, Р3 (011) і Р4 (012); збігається з `FINALS` перевірок. Перехід на Р5 дасть 013 */
+export const FINAL_LEVELS = [2, 3, 4];
 
 export function newDigitization(nowMs: number): DigitizationState {
   return { counts: {}, total: 0, howSeen: false, ceremony: null, cycleStartMs: nowMs, levelExitAllowed: false };
@@ -57,7 +57,7 @@ export function journalsFor(cfg: EconomyConfig, level: number, nth: number): num
 
 /**
  * Остання на рівні, тобто з переходом: на рівні без боса (Р1) - `exitDigitizations`-та (06 FR-24); на рівні з босом
- * (Р2) - перша після пройденої підсумкової (011 FR-9). Рівнів без виходу в збірці (Р3) немає.
+ * (Р2-Р3) - перша після пройденої підсумкової (011 FR-9). Рівні без виходу в збірці (>= PLAYABLE_LEVELS) не мають.
  */
 export function isLastOnLevel(cfg: EconomyConfig, ds: DigitizationState, level: number, nth: number): boolean {
   const L = cfg.params.levels[level - 1];
