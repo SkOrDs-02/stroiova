@@ -7,7 +7,7 @@ import { canChoose, paperCost } from '@/telegrams/effects';
 import { replyChance } from '@/telegrams/reputation';
 import type { Choice, InboxItem, Telegram, TelegramState } from '@/telegrams/types';
 
-import { t } from './texts';
+import { hoursText, t } from './texts';
 
 const HOUR = 3_600_000;
 
@@ -63,7 +63,7 @@ export function resultRows(item: InboxItem, tel: Telegram, cfg: EconomyConfig, t
   const r = item.result;
   if (!c || !r) return [];
   const rows: [string, string][] = [[t.resDecision, t.kind[c.kind] ?? c.title]];
-  for (const s of r.slow) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${s.hours} год`]);
+  for (const s of r.slow) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${hoursText(s.hours)} год`]);
   if (c.effects.durationMin) rows.push([t.resSpent, t.minutes(c.effects.durationMin)]);
   if (r.paper) rows.push([t.resPaper, t.sheets(r.paper)]);
   if (r.rep || c.kind !== 'drawer') rows.push([t.resRep, `${r.rep > 0 ? '+' : r.rep < 0 ? '−' : ''}${Math.abs(r.rep)} · ${tierWord}`]);
@@ -90,7 +90,7 @@ export function separateLine(sep: { paper: number; rep: number; chances: number[
   if (sep.paper) parts.push(t.sheets(sep.paper));
   if (sep.rep) parts.push(t.rep(sep.rep));
   const ch = sep.chances.filter((c) => c > 0);
-  if (ch.length) parts.push(`${ch.map((c) => `${c}%`).join(' + ')} шанс перевірки`);
+  if (ch.length) parts.push(t.pkChances(ch.map((c) => `${c}%`).join(', ')));
   return parts.length ? parts.join(' · ') : t.pkNothing;
 }
 
@@ -99,7 +99,7 @@ export function packResultRows(first: InboxItem, kind: string, cfg: EconomyConfi
   const r = first.result;
   if (!r) return [];
   const rows: [string, string][] = [[t.resDecision, t.kind[kind] ?? kind]];
-  for (const s of r.slow) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${s.hours} год`]);
+  for (const s of r.slow) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${hoursText(s.hours)} год`]);
   if (r.paper) rows.push([t.resPaper, t.sheets(r.paper)]);
   rows.push([t.resRep, `${r.rep > 0 ? '+' : r.rep < 0 ? '−' : ''}${Math.abs(r.rep)} · ${tierWord}`]);
   if (r.chancePct > 0) rows.push([t.resChance, `${r.chancePct}%`]);

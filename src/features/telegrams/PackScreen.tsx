@@ -91,7 +91,8 @@ export function PackScreen({ store, no, onBack, onOpen, onSummed }: Props) {
                   ) : (
                     <>
                       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.line} testID={`pk-merged-${f.kind}`}>{`${t.pkMerged}: ${forecastLine(f.paper, f.rep, f.chancePct)}`}</Text>
-                      {slow ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.line}>{`${slow} · ${t.pkSlowDiligent}`}</Text> : null}
+                      {slow ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.line}>{slow}</Text> : null}
+                      {f.kind === 'diligent' ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.line} testID="pk-buff">{t.pkBuff(formatMult(s.cfg.params.pack.summaryBuff), s.cfg.params.pack.summaryBuffHours)}</Text> : null}
                       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.lineMuted} testID={`pk-sep-${f.kind}`}>{`${t.pkSeparate}: ${separateLine(f.separate)}`}</Text>
                       {f.reason === 'paper' ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.why} testID={`pk-why-${f.kind}`}>{t.noPaper(f.lackPaper ?? 0)}</Text> : null}
                     </>
