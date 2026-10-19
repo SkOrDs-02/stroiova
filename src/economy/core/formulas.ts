@@ -35,3 +35,8 @@ export function prestigeMult(P: number, p: EconomyParams): number {
 export function points(life: Big, divisor: number, p: EconomyParams): number {
   return Math.floor(Math.pow(life / (divisor || 75000), p.prestigeExponent));
 }
+
+/** Р4 «Звіти про звіти» (012 FR-7): s(n) = shareMax · n / (n + K); на рівні 0 потоку немає */
+export function zpzShare(n: number, p: EconomyParams): number {
+  return n > 0 ? (p.zpz.shareMax * n) / (n + p.zpz.K) : 0;
+}

@@ -36,7 +36,8 @@ var StroiovaEconomy = (() => {
     prestigeMult: () => prestigeMult,
     priceAt: () => priceAt,
     reachableLevels: () => reachableLevels,
-    withDefaults: () => withDefaults
+    withDefaults: () => withDefaults,
+    zpzShare: () => zpzShare
   });
 
   // src/economy/core/defaults.ts
@@ -565,6 +566,9 @@ var StroiovaEconomy = (() => {
   }
   function points(life, divisor, p) {
     return Math.floor(Math.pow(life / (divisor || 75e3), p.prestigeExponent));
+  }
+  function zpzShare(n, p) {
+    return n > 0 ? p.zpz.shareMax * n / (n + p.zpz.K) : 0;
   }
 
   // src/economy/core/flow.ts
