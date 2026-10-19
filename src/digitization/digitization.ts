@@ -9,6 +9,9 @@ import type { Ceremony, DigitizationState } from './types';
 /** Рівні, які можна пройти в цій збірці: Р3 відкрито 011 (етап 1, рішення 93); Р4-Р5 - 012, 013. На Р3 виходу ще немає. */
 export const PLAYABLE_LEVELS = 3;
 
+/** Рівні, де підсумкова вже реалізована: Р2 (011 етап 1) і Р3 (етап 2); збігається з `FINALS` перевірок. Перехід на Р4 дасть 012 */
+export const FINAL_LEVELS = [2, 3];
+
 export function newDigitization(nowMs: number): DigitizationState {
   return { counts: {}, total: 0, howSeen: false, ceremony: null, cycleStartMs: nowMs, levelExitAllowed: false };
 }
@@ -68,7 +71,7 @@ export function isLastOnLevel(cfg: EconomyConfig, ds: DigitizationState, level: 
  */
 export function finalDue(cfg: EconomyConfig, ds: DigitizationState, level: number): boolean {
   const L = cfg.params.levels[level - 1];
-  if (!L || !L.boss || level >= PLAYABLE_LEVELS || L.exitDigitizations <= 0) return false;
+  if (!L || !L.boss || !FINAL_LEVELS.includes(level) || L.exitDigitizations <= 0) return false;
   return countOn(ds, level) >= L.exitDigitizations && !ds.levelExitAllowed;
 }
 

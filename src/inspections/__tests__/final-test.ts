@@ -6,7 +6,8 @@ import type { EconomyState } from '@/economy/game/types';
 
 import { offlineLines } from '../offline';
 import { buyItem, completeAll, fromTelegramEvent, newInspections, readinessLive, tick } from '../lifecycle';
-import { finalItemPrice, itemDone, mechOk, streamsOpen } from '../final';
+import { FINAL_LEVELS } from '@/digitization/digitization';
+import { FINALS, finalItemPrice, itemDone, mechOk, streamsOpen } from '../final';
 import type { InspectionState } from '../types';
 
 const cfg = bundledConfig;
@@ -193,5 +194,58 @@ describe('довідка повернення (FR-25 004 + 011)', () => {
     expect(offlineLines(pass.s.last, p, arr + HOUR)[0]).toEqual({ kind: 'passed', remark: false, final: true });
     const fail = tick(s, e, cfg, ctx(arr + HOUR, { offline: true, fromMs: arr - HOUR }));
     expect(offlineLines(fail.s.last, p, arr + HOUR)).toEqual([{ kind: 'failed', factor: p.inspFailMult, hours: p.inspFailHours, final: true, retryH: p.boss.retryH }]);
+  });
+});
+
+describe('підсумкова Р3 «Перевірка зі столиці» (011 FR-27, AC-18)', () => {
+  const eco3 = (): EconomyState => {
+    const g = { ...newGame(cfg, at(0)), level: 3 };
+    const it = itemsFor(g, cfg);
+    return { ...g, streamLevels: it.streams.map(() => 30), stageLevels: it.stages.map(() => 30), streamClerks: it.streams.map(() => true), stageClerks: it.stages.map(() => true) };
+  };
+  const announced3 = () => tick(newInspections(at(0), 'seed-r3'), eco3(), cfg, ctx(at(12)));
+  const closeAll = (s: InspectionState) => {
+    const r = completeAll(s, at(13), 'ad');
+    if ('error' in r) throw new Error(r.error);
+    return r.s;
+  };
+
+  test('оголошення: 5 базових (minutes_stitch, door_plates, carafe_full, kettles_hide, summary_check) + summary_beats без ціни', () => {
+    const a = announced3().s.active!;
+    expect(a).toMatchObject({ kind: 'final', level: 3, attempt: 1 });
+    expect(a.items.map((i) => i.id)).toEqual(['minutes_stitch', 'door_plates', 'carafe_full', 'kettles_hide', 'summary_check', 'summary_beats']);
+    expect(a.items.find((i) => i.mech)).toMatchObject({ id: 'summary_beats', price: 0 });
+  });
+
+  test('остання пачка закрита трьома окремими diligent (або зведеною diligent) - пункт виконано, перехід дозволено', () => {
+    const { s } = announced3();
+    const arr = s.active!.arrMs;
+    const r = tick(closeAll(s), eco3(), cfg, ctx(arr + 1000, { fromMs: arr - HOUR, lastPack: { no: 4, closed: true, diligent: true } }));
+    expect(r.events.find((x) => x.type === 'inspectionFinish')).toMatchObject({ kind: 'final', result: 'passed', mechDone: true, exitUnlocked: true });
+    expect(r.events.some((x) => x.type === 'finalPassed')).toBe(true);
+  });
+
+  test('зведена відписка або пачка не закрита або пачок немає - "Ще ні", провал, повтор', () => {
+    for (const lp of [{ no: 4, closed: true, diligent: false }, { no: 4, closed: false, diligent: false }, null]) {
+      const { s } = announced3();
+      const arr = s.active!.arrMs;
+      const r = tick(closeAll(s), eco3(), cfg, ctx(arr + 1000, { fromMs: arr - HOUR, lastPack: lp }));
+      expect(r.events.find((x) => x.type === 'inspectionFinish')).toMatchObject({ result: 'failed', mechDone: false });
+      expect(r.s.active).toMatchObject({ kind: 'final', level: 3, attempt: 2 });
+    }
+  });
+
+  test('mechOk / itemDone / readinessLive читають пачку наживо', () => {
+    const { s } = announced3();
+    const mech = s.active!.items.find((i) => i.mech)!;
+    expect(itemDone(mech, eco3(), cfg, null)).toBe(false);
+    expect(itemDone(mech, eco3(), cfg, { no: 2, closed: true, diligent: true })).toBe(true);
+    expect(readinessLive(s.active!, eco3(), cfg, { no: 2, closed: true, diligent: true })).toBe(Math.round((1 / 6) * 100));
+  });
+});
+
+describe('рівні з підсумковою перевіркою', () => {
+  test('кожен рівень з FINAL_LEVELS має запис у FINALS і навпаки', () => {
+    expect(Object.keys(FINALS).map(Number).sort()).toEqual([...FINAL_LEVELS].sort());
   });
 });

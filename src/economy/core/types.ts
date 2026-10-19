@@ -56,6 +56,19 @@ export interface BossParams {
   zpzMin: number;
 }
 
+/** Пачки Р3 (011): розмір, імовірність окремої телеграми дня, сповільнення «Нарада» і баф «Зведення б'ється» зведеної відповіді */
+export interface PackParams {
+  size: number;
+  perDay: number;
+  singleChance: number;
+  /** Стратегія бота в sim.js (0 - окремо, 1 - зведена, 2 - краща за втратою доходу); у грі вибір за гравцем */
+  merge: number;
+  slowMult: number;
+  slowHours: number;
+  summaryBuff: number;
+  summaryBuffHours: number;
+}
+
 export interface EconomyParams {
   streams: UnitDef[];
   stages: UnitDef[];
@@ -118,6 +131,7 @@ export interface EconomyParams {
   inspItems: InspItemDef[];
   /** 011: підсумкова перевірка рівня (рішення 95, 96) */
   boss: BossParams;
+  pack: PackParams;
   /** 005: подарунки й гонка (рішення 29–31); кроки акта — години (Акти, Комбат, Стройова, Фін.) */
   gifts: Record<'drone' | 'shovel' | 'generator', GiftDef>;
   giftOrder: ('drone' | 'shovel' | 'generator')[];

@@ -48,12 +48,15 @@ import { CallOverlay } from '@/features/onboarding/CallOverlay';
 import { ClerkFirst } from '@/features/onboarding/ClerkFirst';
 import { ready } from '@/features/onboarding/steps';
 import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
+import { newRows } from '@/telegrams/packs';
 import { repTier } from '@/telegrams/reputation';
 import type { InboxItem } from '@/telegrams/types';
 import { t as onb } from '@/features/onboarding/texts';
 import { KombatSheet } from '@/features/telegrams/KombatSheet';
 import { NoteDetail } from '@/features/telegrams/NoteDetail';
 import { ReputationSheet } from '@/features/telegrams/ReputationSheet';
+import { PackResult } from '@/features/telegrams/PackResult';
+import { PackScreen } from '@/features/telegrams/PackScreen';
 import { TelegramFlag } from '@/features/telegrams/TelegramFlag';
 import { TelegramList } from '@/features/telegrams/TelegramList';
 import { TelegramDetail } from '@/features/telegrams/TelegramDetail';
@@ -70,8 +73,10 @@ const MODES: BuyMode[] = ['x1', 'x10', 'toMilestone'];
 type View3 =
   | { kind: 'main' }
   | { kind: 'list' }
-  | { kind: 'detail'; uid: string; coach: boolean }
-  | { kind: 'result'; uid: string; back: 'main' | 'list' }
+  | { kind: 'detail'; uid: string; coach: boolean; pack?: number }
+  | { kind: 'result'; uid: string; back: 'main' | 'list'; pack?: number }
+  | { kind: 'pack'; no: number }
+  | { kind: 'pack-result'; no: number }
   | { kind: 'flag'; uid: string; back: 'detail' | 'list' }
   | { kind: 'note'; uid: string }
   | { kind: 'rep'; back: 'main' | 'list' }
@@ -181,7 +186,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const meetingAuto = meetingOn && meeting!.startMs !== meetingSeen && view.kind === 'main' && s.offline == null && !kombatAuto;
 
   const inbox = s.telegrams.inbox;
-  const badge = inbox.filter((x) => (x.status === 'new' && x.kind !== 'note') || (x.kind === 'note' && !x.read)).length;
+  // пачка Р3 займає в «Нових» один рядок (011 FR-18)
+  const badge = newRows(s.telegrams) + inbox.filter((x) => x.kind === 'note' && !x.read).length;
   const tier = repTier(s.telegrams.reputation.value, s.cfg.params);
   // 006 FR-22: церемонія цифровізації (акт, наказ про переведення) показується, поки гравець її не закрив, і при запуску
   const ceremony = s.digit.ceremony;
@@ -245,14 +251,14 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     }
     else if (tab === 'stroyova') setView({ kind: 'main' });
   };
-  const openItem = (item: InboxItem) => {
+  const openItem = (item: InboxItem, pack?: number) => {
     if (item.kind === 'note') {
       s.openItem(item.uid);
       setView({ kind: 'note', uid: item.uid });
     } else {
       if (item.kind === 'notice') s.openItem(item.uid);
       if (item.kind === 'telegram' && item.status === 'new') s.kavaLineFor(item.uid);
-      setView({ kind: 'detail', uid: item.uid, coach: false });
+      setView({ kind: 'detail', uid: item.uid, coach: false, pack });
     }
   };
   const tabsEnabled: TabId[] = coachRow ? [] : o.step !== 'done' && o.step < 8 ? ['stroyova'] : ['stroyova', 'telegrams', 'digital', 'museum', 'shop'];
@@ -260,7 +266,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   return (
     <View style={styles.root}>
       {view.kind === 'list' ? (
-        <TelegramList store={store} onOpen={openItem} onReputation={() => setView({ kind: 'rep', back: 'list' })} />
+        <TelegramList store={store} onOpen={openItem} onOpenPack={(no) => setView({ kind: 'pack', no })} onReputation={() => setView({ kind: 'rep', back: 'list' })} />
       ) : view.kind === 'digital' || view.kind === 'digit-confirm' ? (
         <DigitalScreen store={store} onOpenConfirm={() => setView({ kind: 'digit-confirm' })} />
       ) : view.kind === 'shop' ? (
@@ -435,15 +441,19 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           store={store}
           uid={view.uid}
           coachText={view.coach ? onb.b8Tip : undefined}
-          onAnswered={(uid) => setView({ kind: 'result', uid, back: view.coach ? 'main' : 'list' })}
+          onAnswered={(uid) => setView({ kind: 'result', uid, back: view.coach ? 'main' : 'list', pack: view.pack })}
           onFlag={(uid) => setView({ kind: 'flag', uid, back: 'detail' })}
           onReputation={view.coach ? undefined : () => setView({ kind: 'rep', back: 'list' })}
-          onBack={view.coach ? undefined : () => setView({ kind: 'list' })}
+          onBack={view.coach ? undefined : () => setView(view.pack != null ? { kind: 'pack', no: view.pack } : { kind: 'list' })}
         />
       ) : null}
       {view.kind === 'result' ? (
-        <TelegramResult store={store} uid={view.uid} firstText={onb.b8Rep} onClose={() => setView({ kind: view.back })} />
+        <TelegramResult store={store} uid={view.uid} firstText={onb.b8Rep} onClose={() => setView(view.pack != null ? { kind: 'pack', no: view.pack } : { kind: view.back })} />
       ) : null}
+      {view.kind === 'pack' ? (
+        <PackScreen store={store} no={view.no} onBack={() => setView({ kind: 'list' })} onOpen={(item) => openItem(item, view.no)} onSummed={(no) => setView({ kind: 'pack-result', no })} />
+      ) : null}
+      {view.kind === 'pack-result' ? <PackResult store={store} no={view.no} onClose={() => setView({ kind: 'list' })} /> : null}
       {view.kind === 'flag' ? <TelegramFlag store={store} uid={view.uid} onClose={() => setView(view.back === 'detail' ? { kind: 'detail', uid: view.uid, coach: false } : { kind: 'list' })} /> : null}
       {view.kind === 'note' ? <NoteDetail store={store} uid={view.uid} onClose={() => setView({ kind: 'list' })} /> : null}
       {view.kind === 'rep' ? <ReputationSheet store={store} onClose={() => setView(view.back === 'list' ? { kind: 'list' } : { kind: 'main' })} /> : null}

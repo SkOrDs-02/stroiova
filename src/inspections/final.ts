@@ -14,18 +14,28 @@ export interface FinalDef {
 
 export const FINALS: Record<number, FinalDef> = {
   2: { base: ['dust_glove', 'corridor_tape', 'sign_rehang', 'orders_stitch', 'kazna_kopiyka'], mech: 'nakazy_open' },
+  3: { base: ['minutes_stitch', 'door_plates', 'carafe_full', 'kettles_hide', 'summary_check'], mech: 'summary_beats' },
 };
+
+/** Остання видана пачка Р3 і чи закрита сумлінно (`packs.ts`): вхід для пункту `summary_beats` (011 FR-27) */
+export interface LastPack {
+  no: number;
+  closed: boolean;
+  diligent: boolean;
+}
 
 export function hasFinal(level: number): boolean {
   return FINALS[level] != null;
 }
 
 /** Пункт механіки на мить `eco`: «Накази по частині» відкрито в поточному циклі (FR-12, ВП-1). */
-export function mechOk(id: string, eco: EconomyState, cfg: EconomyConfig): boolean {
+export function mechOk(id: string, eco: EconomyState, cfg: EconomyConfig, pack: LastPack | null = null): boolean {
   if (id === 'nakazy_open') {
     const i = itemsFor(eco, cfg).streams.findIndex((u) => u.id === 'nakazy');
     return i >= 0 && (eco.streamLevels[i] ?? 0) > 0;
   }
+  // Р3: остання видана пачка закрита сумлінно - зведеною diligent або трьома окремими (ВП-7, рішення 100)
+  if (id === 'summary_beats') return !!pack && pack.closed && pack.diligent;
   return false;
 }
 
@@ -55,8 +65,8 @@ export function retryChecklist(prev: Inspection): ChecklistItem[] {
 }
 
 /** Пункт на мить `eco`: механіки - наживо, решта - як записано (FR-5). */
-export function itemDone(item: ChecklistItem, eco: EconomyState, cfg: EconomyConfig): boolean {
-  return item.mech ? mechOk(item.id, eco, cfg) : item.done;
+export function itemDone(item: ChecklistItem, eco: EconomyState, cfg: EconomyConfig, pack: LastPack | null = null): boolean {
+  return item.mech ? mechOk(item.id, eco, cfg, pack) : item.done;
 }
 
 export { bossFor };

@@ -10,6 +10,9 @@ export function plural(n: number, one: string, few: string, many: string): strin
   return b >= 2 && b <= 4 ? few : many;
 }
 
+/** Години з десятковою комою: 1,75 */
+export const hoursText = (h: number): string => String(h).replace('.', ',');
+
 export const t = {
   screen: 'Телеграма',
   screenMsg: 'Повідомлення',
@@ -36,7 +39,7 @@ export const t = {
   kava: 'Начштабу «Кава»',
   isNew: 'новий варіант',
   // наслідки варіанта (артборд TgDetail): «Стройова ×0,5 на 1 год · +10 до репутації»
-  slow: (unit: string, mult: string, hours: number) => `${unit} ${mult} на ${hours} год`,
+  slow: (unit: string, mult: string, hours: number) => `${unit} ${mult} на ${hoursText(hours)} год`,
   minutes: (n: number) => `${n} ${plural(n, 'хвилина', 'хвилини', 'хвилин')}`,
   rep: (d: number) => `${d > 0 ? '+' : '−'}${Math.abs(d)} до репутації`,
   sheets: (n: number) => `−${n} ${plural(n, 'аркуш', 'аркуші', 'аркушів')}`,
@@ -127,6 +130,28 @@ export const t = {
   mtRunning: (t: string) => `записка · ще ${t}`,
   mtFoundLine: 'Протокол складено. Присутніх вписано.',
   kbBack: 'До стройової',
+  // пачки Р3 (011 FR-18…FR-24; spec «Тексти»: pack.*)
+  pkScreen: 'Пачка телеграм',
+  pkCover: (no: number, k: number) => `Зведення № ${no} · ${k} з 3 відповідей`,
+  pkRowSub: 'пачка з трьох телеграм',
+  pkCardNew: 'нова',
+  pkCardDrawer: 'у шухляді',
+  pkCardDone: (kind: string) => (kind ? `відповідь: ${kind}` : 'відповідь дана'),
+  pkCardSummary: (kind: string) => `зведено: ${kind}`,
+  pkSummaryH: 'Спосіб зведення',
+  pkSummaryCta: 'Звести в одну відповідь',
+  pkSummaryHint: 'Одна обкладинка: менше паперу, менше репутації, більший ризик.',
+  pkNoKind: 'Не в усіх телеграмах пачки є такий варіант',
+  pkPartial: 'Після окремої відповіді зведення недоступне. Решту телеграм можна закрити окремо.',
+  pkOpenResult: 'Відповідь пачкою',
+  pkMerged: 'Зведено',
+  pkSeparate: 'Окремо',
+  pkNothing: 'без наслідків',
+  pkChances: (list: string) => `шанси перевірки: ${list}`,
+  pkBuff: (mult: string, hours: number) => `«Зведення» ${mult} на ${hoursText(hours)} год`,
+  pkResultTitle: (no: number) => `Відповідь пачкою на Зведення № ${no}`,
+  pkResultIn: (nos: string) => `На телеграми: ${nos}`,
+  pkResultMeta: (no: number) => `Зведення № ${no}`,
   // записки (NoteDetail)
   noteOk: 'Добре',
   noteCall: 'Дзвінок «Археологу»',

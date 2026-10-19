@@ -16,6 +16,8 @@ export interface AnswerCtx {
   nowMs: number;
   /** Місцева дата РРРР-ММ-ДД: ліміт позапланових за добу */
   dayKey: string;
+  /** Зведена відповідь пачки (011 FR-21): папір, репутація, сповільнення й кидок рахує пачка, а не телеграма */
+  merge?: boolean;
 }
 
 export interface AnswerResult {
@@ -76,7 +78,8 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
   if (!tel || !choice) return { error: 'choice' };
   const fromDrawer = item0.status === 'drawer';
   const av = canChoose(tg0, eco0, choice, fromDrawer);
-  if (!av.ok) return { error: av.reason };
+  // зведена відповідь перевіряє папір одним числом на всю пачку (`packs.ts`)
+  if (!av.ok && !(ctx.merge && av.reason === 'paper')) return { error: av.reason };
 
   const { cfg, nowMs } = ctx;
   const p = cfg.params;
@@ -100,13 +103,13 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
     workUntil = Math.max(workUntil, endMs);
   };
 
-  const apply = (e: Effects, nested: boolean) => {
-    if (e.paper) {
+  const apply = (e: Effects, nested: boolean, merged = !!ctx.merge) => {
+    if (e.paper && !merged) {
       eco = { ...eco, paper: Math.max(0, eco.paper - e.paper) };
       res.paper += e.paper;
     }
-    for (const s of e.slow ?? []) slowEffect(s);
-    if (e.rep) {
+    if (!merged) for (const s of e.slow ?? []) slowEffect(s);
+    if (e.rep && !merged) {
       // цифровий щит: без зниження репутації (FR-16)
       const d = e.rep < 0 && shield ? 0 : e.rep;
       if (d) {
@@ -116,7 +119,7 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
     }
     if (e.durationMin) workUntil = Math.max(workUntil, nowMs + e.durationMin * MIN);
     // № 19: кидок не зараз, а через inspRollAfterHours (таймер рахує шанс на мить кидка)
-    if (e.inspPct && !e.inspRollAfterHours) {
+    if (e.inspPct && !e.inspRollAfterHours && !merged) {
       const pr = replyChance(tg, p, e.inspPct, !!choice.effects.digitalShield, eco.prestigePoints);
       res.chancePct = Math.round(pr * 100);
       const used = tg.unscheduledDays.filter((d) => d === ctx.dayKey).length;
@@ -134,7 +137,7 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
     if (e.inspRemarkPct) events.push({ type: 'inspItem', telegramId: tel.id, item: null, remarkPct: e.inspRemarkPct });
     if (e.roll && rng.next() < e.roll.pct / 100) {
       res.rollText = e.roll.text;
-      apply(e.roll.effects, true);
+      apply(e.roll.effects, true, false);
     }
     for (const d of e.delayed ?? []) tg = { ...tg, timers: [...tg.timers, { atMs: nowMs + d.afterHours * HOUR, kind: 'delayed', itemUid: uid, effects: d.effects }] };
     if (e.returnsAfterHours) returnsAfter = e.returnsAfterHours;
@@ -151,7 +154,7 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
     if (e.setFlag) tg = { ...tg, flags: { ...tg.flags, [e.setFlag]: true } };
     if (e.ifFlag && tg.flags[e.ifFlag.flag]) {
       const flag = e.ifFlag.flag;
-      apply(e.ifFlag.effects, true);
+      apply(e.ifFlag.effects, true, merged);
       if (e.ifFlag.effects.clearFlag) {
         const { [flag]: _gone, ...rest } = tg.flags;
         tg = { ...tg, flags: rest };
@@ -161,7 +164,7 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
       const ref = unitRef(eco, cfg, e.ifNoClerk.target);
       if (ref && !hasClerk(eco, cfg, ref)) {
         if (e.text) res.rollText = e.text;
-        apply(e.ifNoClerk.effects, true);
+        apply(e.ifNoClerk.effects, true, merged);
       }
     }
     if (e.queueNext && !nested) tg = { ...tg, queue: [...e.queueNext, ...tg.queue] };
@@ -194,8 +197,19 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
 
   const tierAfter = repTier(tg.reputation.value, p);
   if (tierAfter !== tierBefore) events.push({ type: 'reputationTierChange', from: tierBefore, to: tierAfter, value: tg.reputation.value });
-  events.push({ type: 'telegramAnswer', telegramId: tel.id, uid, choiceId, choiceKind: choice.kind, repDelta: res.rep, chancePct: res.chancePct, paper: res.paper });
-  events.push({ type: 'curio', telegramId: tel.id, uid, text: choice.effects.curio ?? null });
+  events.push({
+    type: 'telegramAnswer',
+    telegramId: tel.id,
+    uid,
+    choiceId,
+    choiceKind: choice.kind,
+    repDelta: res.rep,
+    chancePct: res.chancePct,
+    paper: res.paper,
+    ...(item0.pack ? { packId: item0.pack.id, isPackSummary: !!ctx.merge } : {}),
+  });
+  // зведена відповідь дає один запис курйозів на пачку (011 FR-24), а не три
+  if (!ctx.merge) events.push({ type: 'curio', telegramId: tel.id, uid, text: choice.effects.curio ?? null });
   return { tg, eco, effects, events, item };
 }
 

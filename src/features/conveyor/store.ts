@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 
 import { bundledConfig } from '@/economy/config';
-import { formatDuration } from '@/economy/format';
+import { formatDuration, formatMult } from '@/economy/format';
 import { advance, claimOffline, offline, type OfflineResult } from '@/economy/game/advance';
 import { baseIncomePerMin } from '@/economy/game/income';
 import { catTap, refuel, tap } from '@/economy/game/actions';
@@ -18,7 +18,7 @@ import { adSpeedup, digitalSpeedup, fromTelegram as raceFromTelegram, newRace, r
 import type { RaceState } from '@/race/types';
 import { closeCeremonyStep, digitize as digitizeNow, finalDue, newDigitization, shiftDigitization, status as digitStatus } from '@/digitization/digitization';
 import type { DigitizationState } from '@/digitization/types';
-import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, markCuriosSeen, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
+import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromPack, curioFromRace, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, markCuriosSeen, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
 import { addBoost, addPending, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, applyRights, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
 import type { AdResult, AdService, MonetizationState, Placement, ProductId, PurchaseResult, PurchaseService } from '@/monetization/types';
@@ -36,6 +36,7 @@ import { digitT } from '@/features/digitization/texts';
 import { dayKey } from '@/telegrams/clock';
 import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
 import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } from '@/telegrams/effects';
+import { answerPack as answerPackTg, lastPack, resolvedSeparately, type SummaryKind } from '@/telegrams/packs';
 import { fromTelegram, hasStage, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
 import type { TelegramState } from '@/telegrams/types';
@@ -148,6 +149,8 @@ interface Store {
   receiveTg1: () => void;
   /** Відповідь на телеграму (003 FR-12…FR-20); на № 1 закриває крок 8 онбордингу */
   answerTelegram: (uid: string, choiceId: string) => AnswerResult['item'] | { error: string };
+  /** «Звести в одну відповідь» (011 FR-19…FR-24): зведена відповідь пачки № N видом `kind` */
+  answerPack: (no: number, kind: SummaryKind) => { ok: true } | { error: string };
   /** Відкрити телеграму без вибору чи записку (FR-11, FR-27) */
   openItem: (uid: string) => void;
   /** «Це не смішно» (FR-26): лише позначка, без впливу на гру */
@@ -304,6 +307,14 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     for (const e of evs) {
       if (e.type === 'reputationTierChange') get().showToast({ kind: 'rep', tier: e.to });
       // Граніт у «знайшли» — репліка персонажа, у ліміті сесії
+      // 011 FR-22: «Зведення б'ється» - тост із пулу pack.beats
+      if (e.type === 'packBeats') {
+        const r = pickLine(get().telegrams, 'pack.beats', poolSize('pack.beats'));
+        if (r.index != null) {
+          set({ telegrams: r.tg });
+          get().showToast({ kind: 'text', text: lineAt('pack.beats', r.index).replace('{m}', formatMult(e.mult)).replace('{h}', String(e.hours)) });
+        }
+      }
       if (e.type === 'kombatFound' && get().telegrams.kombat.active) characterLine('granit.success', `kombat:${get().telegrams.kombat.active!.startMs}`);
       if (e.type === 'meetingFound' && get().telegrams.meeting.active) characterLine('kava.narada_found', `meeting:${get().telegrams.meeting.active!.startMs}`);
     }
@@ -411,6 +422,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     for (const e of evs) {
       if (e.type === 'curio') ms = curioFromTelegram(ms, e, g.telegrams, atMs);
       if (e.type === 'raceCurio') ms = curioFromRace(ms, e);
+      if (e.type === 'packCurio') ms = curioFromPack(ms, e, atMs);
     }
     // «У музеї з» - мітка самої перевірки, а не повернення гравця (крайовий випадок «Офлайн»)
     const r = museumFromEvents(ms, g.state, g.cfg, evs, atMs, { offline, inspAtMs: g.inspections.last?.arrMs });
@@ -432,6 +444,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       reputation: g.telegrams.reputation.value,
       digitizations: g.digit.total,
       finalDue: finalDue(g.cfg, g.digit, g.state.level),
+      lastPack: lastPack(g.telegrams),
     });
     if (r.s === g.inspections && !r.events.length) return;
     // 003 FR-15: після першої планової відписки можуть кликати позапланові
@@ -698,10 +711,15 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     answerTelegram: (uid, choiceId) => {
       const g = get();
       const now = g.lastMs;
+      // повторна відповідь на запис із шухляди пачку вдруге не закриває (packResolve один раз)
+      const wasNew = g.telegrams.inbox.find((x) => x.uid === uid)?.status === 'new';
       const r = answerTg(g.telegrams, g.state, uid, choiceId, { cfg: g.cfg, nowMs: now, dayKey: dayKey(now, tzOffsetAt(now)) });
       if ('error' in r) return r;
       set({ telegrams: r.tg, state: r.eco, effects: [...g.effects, ...r.effects] });
       handleEvents(r.events, now);
+      // 011: остання з трьох відповідей пачки окремо - пачку закрито (summary_beats, аналітика)
+      const sep = wasNew ? resolvedSeparately(get().telegrams, uid, now) : null;
+      if (sep) handleEvents([sep], now);
       resumeRaceIfFree(now);
       // 002 FR-19: відповідь на № 1 закриває крок 8
       if (r.item.id === FIRST_TELEGRAM_ID && get().onboarding.step === 8) {
@@ -709,6 +727,19 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         get().onbComplete(8);
       }
       return r.item;
+    },
+    answerPack: (no, kind) => {
+      const g = get();
+      const now = g.lastMs;
+      const r = answerPackTg(g.telegrams, g.state, no, kind, { cfg: g.cfg, nowMs: now, dayKey: dayKey(now, tzOffsetAt(now)) });
+      if ('error' in r) return r;
+      // новий баф "Зведення б'ється" поновлює тривалість, а не складається (FR-22)
+      const renew = r.effects.some((e) => e.source === 'pack_beats');
+      const kept = renew ? g.effects.filter((e) => e.source !== 'pack_beats') : g.effects;
+      set({ telegrams: r.tg, state: r.eco, effects: [...kept, ...r.effects] });
+      handleEvents(r.events, now);
+      resumeRaceIfFree(now);
+      return { ok: true };
     },
     openItem: (uid) => {
       const g = get();

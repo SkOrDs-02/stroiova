@@ -100,9 +100,11 @@ export const inspT = {
     door_plates: { title: 'Вирівняти таблички на дверях', meta: 'За рівнем очей комісії', short: 'Таблички', ok: 'вирівняно' },
     carafe_full: { title: 'Наповнити графин на столі наради', meta: 'Воду не пити', short: 'Графин', ok: 'повний' },
     kettles_hide: { title: 'Прибрати чайники з кабінетів', meta: 'У шафу, не під стіл', short: 'Чайники', ok: 'у шафі' },
+    summary_check: { title: 'Звірити зведення зі зведенням про зведення', meta: '', short: 'Зведення', ok: 'збігається', no: 'не збігається' },
+    summary_beats: { title: 'Зведення б\'ється', meta: 'Останню пачку закрито сумлінно', short: 'Остання пачка', ok: 'закрито сумлінно', no: 'не закрито' },
   } as Record<string, ItemText>,
   /** Що зробити, щоб пункт механіки став виконаним (boss.mech_no) */
-  mechTodo: { nakazy_open: 'відкрий «Накази по частині»' } as Record<string, string>,
+  mechTodo: (id: string, packNo: number | null): string => (id === 'summary_beats' ? (packNo != null ? `закрий Зведення № ${packNo} сумлінно` : 'закрий Зведення сумлінно') : id === 'nakazy_open' ? 'відкрий «Накази по частині»' : ''),
   // підсумкова рівня (011): boss-brief, insp-prep, insp-result
   boss2: {
     titleR2: 'Комісія командування. Підсумкова.',
@@ -115,6 +117,7 @@ export const inspT = {
     mechOk: 'Виконано на цю мить',
     mechNo: (todo: string) => `Ще ні: ${todo}`,
     passOrder: 'Наказ про переведення підписано. Наступна цифровізація - з переходом.',
+    passOrderHeld: 'Наказ про переведення підписано. Наступний рівень відкриється пізніше, перехід збережено.',
     retry: (t: string) => `Повторний приїзд через ${t}. Пункти, що вже є, комісія зарахує.`,
     offPassed: 'Підсумкова пройдена, перехід дозволено',
     offFailed: (hours: number) => `Повтор через ${hours} год`,

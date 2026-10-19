@@ -216,4 +216,29 @@ describe('справжні міграції', () => {
     expect(r.save.game.inspections.last).toMatchObject({ kind: 'regular', attempt: 1, exitUnlocked: false, passed: true });
     expect(r.save.game.settings).toEqual(d.game.settings);
   });
+
+  test('10 → 11 (011 етап 2): пачок ще не було - порожній стан доби й лічильника; вхідні лишаються', () => {
+    const d = draft({ schemaVersion: 10, savedAt: 5000 });
+    const { packs: _p, ...tgV10 } = d.game.telegrams;
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, telegrams: tgV10 } as never }) });
+    const r = loadSave(kv, { current: 11, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 10 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.telegrams.packs).toEqual({ day: null, seq: 0 });
+    expect(r.save.game.telegrams.inbox).toEqual(d.game.telegrams.inbox);
+  });
+
+  test('схема 11: телеграма пачки, зведена відповідь і запис курйозу пачки проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 11, savedAt: 5000 });
+    const item = { uid: 'tg_0049_fewer_meetings#1', id: 'tg_0049_fewer_meetings', kind: 'telegram', receivedAt: 100, status: 'archive', choiceId: 'diligent', answeredAt: 200, pack: { id: 'pack_01', no: 1, index: 1, summary: 'diligent' } };
+    const telegrams = { ...d.game.telegrams, inbox: [item], packs: { day: '2025-10-11', seq: 1 } };
+    const curio = { seq: 1, kind: 'pack', atMs: 300, status: 'diligent', pack: { packId: 'pack_01', no: 1, kind: 'diligent', uids: [item.uid] } };
+    const museum = { ...d.game.museum, curios: [curio], curioSeq: 1 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, telegrams, museum } as never }) });
+    const r = loadSave(kv, { current: 11, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.telegrams.inbox[0]).toMatchObject({ pack: { no: 1, summary: 'diligent' } });
+    expect(r.save.game.museum.curios[0]).toMatchObject({ kind: 'pack', pack: { packId: 'pack_01' } });
+  });
 });

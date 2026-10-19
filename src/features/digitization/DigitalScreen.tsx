@@ -5,7 +5,7 @@ import { useStore } from 'zustand';
 
 import { formatBig, formatCountdown, formatMult } from '@/economy/format';
 import { itemsFor } from '@/economy/game/state';
-import { finalDue, status } from '@/digitization/digitization';
+import { FINAL_LEVELS, finalDue, status } from '@/digitization/digitization';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, size, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
@@ -27,7 +27,8 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
   const cta = level >= 3 ? digitT.ctaR3 : level === 2 ? (st.isLast ? digitT.ctaToR3 : digitT.ctaR2) : st.isLast ? digitT.ctaLast : digitT.ctaR1;
   // 011 FR-11: підсумкова рівня - оголошена / чекає потоків / повтор / перехід дозволено
   const fin = s.inspections.active?.kind === 'final' ? s.inspections.active : null;
-  const waitFinal = level === 2 && !fin && finalDue(s.cfg, s.digit, level);
+  const hasFinalHere = FINAL_LEVELS.includes(level);
+  const waitFinal = hasFinalHere && !fin && finalDue(s.cfg, s.digit, level);
   return (
     <View style={styles.root} testID="digital">
       <View style={styles.head}>
@@ -98,14 +99,14 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
         </View>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} testID="digit-counter">{level >= 2 ? digitT.counterLvl(st.levelCount, total) : digitT.counterR1(st.levelCount)}</Text>
         {st.isLast && level < 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tag} testID="digit-last">{digitT.last}</Text> : null}
-        {level === 2 && fin ? (
+        {hasFinalHere && fin ? (
           <View style={styles.card} testID="digit-final">
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{(fin.attempt > 1 ? digitT.finalRetry : digitT.finalOn)(formatCountdown(Math.max(0, (fin.arrMs - s.lastMs) / 1000)))}</Text>
             <Button testID="digit-final-prep" variant="secondary" label={digitT.finalGo} onPress={s.openInspPrep} />
           </View>
         ) : null}
         {waitFinal ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="digit-final-wait">{digitT.finalWait}</Text> : null}
-        {level === 2 && st.isLast && next ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tag} testID="digit-exit-ok">{digitT.exitOk(next.name.toLowerCase())}</Text> : null}
+        {st.isLast && next ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tag} testID="digit-exit-ok">{digitT.exitOk(next.name.toLowerCase())}</Text> : null}
         <View style={styles.track} testID="digit-track">
           {track(level).map((x) => (
             <View key={x.key} style={[styles.step, x.state === digitT.trackState.now && styles.stepNow]}>
@@ -114,7 +115,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
             </View>
           ))}
         </View>
-        {level >= 3 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{digitT.nextLater}</Text> : null}
+        {level >= 3 && !st.isLast ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="digit-later">{digitT.nextLater}</Text> : null}
       </ScrollView>
       <View style={styles.foot}>
         <Button testID="digit-cta" label={cta} disabled={st.kind !== 'available'} onPress={onOpenConfirm} />

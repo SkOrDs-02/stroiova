@@ -207,7 +207,7 @@ describe('курйози (FR-21…FR-23, AC-13)', () => {
     const lost = { type: 'raceCurio' as const, id: 'race_0001', giftType: 'drone' as const, raceNo: 1, level: 1, steps: [{ unit: 'akty' as const, sec: 100 }], stepsDone: 2, stepsTotal: 4, marginSec: 5520, endMs: T + 2 };
     ms = curioFromRace(ms, lost);
     expect(ms.curios.map((c) => [c.seq, c.kind, c.status ?? null])).toEqual([[1, 'telegram', 'diligent'], [2, 'telegram', 'drawer'], [3, 'gift', null]]);
-    expect(curioSummary(ms)).toEqual({ total: 3, telegrams: 2, gifts: 1 });
+    expect(curioSummary(ms)).toEqual({ total: 3, telegrams: 2, gifts: 1, packs: 0 });
     expect(ms.curios[2]!.gift).toMatchObject({ raceNo: 1, stepsDone: 2, stepsTotal: 4, marginSec: 5520 });
   });
 
