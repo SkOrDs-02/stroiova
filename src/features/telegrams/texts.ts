@@ -37,6 +37,9 @@ export const t = {
   } as Record<string, string>,
   howReact: 'Як реагуємо?',
   kava: 'Начштабу «Кава»',
+  /** 014 FR-13 (st.sign): підпис звичайної телеграми; kava - живий підпис у № 112 */
+  signEom: 'Оператор ЕОМ № 1',
+  signKava: 'Начштабу «Кава»',
   isNew: 'новий варіант',
   // наслідки варіанта (артборд TgDetail): «Стройова ×0,5 на 1 год · +10 до репутації»
   slow: (unit: string, mult: string, hours: number) => `${unit} ${mult} на ${hoursText(hours)} год`,

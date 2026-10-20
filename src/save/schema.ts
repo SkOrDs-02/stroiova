@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 13;
+export const CURRENT_SCHEMA = 14;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -265,7 +265,7 @@ export const museumStateSchema = z.object({
   curios: z.array(
     z.object({
       seq: z.number().int().min(1),
-      kind: z.enum(['telegram', 'gift', 'pack', 'stack']),
+      kind: z.enum(['telegram', 'gift', 'pack', 'stack', 'story']),
       atMs: z.number(),
       telegramId: z.string().optional(),
       uid: z.string().optional(),
@@ -273,6 +273,7 @@ export const museumStateSchema = z.object({
       status: z.enum(['diligent', 'formal', 'drawer', 'special', 'info']).optional(),
       text: z.string().nullable().optional(),
       stack: z.object({ cm: z.number().int().nonnegative() }).optional(),
+      story: z.object({ beatId: z.string(), from: z.string(), title: z.string(), body: z.string() }).optional(),
       pack: z.object({ packId: z.string(), no: z.number().int().min(1), kind: z.enum(['diligent', 'formal_reply', 'drawer']), uids: z.array(z.string()) }).optional(),
       gift: z
         .object({
@@ -335,6 +336,17 @@ export const notificationsSchema = z.object({
 /** Лічильники особової справи (010 FR-26); схема 9. */
 export const statsSchema = z.object({ inspTotal: z.number().int().nonnegative(), inspPassed: z.number().int().nonnegative(), drones: z.number().int().nonnegative() });
 
+/** Сюжет і щоденник (014) */
+export const storyStateSchema = z.object({
+  delivered: z.record(z.string(), z.object({ at: z.number(), rev: z.number().int(), catchUp: z.boolean(), away: z.boolean() })),
+  skipped: z.array(z.string()),
+  fired: z.record(z.string(), z.object({ at: z.number(), away: z.boolean() })),
+  dispatched: z.record(z.string(), z.number()),
+  counters: z.object({ wins: z.record(z.string(), z.number().int()), gifts: z.record(z.string(), z.number().int()) }),
+  chars: z.record(z.string(), z.string()),
+  diary: z.object({ got: z.array(z.object({ id: z.string(), atMs: z.number(), day: z.number().int().positive() })), lastDay: z.string().nullable() }),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -357,6 +369,8 @@ export const gameSaveSchema = z.object({
   settings: settingsSchema,
   notifications: notificationsSchema,
   stats: statsSchema,
+  /** Сюжет і щоденник (014) */
+  story: storyStateSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

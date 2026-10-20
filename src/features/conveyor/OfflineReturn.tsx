@@ -30,6 +30,9 @@ export function OfflineReturn({ res, inspRows = [], onClaim, store }: { res: Off
               {res.cappedMs > 0 ? <Text style={styles.body}>{t.offStorage(formatDuration(res.storageMs / 1000), formatDuration(res.cappedMs / 1000))}</Text> : null}
             </>
           )}
+          {eco?.diaryToday ? (
+            <Text style={styles.body} testID="offline-diary">{eco.diaryToday}</Text>
+          ) : null}
           {inspRows.map((r) => (
             <View key={r.k} style={styles.row} testID="offline-insp">
               <Text style={[styles.body, styles.k, r.bad && styles.bad]}>{r.k}</Text>

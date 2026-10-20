@@ -210,7 +210,7 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
       if (!choice) continue;
       // черга чиститься й від уже отриманих id (FR-6)
       tg = { ...tg, queue: tg.queue.filter((q) => q !== choice.id && !tg.inbox.some((x) => x.id === q)) };
-      deliver(choice.id, 'telegram', at);
+      deliver(choice.id, choice.fromQueue && telegram(choice.id)?.kind === 'notice' ? 'notice' : 'telegram', at);
       continue;
     }
     const t = st.timer!;

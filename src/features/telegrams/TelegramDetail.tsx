@@ -5,6 +5,7 @@ import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { telegramOf } from '@/telegrams/effects';
+import type { Telegram } from '@/telegrams/types';
 import { repTier } from '@/telegrams/reputation';
 import { color, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
@@ -24,6 +25,13 @@ interface Props {
   onReputation?: () => void;
   /** Без «Назад», поки коуч кроку 8 веде до вибору */
   onBack?: () => void;
+}
+
+/** 014 FR-13: підпис телеграми; notice без явного `sign` - від персонажа, підпису немає */
+export function signOf(tel: Telegram): string | null {
+  const kind = tel.kind ?? 'standard';
+  const sign = tel.sign ?? (kind === 'standard' || kind === 'override' ? 'eom1' : null);
+  return sign === 'eom1' ? t.signEom : sign === 'kava' ? t.signKava : null;
 }
 
 export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onReputation, onBack }: Props) {
@@ -86,6 +94,7 @@ export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onRe
               ))}
             </>
           ) : null}
+          {signOf(tel) ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.sign} testID="tg-sign">{signOf(tel)}</Text> : null}
         </View>
         {answerable ? (
           <>
@@ -136,6 +145,7 @@ const styles = StyleSheet.create({
   no: { ...type('docMeta'), color: color.ink },
   stamp: { ...type('stampM'), color: color.stamp, borderWidth: 2, borderColor: color.stamp, paddingHorizontal: space[6], textTransform: 'uppercase' },
   meta: { ...type('docMeta'), color: color.ink2 },
+  sign: { ...type('docMeta'), color: color.ink2, textAlign: 'right', marginTop: space[8] },
   title: { ...type('h3'), color: color.ink, marginTop: space[4] },
   body: { ...type('docBody'), color: color.ink },
   row: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: color.paperLine },

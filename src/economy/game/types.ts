@@ -203,7 +203,9 @@ export type DomainEvent =
   // newValue: true/false -> on/off у tracking-plan; null (progress_reset) -> done; для progress_reset лічильники взято до стирання
   | { type: 'settingChange'; settingName: 'sound' | 'haptics' | 'notif_storage' | 'notif_telegrams' | 'notif_inspections' | 'notif_gifts' | 'notif_boosts' | 'analytics' | 'progress_reset'; newValue: boolean | null; digitizationCount?: number; playtimeSec?: number }
   | { type: 'pushPermissionRequest'; trigger: 'onboarding_session_end' | 'settings'; prePromptResult: 'accepted' | 'declined'; osResult: 'granted' | 'denied' | 'provisional' | 'not_shown' }
-  | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number };
+  | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number }
+  // 014: сюжет; аналітика етапу 5 (story_beat_deliver, diary_open)
+  | { type: 'storyBeatDeliver'; beatId: string; arc: string; carrier: string; beatOrder: number; delaySec: number; isCatchUp: boolean; isWhileAway: boolean };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */
 export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };

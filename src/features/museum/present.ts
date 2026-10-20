@@ -2,6 +2,7 @@
 import { gendered } from '@/features/onboarding/callsign';
 import type { OnboardingState } from '@/features/onboarding/steps';
 import { stackT } from '@/features/stack/texts';
+import { fromName } from '@/features/story/texts';
 import { fill } from '@/features/telegrams/present';
 import { t as tgT } from '@/features/telegrams/texts';
 import { raceT } from '@/features/race/texts';
@@ -99,6 +100,11 @@ function stackRow(e: CurioEntry): CurioRow {
   return { entry: e, num: muT.stackNum(hhmm(e.atMs)), status: muT.status.info, title: muT.stackTitle, meta: stackT.share(e.stack?.cm ?? 0) };
 }
 
+function storyRow(e: CurioEntry): CurioRow {
+  const st = e.story!;
+  return { entry: e, num: muT.storyNum(hhmm(e.atMs)), status: muT.status.info, title: st.title, meta: fromName(st.from) };
+}
+
 function giftRow(e: CurioEntry): CurioRow {
   const gft = e.gift!;
   return { entry: e, num: muT.actNum(gft.raceNo, hhmm(e.atMs)), status: muT.status.gift, title: raceT.lostTitle, meta: raceT.item[gft.type] };
@@ -116,7 +122,7 @@ export function curioGroups(ms: MuseumState, tg: TelegramState, gender: Onboardi
   const rows = visibleCurios(ms)
     .slice()
     .sort((a, b) => b.seq - a.seq)
-    .map((e) => (e.kind === 'gift' ? giftRow(e) : e.kind === 'pack' ? packRow(e) : e.kind === 'stack' ? stackRow(e) : tgRow(e, tg.inbox, gender)))
+    .map((e) => (e.kind === 'gift' ? giftRow(e) : e.kind === 'pack' ? packRow(e) : e.kind === 'stack' ? stackRow(e) : e.kind === 'story' ? storyRow(e) : tgRow(e, tg.inbox, gender)))
     .filter((r): r is CurioRow => r != null);
   const groups: CurioGroup[] = [];
   for (const r of rows) {

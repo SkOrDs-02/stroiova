@@ -50,6 +50,8 @@ import { StageConvert } from '@/features/convert/StageConvert';
 import { cvT, sedoT } from '@/features/convert/texts';
 import { convertInfo } from '@/economy/game/convert';
 import { StackTower } from '@/features/stack/StackTower';
+import { StoryCall } from '@/features/story/StoryCall';
+import { storyT } from '@/features/story/texts';
 import { CallOverlay } from '@/features/onboarding/CallOverlay';
 import { ClerkFirst } from '@/features/onboarding/ClerkFirst';
 import { ready } from '@/features/onboarding/steps';
@@ -111,6 +113,8 @@ function toastText(toast: Toast): string {
       return tgT.repToast(tgT.tier[toast.tier]);
     case 'exhibit':
       return muT.toast(titleOf(toast.no));
+    case 'story':
+      return storyT.toast(toast.from, toast.title, toast.body);
   }
 }
 
@@ -205,7 +209,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const tier = repTier(s.telegrams.reputation.value, s.cfg.params);
   // 006 FR-22: церемонія цифровізації (акт, наказ про переведення) показується, поки гравець її не закрив, і при запуску
   const ceremony = s.digit.ceremony;
-  const overlay = s.offline != null || s.clerkFirstOpen || view.kind !== 'main' || kombatAuto || meetingAuto || sedoAuto;
+  const storyCallOpen = s.storyCall != null;
+  const overlay = s.offline != null || s.clerkFirstOpen || storyCallOpen || view.kind !== 'main' || kombatAuto || meetingAuto || sedoAuto;
   const coachRow = !overlay && (rd === 'coachUpgrade' || rd === 'coachHire');
   const coachTab = !overlay && rd === 'coachTelegram';
   const coachOn = coachRow || coachTab;
@@ -236,14 +241,20 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // 007: розкриття журналів - після інших модалок; digit-result іде першим, level-up - після (FR-18, spec «Перехід рівня»)
   const viewFree = view.kind === 'main' || view.kind === 'list';
   const revealOpen =
-    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
+    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !storyCallOpen && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
 
   // 008: iap-success і starter-offer - після інших модалок і розкриття журналів (порядок «оцінка → журнал → оферта», 09)
   const calm =
-    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && nextReveal(s.museum) == null;
+    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && !storyCallOpen && nextReveal(s.museum) == null;
   const iapOpen = calm && s.busy == null && !onboarding && s.monetization.success.length > 0;
   // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
   const starterOpen = calm && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
+  // 014 FR-6: сюжет віддає кроки лише тоді, коли жодна модалка, церемонія чи результат не чекають черги
+  const storyFree = calm && !iapOpen && !starterOpen && o.step === 'done';
+  const storyMinute = Math.floor(now / 60_000);
+  useEffect(() => {
+    if (storyFree) store.getState().storyRun();
+  }, [store, storyFree, storyMinute, s.story]);
 
   const coachFor = (id: string) => {
     if (!coachOn) return undefined;
@@ -510,6 +521,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           }}
         />
       ) : null}
+      {storyCallOpen ? <StoryCall store={store} /> : null}
       {showCall ? (
         <CallOverlay
           onClaim={() => {
