@@ -90,7 +90,7 @@ export function declineScript(f: FinaleState): FinaleState {
   return f.startMs == null || f.done.script != null ? f : { ...f, scriptNs: f.scriptNs + 1 };
 }
 
-/** Розсилка вимкнена Y і ще не відновлена Дублем (FR-19): за розкладом телеграми не приходять */
+/** Розсилка вимкнена Y (FR-19): за розкладом телеграми не приходять; відновить її Дубль 1 (етап 2b, № 113) */
 export function mailingStopped(f: FinaleState): boolean {
   return f.yMs != null;
 }

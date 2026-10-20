@@ -3,6 +3,8 @@ import { bundledConfig } from '@/economy/config';
 import { newGame } from '@/economy/game/state';
 import { createConveyorStore } from '@/features/conveyor/store';
 import { onboardingDone } from '@/save/migrations';
+import { BEATS } from '@/story/content';
+import { telegram } from '@/telegrams/content';
 
 const T0 = new Date(2025, 9, 10, 12).getTime();
 const DAY = 86_400_000;
@@ -101,6 +103,44 @@ describe('фінал у сторі', () => {
     const aw = store.getState().awards.got;
     expect(aw.aw_finale).toBeDefined();
     expect(aw.aw_quiet_week).toBeDefined();
+  });
+
+  test('AC-13: записка Кави - не до Y і не того ж дня, а першої сесії наступної календарної доби (st_finale_01)', () => {
+    const store = game();
+    store.getState().tick(T0 + 60_000);
+    store.getState().finaleComplete('order');
+    // старт script записку не запускає
+    expect(store.getState().story.fired.st_finale_01).toBeUndefined();
+    store.getState().finaleComplete('script');
+    expect(store.getState().story.fired.st_finale_01).toBeDefined();
+    const y = store.getState().finale.yMs!;
+    const nextMidnight = new Date(new Date(y).getFullYear(), new Date(y).getMonth(), new Date(y).getDate() + 1).getTime();
+    store.setState({ storySession: { interrupting: 0, toasts: 0 }, story: { ...store.getState().story, skipped: [...store.getState().story.skipped, ...BEATS.filter((b) => b.arc !== 'finale').map((b) => b.id)] } });
+    store.getState().storyRun();
+    expect(store.getState().telegrams.inbox.some((x) => x.id === 'st_finale_01')).toBe(false);
+    store.setState({ lastMs: nextMidnight + 60_000 });
+    store.getState().storyRun();
+    expect(store.getState().telegrams.inbox.some((x) => x.id === 'st_finale_01')).toBe(true);
+  });
+
+  test('FR-22: у тиждень тиші щоденник веде пул quiet за порядком, після - звичайний', () => {
+    const store = game();
+    store.getState().tick(T0 + 60_000);
+    store.getState().finaleComplete('order');
+    store.getState().finaleComplete('script');
+    const day2 = T0 + DAY;
+    store.setState({ lastMs: day2, inspections: { ...store.getState().inspections, installMs: T0 - 3 * DAY } });
+    store.getState().away(T0, day2);
+    expect(store.getState().story.diary.got.at(-1)?.id).toBe('di_q_01');
+  });
+
+  test('контент: id і кроки сценарних № 108-111 у коді збігаються з schedule.trigger у JSON', () => {
+    const tg = (id: string) => telegram(id)!.schedule as { trigger?: { step?: string; on?: string } };
+    const at = (id: string) => `${tg(id).trigger?.step}:${tg(id).trigger?.on ?? 'start'}`;
+    expect(at('tg_0108_shutdown_order')).toBe('order:start');
+    expect(at('tg_0109_shutdown_yn')).toBe('script:start');
+    expect(at('tg_0110_mailing_stopped')).toBe('script:complete');
+    expect(at('tg_0111_last_book_delivered')).toBe('last_book:complete');
   });
 
   test('is_resumed: крок, на якому гру знайдено при запуску', () => {

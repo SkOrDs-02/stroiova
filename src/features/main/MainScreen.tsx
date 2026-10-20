@@ -284,7 +284,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // 013 FR-16: незавершений крок фіналу - банер на `main`; наказ і титри відкриваються самі, коли нічого не заважає
   const finStep = pendingAction(s.finale);
   const [finAuto, setFinAuto] = useState<string | null>(null);
-  const finAutoOpen = finStep != null && (finStep === 'order' || finStep === 'credits') && calm && !onboarding && view.kind === 'main' && finAuto !== finStep;
+  // наказ і титри відкриваються самі поверх усього (крайовий випадок: перевірка чи гонка під час конвертації № 6 стають у чергу після кроку)
+  const finAutoOpen = finStep != null && (finStep === 'order' || finStep === 'credits') && !onboarding && s.offline == null && view.kind === 'main' && finAuto !== finStep;
 
   // 016 FR-32: тости грамот чекають онбординг, церемонії й модалки; решта тостів іде перед ними у спільній черзі
   const awardsFree = calm && !iapOpen && !starterOpen && o.step === 'done';
@@ -576,27 +577,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           }}
         />
       ) : null}
-      {view.kind === 'fin-order' || (finAutoOpen && finStep === 'order') ? (
-        <FinaleOrder
-          store={store}
-          onClose={() => {
-            setFinAuto('order');
-            setView({ kind: 'main' });
-          }}
-        />
-      ) : null}
+      {view.kind === 'fin-order' ? <FinaleOrder store={store} onClose={() => setView({ kind: 'main' })} /> : null}
       {view.kind === 'fin-script' ? <FinaleShutdown store={store} onClose={() => setView({ kind: 'main' })} onNext={() => setView({ kind: 'last-book' })} /> : null}
       {view.kind === 'last-book' ? <LastBook store={store} onNext={() => setView({ kind: 'main' })} /> : null}
-      {view.kind === 'credits' || (finAutoOpen && finStep === 'credits') ? (
-        <Credits
-          store={store}
-          final
-          onClose={() => {
-            setFinAuto('credits');
-            setView({ kind: 'main' });
-          }}
-        />
-      ) : null}
+      {view.kind === 'credits' ? <Credits store={store} final onClose={() => setView({ kind: 'main' })} /> : null}
       {view.kind === 'convert' ? <StageConvert store={store} onClose={() => setView({ kind: 'main' })} /> : null}
       {view.kind === 'meeting' || meetingAuto ? (
         <KombatSheet
@@ -639,6 +623,25 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
       {revealOpen ? <JournalNew store={store} /> : null}
+      {finAutoOpen && finStep === 'order' ? (
+        <FinaleOrder
+          store={store}
+          onClose={() => {
+            setFinAuto('order');
+            setView({ kind: 'main' });
+          }}
+        />
+      ) : null}
+      {finAutoOpen && finStep === 'credits' ? (
+        <Credits
+          store={store}
+          final
+          onClose={() => {
+            setFinAuto('credits');
+            setView({ kind: 'main' });
+          }}
+        />
+      ) : null}
       {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} onAwards={() => setView({ kind: 'museum', seg: 'awards', source: 'profile' })} /> : null}
       {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => setView({ kind: 'shop' })} /> : null}
       {iapOpen ? <IapSuccess store={store} /> : null}

@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   root: { ...StyleSheet.absoluteFill, backgroundColor: color.bgDeep, padding: space[16], gap: space[12], justifyContent: 'center' },
   title: { ...type('h2'), color: color.text },
   pc: { backgroundColor: color.paper, borderRadius: radius[8], padding: space[12], gap: space[8] },
-  pcOff: { opacity: 0.6 },
+  pcOff: { backgroundColor: color.surface2 },
   sticker: { ...type('docMeta'), color: color.ink, alignSelf: 'flex-start', borderWidth: 1, borderColor: color.ink, paddingHorizontal: space[6] },
   screen: { backgroundColor: color.ink, borderRadius: radius[4], flexGrow: 0, minHeight: size.touchMin },
   screenBody: { padding: space[8], gap: space[2] },

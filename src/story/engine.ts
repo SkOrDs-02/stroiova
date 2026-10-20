@@ -30,7 +30,7 @@ function isLapsed(st: StoryState, beats: readonly Beat[], ctx: StoryCtx, id: str
 const DAY = 24 * HOUR;
 
 /** Затримка після тригера: години, або `next_day` - до першої миті наступної календарної доби за місцевим часом (013 FR-19) */
-function dueAt(fired: number, h: number | 'next_day' | undefined, tzOffsetMin = 0): number {
+export function dueAt(fired: number, h: number | 'next_day' | undefined, tzOffsetMin = 0): number {
   if (h === 'next_day') {
     const local = fired + tzOffsetMin * 60_000;
     return (Math.floor(local / DAY) + 1) * DAY - tzOffsetMin * 60_000;

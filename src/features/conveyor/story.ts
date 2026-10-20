@@ -3,6 +3,7 @@ import type { EconomyConfig, EconomyState, DomainEvent } from '@/economy/game/ty
 import type { OnboardingState } from '@/features/onboarding/steps';
 import type { DigitizationState } from '@/digitization/types';
 import type { InspectionState } from '@/inspections/types';
+import type { FinaleState } from '@/finale/finale';
 import { curioFromStory } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
 import { BEATS, DIARY } from '@/story/content';
@@ -32,6 +33,8 @@ export interface StoryHost {
   telegrams: TelegramState;
   museum: MuseumState;
   inspections: InspectionState;
+  /** Фінал: від Y до кінця тижня тиші щоденник веде пул `quiet` (013 FR-22) */
+  finale: FinaleState;
   story: StoryState;
   storySession: SessionBudget;
   storyCall: string | null;
@@ -70,7 +73,7 @@ export function toStoryEvent(e: DomainEvent, level: number): StoryEvent | null {
       return { type: 'telegram_answered', telegramId: e.telegramId, choiceKind: e.choiceKind };
     // 013: крок фіналу стартував; `script` тригерить записку наступної доби після завершення (st_finale_01)
     case 'finaleStepStart':
-      return { type: 'finale_step', step: e.step };
+      return e.step === 'script' ? null : { type: 'finale_step', step: e.step };
     case 'finaleStepComplete':
       return e.step === 'script' ? { type: 'finale_step', step: 'script' } : null;
     default:
@@ -168,7 +171,7 @@ export function syncAway(g: StoryHost, backAt: number): Patch | null {
 export function diaryStart(g: StoryHost, tz: number): Patch | null {
   if (g.onboarding.step !== 'done') return null;
   const install = g.inspections.installMs > 0 ? g.inspections.installMs : (g.telegrams.startMs ?? g.lastMs);
-  const r = diaryOnSessionStart(g.story, DIARY, g.state.level, install, g.lastMs, tz);
+  const r = diaryOnSessionStart(g.story, DIARY, g.state.level, install, g.lastMs, tz, g.finale.yMs != null && g.finale.done.quiet == null);
   if (r.st === g.story) return null;
   const text = r.line ? storyText(r.line.text, g.onboarding.gender, g.onboarding.callsign?.text ?? '') : null;
   return { story: r.st, diaryToday: text };

@@ -50,7 +50,7 @@ export function completeStep(g: FinaleHost, step: FinaleStep, now = g.lastMs): F
   const r = complete(g.finale, step, now);
   if (!r.changed) return null;
   const acc = { tg: g.telegrams, evs: [] as DomainEvent[] };
-  acc.evs.push({ type: 'finaleStepComplete', step, stepIndex: STEPS.indexOf(step) + 1, secSinceFinaleStart: secSinceStart(g.finale, now), isResumed: g.finaleBoot === step, declinedCount: g.finale.scriptNs });
+  acc.evs.push({ type: 'finaleStepComplete', step, stepIndex: STEPS.indexOf(step) + 1, secSinceFinaleStart: secSinceStart(g.finale, now), isResumed: g.finaleBoot === step, declinedCount: step === 'script' ? g.finale.scriptNs : 0 });
   const after = AT_COMPLETE[step];
   if (after) {
     const d = deliverScripted(acc.tg, after, now);
@@ -95,4 +95,3 @@ export function openLastBook(g: FinaleHost): FinalePatch | null {
   return { museum: r.ms, state: r.eco, events: [...g.events, ...r.events].slice(-40) };
 }
 
-export { current as currentStep };

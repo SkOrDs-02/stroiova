@@ -240,7 +240,7 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
       if (f) deliver(f.id, f.kind === 'notice' ? 'notice' : 'telegram', t.atMs);
     } else if (t.kind === 'fill') {
       eco = refuel(eco, ctx.cfg, t.atMs).state;
-    } else if (t.kind === 'inspRoll' && t.pct) {
+    } else if (t.kind === 'inspRoll' && t.pct && !ctx.muted) {
       const used = tg.unscheduledDays.filter((d) => d === dayKey(t.atMs, ctx.tzOffsetMin)).length;
       // шанс на мить кидка: рівень репутації й перша планова — як у FR-14…FR-16
       const pr = replyChance(tg, p, t.pct, false, eco.prestigePoints);
