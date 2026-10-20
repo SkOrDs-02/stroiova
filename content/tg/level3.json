@@ -1061,6 +1061,15 @@
         {"id": "formal_reply", "kind": "formal_reply", "title": "Підстава: доручення", "effects": {"durationMin": 1, "rep": -5, "inspPct": 15}, "result": "Чиє доручення - у підставі не сказано."},
         {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Наказ без підстави лежить. Діє."}
       ]
+    },
+    {
+      "id": "tg_notice_cat_inventory", "no": "5177", "level": 3, "kind": "notice",
+      "from": "bde_support", "to": "stroy_chief", "title": "Про інвентаризацію",
+      "body": "Інвентаризація, витяг з акта. Об’єкт на сейфі (сірий, 1 од.) не ідентифіковано. Інвентарного номера не має. Під час огляду не рухався. Повторний огляд - коли об’єкт прокинеться.",
+      "deadline": "std",
+      "schedule": {"scripted": true},
+      "review": true,
+      "choices": []
     }
   ]
 }

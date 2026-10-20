@@ -4,6 +4,8 @@ import { DEFAULTS } from '@/economy/core';
 import { newInspections } from '@/inspections/lifecycle';
 import { newDigitization } from '@/digitization/digitization';
 import { newStack } from '@/stack/stack';
+import { BEATS } from '@/story/content';
+import { storyForLevel } from '@/story/engine';
 import { newMonetization } from '@/monetization/monetization';
 import { newNotifications, newSettings } from '@/notifications/planner';
 import { newStats } from '@/profile/stats';
@@ -107,6 +109,11 @@ export const MIGRATIONS: Record<number, Migration> = {
         ceremony: d.ceremony ? { ...d.ceremony, cycleMs: 0, prevCycleMs: null } : null,
       },
     };
+  },
+  // 13 → 14 (014 етап 1): сюжет і щоденник. Кроки пройдених рівнів закрито, поточного рівня наздоганяють з лічильників (FR-29)
+  13: (game) => {
+    const g = game as { economy?: { level?: number } };
+    return { ...(game as object), story: storyForLevel(BEATS, g.economy?.level ?? 1) };
   },
 };
 

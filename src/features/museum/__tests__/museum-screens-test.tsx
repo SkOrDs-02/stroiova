@@ -1,5 +1,6 @@
 // 007 на екрані й у сторі: порожній музей (AC-1), розкриття після цифровізації (AC-2), фільтри (AC-10), шторка (AC-11),
 // крапка (AC-12), курйози (AC-13, AC-14), перевірка (AC-5, AC-6), вбивство посеред розкриття (AC-18), запис (AC-17).
+import { newStory } from '@/story/engine';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { bundledConfig } from '@/economy/config';
@@ -303,7 +304,8 @@ describe('перевірка й телеграма дають журнали', (
 
   test('AC-4: відповідь на телеграму 25 і лист без вибору наступного дня - journal-new з № 6 «Рідкісний», лічильник +1', async () => {
     const store = game([1, 2, 3]);
-    store.setState({ digit: { ...store.getState().digit, total: 1, counts: { '1': 1 } } });
+    // дзвінок сюжету на цифровізації 1 тут не потрібен: тест про журнал
+    store.setState({ digit: { ...store.getState().digit, total: 1, counts: { '1': 1 } }, story: { ...newStory(), skipped: ['st_who_writes_01'] } });
     const tg = store.getState().telegrams;
     store.setState({
       telegrams: {

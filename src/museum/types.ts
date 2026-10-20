@@ -29,7 +29,7 @@ export type CurioStatus = 'diligent' | 'formal' | 'drawer' | 'special' | 'info';
 export interface CurioEntry {
   /** Наскрізний номер запису (FR-22): не перевикористовується */
   seq: number;
-  kind: 'telegram' | 'gift' | 'pack' | 'stack';
+  kind: 'telegram' | 'gift' | 'pack' | 'stack' | 'story';
   atMs: number;
   telegramId?: string;
   uid?: string;
@@ -37,6 +37,8 @@ export interface CurioEntry {
   status?: CurioStatus;
   /** Текст запису з контенту (`effects.curio`) */
   text?: string | null;
+  /** Запис від сюжету (014): носій `curio` */
+  story?: { beatId: string; from: string; title: string; body: string };
   /** «Метр звітів» (012 FR-15): висота на мить запису, см */
   stack?: { cm: number };
   /** Одна відповідь пачкою Р3 = один запис (011 FR-24) */

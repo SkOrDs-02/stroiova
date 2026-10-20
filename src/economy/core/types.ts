@@ -136,6 +136,8 @@ export interface EconomyParams {
   /** Телеграм на добу після конвертації № 4 (013 FR-14) */
   slowPerDayLateMin: number;
   slowPerDayLateMax: number;
+  /** Сюжет (014 FR-7): тостів сюжетних кроків за сесію */
+  storyMaxToasts: number;
   naradaChance: number;
   naradaMult: number;
   naradaMinMin: number;

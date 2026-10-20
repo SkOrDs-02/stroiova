@@ -29,6 +29,9 @@ import { pushText } from '@/features/settings/pushText';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
 import { unavailableLinks } from '@/services/links';
 import { newStats, statsFromEvents, type Stats } from '@/profile/stats';
+import { newStory } from '@/story/engine';
+import type { SessionBudget, StoryState } from '@/story/types';
+import { applyEvents, diaryStart, newBudget, newEvents, run as storyRunPatch, syncAway } from './story';
 import { unavailableNotifications } from '@/services/notifications';
 import { unavailableAds } from '@/services/ads';
 import { unavailablePurchases } from '@/services/purchases';
@@ -63,7 +66,9 @@ export type Toast =
   | { kind: 'archive'; amount: number }
   | { kind: 'rep'; tier: 'low' | 'norm' | 'high' }
   /** Журнал, розкриття якого перервало вбивство застосунку (007 AC-18): тост з «Відкрити» */
-  | { kind: 'exhibit'; no: number };
+  | { kind: 'exhibit'; no: number }
+  /** Сюжетний тост (014, носій `event_toast`) */
+  | { kind: 'story'; from: string; title: string; body: string };
 
 /** Підписів за перший акт: 8 тапів × tapValue, на 8-му тапі (рішення 57). */
 export const ACT_TAPS = 8;
@@ -97,6 +102,14 @@ interface Store {
   /** Заплановані сповіщення й лічильник доби (010) */
   notifications: NotificationsState;
   stats: Stats;
+  /** Сюжет і щоденник (014) */
+  story: StoryState;
+  /** Перебивні кроки й тости цієї сесії (014 FR-7); лише в пам'яті */
+  storySession: SessionBudget;
+  /** Дзвінок сюжету на екрані: id кроку (014); лише в пам'яті */
+  storyCall: string | null;
+  /** Рядок щоденника першої сесії доби для `offline-return`; лише в пам'яті */
+  diaryToday: string | null;
   /** Анонімний ID встановлення (009): для «Про гру» й листа про видалення даних */
   installId: string;
   /** «Пізніше» на push-preprompt у цій сесії: не перепитуємо (010 FR-10); у запис не йде */
@@ -138,6 +151,10 @@ interface Store {
   /** Забрати довідку; `doubled` - ×2 за ролик чи «Забрати» (008 FR-4); false - ліміт ×2 на добу вичерпано */
   claim: (doubled?: boolean) => boolean;
   clearToast: () => void;
+  /** Віддати готові кроки сюжету (014): лише в безпечний момент (FR-6) */
+  storyRun: () => void;
+  /** Дзвінок сюжету закрито */
+  closeStoryCall: () => void;
   showToast: (toast: Toast) => void;
   /** Закрити крок онбордингу (002 FR-1); false — крок не поточний */
   onbComplete: (step: StepNo, extra?: CompleteExtra) => boolean;
@@ -268,12 +285,13 @@ export interface Initial {
   settings?: Settings;
   notifications?: NotificationsState;
   stats?: Stats;
+  story?: StoryState;
   installId?: string;
   services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService }>;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
-  return create<Store>((set, get) => {
+  const store = create<Store>((set, get) => {
   /** Доменні події телеграм → ефекти, тости, журнал подій (003). */
   const handleEvents = (evs: DomainEvent[], nowMs: number) => {
     if (!evs.length) return;
@@ -561,6 +579,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     settings: init?.settings ?? newSettings(),
     notifications: init?.notifications ?? newNotifications(),
     stats: init?.stats ?? newStats(),
+    story: init?.story ?? newStory(),
+    storySession: newBudget(),
+    storyCall: null,
+    diaryToday: null,
     installId: init?.installId ?? '',
     pushDeclined: false,
     busy: null,
@@ -647,9 +669,12 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       awayInner(leftAt, backAt);
       // 003: телеграми, що прийшли без гравця (FR-3); нова сесія — шанс «Комбата шукають» (FR-29)
       runTelegrams(leftAt, Math.max(leftAt, backAt), true);
+      // 014 FR-8: що спрацювало без гравця, показується після довідки
+      const sa = syncAway(get(), backAt);
+      if (sa) set(sa);
       resumeRaceIfFree(backAt);
       if (isNewSession(leftAt, backAt)) {
-        set({ sessionLines: { count: 0, byUid: {} }, digitHintShown: false });
+        set({ sessionLines: { count: 0, byUid: {} }, digitHintShown: false, storySession: newBudget() });
         const g = get();
         // 013 FR-10: після конвертації № 1 «Комбата шукають» зникає з гри назавжди
         const k = g.state.digital.length >= 1 ? { tg: g.telegrams, effect: null, events: [] as DomainEvent[] } : onSessionStart(g.telegrams, g.cfg, backAt, tzOffsetAt(backAt), false);
@@ -668,6 +693,15 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         if (gd.state.digital.length > 0) {
           const sd = sedoOnSessionStart(gd.telegrams, gd.cfg, gd.state, backAt, tzOffsetAt(backAt));
           set({ telegrams: sd.tg, ...(sd.effect ? { effects: [...gd.effects, sd.effect] } : {}), ...(sd.events.length ? { events: [...gd.events, ...sd.events].slice(-40) } : {}) });
+        }
+        // 014 FR-24: рядок щоденника першої сесії доби - у довідці, а без довідки тостом
+        const dp = diaryStart(get(), tzOffsetAt(backAt));
+        if (dp) {
+          set(dp);
+          if (dp.diaryToday && get().offline == null) {
+            get().showToast({ kind: 'text', text: dp.diaryToday });
+            set({ diaryToday: null });
+          }
         }
         // 012 FR-13: нова сесія - стос з нуля; зарахований офлайн додає висоту одразу
         const gs = get();
@@ -703,9 +737,14 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const claimEv: DomainEvent = { type: 'offlineIncomeClaim', isDoubled: doubled, doubleSource: doubled ? (state.hasNoAds ? 'no_ads_pass' : 'ad') : 'none', offlineDoublesToday: r.state.offlineDoubles.count };
       // 008 FR-19: результат перевірки побачено в довідці - час для стартової пропозиції
       const insp = last?.offline && !last.seen;
-      set({ state: r.state, offline: null, offlineBackAt: null, events: [...get().events, ...(res.earned > 0 ? [claimEv] : [])].slice(-40), ...(insp ? { monetization: offerDue(get().monetization) } : {}), ...seen });
+      set({ diaryToday: null, state: r.state, offline: null, offlineBackAt: null, events: [...get().events, ...(res.earned > 0 ? [claimEv] : [])].slice(-40), ...(insp ? { monetization: offerDue(get().monetization) } : {}), ...seen });
       return true;
     },
+    storyRun: () => {
+      const patch = storyRunPatch(get());
+      if (patch) set(patch);
+    },
+    closeStoryCall: () => set({ storyCall: null }),
     clearToast: () => {
       const [next, ...rest] = get().toastQueue;
       set({ toast: next ?? null, toastQueue: rest });
@@ -1091,6 +1130,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         monetization: { ...g.monetization, starterGranted: false, offer: 'wait', success: [], inspAdId: null },
         notifications: newNotifications(),
         stats: newStats(),
+        story: newStory(),
+        storySession: newBudget(),
+        storyCall: null,
+        diaryToday: null,
         sessionLines: { count: 0, byUid: {} },
         actTaps: 0,
         clerkFirstOpen: false,
@@ -1132,6 +1175,13 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     },
   };
   });
+  // 014: події гри -> тригери сюжету (без правок у кожному місці, що пише в `events`)
+  store.subscribe((s, prev) => {
+    if (s.events === prev.events) return;
+    const patch = applyEvents(s, newEvents(prev.events, s.events));
+    if (patch) store.setState(patch);
+  });
+  return store;
 }
 
 export type ConveyorStore = ReturnType<typeof createConveyorStore>;
@@ -1152,7 +1202,8 @@ export function gameSave(store: ConveyorStore): {
   settings: Settings;
   notifications: NotificationsState;
   stats: Stats;
+  story: StoryState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats, story } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats, story };
 }

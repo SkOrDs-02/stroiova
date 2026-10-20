@@ -8,12 +8,13 @@ import { AboutScreen } from './AboutScreen';
 import { FundReportsScreen } from './FundReportsScreen';
 import { LicensesScreen } from './LicensesScreen';
 import { MenuSheet } from './MenuSheet';
+import { DiaryScreen } from '@/features/story/DiaryScreen';
 import { ProfileScreen } from './ProfileScreen';
 import { PushPreprompt } from './PushPreprompt';
 import { ResetConfirm } from './ResetConfirm';
 import { SettingsScreen } from './SettingsScreen';
 
-type Page = 'menu' | 'profile' | 'settings' | 'about' | 'funds' | 'licenses';
+type Page = 'menu' | 'profile' | 'diary' | 'settings' | 'about' | 'funds' | 'licenses';
 
 export function MenuHost({ store, insetTop, onClose, onCurios }: { store: ConveyorStore; insetTop: number; onClose: () => void; onCurios: () => void }) {
   const [page, setPage] = useState<Page>('menu');
@@ -25,7 +26,8 @@ export function MenuHost({ store, insetTop, onClose, onCurios }: { store: Convey
   return (
     <>
       {page === 'menu' ? <MenuSheet store={store} onClose={onClose} onProfile={() => setPage('profile')} onCurios={onCurios} onSettings={() => setPage('settings')} onAbout={() => setPage('about')} /> : null}
-      {page === 'profile' ? <ProfileScreen store={store} insetTop={insetTop} onBack={toMenu} /> : null}
+      {page === 'profile' ? <ProfileScreen store={store} insetTop={insetTop} onBack={toMenu} onDiary={() => setPage('diary')} /> : null}
+      {page === 'diary' ? <DiaryScreen store={store} insetTop={insetTop} onBack={() => setPage('profile')} /> : null}
       {page === 'settings' ? (
         <SettingsScreen
           store={store}

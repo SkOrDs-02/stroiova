@@ -235,6 +235,11 @@ export function curioFromStack(ms: MuseumState, ev: Extract<DomainEvent, { type:
   return push(ms, { kind: 'stack', atMs, stack: { cm: ev.cm }, status: 'info' });
 }
 
+/** Запис від сюжету (014, носій `curio`) */
+export function curioFromStory(ms: MuseumState, story: NonNullable<CurioEntry['story']>, atMs: number): MuseumState {
+  return push(ms, { kind: 'story', atMs, story, status: 'info' });
+}
+
 /** Програна гонка: запис про подарунок, списаний раніше, ніж поставлений на облік (FR-21) */
 export function curioFromRace(ms: MuseumState, ev: Extract<DomainEvent, { type: 'raceCurio' }>): MuseumState {
   return push(ms, {
@@ -246,7 +251,7 @@ export function curioFromRace(ms: MuseumState, ev: Extract<DomainEvent, { type: 
 
 /** Записи, які видно: телеграму, вилучену оновленням контенту, ховаємо зі списку й підсумку (крайовий випадок spec) */
 export function visibleCurios(ms: MuseumState): CurioEntry[] {
-  return ms.curios.filter((c) => c.kind === 'gift' || c.kind === 'stack' || (c.kind === 'pack' && c.pack != null && packDef(c.pack.packId) != null) || (c.telegramId != null && telegram(c.telegramId) != null));
+  return ms.curios.filter((c) => c.kind === 'gift' || c.kind === 'stack' || c.kind === 'story' || (c.kind === 'pack' && c.pack != null && packDef(c.pack.packId) != null) || (c.telegramId != null && telegram(c.telegramId) != null));
 }
 
 export function curioSummary(ms: MuseumState): { total: number; telegrams: number; gifts: number; packs: number; stacks: number } {

@@ -58,6 +58,8 @@ export interface Telegram {
   level?: number;
   kind?: 'standard' | 'override' | 'notice' | 'event';
   docType?: 'telegram' | 'message';
+  /** Підпис внизу (014 FR-13): за замовчуванням «Оператор ЕОМ № 1» у звичайних; `auto` - без особи */
+  sign?: 'eom1' | 'kava' | 'auto';
   stamp?: string;
   kicker?: string;
   from?: string;
