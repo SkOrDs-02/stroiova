@@ -1,21 +1,34 @@
 // journal-detail (007 FR-17): шторка експоната - знайдений чи ні. «Поділитися» - етап 2 (рішення 75).
+import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { journal } from '@/museum/journals';
+import { bonusText, journal, seriesOf } from '@/museum/journals';
 import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
-import { COVER_COLOR, ddmmyyyy, flavorOf, hintOf, RARITY_COLOR } from './present';
+import { bonusLevel, COVER_COLOR, ddmmyyyy, flavorOf, hintOf, RARITY_COLOR } from './present';
 import { muT } from './texts';
 
 export function JournalDetail({ store, no, onClose }: { store: ConveyorStore; no: number; onClose: () => void }) {
   const s = useStore(store);
   const j = journal(no);
-  if (!j) return null;
   const owned = s.museum.owned.find((o) => o.no === no) ?? null;
+  // 016 FR-19: лічильник «journal_details_read» - шторка знайденого журналу, кожен журнал раз
+  const found = owned != null;
+  const jid = j?.id;
+  useEffect(() => {
+    if (found && jid) store.getState().awardsUi('journal-detail', { is_found: true, journal_id: jid });
+  }, [found, jid, store]);
+  if (!j) return null;
+  const se = seriesOf(no);
+  const seriesHave = se ? se.journals.filter((n) => s.museum.owned.some((o) => o.no === n)).length : 0;
+  const bLevel = bonusLevel(j, s.cfg.params);
+  // № 21 діє лише на цифрових ланках: доки жодної немає, бонус «чекає» (016 FR-11); решта - від рівня, де з'являється ціль
+  const forDigital = (j.bonus.target as unknown[])[0] === 'digital_stages';
+  const later = owned && (forDigital ? s.state.digital.length === 0 : bLevel > s.state.level) ? s.cfg.params.levels[bLevel - 1]?.name : null;
   const sub = owned ? `${muT.category[j.category]}${j.rarity === 'legendary' ? ` · ${muT.detailSeries}` : ''}` : muT.slotNotFound;
   return (
     <View style={styles.scrim} testID="journal-detail">
@@ -23,6 +36,7 @@ export function JournalDetail({ store, no, onClose }: { store: ConveyorStore; no
         <ScrollView contentContainerStyle={styles.scroll}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2} accessibilityRole="header">{muT.detailTitle(no)}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{sub}</Text>
+          {se ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="jd-series">{muT.detailSeriesOf(se.title, seriesHave, se.journals.length)}</Text> : null}
           {owned ? (
             <>
               <View style={[styles.cover, { backgroundColor: COVER_COLOR[j.cover] }, j.rarity === 'legendary' && styles.legend]}>
@@ -33,7 +47,8 @@ export function JournalDetail({ store, no, onClose }: { store: ConveyorStore; no
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4} testID="jd-title">{j.title}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.rarity, { color: RARITY_COLOR[j.rarity] }]}>{muT.rarity[j.rarity]}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{muT.bonusLabel}</Text>
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body} testID="jd-bonus">{j.bonus.text}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body} testID="jd-bonus">{bonusText(j, s.cfg.params)}</Text>
+              {later ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="jd-later">{muT.bonusLater(later)}</Text> : null}
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.quote}>{flavorOf(j, s.onboarding)}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4}>{muT.history}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>{j.history}</Text>

@@ -4,50 +4,65 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { count, seriesDone } from '@/museum/museum';
-import { MUSEUM_SIZE } from '@/museum/journals';
+import { complete, count, seriesDone } from '@/museum/museum';
+import { bonusText, MUSEUM_SIZE } from '@/museum/journals';
 import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
 import { ArchiveSheets } from '@/features/story/ArchiveSheets';
+import { AwardsScreen } from '@/features/awards/AwardsScreen';
+import { awT } from '@/features/awards/texts';
+import { unseen as unseenAwards } from '@/awards/awards';
 
 import { CuriosList } from './CuriosScreen';
 import { CurioDetail } from './CurioDetail';
 import { JournalDetail } from './JournalDetail';
-import { COVER_COLOR, RARITY_COLOR, slots, type Filter, type Slot } from './present';
+import { COVER_COLOR, RARITY_COLOR, sections, slots, type Filter, type Slot } from './present';
 import { muT } from './texts';
 
-type Seg = 'journals' | 'curios';
+type Seg = 'journals' | 'curios' | 'awards';
 type Sheet = { kind: 'journal'; no: number } | { kind: 'curio'; seq: number } | { kind: 'archive' } | null;
 
 const FILTERS: Filter[] = ['all', 'property', 'personnel'];
 
-export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journals' }: { store: ConveyorStore; onToDigital: () => void; insetTop: number; initialSeg?: Seg }) {
+export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journals', initialAward = null, awardsSource = 'segment' }: { store: ConveyorStore; onToDigital: () => void; insetTop: number; initialSeg?: Seg; initialAward?: string | null; awardsSource?: 'segment' | 'award_toast' | 'profile' }) {
   const s = useStore(store);
   const [seg, setSeg] = useState<Seg>(initialSeg);
   // 010 FR-30: бейдж «нове» в меню гасне, коли гравець побачив список записів
   useEffect(() => {
     if (seg === 'curios') store.getState().markCuriosSeen();
   }, [seg, store, s.museum.curioSeq]);
+  // 016 FR-29: показ сегмента «Грамоти» позначає всі грамоти переглянутими; крапка на сегменті, поки є нові
+  const awardsNew = unseenAwards(s.awards).length > 0;
+  useEffect(() => {
+    if (seg === 'awards') // перший показ з тоста чи профілю несе своє джерело, далі - тап по сегменту
+      store.getState().openAwards(seg === initialSeg ? awardsSource : 'segment');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seg, store]);
   const [filter, setFilter] = useState<Filter>('all');
   const [sheet, setSheet] = useState<Sheet>(null);
   const n = count(s.museum);
   const done = seriesDone(s.museum);
   const list = slots(s.museum, filter);
+  const full = complete(s.museum);
+  const secs = sections(s.museum, s.state.level, s.cfg.params.levels.map((l) => l.name), s.cfg.params);
   return (
     <View style={styles.root} testID="museum">
       <View style={[styles.head, { paddingTop: insetTop }]}>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{muT.screen}</Text>
         <View style={styles.segs} accessibilityRole="tablist">
-          {(['journals', 'curios'] as Seg[]).map((k) => (
+          {(['journals', 'curios', 'awards'] as Seg[]).map((k) => (
             <Pressable key={k} testID={`mu-seg-${k}`} accessibilityRole="tab" accessibilityState={{ selected: seg === k }} onPress={() => setSeg(k)} style={[styles.seg, seg === k && styles.segOn]}>
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.segText, seg === k && styles.segTextOn]}>{k === 'journals' ? muT.segJournals : muT.segCurios}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.segText, seg === k && styles.segTextOn]}>{k === 'journals' ? muT.segJournals : k === 'curios' ? muT.segCurios : awT.seg}</Text>
+              {k === 'awards' && awardsNew && seg !== 'awards' ? <View style={styles.dot} testID="mu-seg-awards-dot" accessibilityLabel={muT.newDot} /> : null}
             </Pressable>
           ))}
         </View>
       </View>
-      {seg === 'curios' ? (
+      {seg === 'awards' ? (
+        <AwardsScreen store={store} initialAward={initialAward} />
+      ) : seg === 'curios' ? (
         <CuriosList store={store} onOpen={(seq) => setSheet({ kind: 'curio', seq })} onArchive={() => setSheet({ kind: 'archive' })} />
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -58,7 +73,12 @@ export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journ
               <View key={i} testID={i < n ? 'mu-pip-on' : 'mu-pip-off'} style={[styles.pip, i < n && styles.pipOn]} />
             ))}
           </View>
-          {done ? (
+          {full ? (
+            <View style={styles.banner} testID="mu-full">
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.bannerTitle}>{muT.completeTitle}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>{muT.completeBody}</Text>
+            </View>
+          ) : done ? (
             <View style={styles.banner} testID="mu-done">
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.bannerTitle}>{muT.doneTitle}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>{`${muT.doneBody} ${muT.doneMult}`}</Text>
@@ -85,10 +105,26 @@ export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journ
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>{muT.noneBody}</Text>
               <Button testID="mu-none-cta" label={muT.noneCta} variant="secondary" onPress={() => setFilter('all')} />
             </View>
+          ) : filter === 'all' ? (
+            secs.map((sec) => (
+              <View key={sec.seriesId} style={styles.section} testID={`mu-sec-${sec.no}`}>
+                <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.secTitle} accessibilityRole="header">{muT.sectionTitle(sec.title, sec.owned, sec.total)}</Text>
+                {sec.done ? (
+                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.secDone} testID={`mu-sec-done-${sec.no}`}>{muT.seriesDone(sec.bonus)}</Text>
+                ) : sec.locked ? (
+                  <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID={`mu-sec-locked-${sec.no}`}>{muT.seriesLocked(sec.levelName)}</Text>
+                ) : null}
+                <View style={styles.grid}>
+                  {sec.slots.map((sl) => (
+                    <SlotCard key={sl.no} slot={sl} params={s.cfg.params} onPress={() => setSheet({ kind: 'journal', no: sl.no })} />
+                  ))}
+                </View>
+              </View>
+            ))
           ) : (
             <View style={styles.grid}>
               {list.map((sl) => (
-                <SlotCard key={sl.no} slot={sl} onPress={() => setSheet({ kind: 'journal', no: sl.no })} />
+                <SlotCard key={sl.no} slot={sl} params={s.cfg.params} onPress={() => setSheet({ kind: 'journal', no: sl.no })} />
               ))}
             </View>
           )}
@@ -101,10 +137,10 @@ export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journ
   );
 }
 
-function SlotCard({ slot, onPress }: { slot: Slot; onPress: () => void }) {
+function SlotCard({ slot, params, onPress }: { slot: Slot; params: object; onPress: () => void }) {
   const j = slot.journal;
   const found = slot.owned != null;
-  const label = found ? `${j.title}. ${muT.rarity[j.rarity]}. ${j.bonus.text}` : `${muT.slotUnknown}. ${muT.slotNotFound}. ${j.sourceText}`;
+  const label = found ? `${j.title}. ${muT.rarity[j.rarity]}. ${bonusText(j, params)}` : `${muT.slotUnknown}. ${muT.slotNotFound}. ${j.sourceText}`;
   return (
     <Pressable testID={`slot-${slot.no}`} accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={styles.slot}>
       <View style={[styles.cover, { backgroundColor: found ? COVER_COLOR[j.cover] : color.surface2 }, found && j.rarity === 'legendary' && styles.legend]}>
@@ -121,7 +157,7 @@ function SlotCard({ slot, onPress }: { slot: Slot; onPress: () => void }) {
       {found ? (
         <>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.rarity, { color: RARITY_COLOR[j.rarity] }]}>{muT.rarity[j.rarity]}</Text>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.bonus}>{j.bonus.text}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.bonus}>{bonusText(j, params)}</Text>
         </>
       ) : (
         <>
@@ -135,10 +171,14 @@ function SlotCard({ slot, onPress }: { slot: Slot; onPress: () => void }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: color.bg },
+  section: { gap: space[8] },
+  secTitle: { ...type('h4'), color: color.text },
+  secDone: { ...type('label'), color: color.accent },
   head: { paddingHorizontal: space[16], paddingBottom: space[8], gap: space[8], backgroundColor: color.bgDeep },
   title: { ...type('h2'), color: color.text },
   segs: { flexDirection: 'row', gap: space[8] },
   seg: { flex: 1, minHeight: size.touchMin, borderRadius: radius[6], borderWidth: 1, borderColor: color.borderStrong, alignItems: 'center', justifyContent: 'center' },
+  dot: { position: 'absolute', top: space[4], right: space[8], width: space[8], height: space[8], borderRadius: radius.pill, backgroundColor: color.accent },
   segOn: { backgroundColor: color.surface, borderColor: color.accent },
   segText: { ...type('body'), color: color.muted },
   segTextOn: { color: color.accent },

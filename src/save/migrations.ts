@@ -10,6 +10,7 @@ import { newMonetization } from '@/monetization/monetization';
 import { newNotifications, newSettings } from '@/notifications/planner';
 import { newStats } from '@/profile/stats';
 import { newMuseum } from '@/museum/museum';
+import { newAwards } from '@/awards/awards';
 import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
 
@@ -120,6 +121,8 @@ export const MIGRATIONS: Record<number, Migration> = {
     const g = game as { story?: object };
     return { ...(game as object), story: { ...(g.story ?? {}), sheets: {}, bosses: [] } };
   },
+  // 15 → 16 (016 етап 2): грамоти; лічильники з нуля, умови над ними перевірить запуск (FR-23, FR-45)
+  15: (game) => ({ ...(game as object), awards: (game as { awards?: object }).awards ?? newAwards() }),
 };
 
 /** Налаштування й сповіщення схеми 9. */

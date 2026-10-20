@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { capAt } from '@/economy/core';
 import { formatBig, formatDuration, formatRate, formatTenths } from '@/economy/format';
-import { shareTenths, zpzGainTenths, zpzInfo } from '@/economy/game/income';
+import { shareTenths, unitMult, zpzGainTenths, zpzInfo } from '@/economy/game/income';
 import { quote } from '@/economy/game/purchase';
 import type { BuyMode, EconomyConfig, EconomyState, Effect, UnitDef, UnitRef } from '@/economy/game/types';
 import { color, radius, size, space, typeScale } from '@/theme';
@@ -42,7 +42,7 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
   const q = quote(state, cfg, unit, mode, nowMs, effects);
   // Р4: «Звіти про звіти» не мають власного виробітку - показуємо частку й виробіток наживо (012 FR-12)
   const zpz = def.share ? zpzInfo(state, cfg, nowMs, effects) : null;
-  const rate = zpz ? zpz.rate : capAt(def, level, cfg.params) * (state.museum.unit[def.id] ?? 1);
+  const rate = zpz ? zpz.rate : capAt(def, level, cfg.params) * unitMult(state, def.id);
   // приріст за покупку (режим ×1/×10/до віхи) і межа s_max/(1+s_max) - з тієї ж формули, що й дохід (012 FR-12)
   const zpzNext = zpz && level > 0 ? zpzGainTenths(state, cfg, nowMs, effects, q.levels) : 0;
   const zpzMax = Math.floor((cfg.params.zpz.shareMax / (1 + cfg.params.zpz.shareMax)) * 1000 + 1e-9);

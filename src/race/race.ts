@@ -21,6 +21,10 @@ export interface Journals {
   j6: boolean;
   j7: boolean;
   j8: boolean;
+  /** 016: множник кроку «Казначейство» від № 14 (разом із № 6); 1 без журналу */
+  kazna?: number;
+  /** 016: множник служби подарунка від № 20; 1 без журналу */
+  service?: number;
 }
 export const NO_JOURNALS: Journals = { j6: false, j7: false, j8: false };
 
@@ -33,7 +37,7 @@ export function routeFor(type: GiftType, level: number, cfg: EconomyConfig, j: J
   // Р2 додає крок «Казначейство», Р3 - «Нарада», Р4 - «Доповідь» тієї самої тривалості (011 ВП-8, рішення 94; 012 ВП-7)
   const hours = [...p.gifts[type].steps, ...(level >= 2 ? [p.giftL2StepH] : []), ...(level >= 3 ? [p.giftL2StepH] : []), ...(level >= 4 ? [p.giftL2StepH] : [])];
   const units: RouteUnit[] = [...ROUTE, ...(level >= 2 ? ['kazna' as const] : []), ...(level >= 3 ? ['narada' as const] : []), ...(level >= 4 ? ['dopovid' as const] : [])];
-  return hours.map((h, i) => ({ unit: units[i]!, sec: Math.round(h * 3600 * k6 * (units[i] === 'fin' ? k7 : 1)) }));
+  return hours.map((h, i) => ({ unit: units[i]!, sec: Math.round(h * 3600 * k6 * (units[i] === 'fin' ? k7 : 1) * (units[i] === 'kazna' ? j.kazna ?? 1 : 1)) }));
 }
 
 export interface RaceView {
@@ -78,7 +82,7 @@ function start(s0: RaceState, eco: EconomyState, cfg: EconomyConfig, atMs: numbe
     type,
     level: eco.level,
     startMs: atMs,
-    svcEndMs: atMs + p.gifts[type].serviceH * HOUR,
+    svcEndMs: atMs + p.gifts[type].serviceH * (j.service ?? 1) * HOUR,
     steps,
     actTotalSec: total,
     actEndMs: atMs + total * 1000,
@@ -87,7 +91,7 @@ function start(s0: RaceState, eco: EconomyState, cfg: EconomyConfig, atMs: numbe
     sped: [],
     seen: false,
   };
-  const resourceSec = p.gifts[type].serviceH * 3600;
+  const resourceSec = Math.round(p.gifts[type].serviceH * (j.service ?? 1) * 3600);
   return {
     s: { ...s0, giftIdx: s0.giftIdx + 1, lastGiftDayKey: dayKey(atMs, tz), active: race },
     // рішення 10: папір від подарунка в мить приходу, хоч би який результат
@@ -117,7 +121,7 @@ function finish(s0: RaceState, cfg: EconomyConfig, offline: boolean): { s: RaceS
     const boostType = g.fuel ? 'generator_fuel_hold' : r.type === 'drone' ? 'drone_x2' : 'shovels_x1_5';
     events.push({ type: 'boostActivate', boostType, mult: g.fuel ? p.fuelBonus : g.mult, durationSec: marginSec });
   }
-  events.unshift({ type: 'raceFinish', id: r.id, giftType: r.type, result: won ? 'success' : 'fail', marginSec, speedups, offline });
+  events.unshift({ type: 'raceFinish', id: r.id, giftType: r.type, result: won ? 'success' : 'fail', marginSec, speedups, offline, level: r.level });
   const last: RaceOutcome = {
     id: r.id,
     no: r.no,

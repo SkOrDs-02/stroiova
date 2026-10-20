@@ -4,7 +4,7 @@ import type { EconomyConfig, EconomyState } from '@/economy/game/types';
 import { gendered } from '@/features/onboarding/callsign';
 import type { Gender } from '@/features/onboarding/steps';
 import { cvT } from '@/features/convert/texts';
-import { canChoose, paperCost } from '@/telegrams/effects';
+import { canChoose, cutHours, paperCost } from '@/telegrams/effects';
 import { BRIEF_ID } from '@/telegrams/events';
 import { replyChance } from '@/telegrams/reputation';
 import type { Choice, InboxItem, Telegram, TelegramState } from '@/telegrams/types';
@@ -46,7 +46,7 @@ export function choiceView(c: Choice, tg: TelegramState, eco: EconomyState, cfg:
   for (const s of e.slow ?? []) {
     // 013 FR-9: на цифровій ланці сповільнення немає
     if (eco.digital.includes(s.target)) parts.push(cvT.immuneNote);
-    else parts.push(t.slow(short(unitName(cfg, s.target)), formatMult(s.mult), s.hours));
+    else parts.push(t.slow(short(unitName(cfg, s.target)), formatMult(s.mult), cutHours(s.hours, eco)));
   }
   const shield = !!e.digitalShield && eco.prestigePoints >= 1;
   if (shield) parts.push(t.shield);

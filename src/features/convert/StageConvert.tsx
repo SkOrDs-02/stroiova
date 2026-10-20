@@ -6,6 +6,7 @@ import { useStore } from 'zustand';
 import { capAt } from '@/economy/core';
 import { formatBig, formatRate } from '@/economy/format';
 import { convertInfo, convertPrice } from '@/economy/game/convert';
+import { unitMult } from '@/economy/game/income';
 import { itemsFor } from '@/economy/game/state';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, space } from '@/theme';
@@ -33,7 +34,7 @@ export function StageConvert({ store, onClose }: { store: ConveyorStore; onClose
   const stages = itemsFor(s.state, s.cfg).stages;
   const j = stages.findIndex((u) => u.id === info.next!.stageId);
   const stage = stages[j];
-  const rateBefore = stage ? capAt(stage, s.state.stageLevels[j] ?? 0, s.cfg.params) * (s.state.museum.unit[stage.id] ?? 1) : 0;
+  const rateBefore = stage ? capAt(stage, s.state.stageLevels[j] ?? 0, s.cfg.params) * unitMult(s.state, stage.id) : 0;
   const mult = s.cfg.params.convert.mult;
   const lack = s.state.signatures < price;
   const can = info.status === 'available' && !lack;

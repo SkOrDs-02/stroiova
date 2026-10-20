@@ -50,7 +50,25 @@ export interface EconomyState {
   /** Мітки останніх зарахованих тапів, не більше tapRateMax: ковзне вікно 1 с (FR-16) */
   tapTimes: number[];
   /** Бонуси музею (07): множник виробітку одиниці за id, сховища (№ 2) і паперу (№ 3); без журналів — 1 */
-  museum: { unit: Record<string, number>; storage: number; paper: number };
+  museum: {
+    unit: Record<string, number>;
+    storage: number;
+    paper: number;
+    /** 016: M серій музею, 1 + S·museumSeriesPct/100 (входить у M поруч із балами) */
+    series?: number;
+    /** 016: № 21 - додаток до множника кожної цифрової ланки (0 без журналу) */
+    digital?: number;
+    /** 016: множник тривалості сповільнень від телеграм (№ 11) */
+    slowCut?: number;
+    /** 016: множник ціни пункту чекліста (№ 12) */
+    checklist?: number;
+    /** 016: множник кроку «Казначейство» у гонці (№ 14, разом із № 6) */
+    kazna?: number;
+    /** 016: множник служби подарунків (№ 20) */
+    service?: number;
+    /** 016: множник ціни конвертації (№ 23) */
+    convert?: number;
+  };
   /** Нагороди ×2 за місцеву добу пристрою; скидається, лише коли дата пізніша (FR-26, 09 FR-15) */
   offlineDoubles: { date: string; count: number };
   /** Р5 (013): id ланок, оцифрованих конвертаціями, у порядку конвертацій; переживають цифровізації */
@@ -161,6 +179,9 @@ export type DomainEvent =
       /** Пройдена підсумкова відкрила перехід на наступний рівень (011 FR-6) */
       exitUnlocked: boolean;
       result: 'passed' | 'failed';
+      /** Рівень перевірки і чи вона без зауваження № 16 (016 FR-19: лічильники грамот) */
+      level: number;
+      withoutRemarks: boolean;
       itemsDone: number;
       itemsTotal: number;
       offline: boolean;
@@ -170,7 +191,7 @@ export type DomainEvent =
   // 005: гонка з часом; аналітика етапу 5 (race_start, race_speedup_apply, race_finish), курйози 07
   | { type: 'raceStart'; id: string; giftType: 'drone' | 'shovel' | 'generator'; docSec: number; resourceSec: number; winnable: boolean }
   | { type: 'raceSpeedup'; id: string; method: 'digital_bonus' | 'ad' | 'no_ads_pass'; secSaved: number }
-  | { type: 'raceFinish'; id: string; giftType: 'drone' | 'shovel' | 'generator'; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean }
+  | { type: 'raceFinish'; id: string; giftType: 'drone' | 'shovel' | 'generator'; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean; level: number }
   /** Програна гонка: запис «Списано раніше, ніж поставлено на облік» (07) */
   | {
       type: 'raceCurio';
@@ -191,7 +212,7 @@ export type DomainEvent =
   /** Перша без зауважень після першої цифровізації: журнал № 7 (07 FR-8) */
   | { type: 'inspectionJournal'; id: string }
   // 007: музей; аналітика етапу 5 (museum_journal_unlock)
-  | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection'; ownedAfter: number; isSeriesComplete: boolean }
+  | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection' | 'final_inspection' | 'conversion' | 'story' | 'finale'; ownedAfter: number; isSeriesComplete: boolean; seriesId: string; seriesOwnedAfter: number; seriesCompleteCount: number }
   // 008: реклама й покупки; аналітика етапу 5 (ad_*, purchase_*, offline_income_claim)
   | { type: 'adRewardGrant'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; isNoAdsClaim: boolean }
   | { type: 'adFail'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; stage: 'not_ready' | 'load' | 'show' | 'closed_early' | 'consent_blocked'; code?: string }
@@ -206,7 +227,10 @@ export type DomainEvent =
   | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number }
   // 014: сюжет; аналітика етапу 5 (story_beat_deliver, diary_open)
   | { type: 'archiveSheetUnlock'; sheetId: string; sheetNumber: number; source: 'gift' | 'move' | 'boss' | 'conversion' | 'catch_up'; sheetsOwnedAfter: number }
-  | { type: 'storyBeatDeliver'; beatId: string; arc: string; carrier: string; beatOrder: number; delaySec: number; isCatchUp: boolean; isWhileAway: boolean };
+  | { type: 'storyBeatDeliver'; beatId: string; arc: string; carrier: string; beatOrder: number; delaySec: number; isCatchUp: boolean; isWhileAway: boolean }
+  // 016: грамоти; аналітика етапу 5 (award_unlock, awards_wall_open)
+  | { type: 'awardUnlock'; awardId: string; category: string; awardType: 'gramota' | 'podyaka' | 'nakaz'; isHidden: boolean; awardsOwnedAfter: number; isRetroactive: boolean; isResolvedOffline: boolean; isMirrored: boolean }
+  | { type: 'awardsWallOpen'; source: 'segment' | 'award_toast' | 'profile'; awardsOwned: number; awardsUnseen: number };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */
 export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };

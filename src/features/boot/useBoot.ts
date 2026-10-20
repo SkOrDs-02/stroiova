@@ -14,6 +14,8 @@ import type { DigitizationState } from '@/digitization/types';
 import type { MonetizationState } from '@/monetization/types';
 import type { MuseumState } from '@/museum/types';
 import type { NotificationsState, Settings } from '@/notifications/types';
+import { bonuses as museumBonuses } from '@/museum/museum';
+import type { AwardsState } from '@/awards/types';
 import type { Stats } from '@/profile/stats';
 import type { StoryState } from '@/story/types';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
@@ -63,7 +65,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story, awards: g.awards },
   };
 }
 
@@ -74,7 +76,7 @@ function applySettingsToDevice(st: Settings): void {
 }
 
 /** Стан гри з запису: закріплений конфіг має пріоритет над вбудованим (FR-22, source cached). */
-function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
+export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
   const id = installId(kv, Crypto.randomUUID).id;
   if (!save) {
     const store = createConveyorStore(now, bundledConfig, { installId: id });
@@ -85,7 +87,8 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
   const pinned = save.economyConfig as EconomyConfig | null;
   const cfg: EconomyConfig = pinned ? withBundled(pinned) : bundledConfig;
   const store = createConveyorStore(save.savedAt, cfg, {
-    state: save.game.economy as EconomyState,
+    // 016: бонуси журналів виводяться з музею (формули й відсотки можуть змінитись оновленням), тож рахуємо їх заново
+    state: { ...(save.game.economy as EconomyState), museum: museumBonuses(save.game.museum as MuseumState, cfg) },
     effects: save.game.effects as StoredEffect[],
     pinned,
     playtimeMs: save.game.playtimeMs,
@@ -99,6 +102,7 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     settings: save.game.settings as Settings,
     notifications: save.game.notifications as NotificationsState,
     stats: save.game.stats as Stats,
+    awards: save.game.awards as AwardsState,
     story: save.game.story as StoryState,
     installId: id,
   });
@@ -127,6 +131,8 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.telegrams.kombat !== prev.telegrams.kombat ||
     st.telegrams.meeting !== prev.telegrams.meeting ||
     st.telegrams.sedo !== prev.telegrams.sedo ||
+    // 016 FR-21: грамота записується в мить видачі, до тосту
+    st.awards.got !== prev.awards.got ||
     // 014: крок сюжету і рядок щоденника зберігаються в мить доставки
     st.story !== prev.story ||
     // 013 FR-7: конвертація ланки зберігається атомарно, в мить підтвердження

@@ -10,7 +10,8 @@ import { type } from '@/ui/type';
 
 import { muT } from '@/features/museum/texts';
 import { titleOf } from '@/features/museum/present';
-import { journal } from '@/museum/journals';
+import { journal, seriesBonusText } from '@/museum/journals';
+import { completesSeries } from '@/museum/museum';
 import { BEATS } from '@/story/content';
 
 import { PLAYABLE_LEVELS } from '@/digitization/digitization';
@@ -70,6 +71,9 @@ export function InspResult({ store }: { store: ConveyorStore }) {
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{muT.inspBlock(r.nAfter)}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{muT.inspLine(r.no, titleOf(r.no))}</Text>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="insp-exhibit-note">{r.no === 8 ? `${muT.rarity.legendary}. ${muT.noteSeries}` : muT.rarity[journal(r.no)?.rarity ?? 'common']}</Text>
+              {completesSeries(s.museum, r.no) && r.no !== 8 ? (
+                <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="insp-exhibit-series">{muT.newSeriesDone(completesSeries(s.museum, r.no)!.title, seriesBonusText(completesSeries(s.museum, r.no)!, p))}</Text>
+              ) : null}
             </View>
           ))}
           <View style={styles.foot}>

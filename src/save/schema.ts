@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 15;
+export const CURRENT_SCHEMA = 16;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -35,7 +35,18 @@ export const economyStateSchema = z.object({
   catBonusAtMs: z.number().nullable(),
   tapTimes: z.array(z.number()),
   offlineDoubles: z.object({ date: z.string(), count: z.number().int().nonnegative() }),
-  museum: z.object({ unit: z.record(z.string(), z.number().positive()), storage: z.number().positive(), paper: z.number().positive() }),
+  museum: z.object({
+    unit: z.record(z.string(), z.number().positive()),
+    storage: z.number().positive(),
+    paper: z.number().positive(),
+    series: z.number().positive().optional(),
+    digital: z.number().nonnegative().optional(),
+    slowCut: z.number().positive().optional(),
+    checklist: z.number().positive().optional(),
+    kazna: z.number().positive().optional(),
+    service: z.number().positive().optional(),
+    convert: z.number().positive().optional(),
+  }),
   digital: z.array(z.string()),
 });
 
@@ -260,7 +271,7 @@ export const digitizationStateSchema = z.object({
 
 /** Музей й журнал курйозів (007); схема 7. */
 export const museumStateSchema = z.object({
-  owned: z.array(z.object({ no: z.number().int().min(1), atMs: z.number(), source: z.enum(['digitization', 'telegram', 'inspection']), seen: z.boolean() })),
+  owned: z.array(z.object({ no: z.number().int().min(1), atMs: z.number(), source: z.enum(['digitization', 'telegram', 'inspection', 'final_inspection', 'conversion', 'story', 'finale']), seen: z.boolean() })),
   reveal: z.array(z.object({ no: z.number().int().min(1), k: z.number().int().min(1), m: z.number().int().min(1), nAfter: z.number().int().min(1), via: z.enum(['insp', 'other']) })),
   curios: z.array(
     z.object({
@@ -349,6 +360,16 @@ export const storyStateSchema = z.object({
   diary: z.object({ got: z.array(z.object({ id: z.string(), atMs: z.number(), day: z.number().int().positive() })), lastDay: z.string().nullable() }),
 });
 
+/** Грамоти (016 FR-45); схема 16. */
+export const awardsSchema = z.object({
+  got: z.record(z.string(), z.object({ atMs: z.number(), orderNo: z.number().int().min(1).optional(), retro: z.boolean().optional(), offline: z.boolean().optional(), seq: z.number().int().min(1).optional(), toast: z.literal(true).optional() })),
+  counters: z.record(z.string(), nonNeg),
+  sets: z.record(z.string(), z.array(z.string())),
+  seen: z.array(z.string()),
+  pendingPlatform: z.array(z.string()),
+  lastOrderNo: z.number().int().nonnegative(),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -373,6 +394,8 @@ export const gameSaveSchema = z.object({
   stats: statsSchema,
   /** Сюжет і щоденник (014) */
   story: storyStateSchema,
+  /** Грамоти (016) */
+  awards: awardsSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

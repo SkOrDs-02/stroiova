@@ -80,7 +80,7 @@ describe('аркуші Археолога в грі (AC-11)', () => {
         events: [
           ...store.getState().events,
           { type: 'raceStart', id: 'r1', giftType: 'drone', docSec: 60, resourceSec: 60, winnable: true },
-          { type: 'raceFinish', id: 'r1', giftType: 'drone', result: 'fail', marginSec: -5, speedups: 0, offline: false },
+          { type: 'raceFinish', id: 'r1', giftType: 'drone', result: 'fail', marginSec: -5, speedups: 0, offline: false, level: 1 },
         ],
       }),
     );

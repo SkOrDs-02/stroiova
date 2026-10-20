@@ -6,7 +6,7 @@ import { useStore } from 'zustand';
 
 import { formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { telegramOf } from '@/telegrams/effects';
+import { cutHours, telegramOf } from '@/telegrams/effects';
 import { packByNo, packForecast, type SummaryKind } from '@/telegrams/packs';
 import type { InboxItem } from '@/telegrams/types';
 import { color, radius, size, space } from '@/theme';
@@ -76,7 +76,7 @@ export function PackScreen({ store, no, onBack, onOpen, onSummed }: Props) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.hint}>{t.pkSummaryHint}</Text>
             {forecast.map((f) => {
               const on = sel === f.kind;
-              const slow = f.slow ? t.slow(short(unitName(s.cfg, 'narada')), formatMult(f.slow.mult), f.slow.hours) : null;
+              const slow = f.slow ? t.slow(short(unitName(s.cfg, 'narada')), formatMult(f.slow.mult), cutHours(f.slow.hours, s.state)) : null;
               return (
                 <Pressable
                   key={f.kind}

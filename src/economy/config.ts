@@ -18,5 +18,11 @@ export function withBundled(pinned: EconomyConfig): EconomyConfig {
   // пункти перевірок нових рівнів (Р3 - 011, Р4 - 012) допоповнюємо з вбудованого за (id, рівень): закріплений список їх не мав
   const have = pinned.params.inspItems ?? [];
   params.inspItems = [...have, ...bundledConfig.params.inspItems.filter((b) => !have.some((x) => x.id === b.id && x.level === b.level))];
+  // журнали за цифровізації нових рівнів (016: Р3, Р4) допоповнюємо за (рівень, номер): закріплений конфіг епохи Р2 їх не мав
+  const dj: Record<string, Record<string, number[]>> = {};
+  for (const lvl of new Set([...Object.keys(bundledConfig.params.digitJournals), ...Object.keys(pinned.params.digitJournals ?? {})])) {
+    dj[lvl] = { ...bundledConfig.params.digitJournals[lvl], ...(pinned.params.digitJournals ?? {})[lvl] };
+  }
+  params.digitJournals = dj;
   return { ...pinned, source: 'cached', params };
 }

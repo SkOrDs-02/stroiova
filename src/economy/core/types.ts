@@ -193,6 +193,20 @@ export interface EconomyParams {
   museumStoragePct: number;
   museumPaperPct: number;
   museumRacePct: number;
+  /** 016 (museum >= 2): № 16 (Нарада) */
+  museumUnitRarePct: number;
+  /** № 11: на скільки відсотків коротші сповільнення від телеграм */
+  museumSlowCutPct: number;
+  /** № 12: на скільки відсотків дешевші пункти чекліста */
+  museumChecklistCutPct: number;
+  /** № 20: на скільки відсотків довша служба подарунків */
+  museumGiftServicePct: number;
+  /** № 23: на скільки відсотків дешевша конвертація */
+  museumConvertCutPct: number;
+  /** Кожна зібрана серія 2-5: +% до всіх підписів */
+  museumSeriesPct: number;
+  /** № 24 множить бонуси № 9-23 */
+  museumLegendaryMult: number;
   /** 006: журнали, які скасовує цифровізація: рівень → номер цифровізації на рівні → номери журналів (sim.js, 016 FR-5) */
   digitJournals: Record<string, Record<string, number[]>>;
   storageHours: number;

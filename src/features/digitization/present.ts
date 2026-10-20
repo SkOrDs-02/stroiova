@@ -8,9 +8,9 @@ import { digitT } from './texts';
 
 const JOURNALS = new Map<number, string>((museum.journals as { no: number; title: string }[]).map((j) => [j.no, j.title]));
 
-/** Журнали, які музей цієї збірки показує (№ 1-8, рішення 76); № 9+ записуються без розкриття до 016 */
-export function shownJournals(nos: readonly number[]): number[] {
-  return nos.filter((n) => n <= MUSEUM_SIZE);
+/** Журнали, які скасує цифровізація: № 1-8 завжди, № 9-24 лише в економіці з музеєм на 24 (`museum` >= 2, 016) */
+export function shownJournals(nos: readonly number[], museumParam = 2): number[] {
+  return nos.filter((n) => n <= 8 || (museumParam >= 2 && n <= MUSEUM_SIZE));
 }
 
 export function journalTitle(no: number): string {

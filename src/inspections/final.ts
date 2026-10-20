@@ -70,7 +70,7 @@ export function streamsOpen(eco: EconomyState, cfg: EconomyConfig): boolean {
 /** Ціна кожного базового пункту: max(inspMinPrice, ⌈boss.checklistMin × базовий дохід⌉ / boss.adItems) (рішення 95). */
 export function finalItemPrice(eco: EconomyState, cfg: EconomyConfig): number {
   const b = cfg.params.boss;
-  const whole = Math.max(cfg.params.inspMinPrice, Math.ceil(b.checklistMin * baseIncomePerMin(eco, cfg)));
+  const whole = Math.max(cfg.params.inspMinPrice, Math.ceil(b.checklistMin * baseIncomePerMin(eco, cfg) * (eco.museum.checklist ?? 1)));
   return Math.ceil(whole / b.adItems);
 }
 

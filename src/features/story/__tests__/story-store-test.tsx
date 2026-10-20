@@ -79,7 +79,7 @@ describe('Пташка і записки (AC-14)', () => {
     store.setState({ story: storyForLevel(BEATS, 3) });
     await render(<MainScreen store={store} />);
     expect(store.getState().telegrams.inbox.some((x) => x.kind === 'note' && x.id === 'st_ptashka_02')).toBe(false);
-    const ev: DomainEvent = { type: 'raceFinish', id: 'r1', giftType: 'drone', result: 'success', marginSec: 5, speedups: 0, offline: false };
+    const ev: DomainEvent = { type: 'raceFinish', id: 'r1', giftType: 'drone', result: 'success', marginSec: 5, speedups: 0, offline: false, level: 1 };
     await act(async () => store.setState({ events: [...store.getState().events, ev] }));
     const note = store.getState().telegrams.inbox.find((x) => x.id === 'st_ptashka_02');
     expect(note).toMatchObject({ kind: 'note', read: false });
@@ -90,7 +90,7 @@ describe('Пташка і записки (AC-14)', () => {
     const store = game(3, {});
     store.setState({ story: storyForLevel(BEATS, 3) });
     await render(<MainScreen store={store} />);
-    const ev: DomainEvent = { type: 'raceFinish', id: 'r1', giftType: 'shovel', result: 'success', marginSec: 5, speedups: 0, offline: false };
+    const ev: DomainEvent = { type: 'raceFinish', id: 'r1', giftType: 'shovel', result: 'success', marginSec: 5, speedups: 0, offline: false, level: 1 };
     await act(async () => store.setState({ events: [...store.getState().events, ev] }));
     expect(store.getState().telegrams.inbox.some((x) => x.id === 'st_ptashka_02')).toBe(false);
   });
@@ -181,7 +181,7 @@ describe('носії: телеграма, курйоз, записка', () => {
     const store = game(3, {});
     store.setState({ story: storyForLevel(BEATS, 3) });
     await render(<MainScreen store={store} />);
-    await act(async () => store.setState({ events: [...store.getState().events, { type: 'raceFinish', id: 'r1', giftType: 'drone', result: 'success', marginSec: 5, speedups: 0, offline: false }] }));
+    await act(async () => store.setState({ events: [...store.getState().events, { type: 'raceFinish', id: 'r1', giftType: 'drone', result: 'success', marginSec: 5, speedups: 0, offline: false, level: 1 }] }));
     await fireEvent.press(screen.getByTestId('tab-telegrams'));
     await fireEvent.press(screen.getByTestId('tg-row-st_ptashka_02#1'));
     expect(screen.getByTestId('note-detail')).toHaveTextContent(/Пташка-3 у небі/);

@@ -53,7 +53,7 @@ describe('шторка бустів', () => {
     expect(screen.getByTestId('toast')).toHaveTextContent(/Нагороду\ зараховано:\ ×2\ до\ підписів\ на\ 4\ год\./);
     expect(screen.getByTestId('boosts-sheet')).toHaveTextContent(/сьогодні ще 2 з 3/);
     expect(screen.getByTestId('boost-row-ad_boost')).toBeTruthy();
-    expect(screen.getByTestId('boost-row-museum')).toHaveTextContent(/0\ з\ 8/);
+    expect(screen.getByTestId('boost-row-museum')).toHaveTextContent(/0\ з\ 24/);
   });
 
   test('AC-2: тричі - 12 год, потім «Ліміт на сьогодні»; при 9 год залишку - «Межа: 12 год»', async () => {
