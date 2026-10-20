@@ -50,7 +50,25 @@ export interface EconomyState {
   /** Мітки останніх зарахованих тапів, не більше tapRateMax: ковзне вікно 1 с (FR-16) */
   tapTimes: number[];
   /** Бонуси музею (07): множник виробітку одиниці за id, сховища (№ 2) і паперу (№ 3); без журналів — 1 */
-  museum: { unit: Record<string, number>; storage: number; paper: number };
+  museum: {
+    unit: Record<string, number>;
+    storage: number;
+    paper: number;
+    /** 016: M серій музею, 1 + S·museumSeriesPct/100 (входить у M поруч із балами) */
+    series?: number;
+    /** 016: № 21 - додаток до множника кожної цифрової ланки (0 без журналу) */
+    digital?: number;
+    /** 016: множник тривалості сповільнень від телеграм (№ 11) */
+    slowCut?: number;
+    /** 016: множник ціни пункту чекліста (№ 12) */
+    checklist?: number;
+    /** 016: множник кроку «Казначейство» у гонці (№ 14, разом із № 6) */
+    kazna?: number;
+    /** 016: множник служби подарунків (№ 20) */
+    service?: number;
+    /** 016: множник ціни конвертації (№ 23) */
+    convert?: number;
+  };
   /** Нагороди ×2 за місцеву добу пристрою; скидається, лише коли дата пізніша (FR-26, 09 FR-15) */
   offlineDoubles: { date: string; count: number };
   /** Р5 (013): id ланок, оцифрованих конвертаціями, у порядку конвертацій; переживають цифровізації */
@@ -191,7 +209,7 @@ export type DomainEvent =
   /** Перша без зауважень після першої цифровізації: журнал № 7 (07 FR-8) */
   | { type: 'inspectionJournal'; id: string }
   // 007: музей; аналітика етапу 5 (museum_journal_unlock)
-  | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection'; ownedAfter: number; isSeriesComplete: boolean }
+  | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection' | 'conversion' | 'finale'; ownedAfter: number; isSeriesComplete: boolean; seriesId: string; seriesCompleteCount: number }
   // 008: реклама й покупки; аналітика етапу 5 (ad_*, purchase_*, offline_income_claim)
   | { type: 'adRewardGrant'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; isNoAdsClaim: boolean }
   | { type: 'adFail'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; stage: 'not_ready' | 'load' | 'show' | 'closed_early' | 'consent_blocked'; code?: string }

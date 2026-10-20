@@ -2,7 +2,7 @@
 import type { GiftType, Race } from '@/race/types';
 
 /** Звідки прийшов журнал (museum_journal_unlock.source; № 8 береться від джерела сьомого) */
-export type JournalSource = 'digitization' | 'telegram' | 'inspection';
+export type JournalSource = 'digitization' | 'telegram' | 'inspection' | 'conversion' | 'finale';
 
 export interface OwnedJournal {
   no: number;

@@ -27,7 +27,8 @@ export function itemDef(cfg: EconomyConfig, id: string, level: number): InspItem
  * з P і «Без реклами» (FR-13, рев'ю № 16).
  */
 export function priceOf(def: InspItemDef, eco: EconomyState, cfg: EconomyConfig): Big {
-  return Math.max(cfg.params.inspMinPrice, Math.ceil(def.min * baseIncomePerMin(eco, cfg)));
+  // № 12 (016): ціна пункту множиться на (1 - c·k24)
+  return Math.max(cfg.params.inspMinPrice, Math.ceil(def.min * baseIncomePerMin(eco, cfg) * (eco.museum.checklist ?? 1)));
 }
 
 /** Базові пункти рівня (Р1 — 5, Р2-Р4 — 4), ціни зафіксовано. */

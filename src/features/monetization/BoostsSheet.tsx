@@ -7,6 +7,7 @@ import { multStack } from '@/economy/game/income';
 import { birdEffect, localDate, type ConveyorStore } from '@/features/conveyor/store';
 import { multRow } from '@/features/museum/present';
 import { boostView } from '@/monetization/monetization';
+import { seriesCollected } from '@/museum/museum';
 import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
@@ -19,7 +20,7 @@ export function BoostsSheet({ store, onClose, onShop }: { store: ConveyorStore; 
   const now = s.lastMs;
   const eff = [...s.effects, ...birdEffect(s.cfg, s.onboarding, now)];
   const stack = multStack(s.state, s.cfg, now, eff);
-  const mus = multRow(s.museum);
+  const mus = multRow(s.museum, s.cfg.params);
   const view = boostView(s.monetization, s.effects, now, localDate(now), s.cfg, s.state.hasNoAds);
   const sources = stack.rows.length;
   return (
@@ -37,7 +38,7 @@ export function BoostsSheet({ store, onClose, onShop }: { store: ConveyorStore; 
           {stack.rows.map((r, i) => (
             <View key={`${r.source}-${i}`} style={styles.row} testID={`boost-row-${r.source}`}>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.k, styles.flex]}>{r.source === 'ad_boost' && s.state.hasNoAds ? boostsT.rows.ad_boost_free : (boostsT.rows[r.source] ?? r.source)}</Text>
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.v}>{r.endsAtMs != null ? `${formatMult(r.value)} · ${formatCountdown((r.endsAtMs - now) / 1000)}` : r.source === 'no_ads' || r.source === 'prestige' ? `${formatMult(r.value)} · ${boostsT.forever}` : formatMult(r.value)}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.v}>{r.endsAtMs != null ? `${formatMult(r.value)} · ${formatCountdown((r.endsAtMs - now) / 1000)}` : r.source === 'museum_series' ? `${formatMult(r.value)} · ${boostsT.seriesOf(seriesCollected(s.museum), 4)}` : r.source === 'no_ads' || r.source === 'prestige' ? `${formatMult(r.value)} · ${boostsT.forever}` : formatMult(r.value)}</Text>
             </View>
           ))}
           <View style={styles.row} testID="boost-row-museum">

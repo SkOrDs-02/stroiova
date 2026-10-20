@@ -35,7 +35,18 @@ export const economyStateSchema = z.object({
   catBonusAtMs: z.number().nullable(),
   tapTimes: z.array(z.number()),
   offlineDoubles: z.object({ date: z.string(), count: z.number().int().nonnegative() }),
-  museum: z.object({ unit: z.record(z.string(), z.number().positive()), storage: z.number().positive(), paper: z.number().positive() }),
+  museum: z.object({
+    unit: z.record(z.string(), z.number().positive()),
+    storage: z.number().positive(),
+    paper: z.number().positive(),
+    series: z.number().positive().optional(),
+    digital: z.number().nonnegative().optional(),
+    slowCut: z.number().positive().optional(),
+    checklist: z.number().positive().optional(),
+    kazna: z.number().positive().optional(),
+    service: z.number().positive().optional(),
+    convert: z.number().positive().optional(),
+  }),
   digital: z.array(z.string()),
 });
 
@@ -260,7 +271,7 @@ export const digitizationStateSchema = z.object({
 
 /** Музей й журнал курйозів (007); схема 7. */
 export const museumStateSchema = z.object({
-  owned: z.array(z.object({ no: z.number().int().min(1), atMs: z.number(), source: z.enum(['digitization', 'telegram', 'inspection']), seen: z.boolean() })),
+  owned: z.array(z.object({ no: z.number().int().min(1), atMs: z.number(), source: z.enum(['digitization', 'telegram', 'inspection', 'conversion', 'finale']), seen: z.boolean() })),
   reveal: z.array(z.object({ no: z.number().int().min(1), k: z.number().int().min(1), m: z.number().int().min(1), nAfter: z.number().int().min(1), via: z.enum(['insp', 'other']) })),
   curios: z.array(
     z.object({

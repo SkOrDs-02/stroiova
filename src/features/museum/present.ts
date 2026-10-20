@@ -6,7 +6,7 @@ import { fill } from '@/features/telegrams/present';
 import { t as tgT } from '@/features/telegrams/texts';
 import { raceT } from '@/features/race/texts';
 import type { Journal } from '@/museum/journals';
-import { journal, museumJournals, MUSEUM_SIZE } from '@/museum/journals';
+import { bonusText, journal, museumJournals, museumSeries, MUSEUM_SIZE } from '@/museum/journals';
 import { has, visibleCurios } from '@/museum/museum';
 import type { CurioEntry, MuseumState, OwnedJournal } from '@/museum/types';
 import { color } from '@/theme';
@@ -41,7 +41,7 @@ export interface Slot {
   owned: OwnedJournal | null;
 }
 
-/** 8 слотів у порядку № 1-8; фільтр показує лише знайдені журнали категорії (FR-14) */
+/** 24 слоти в порядку № 1-24; фільтр показує лише знайдені журнали категорії (07 FR-14) */
 export function slots(ms: MuseumState, filter: Filter): Slot[] {
   return museumJournals()
     .map((j) => ({ no: j.no, journal: j, owned: ms.owned.find((o) => o.no === j.no) ?? null }))
@@ -130,7 +130,57 @@ export function curioGroups(ms: MuseumState, tg: TelegramState, gender: Onboardi
 }
 
 /** Рядок «Музей журналів» шторки множників (FR-12): «N з 8» і позначка «окремо»; у «Разом» не входить */
-export function multRow(ms: MuseumState): { count: string; note: string; targets: string[] } {
+export function multRow(ms: MuseumState, params: object): { count: string; note: string; targets: string[] } {
   const n = ms.owned.filter((o) => o.no <= MUSEUM_SIZE).length;
-  return { count: muT.countText(n), note: muT.multNote, targets: museumJournals().filter((j) => has(ms, j.no)).map((j) => j.bonus.text) };
+  return { count: muT.countText(n), note: muT.multNote, targets: museumJournals().filter((j) => has(ms, j.no)).map((j) => bonusText(j, params)) };
+}
+
+export interface Section {
+  seriesId: string;
+  no: number;
+  title: string;
+  slots: Slot[];
+  owned: number;
+  total: number;
+  /** Серія зібрана: усі її журнали в музеї */
+  done: boolean;
+  /** Рівень серії гравець ще не відвідав: слоти замкнені (016 FR-15) */
+  locked: boolean;
+  /** Ім'я рівня для «Відкриється на рівні «…»» */
+  levelName: string;
+  bonus: string;
+}
+
+/** Секції серій для фільтра «Усі» (016 FR-15, FR-16): заголовок «Назва · N з M», замкнені серії наступних рівнів */
+export function sections(ms: MuseumState, level: number, levelNames: readonly string[], seriesPct: number): Section[] {
+  return museumSeries().map((se) => {
+    const sl = se.journals.map((n) => ({ no: n, journal: journal(n)!, owned: ms.owned.find((o) => o.no === n) ?? null })).filter((x) => x.journal != null);
+    const owned = sl.filter((x) => x.owned != null).length;
+    return {
+      seriesId: se.id,
+      no: se.no,
+      title: se.title,
+      slots: sl,
+      owned,
+      total: sl.length,
+      done: owned === sl.length,
+      locked: se.no > level,
+      levelName: levelNames[se.no - 1] ?? '',
+      bonus: se.no === 1 ? muT.series1Bonus : muT.seriesBonus(seriesPct),
+    };
+  });
+}
+
+/** Перший рівень, на якому існує ціль бонусу журналу (потік чи ланка), або 1, якщо ціль є з початку (016 FR-11) */
+export function bonusLevel(j: Journal, params: { streams: { id: string }[]; stages: { id: string }[]; levels: { stream?: { id: string } | null; stage?: { id: string } | null; convert?: number }[] }): number {
+  const t = j.bonus.target as unknown[];
+  if (j.bonus.kind === 'unit_rate' || j.bonus.kind === 'race_step_time') {
+    if (t[0] === 'digital_stages') return Math.max(1, params.levels.findIndex((l) => l.convert === 1) + 1);
+    const id = t[0] as string;
+    if (params.streams.some((u) => u.id === id) || params.stages.some((u) => u.id === id)) return 1;
+    const i = params.levels.findIndex((l) => l.stream?.id === id || l.stage?.id === id);
+    return i < 0 ? 1 : i + 1;
+  }
+  if (j.bonus.kind === 'convert_cost') return Math.max(1, params.levels.findIndex((l) => l.convert === 1) + 1);
+  return 1;
 }

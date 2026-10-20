@@ -4,8 +4,8 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { journal } from '@/museum/journals';
-import { nextReveal } from '@/museum/museum';
+import { bonusText, journal } from '@/museum/journals';
+import { completesSeries, nextReveal } from '@/museum/museum';
 import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
@@ -21,6 +21,7 @@ export function JournalNew({ store }: { store: ConveyorStore }) {
   const j = r ? journal(r.no) : undefined;
   if (!r || !j) return null;
   const last = !s.museum.reveal.some((x) => x !== r && x.via === 'other');
+  const se = completesSeries(s.museum, j.no);
   return (
     <>
       <View style={styles.scrim} testID="journal-new">
@@ -53,10 +54,10 @@ export function JournalNew({ store }: { store: ConveyorStore }) {
               {flavorOf(j, s.onboarding)}
             </Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>
-              {j.bonus.text}
+              {bonusText(j, s.cfg.params)}
             </Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="jn-note">
-              {j.no === 8 ? muT.noteSeries : muT.note}
+              {j.no === 8 ? muT.noteSeries : se ? muT.newSeriesDone(se.title, muT.seriesBonus(s.cfg.params.museumSeriesPct)) : muT.note}
             </Text>
             {j.fromText ? (
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>

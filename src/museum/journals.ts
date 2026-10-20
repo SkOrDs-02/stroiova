@@ -12,6 +12,7 @@ export interface Journal {
   head: string;
   name: string;
   category: 'property' | 'personnel';
+  series?: string;
   rarity: Rarity;
   cover: Cover;
   bonus: { text: string; kind: string; target: string[]; param: string | null };
@@ -28,22 +29,44 @@ export interface Journal {
   fromText?: string;
 }
 
-/** Журналів у музеї цієї збірки (рішення 20, 76); № 9-24 - 016 */
-export const MUSEUM_SIZE = 8;
+/** Журналів у музеї: 24 з рівнями 1-5 (016 FR-2, рішення 107+); № 1-8 - 07, № 9-24 - 016 */
+export const MUSEUM_SIZE = 24;
+/** Журнали першої серії (07): їх зводить у лічильник «N з 8» і множить № 8 */
+export const CLASSIC_SIZE = 8;
 
 const ALL = museum.journals as unknown as Journal[];
 const BY_NO = new Map(ALL.map((j) => [j.no, j]));
 const BY_KEY = new Map(ALL.flatMap((j) => [[j.id, j.no] as const, ...(j.aliases ?? []).map((a) => [a, j.no] as const)]));
 const SOURCES = museum.sources as Record<string, { title: string }>;
 
+/** Підставляє значення параметрів економіки в шаблон бонусу: «+{museumUnitPct}%» -> «+5%» (016: числа лише з balance/) */
+export function bonusText(j: Journal, params: object): string {
+  const p = params as Record<string, unknown>;
+  return j.bonus.text.replace(/\{(\w+)\}/g, (m, k: string) => (typeof p[k] === 'number' ? String(p[k]).replace('.', ',') : m));
+}
+
 export function journal(no: number): Journal | undefined {
   return BY_NO.get(no);
 }
 
-/** № 1-8 за порядком слотів */
+/** Усі журнали музею за порядком слотів */
 export function museumJournals(): Journal[] {
   return ALL.filter((j) => j.no <= MUSEUM_SIZE).sort((a, b) => a.no - b.no);
 }
+
+export interface Series {
+  id: string;
+  no: number;
+  title: string;
+  journals: number[];
+  /** Рівень, на якому серія відкривається (id рівня з контенту) */
+  level: string;
+  bonus: { text: string; kind: string; param: string | null };
+}
+
+const SERIES = museum.series as unknown as Series[];
+export const museumSeries = (): Series[] => SERIES;
+export const seriesOf = (no: number): Series | undefined => SERIES.find((s) => s.journals.includes(no));
 
 /** Номер журналу за `journal_id` чи псевдонімом, яким його називає контент телеграм */
 export function journalNo(key: string): number | undefined {

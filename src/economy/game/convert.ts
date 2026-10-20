@@ -23,9 +23,9 @@ export function hasConversions(state: EconomyState, cfg: EconomyConfig): boolean
   return !!L && (L as { convert?: number }).convert === 1;
 }
 
-/** Ціна: ⌈convert.costMin × базовий дохід⌉ (013 FR-6, як `convCost()` у sim.js) */
+/** Ціна: ⌈convert.costMin × базовий дохід⌉ (013 FR-6, як `convCost()` у sim.js); журнал № 23 здешевлює (016 FR-10) */
 export function convertPrice(state: EconomyState, cfg: EconomyConfig): Big {
-  return Math.ceil(cfg.params.convert.costMin * baseIncomePerMin(state, cfg));
+  return Math.ceil(cfg.params.convert.costMin * baseIncomePerMin(state, cfg) * (state.museum.convert ?? 1));
 }
 
 /**

@@ -171,7 +171,7 @@ export const DEFAULTS: EconomyParams = {
     { id: 'dashboard_font', level: 5, min: 6 },
     { id: 'act_kep', level: 5, min: 4 },
   ],
-  digitJournals: { '1': { '1': [1, 2, 3], '2': [4, 5] }, '2': { '1': [9], '2': [10], '3': [11] } },
+  digitJournals: { '1': { '1': [1, 2, 3], '2': [4, 5] }, '2': { '1': [9], '2': [10], '3': [11] }, '3': { '1': [13], '2': [14], '4': [15] }, '4': { '1': [17], '3': [18] } },
   inspPushVisit: 1, // minutes: the player opens the game on push № 3 (2 h before arrival) if no session falls between warning and arrival; 0 = never
   // v7.3 (003): reputation and formal replies. repTiers 0 = off (the old model: every telegram «сумлінно», «норма» forever)
   repTiers: 0,

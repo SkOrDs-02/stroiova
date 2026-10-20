@@ -490,7 +490,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
   const runRace = (from: number, to: number, offline: boolean) => {
     const g = get();
     if (to <= from) return;
-    const r = tickRace(g.race, g.state, g.cfg, { fromMs: from, nowMs: to, tzOffsetMin: tzOffsetAt(to), installMs: g.inspections.installMs, offline, journals: raceJournals(g.museum) });
+    const r = tickRace(g.race, g.state, g.cfg, { fromMs: from, nowMs: to, tzOffsetMin: tzOffsetAt(to), installMs: g.inspections.installMs, offline, journals: raceJournals(g.museum, g.cfg) });
     if (r.s === g.race && !r.events.length) return;
     set({ race: r.s, state: r.eco, effects: [...g.effects, ...r.effects], events: [...g.events, ...r.events].slice(-40) });
     absorbMuseum(r.events, to, offline);
@@ -798,6 +798,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       // конвертація № 1: «Комбата шукають» зникає назавжди (FR-10)
       const tg = r.index === 1 && g.telegrams.kombat.active ? { ...g.telegrams, kombat: { ...g.telegrams.kombat, active: null } } : g.telegrams;
       set({ state: r.state, effects, telegrams: tg, events: [...g.events, ...r.events].slice(-40) });
+      // 016 FR-5: конвертації № 2, 4, 5 дають журнали № 21, 22, 23
+      absorbMuseum(r.events, g.lastMs);
       return { ok: true };
     },
     answerPack: (no, kind) => {

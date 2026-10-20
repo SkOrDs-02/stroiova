@@ -14,6 +14,7 @@ import type { DigitizationState } from '@/digitization/types';
 import type { MonetizationState } from '@/monetization/types';
 import type { MuseumState } from '@/museum/types';
 import type { NotificationsState, Settings } from '@/notifications/types';
+import { bonuses as museumBonuses } from '@/museum/museum';
 import type { Stats } from '@/profile/stats';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
 import type { RaceState } from '@/race/types';
@@ -84,7 +85,8 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
   const pinned = save.economyConfig as EconomyConfig | null;
   const cfg: EconomyConfig = pinned ? withBundled(pinned) : bundledConfig;
   const store = createConveyorStore(save.savedAt, cfg, {
-    state: save.game.economy as EconomyState,
+    // 016: бонуси журналів виводяться з музею (формули й відсотки можуть змінитись оновленням), тож рахуємо їх заново
+    state: { ...(save.game.economy as EconomyState), museum: museumBonuses(save.game.museum as MuseumState, cfg) },
     effects: save.game.effects as StoredEffect[],
     pinned,
     playtimeMs: save.game.playtimeMs,
