@@ -500,6 +500,16 @@
      11
     ]
    }
+  },
+  "stack": {
+   "shareMinPerCm": 3.5,
+   "reachCm": 100,
+   "showCm": 120,
+   "counterCm": 999
+  },
+  "brief": {
+   "chance": 0.2,
+   "minGapDays": 3
   }
  },
  "SCENARIOS": [
@@ -942,6 +952,16 @@
       11
      ]
     }
+   },
+   "stack": {
+    "shareMinPerCm": 3.5,
+    "reachCm": 100,
+    "showCm": 120,
+    "counterCm": 999
+   },
+   "brief": {
+    "chance": 0.2,
+    "minGapDays": 3
    }
   },
   "preset-v6": {
@@ -1367,6 +1387,16 @@
       11
      ]
     }
+   },
+   "stack": {
+    "shareMinPerCm": 3.5,
+    "reachCm": 100,
+    "showCm": 120,
+    "counterCm": 999
+   },
+   "brief": {
+    "chance": 0.2,
+    "minGapDays": 3
    }
   },
   "preset-v7": {
@@ -1870,6 +1900,16 @@
       11
      ]
     }
+   },
+   "stack": {
+    "shareMinPerCm": 3.5,
+    "reachCm": 100,
+    "showCm": 120,
+    "counterCm": 999
+   },
+   "brief": {
+    "chance": 0.2,
+    "minGapDays": 3
    }
   }
  },

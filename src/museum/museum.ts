@@ -168,6 +168,11 @@ export function curioFromPack(ms: MuseumState, ev: Extract<DomainEvent, { type: 
   return push(ms, { kind: 'pack', atMs, pack: { packId: ev.packId, no: ev.no, kind: ev.kind, uids: ev.uids }, status: ev.kind === 'formal_reply' ? 'formal' : ev.kind });
 }
 
+/** «Метр звітів» (012 FR-15): один запис на цикл цифровізації */
+export function curioFromStack(ms: MuseumState, ev: Extract<DomainEvent, { type: 'stackReach' }>, atMs: number): MuseumState {
+  return push(ms, { kind: 'stack', atMs, stack: { cm: ev.cm }, status: 'info' });
+}
+
 /** Програна гонка: запис про подарунок, списаний раніше, ніж поставлений на облік (FR-21) */
 export function curioFromRace(ms: MuseumState, ev: Extract<DomainEvent, { type: 'raceCurio' }>): MuseumState {
   return push(ms, {
@@ -179,12 +184,12 @@ export function curioFromRace(ms: MuseumState, ev: Extract<DomainEvent, { type: 
 
 /** Записи, які видно: телеграму, вилучену оновленням контенту, ховаємо зі списку й підсумку (крайовий випадок spec) */
 export function visibleCurios(ms: MuseumState): CurioEntry[] {
-  return ms.curios.filter((c) => c.kind === 'gift' || (c.kind === 'pack' && c.pack != null && packDef(c.pack.packId) != null) || (c.telegramId != null && telegram(c.telegramId) != null));
+  return ms.curios.filter((c) => c.kind === 'gift' || c.kind === 'stack' || (c.kind === 'pack' && c.pack != null && packDef(c.pack.packId) != null) || (c.telegramId != null && telegram(c.telegramId) != null));
 }
 
-export function curioSummary(ms: MuseumState): { total: number; telegrams: number; gifts: number; packs: number } {
+export function curioSummary(ms: MuseumState): { total: number; telegrams: number; gifts: number; packs: number; stacks: number } {
   const v = visibleCurios(ms);
-  return { total: v.length, telegrams: v.filter((c) => c.kind === 'telegram').length, gifts: v.filter((c) => c.kind === 'gift').length, packs: v.filter((c) => c.kind === 'pack').length };
+  return { total: v.length, telegrams: v.filter((c) => c.kind === 'telegram').length, gifts: v.filter((c) => c.kind === 'gift').length, packs: v.filter((c) => c.kind === 'pack').length, stacks: v.filter((c) => c.kind === 'stack').length };
 }
 
 /** Список курйозів відкрито: усе побачено, бейдж «нове» гасне (010 FR-30) */

@@ -10,7 +10,7 @@ import { color, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
-import { choiceView, fill } from './present';
+import { bodyOf, choiceView, fill } from './present';
 import { t } from './texts';
 
 interface Props {
@@ -74,7 +74,7 @@ export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onRe
           {tel.from ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{t.from(t.who[tel.from] ?? tel.from)}</Text> : null}
           {tel.to ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{t.to(t.who[tel.to] ?? tel.to)}</Text> : null}
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title}>{fill(tel.title, item, g)}</Text>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>{fill(tel.body, item, g)}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.body}>{fill(bodyOf(item, tel), item, g)}</Text>
           {Array.isArray(tel.deadline) ? (
             <>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{t.rowsLabel}</Text>

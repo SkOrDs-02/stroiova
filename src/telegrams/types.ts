@@ -148,6 +148,8 @@ export interface TelegramState {
   meeting: { lastDayKey: string | null; active: { startMs: number; endMs: number; runnerAtMs: number | null; found?: boolean } | null };
   /** Пачки Р3 (011 FR-17): остання доба доставки (РРРР-ММ-ДД) і скільки видано */
   packs: { day: string | null; seq: number };
+  /** «Доповідь тезово» (012 FR-17): останній день події (індекс місцевої доби) для `brief.minGapDays` */
+  brief: { lastDay: number | null };
   deliveries: number;
   /** Мішки реплік за пулами content/lines.json (рішення 41) */
   lineBags: Record<string, { used: number[]; last: number | null }>;

@@ -3,9 +3,9 @@
 import { baseIncomePerMin } from '@/economy/game/income';
 import type { DomainEvent, EconomyConfig, EconomyState, StoredEffect } from '@/economy/game/types';
 
-import { dayKey } from './clock';
+import { dayKey, dayNumber } from './clock';
 import { roller } from './rng';
-import type { TelegramState } from './types';
+import type { InboxItem, TelegramState } from './types';
 
 const MIN = 60_000;
 export const KOMBAT_STAGE = 'kombat';
@@ -87,4 +87,33 @@ export function sendRunner(tg: TelegramState, eco: EconomyState, cfg: EconomyCon
   if (eco.signatures < cost) return { error: 'money' };
   const endMs = Math.min(a.endMs, nowMs + cfg.params.kombatRunnerMin * MIN);
   return { tg: { ...tg, [k]: { ...tg[k], active: { ...a, endMs, runnerAtMs: nowMs } } }, eco: { ...eco, signatures: eco.signatures - cost }, endMs };
+}
+
+/** id документа події «Доповідь тезово» (content/tg/level4.json, `kind: event`) */
+export const BRIEF_ID = 'tg_event_brief';
+
+export interface BriefStart {
+  tg: TelegramState;
+  item: InboxItem | null;
+  events: DomainEvent[];
+}
+
+/**
+ * «Доповідь тезово» (012 FR-17): на старті сесії Р4+, не частіше разу на `brief.minGapDays` діб, з імовірністю `brief.chance`;
+ * документ приходить у «Нові» поза квотою телеграм, поки попередній без відповіді - нового немає.
+ */
+export function briefOnSessionStart(tg0: TelegramState, cfg: EconomyConfig, eco: EconomyState, nowMs: number, tz: number): BriefStart {
+  const none = { tg: tg0, item: null, events: [] as DomainEvent[] };
+  if (eco.level < 4 || tg0.startMs == null) return none;
+  const today = dayNumber(dayKey(nowMs, tz));
+  const gap = cfg.params.brief.minGapDays;
+  if (tg0.brief.lastDay != null && today - tg0.brief.lastDay < gap) return none;
+  if (tg0.inbox.some((x) => x.id === BRIEF_ID && (x.status === 'new' || x.status === 'drawer'))) return none;
+  const rng = roller(tg0.rng);
+  const hit = rng.next() < cfg.params.brief.chance;
+  const tg1: TelegramState = { ...tg0, rng: rng.state };
+  if (!hit) return { tg: tg1, item: null, events: [] };
+  const item: InboxItem = { uid: `${BRIEF_ID}#${tg1.deliveries + 1}`, id: BRIEF_ID, kind: 'telegram', receivedAt: nowMs, status: 'new' };
+  const tg: TelegramState = { ...tg1, inbox: [...tg1.inbox, item], deliveries: tg1.deliveries + 1, brief: { lastDay: today } };
+  return { tg, item, events: [{ type: 'telegramReceive', telegramId: BRIEF_ID, uid: item.uid, delivery: 'live', scripted: false }] };
 }

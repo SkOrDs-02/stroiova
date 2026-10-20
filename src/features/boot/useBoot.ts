@@ -111,6 +111,13 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
  * Зміни, які пишемо одразу, не чекаючи 5 с автозапису (002 FR-28, 003 «вбивство посеред вибору», 004 FR-28, 005, 006 FR-16, 007 рішення 79):
  * крок онбордингу, відповідь чи нова телеграма, перевірка, гонка, цифровізація, журнал або запис курйозу.
  */
+function digitChanged(a: ReturnType<ConveyorStore['getState']>['digit'], b: ReturnType<ConveyorStore['getState']>['digit']): boolean {
+  if (a === b) return false;
+  const { stack: sa, ...ra } = a;
+  const { stack: sb, ...rb } = b;
+  return sa.reached !== sb.reached || (Object.keys(ra) as (keyof typeof ra)[]).some((k) => ra[k] !== rb[k]);
+}
+
 export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: ReturnType<ConveyorStore['getState']>): boolean {
   return (
     st.onboarding.step !== prev.onboarding.step ||
@@ -121,7 +128,8 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.inspections.last !== prev.inspections.last ||
     st.race.active !== prev.race.active ||
     st.race.last !== prev.race.last ||
-    st.digit !== prev.digit ||
+    // стос росте щотіка: у запис «одразу» йде лише його прапорець, висоту пише автозапис (012)
+    digitChanged(st.digit, prev.digit) ||
     // журнал записується в мить джерела: вбивство застосунку в наступні 5 с його не губить
     st.museum.owned !== prev.museum.owned ||
     st.museum.curios !== prev.museum.curios ||

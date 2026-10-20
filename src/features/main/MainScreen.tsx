@@ -45,6 +45,7 @@ import { Seal } from '@/features/conveyor/Seal';
 import { birdEffect, canHireNow, type ConveyorStore, type Toast } from '@/features/conveyor/store';
 import { t } from '@/features/conveyor/texts';
 import { UnitRow } from '@/features/conveyor/UnitRow';
+import { StackTower } from '@/features/stack/StackTower';
 import { CallOverlay } from '@/features/onboarding/CallOverlay';
 import { ClerkFirst } from '@/features/onboarding/ClerkFirst';
 import { ready } from '@/features/onboarding/steps';
@@ -278,6 +279,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
         {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{byLevel.place(s.state.level)}</Text> : null}
+        <StackTower store={store} />
         {!onboarding ? (
           <Pressable testID="menu-open" accessibilityRole="button" accessibilityLabel={setT.menuOpen} onPress={() => setView({ kind: 'menu' })} style={[styles.menuBtn, { top: insets.top + space[8] }]}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.menuText}>{setT.menu}</Text>

@@ -241,4 +241,32 @@ describe('справжні міграції', () => {
     expect(r.save.game.telegrams.inbox[0]).toMatchObject({ pack: { no: 1, summary: 'diligent' } });
     expect(r.save.game.museum.curios[0]).toMatchObject({ kind: 'pack', pack: { packId: 'pack_01' } });
   });
+
+  test('11 → 12 (012 етап 2): порожній стос у цифровізації, «Доповідь тезово» без останньої доби; решта цілі', () => {
+    const d = draft({ schemaVersion: 11, savedAt: 5000 });
+    const { brief: _b, ...tgV11 } = d.game.telegrams;
+    const { stack: _s, ...digitV11 } = d.game.digitization;
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, telegrams: tgV11, digitization: { ...digitV11, counts: { '3': 6 }, total: 9, levelExitAllowed: true } } as never }) });
+    const r = loadSave(kv, { current: 12, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 11 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.telegrams.brief).toEqual({ lastDay: null });
+    expect(r.save.game.digitization.stack).toEqual({ sessionStartMs: null, cm: 0, offlineCm: 0, reached: false });
+    expect(r.save.game.digitization).toMatchObject({ counts: { '3': 6 }, total: 9, levelExitAllowed: true });
+    expect(r.save.game.telegrams.inbox).toEqual(d.game.telegrams.inbox);
+  });
+
+  test('схема 12: стос, «Метр звітів» у курйозах і «Доповідь тезово» проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 12, savedAt: 5000 });
+    const digitization = { ...d.game.digitization, stack: { sessionStartMs: 1000, cm: 64.5, offlineCm: 30.25, reached: true } };
+    const telegrams = { ...d.game.telegrams, brief: { lastDay: 20300 } };
+    const museum = { ...d.game.museum, curios: [{ seq: 1, kind: 'stack', atMs: 300, status: 'info', stack: { cm: 100 } }], curioSeq: 1 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, digitization, telegrams, museum } as never }) });
+    const r = loadSave(kv, { current: 12, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.digitization.stack).toEqual({ sessionStartMs: 1000, cm: 64.5, offlineCm: 30.25, reached: true });
+    expect(r.save.game.telegrams.brief.lastDay).toBe(20300);
+    expect(r.save.game.museum.curios[0]).toMatchObject({ kind: 'stack', stack: { cm: 100 } });
+  });
 });

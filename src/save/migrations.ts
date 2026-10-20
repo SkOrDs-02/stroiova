@@ -3,6 +3,7 @@
 import { DEFAULTS } from '@/economy/core';
 import { newInspections } from '@/inspections/lifecycle';
 import { newDigitization } from '@/digitization/digitization';
+import { newStack } from '@/stack/stack';
 import { newMonetization } from '@/monetization/monetization';
 import { newNotifications, newSettings } from '@/notifications/planner';
 import { newStats } from '@/profile/stats';
@@ -82,6 +83,15 @@ export const MIGRATIONS: Record<number, Migration> = {
     const g = game as { telegrams?: object };
     return { ...(game as object), telegrams: { ...(g.telegrams ?? {}), packs: { day: null, seq: 0 } } };
   },
+  // 11 → 12 (012 етап 2): стос до наради в цифровізації (порожній) і стан «Доповіді тезово» у телеграмах
+  11: (game) => {
+    const g = game as { telegrams?: object; digitization?: object };
+    return {
+      ...(game as object),
+      telegrams: { ...(g.telegrams ?? {}), brief: { lastDay: null } },
+      digitization: { ...(g.digitization ?? {}), stack: newStack() },
+    };
+  },
 };
 
 /** Налаштування й сповіщення схеми 9. */
@@ -132,6 +142,7 @@ export function telegramsV3() {
     kombat: { lastDayKey: null, active: null },
     meeting: { lastDayKey: null, active: null },
     packs: { day: null, seq: 0 },
+    brief: { lastDay: null },
     deliveries: 0,
     lineBags: {},
   };
