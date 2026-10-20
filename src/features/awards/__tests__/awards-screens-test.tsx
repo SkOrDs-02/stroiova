@@ -68,9 +68,36 @@ describe('тости грамот', () => {
 
   test('AC-20: оновлення контенту - одна грамота заднім числом і один тост', async () => {
     const store = game({}, { awards: { ...newAwards(), counters: { tg_diligent: 120 } } });
-    expect(store.getState().awards.got.aw_tg_diligent_25).toEqual({ atMs: T0, retro: true });
+    expect(store.getState().awards.got.aw_tg_diligent_25).toMatchObject({ atMs: T0, retro: true });
     await render(<MainScreen store={store} />);
     expect(screen.getByTestId('toast')).toHaveTextContent(/^Оголошено заднім числом: 1/);
+  });
+});
+
+describe('черга тостів і джерела', () => {
+  test('FR-33: ліміт 2 рахується разом з тостами, що вже в черзі; решта згортається', () => {
+    const store = game({ toast: { kind: 'award', id: 'aw_digit_first' }, awardQueue: grants(['aw_museum_first', 'aw_tg_first']) });
+    store.getState().flushAwardToasts();
+    expect(store.getState().toastQueue).toEqual([{ kind: 'award', id: 'aw_museum_first' }, { kind: 'awardMore', count: 1 }]);
+  });
+
+  test('awards_wall_open: те саме джерело не частіше разу на 60 с; профіль не дублюється сегментом', () => {
+    const store = game();
+    store.getState().openAwards('profile');
+    store.getState().openAwards('profile');
+    store.getState().openAwards('segment');
+    const wall = store.getState().events.filter((e) => e.type === 'awardsWallOpen');
+    expect(wall.map((e) => (e as { source: string }).source)).toEqual(['profile', 'segment']);
+  });
+
+  test('порядок на стіні - за наскрізним номером отримання, а не за годинником', async () => {
+    const store = game();
+    store.setState({ awards: { ...newAwards(), got: { aw_digit_first: { atMs: T0 + 5000, seq: 1 }, aw_digit_10: { atMs: T0 - 5000, seq: 2 } } } });
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('tab-museum'));
+    await fireEvent.press(screen.getByTestId('mu-seg-awards'));
+    const ids = screen.getAllByTestId(/^aw-tile-/).map((n) => n.props.testID as string);
+    expect(ids.slice(0, 2)).toEqual(['aw-tile-aw_digit_10', 'aw-tile-aw_digit_first']);
   });
 });
 

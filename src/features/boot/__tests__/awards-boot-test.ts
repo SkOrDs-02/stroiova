@@ -57,5 +57,20 @@ describe('збереження грамот', () => {
     const store = startGame(kv, r.save, T0);
     expect(store.getState().awardQueue).toEqual([{ id: 'aw_tg_diligent_25', atMs: expect.any(Number), retro: true, offline: false }]);
     expect(store.getState().awards.got.aw_tg_diligent_25!.retro).toBe(true);
+    // зауваження spec-guardian: заднім числом теж іде award_unlock з is_retroactive
+    expect(store.getState().events.filter((e) => e.type === 'awardUnlock')).toEqual([expect.objectContaining({ awardId: 'aw_tg_diligent_25', isRetroactive: true, awardsOwnedAfter: 1 })]);
+  });
+
+  test('вбивство між записом і тостом: непоказана грамота повертається в чергу, показана - ні', () => {
+    const d = draft({ savedAt: T0 });
+    const awards = { ...newAwards(), got: { aw_cat_first: { atMs: T0 - 9, seq: 1, toast: true as const }, aw_level_bryhada: { atMs: T0 - 8, seq: 2, orderNo: 1 } }, lastOrderNo: 1 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, awards } as never }) });
+    const r = loadSave(kv, opts);
+    if (r.kind !== 'ok') throw new Error(r.kind);
+    const store = startGame(kv, r.save, T0);
+    expect(store.getState().awardQueue.map((q) => q.id)).toEqual(['aw_cat_first']);
+    store.getState().flushAwardToasts();
+    expect(store.getState().awards.got.aw_cat_first!.toast).toBeUndefined();
+    expect(store.getState().awardQueue).toEqual([]);
   });
 });

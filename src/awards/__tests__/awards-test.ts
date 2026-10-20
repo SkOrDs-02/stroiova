@@ -55,7 +55,7 @@ describe('лічильники й видача', () => {
   test('перша відповідь дає «Першу телеграму», повторна нічого (FR-21)', () => {
     const a = run(newAwards(), [answer('diligent')]);
     expect(ids(a)).toEqual(['aw_tg_first']);
-    expect(a.s.got.aw_tg_first).toEqual({ atMs: T });
+    expect(a.s.got.aw_tg_first).toEqual({ atMs: T, seq: 1, toast: true });
     expect(a.s.pendingPlatform).toContain('aw_tg_first');
     const b = run(a.s, [answer('diligent')]);
     expect(b.grants).toEqual([]);
@@ -183,7 +183,7 @@ describe('лічильники й видача', () => {
     const f: Fact = { event: 'race_finish', props: { result: 'success', gift_type: 'drone', margin_sec: 5, level_id: 'batalion' }, atMs: T - 5000, offline: true };
     const r = applyFacts(newAwards(), [f], CTX, T);
     expect(r.grants[0]).toMatchObject({ atMs: T - 5000, offline: true });
-    expect(r.s.got.aw_race_first_win).toEqual({ atMs: T - 5000, offline: true });
+    expect(r.s.got.aw_race_first_win).toEqual({ atMs: T - 5000, seq: 1, toast: true, offline: true });
   });
 
   test('кілька грамот однією подією - у порядку awards.json', () => {
@@ -198,7 +198,7 @@ describe('заднім числом, перегляд, скидання', () => 
     const s: AwardsState = { ...newAwards(), counters: { tg_diligent: 120 }, got: {} };
     const r = retroactive(s, CTX, T);
     expect(r.grants).toEqual([{ id: 'aw_tg_diligent_25', atMs: T, retro: true, offline: false }]);
-    expect(r.s.got.aw_tg_diligent_25).toEqual({ atMs: T, retro: true });
+    expect(r.s.got.aw_tg_diligent_25).toEqual({ atMs: T, seq: 1, toast: true, retro: true });
     expect(retroactive(r.s, CTX, T).grants).toEqual([]);
   });
 

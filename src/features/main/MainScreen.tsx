@@ -94,7 +94,7 @@ type View3 =
   | { kind: 'convert' }
   | { kind: 'sedo' }
   | { kind: 'digital' }
-  | { kind: 'museum'; seg?: 'journals' | 'curios' | 'awards'; award?: string }
+  | { kind: 'museum'; seg?: 'journals' | 'curios' | 'awards'; award?: string; source?: 'award_toast' | 'profile' }
   | { kind: 'menu' }
   | { kind: 'shop' }
   | { kind: 'boosts' }
@@ -305,7 +305,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : view.kind === 'shop' ? (
         <ShopScreen store={store} insetTop={insets.top + space[16]} />
       ) : view.kind === 'museum' ? (
-        <MuseumScreen store={store} initialSeg={view.seg} initialAward={view.award ?? null} insetTop={insets.top + space[16]} onToDigital={() => setView({ kind: 'digital' })} />
+        <MuseumScreen key={`${view.seg ?? ''}-${view.award ?? ''}-${view.source ?? ''}`} store={store} initialSeg={view.seg} initialAward={view.award ?? null} awardsSource={view.source} insetTop={insets.top + space[16]} onToDigital={() => setView({ kind: 'digital' })} />
       ) : (
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
@@ -470,7 +470,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
                 accessibilityRole="button"
                 onPress={() => {
                   s.clearToast();
-                  setView({ kind: 'museum', seg: 'awards', ...(toast.kind === 'award' ? { award: toast.id } : {}) });
+                  setView({ kind: 'museum', seg: 'awards', source: 'award_toast', ...(toast.kind === 'award' ? { award: toast.id } : {}) });
                 }}
                 style={styles.toastBtn}
               >
@@ -571,7 +571,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
       {revealOpen ? <JournalNew store={store} /> : null}
-      {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} onAwards={() => setView({ kind: 'museum', seg: 'awards' })} /> : null}
+      {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} onAwards={() => setView({ kind: 'museum', seg: 'awards', source: 'profile' })} /> : null}
       {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => setView({ kind: 'shop' })} /> : null}
       {iapOpen ? <IapSuccess store={store} /> : null}
       {starterOpen ? <StarterOffer store={store} /> : null}

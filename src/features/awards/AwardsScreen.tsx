@@ -1,5 +1,5 @@
 // awards (016 FR-25…FR-29): сегмент «Грамоти» в музеї - шапка, фільтри, секції категорій, плитки-документи; шторка award-detail (FR-28).
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
@@ -8,7 +8,7 @@ import { AWARDS, AWARDS_TOTAL, CATEGORIES, CATEGORY_ORDER, TYPES, award } from '
 import type { AwardCategory, AwardDef, AwardsState } from '@/awards/types';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { ddmmyyyy } from '@/features/museum/present';
-import { color, radius, space } from '@/theme';
+import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -29,7 +29,7 @@ export interface Section {
 export function sections(aw: AwardsState, filter: AwardFilter): Section[] {
   return CATEGORY_ORDER.map((category) => {
     const all = AWARDS.filter((a) => a.category === category);
-    const got = all.filter((a) => aw.got[a.id]).sort((a, b) => aw.got[b.id]!.atMs - aw.got[a.id]!.atMs || a.no - b.no);
+    const got = all.filter((a) => aw.got[a.id]).sort((a, b) => (aw.got[b.id]!.seq ?? 0) - (aw.got[a.id]!.seq ?? 0) || aw.got[b.id]!.atMs - aw.got[a.id]!.atMs || a.no - b.no);
     const open = all.filter((a) => !aw.got[a.id] && !a.hidden).sort((a, b) => a.estDayAds - b.estDayAds || a.no - b.no);
     const hidden = all.filter((a) => !aw.got[a.id] && a.hidden).sort((a, b) => a.no - b.no);
     const items = filter === 'owned' ? got : filter === 'ahead' ? [...open, ...hidden] : [...got, ...open, ...hidden];
@@ -148,19 +148,12 @@ export function AwardDetail({ store, id, onClose }: { store: ConveyorStore; id: 
   );
 }
 
-/** Крапка на сегменті й на вкладці «Музей» (FR-29) рахується тим самим `unseen` зі стану */
-export function useAwardsOpened(store: ConveyorStore, source: 'segment' | 'award_toast' | 'profile'): void {
-  useEffect(() => {
-    store.getState().openAwards(source);
-  }, [store, source]);
-}
-
 const styles = StyleSheet.create({
   root: { flex: 1 },
   scroll: { padding: space[16], gap: space[12] },
   head: { ...type('h2'), color: color.text },
   filters: { flexDirection: 'row', gap: space[8], flexWrap: 'wrap' },
-  chip: { borderWidth: 1, borderColor: color.border, borderRadius: radius.pill, paddingVertical: space[6], paddingHorizontal: space[12], minHeight: 44, justifyContent: 'center' },
+  chip: { borderWidth: 1, borderColor: color.border, borderRadius: radius.pill, paddingVertical: space[6], paddingHorizontal: space[12], minHeight: size.touchMin, justifyContent: 'center' },
   chipOn: { backgroundColor: color.surface, borderColor: color.accent },
   chipText: { ...type('label'), color: color.text },
   chipTextOn: { color: color.accent },

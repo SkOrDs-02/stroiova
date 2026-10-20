@@ -6,9 +6,9 @@ import { formatDuration, formatMult } from '@/economy/format';
 import { advance, claimOffline, creditedAwayMs, offline, type OfflineResult } from '@/economy/game/advance';
 import { baseIncomePerMin } from '@/economy/game/income';
 import { catTap, refuel, tap } from '@/economy/game/actions';
-import { count as countAwards, markSeen as markAwardsSeen, newAwards, resetProgress as resetAwards, retroactive, unseen as unseenAwards } from '@/awards/awards';
+import { count as countAwards, markSeen as markAwardsSeen, newAwards, pendingToasts, resetProgress as resetAwards, retroactive, toastsShown, unseen as unseenAwards } from '@/awards/awards';
 import type { AwardsState, Fact, Grant } from '@/awards/types';
-import { awardCtx, factsFrom, newEvents, run as awardsRun, toastsOf, type AwardToast } from './awards';
+import { awardCtx, factsFrom, newEvents, run as awardsRun, toastsOf, unlockEvents, type AwardToast } from './awards';
 import { buy, hire, isOk } from '@/economy/game/purchase';
 import { newGame } from '@/economy/game/state';
 import { absence, isNewSession, shiftTimers } from '@/economy/game/time';
@@ -558,11 +558,13 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     };
   // 007 AC-18: розкриття, перерване вбивством застосунку, стає тостами «Новий експонат» (рішення 79)
   const interrupted = museumInterrupted(init?.museum ?? newMuseum());
+  const wallOpenAt: Record<string, number> = {};
   // 016 FR-23: нові умови над наявними лічильниками - заднім числом, одним тостом
   const retro0 = (() => {
     const base = init?.awards ?? newAwards();
     const r = retroactive(base, awardCtx({ state: init?.state ?? newGame(cfg, nowMs), cfg, effects: [], museum: init?.museum ?? newMuseum(), lastMs: nowMs }), nowMs);
-    return { awards: r.s, queue: r.grants };
+    // тости, не показані до вбивства застосунку, повертаються в чергу; заднім числом - ще й подія `award_unlock`
+    return { awards: r.s, queue: pendingToasts(r.s), events: unlockEvents(countAwards(base), r.grants) };
   })();
   return {
     cfg,
@@ -601,7 +603,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     offlineBackAt: null,
     toast: interrupted.nos.length ? ({ kind: 'exhibit', no: interrupted.nos[0]! } as Toast) : null,
     toastQueue: interrupted.nos.slice(1).map((no) => ({ kind: 'exhibit', no }) as Toast),
-    events: [],
+    events: retro0.events,
     tick: (now) => {
       if (now <= get().lastMs) return;
       runInspections(get().lastMs, now, false);
@@ -662,9 +664,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({ state: refuel(get().state, get().cfg, now).state });
     },
     cat: (now) => {
-      const r = catTap(get().state, get().cfg, now);
+      const before = get().state;
+      const r = catTap(before, get().cfg, now);
       set({ state: r.state });
-      get().awardsUi('cat_tap', { is_bonus: r.gain > 0 });
+      get().awardsUi('cat_tap', { is_bonus: r.state.catBonusAtMs !== before.catBonusAtMs });
     },
     awardsUi: (event, props) => {
       const g = get();
@@ -673,14 +676,19 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     },
     openAwards: (source) => {
       const g = get();
+      // tracking-plan: не частіше разу на 60 с для того самого джерела
+      const dup = g.lastMs - (wallOpenAt[source] ?? -Infinity) < 60_000;
+      if (!dup) wallOpenAt[source] = g.lastMs;
       const ev: DomainEvent = { type: 'awardsWallOpen', source, awardsOwned: countAwards(g.awards), awardsUnseen: unseenAwards(g.awards).length };
-      set({ awards: markAwardsSeen(g.awards), events: [...g.events, ev].slice(-40) });
+      set({ awards: markAwardsSeen(g.awards), ...(dup ? {} : { events: [...g.events, ev].slice(-40) }) });
     },
     flushAwardToasts: () => {
       const g = get();
       if (!g.awardQueue.length) return;
-      set({ awardQueue: [] });
-      for (const t of toastsOf(g.awardQueue)) get().showToast(t);
+      set({ awardQueue: [], awards: toastsShown(g.awards, g.awardQueue.map((q) => q.id)) });
+      // ліміт «2 + Ще N» рахується разом з тостами грамот, що вже на екрані чи в черзі
+      const shown = [g.toast, ...g.toastQueue].filter((t) => t?.kind === 'award').length;
+      for (const t of toastsOf(g.awardQueue, shown)) get().showToast(t);
     },
     setMode: (mode) => set({ mode }),
     away: (leftAt, backAt) => {
@@ -1135,7 +1143,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         notifications: newNotifications(),
         stats: newStats(),
         // 016 FR-22: грамоти лишаються, лічильники обнуляються
-        awards: resetAwards(g.awards),
+        awards: toastsShown(resetAwards(g.awards), g.awardQueue.map((q) => q.id)),
         awardQueue: [],
         sessionLines: { count: 0, byUid: {} },
         actTaps: 0,

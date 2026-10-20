@@ -68,10 +68,7 @@ export function ProfileScreen({ store, insetTop, onBack, onAwards }: { store: Co
       <Pressable
         testID="pf-awards"
         accessibilityRole="button"
-        onPress={() => {
-          store.getState().openAwards('profile');
-          onAwards();
-        }}
+        onPress={onAwards}
         style={styles.report}
       >
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.reportTitle}>{awT.profile(count(s.awards), AWARDS_TOTAL)}</Text>

@@ -94,7 +94,7 @@ export function applyFacts(s0: AwardsState, facts: readonly Fact[], ctx: AwardCt
   for (const a of AWARDS) {
     if (got[a.id] || !holds(a.condition, s, facts, ctx)) continue;
     const orderNo = a.type === 'nakaz' ? ++lastOrderNo : undefined;
-    got = { ...got, [a.id]: { atMs: at, ...(orderNo != null ? { orderNo } : {}), ...(opts.retro ? { retro: true } : {}), ...(offline ? { offline: true } : {}) } };
+    got = { ...got, [a.id]: { atMs: at, seq: Object.keys(got).length + 1, toast: true as const, ...(orderNo != null ? { orderNo } : {}), ...(opts.retro ? { retro: true } : {}), ...(offline ? { offline: true } : {}) } };
     if (a.mirror.enabled) pending.push(a.id);
     grants.push({ id: a.id, atMs: at, retro: !!opts.retro, offline });
   }
@@ -104,6 +104,23 @@ export function applyFacts(s0: AwardsState, facts: readonly Fact[], ctx: AwardCt
 /** Перевірка при завантаженні: умови над наявними лічильниками (FR-23); подій у пачці немає */
 export function retroactive(s: AwardsState, ctx: AwardCtx, atMs: number): Applied {
   return applyFacts(s, [], ctx, atMs, { retro: true });
+}
+
+/** Грамоти з непоказаним тостом: після вбивства застосунку між записом і тостом черга відновлюється */
+export function pendingToasts(s: AwardsState): Grant[] {
+  return AWARDS.filter((a) => s.got[a.id]?.toast)
+    .map((a) => ({ id: a.id, atMs: s.got[a.id]!.atMs, retro: !!s.got[a.id]!.retro, offline: !!s.got[a.id]!.offline }))
+    .sort((a, b) => (s.got[a.id]!.seq ?? 0) - (s.got[b.id]!.seq ?? 0));
+}
+
+/** Тости показано (або скасовано скиданням): позначку знято */
+export function toastsShown(s: AwardsState, ids: readonly string[]): AwardsState {
+  if (!ids.some((id) => s.got[id]?.toast)) return s;
+  const got: AwardsState['got'] = {};
+  for (const [id, g] of Object.entries(s.got)) {
+    got[id] = ids.includes(id) && g.toast ? { atMs: g.atMs, ...(g.orderNo != null ? { orderNo: g.orderNo } : {}), ...(g.retro ? { retro: true } : {}), ...(g.offline ? { offline: true } : {}), ...(g.seq != null ? { seq: g.seq } : {}) } : g;
+  }
+  return { ...s, got };
 }
 
 export function count(s: AwardsState): number {

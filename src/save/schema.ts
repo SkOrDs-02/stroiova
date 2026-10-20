@@ -348,7 +348,7 @@ export const statsSchema = z.object({ inspTotal: z.number().int().nonnegative(),
 
 /** Грамоти (016 FR-45): необов'язкове поле, старі записи дістають порожній стан при завантаженні (без підйому схеми, її ділять 014 і 013). */
 export const awardsSchema = z.object({
-  got: z.record(z.string(), z.object({ atMs: z.number(), orderNo: z.number().int().min(1).optional(), retro: z.boolean().optional(), offline: z.boolean().optional() })),
+  got: z.record(z.string(), z.object({ atMs: z.number(), orderNo: z.number().int().min(1).optional(), retro: z.boolean().optional(), offline: z.boolean().optional(), seq: z.number().int().min(1).optional(), toast: z.literal(true).optional() })),
   counters: z.record(z.string(), nonNeg),
   sets: z.record(z.string(), z.array(z.string())),
   seen: z.array(z.string()),

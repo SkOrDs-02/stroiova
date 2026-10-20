@@ -25,7 +25,7 @@ type Sheet = { kind: 'journal'; no: number } | { kind: 'curio'; seq: number } | 
 
 const FILTERS: Filter[] = ['all', 'property', 'personnel'];
 
-export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journals', initialAward = null }: { store: ConveyorStore; onToDigital: () => void; insetTop: number; initialSeg?: Seg; initialAward?: string | null }) {
+export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journals', initialAward = null, awardsSource = 'segment' }: { store: ConveyorStore; onToDigital: () => void; insetTop: number; initialSeg?: Seg; initialAward?: string | null; awardsSource?: 'segment' | 'award_toast' | 'profile' }) {
   const s = useStore(store);
   const [seg, setSeg] = useState<Seg>(initialSeg);
   // 010 FR-30: бейдж «нове» в меню гасне, коли гравець побачив список записів
@@ -35,7 +35,8 @@ export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journ
   // 016 FR-29: показ сегмента «Грамоти» позначає всі грамоти переглянутими; крапка на сегменті, поки є нові
   const awardsNew = unseenAwards(s.awards).length > 0;
   useEffect(() => {
-    if (seg === 'awards') store.getState().openAwards(initialAward ? 'award_toast' : 'segment');
+    if (seg === 'awards') // перший показ з тоста чи профілю несе своє джерело, далі - тап по сегменту
+      store.getState().openAwards(seg === initialSeg ? awardsSource : 'segment');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seg, store]);
   const [filter, setFilter] = useState<Filter>('all');

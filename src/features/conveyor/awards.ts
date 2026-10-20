@@ -55,23 +55,29 @@ export function run(g: AwardsHost, facts: readonly Fact[], atMs: number, retro =
   const r = applyFacts(g.awards, facts, awardCtx(g), atMs, { retro });
   if (r.s === g.awards) return null;
   if (!r.grants.length) return { awards: r.s, awardQueue: g.awardQueue, events: g.events };
-  let owned = count(g.awards);
-  const evs: DomainEvent[] = r.grants.map((gr) => {
+  return { awards: r.s, awardQueue: [...g.awardQueue, ...r.grants], events: [...g.events, ...unlockEvents(count(g.awards), r.grants)].slice(-40) };
+}
+
+/** `award_unlock` на кожну видачу, зокрема заднім числом (is_retroactive = true) */
+export function unlockEvents(ownedBefore: number, grants: readonly Grant[]): DomainEvent[] {
+  let owned = ownedBefore;
+  return grants.map((gr) => {
     const a = award(gr.id)!;
     owned += 1;
     return { type: 'awardUnlock', awardId: a.id, category: a.category, awardType: a.type, isHidden: a.hidden, awardsOwnedAfter: owned, isRetroactive: gr.retro, isResolvedOffline: gr.offline, isMirrored: a.mirror.enabled };
   });
-  return { awards: r.s, awardQueue: [...g.awardQueue, ...r.grants], events: [...g.events, ...evs].slice(-40) };
 }
 
 /** Тости: до 2 грамот по одному, решта згорнуто (FR-33); заднім числом - один тост (FR-23) */
 export type AwardToast = { kind: 'award'; id: string } | { kind: 'awardMore'; count: number } | { kind: 'awardRetro'; count: number };
 
-export function toastsOf(queue: readonly Grant[]): AwardToast[] {
+export function toastsOf(queue: readonly Grant[], shown = 0): AwardToast[] {
   const retro = queue.filter((q) => q.retro);
   const live = queue.filter((q) => !q.retro);
-  const out: AwardToast[] = live.slice(0, 2).map((q) => ({ kind: 'award', id: q.id }));
-  if (live.length > 2) out.push({ kind: 'awardMore', count: live.length - 2 });
+  // `shown` - грамоти, чиї тости вже на екрані чи в черзі: ліміт 2 рахується разом з ними (FR-33)
+  const slots = Math.max(0, 2 - shown);
+  const out: AwardToast[] = live.slice(0, slots).map((q) => ({ kind: 'award', id: q.id }));
+  if (live.length > slots) out.push({ kind: 'awardMore', count: live.length - slots });
   if (retro.length) out.push({ kind: 'awardRetro', count: retro.length });
   return out;
 }
