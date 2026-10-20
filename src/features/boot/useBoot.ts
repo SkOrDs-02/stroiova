@@ -124,6 +124,9 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.telegrams.inbox !== prev.telegrams.inbox ||
     st.telegrams.kombat !== prev.telegrams.kombat ||
     st.telegrams.meeting !== prev.telegrams.meeting ||
+    st.telegrams.sedo !== prev.telegrams.sedo ||
+    // 013 FR-7: конвертація ланки зберігається атомарно, в мить підтвердження
+    st.state.digital !== prev.state.digital ||
     st.inspections.active !== prev.inspections.active ||
     st.inspections.last !== prev.inspections.last ||
     st.race.active !== prev.race.active ||

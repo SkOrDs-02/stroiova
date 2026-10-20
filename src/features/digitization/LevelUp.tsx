@@ -14,11 +14,21 @@ export function LevelUp({ store }: { store: ConveyorStore }) {
   // церемонія ще йде, а стан уже на новому рівні: який наказ, каже рівень, з якого перейшли
   const from = s.digit.ceremony?.level ?? 1;
   const to3 = from === 2;
-  const to4 = from >= 3;
+  const to4 = from === 3;
+  const to5 = from >= 4;
   return (
     <View style={styles.scrim} testID="level-up">
       <View style={styles.wrap} accessibilityViewIsModal>
-        {to4 ? (
+        {to5 ? (
+          <View style={styles.paper} testID="level-up-r5">
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{digitT.l5DocNo}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{digitT.l5DocTitle}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{digitT.l5l1}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{digitT.l5Place}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc}>{digitT.l5l3}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc} testID="level-points">{digitT.l5Points(s.state.prestigePoints)}</Text>
+          </View>
+        ) : to4 ? (
           <View style={styles.paper} testID="level-up-r4">
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{digitT.l4DocNo}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{digitT.l4DocTitle}</Text>
@@ -51,7 +61,7 @@ export function LevelUp({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.quote}>{digitT.l2Kava}</Text>
           </>
         )}
-        <Button testID="level-up-ok" label={to4 ? digitT.l4Cta : to3 ? digitT.l3Cta : digitT.l2Cta} onPress={s.closeDigitStep} />
+        <Button testID="level-up-ok" label={to5 ? digitT.l5Cta : to4 ? digitT.l4Cta : to3 ? digitT.l3Cta : digitT.l2Cta} onPress={s.closeDigitStep} />
       </View>
     </View>
   );

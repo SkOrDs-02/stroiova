@@ -8,12 +8,12 @@ import type { BossId, ChecklistItem } from './types';
 
 /** Комісію задає рівень у мить оголошення (FR-27). */
 export function bossFor(level: number): BossId {
-  return level >= 2 ? 'command_commission' : 'brigade_commission';
+  return level >= 5 ? 'digital_commission' : level >= 2 ? 'command_commission' : 'brigade_commission';
 }
 
-/** Рівень чекліста: Р1-Р4 мають свої пункти; Р5 бере пункти Р4, доки 013 не додасть свої. */
+/** Рівень чекліста: Р1-Р5 мають свої пункти (Р5 - 013, рішення 105). */
 export function checklistLevel(level: number): number {
-  return Math.min(4, Math.max(1, level));
+  return Math.min(5, Math.max(1, level));
 }
 
 export function itemDef(cfg: EconomyConfig, id: string, level: number): InspItemDef | undefined {

@@ -92,6 +92,22 @@ export const MIGRATIONS: Record<number, Migration> = {
       digitization: { ...(g.digitization ?? {}), stack: newStack() },
     };
   },
+  // 12 → 13 (013 етап 1): цифрові ланки Р5, початок рівня й тривалість циклу, «Збій СЕДО»
+  12: (game) => {
+    const g = game as { economy?: object; telegrams?: object; digitization?: { cycleStartMs?: number; ceremony?: object | null } };
+    const d = g.digitization ?? {};
+    return {
+      ...(game as object),
+      economy: { ...(g.economy ?? {}), digital: [] },
+      telegrams: { ...(g.telegrams ?? {}), sedo: { lastDayKey: null, active: null } },
+      digitization: {
+        ...d,
+        levelStartMs: d.cycleStartMs ?? 0,
+        lastCycleMs: null,
+        ceremony: d.ceremony ? { ...d.ceremony, cycleMs: 0, prevCycleMs: null } : null,
+      },
+    };
+  },
 };
 
 /** Налаштування й сповіщення схеми 9. */
@@ -143,6 +159,7 @@ export function telegramsV3() {
     meeting: { lastDayKey: null, active: null },
     packs: { day: null, seq: 0 },
     brief: { lastDay: null },
+    sedo: { lastDayKey: null, active: null },
     deliveries: 0,
     lineBags: {},
   };

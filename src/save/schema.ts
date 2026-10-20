@@ -1,13 +1,13 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 12;
+export const CURRENT_SCHEMA = 13;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
 export const effectSchema = z.object({
   kind: z.enum(['mult', 'factor']),
-  source: z.enum(['ad_boost', 'gift_drone', 'gift_shovel', 'gift_generator', 'inspection_pass', 'telegram_slow', 'telegram_stop', 'kombat_away', 'meeting_overrun', 'pack_beats', 'inspection_fail', 'clerk_away']),
+  source: z.enum(['ad_boost', 'gift_drone', 'gift_shovel', 'gift_generator', 'inspection_pass', 'telegram_slow', 'telegram_stop', 'kombat_away', 'meeting_overrun', 'pack_beats', 'inspection_fail', 'sedo_failure', 'clerk_away']),
   value: z.number().positive(),
   target: unitRef.optional(),
   startMs: z.number(),
@@ -36,6 +36,7 @@ export const economyStateSchema = z.object({
   tapTimes: z.array(z.number()),
   offlineDoubles: z.object({ date: z.string(), count: z.number().int().nonnegative() }),
   museum: z.object({ unit: z.record(z.string(), z.number().positive()), storage: z.number().positive(), paper: z.number().positive() }),
+  digital: z.array(z.string()),
 });
 
 const stepNo = z.number().int().min(1).max(11);
@@ -119,11 +120,15 @@ export const telegramStateSchema = z.object({
   }),
   packs: z.object({ day: z.string().nullable(), seq: z.number().int().nonnegative() }),
   brief: z.object({ lastDay: z.number().int().nullable() }),
+  sedo: z.object({
+    lastDayKey: z.string().nullable(),
+    active: z.object({ startMs: z.number(), endMs: z.number(), stageId: z.string() }).nullable(),
+  }),
   deliveries: z.number().int().nonnegative(),
   lineBags: z.record(z.string(), z.object({ used: z.array(z.number().int().nonnegative()), last: z.number().int().nullable() })),
 });
 
-const bossId = z.enum(['brigade_commission', 'command_commission']);
+const bossId = z.enum(['brigade_commission', 'command_commission', 'digital_commission']);
 const trigger = z.enum(['scheduled', 'unscheduled']);
 const inspKind = z.enum(['regular', 'final']);
 const reason = z.object({ telegramId: z.string() }).nullable();
@@ -241,11 +246,15 @@ export const digitizationStateSchema = z.object({
       multAfter: z.number(),
       journals: z.array(z.number().int()),
       levelUp: z.boolean(),
+      cycleMs: nonNeg,
+      prevCycleMs: nonNeg.nullable(),
       step: z.enum(['result', 'levelUp']),
     })
     .nullable(),
   cycleStartMs: z.number(),
   levelExitAllowed: z.boolean(),
+  levelStartMs: z.number(),
+  lastCycleMs: nonNeg.nullable(),
   stack: z.object({ sessionStartMs: z.number().nullable(), cm: nonNeg, offlineCm: nonNeg, reached: z.boolean() }),
 });
 

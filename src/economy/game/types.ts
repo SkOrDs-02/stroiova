@@ -53,6 +53,8 @@ export interface EconomyState {
   museum: { unit: Record<string, number>; storage: number; paper: number };
   /** Нагороди ×2 за місцеву добу пристрою; скидається, лише коли дата пізніша (FR-26, 09 FR-15) */
   offlineDoubles: { date: string; count: number };
+  /** Р5 (013): id ланок, оцифрованих конвертаціями, у порядку конвертацій; переживають цифровізації */
+  digital: string[];
 }
 
 /** Кусково-сталий множник (FR-17) або фактор одиниці (FR-18) з абсолютними мітками; приходить з 03, 04, 05, 08. */
@@ -74,6 +76,8 @@ export interface Effect {
     /** «Зведення б'ється» (011 FR-22): потік «Зведення» ×pack.summaryBuff */
     | 'pack_beats'
     | 'inspection_fail'
+    /** «Збій СЕДО» (013 FR-12): одна цифрова ланка ×sedoFailMult */
+    | 'sedo_failure'
     /** Діловод одиниці у відрядженні (003, `clerkAway`): поки триває, офлайн одиниця працює як без діловода */
     | 'clerk_away';
   value: number;
@@ -106,6 +110,7 @@ export type DomainEvent =
   // 011: пачки Р3; аналітика етапу 5 (telegram_pack_receive, telegram_pack_resolve), музей 07 (один запис на пачку)
   | { type: 'packReceive'; packId: string; no: number; isRepeat: boolean; delivery: 'live' | 'while_away' }
   | { type: 'packResolve'; packId: string; no: number; mode: 'summary' | 'separate' | 'mixed'; /** лише для summary */ choiceKind?: string; paperSpent: number; repDelta: number; chancePct: number; isBeats: boolean; secSinceReceived: number }
+  | { type: 'stageConvert'; stageId: string; convertIndex: number; costLog10: number; digitizationsOnLevel: number; secSinceLevelStart: number }
   | { type: 'stackReach'; cm: number; zpzLevel: number; zpzSharePct: number; secSinceSessionStart: number; offlineSharePct: number }
   | { type: 'packBeats'; mult: number; hours: number }
   | { type: 'packCurio'; packId: string; no: number; kind: 'diligent' | 'formal_reply' | 'drawer'; uids: string[] }
@@ -117,6 +122,9 @@ export type DomainEvent =
   | { type: 'kombatFound'; how: 'wait' | 'runner' }
   /** «Нарада затягнулась» (011 FR-25): random_event_resolve, event_type = meeting_overrun, choice = send_note */
   | { type: 'meetingStart'; endMs: number }
+  /** «Збій СЕДО» (013 FR-12) */
+  | { type: 'sedoStart'; stageId: string; endMs: number }
+  | { type: 'sedoPrint'; stageId: string; paperSpent: number }
   | { type: 'meetingFound'; how: 'wait' | 'note' }
   | { type: 'raceEffect'; telegramId: string; effect: Record<string, unknown> }
   | { type: 'arc'; id: string }
@@ -130,7 +138,7 @@ export type DomainEvent =
       type: 'inspectionStart';
       id: string;
       no: number;
-      boss: 'brigade_commission' | 'command_commission';
+      boss: 'brigade_commission' | 'command_commission' | 'digital_commission';
       /** inspection_kind (011): звичайна чи підсумкова; attempt_number - спроба підсумкової */
       kind: 'regular' | 'final';
       attempt: number;

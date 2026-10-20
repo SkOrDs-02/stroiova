@@ -117,3 +117,47 @@ export function briefOnSessionStart(tg0: TelegramState, cfg: EconomyConfig, eco:
   const tg: TelegramState = { ...tg1, inbox: [...tg1.inbox, item], deliveries: tg1.deliveries + 1, brief: { lastDay: today } };
   return { tg, item, events: [{ type: 'telegramReceive', telegramId: BRIEF_ID, uid: item.uid, delivery: 'live', scripted: false }] };
 }
+
+export interface SedoStart {
+  tg: TelegramState;
+  effect: StoredEffect | null;
+  events: DomainEvent[];
+}
+
+/** Активний «Збій СЕДО» на мить `nowMs` */
+export function sedoActive(tg: TelegramState, nowMs: number) {
+  const a = tg.sedo.active;
+  return a && a.endMs > nowMs ? a : null;
+}
+
+/**
+ * «Збій СЕДО» (013 FR-12): на старті сесії з імовірністю `sedoFailChance`, лише якщо є цифрові ланки, ≤ 1 на добу і не більше одного
+ * одночасно; одна випадкова цифрова ланка ×`sedoFailMult` на `sedoFailMin` хв.
+ */
+export function sedoOnSessionStart(tg0: TelegramState, cfg: EconomyConfig, eco: EconomyState, nowMs: number, tz: number): SedoStart {
+  const none: SedoStart = { tg: tg0, effect: null, events: [] };
+  const p = cfg.params;
+  if (eco.digital.length === 0 || tg0.startMs == null || sedoActive(tg0, nowMs) || tg0.sedo.lastDayKey === dayKey(nowMs, tz)) return none;
+  const rng = roller(tg0.rng);
+  if (!(rng.next() < p.sedoFailChance)) return { ...none, tg: { ...tg0, rng: rng.state } };
+  const stageId = eco.digital[Math.min(eco.digital.length - 1, Math.floor(rng.next() * eco.digital.length))]!;
+  const endMs = nowMs + p.sedoFailMin * MIN;
+  const tg: TelegramState = { ...tg0, rng: rng.state, sedo: { lastDayKey: dayKey(nowMs, tz), active: { startMs: nowMs, endMs, stageId } } };
+  const effect: StoredEffect = { kind: 'factor', source: 'sedo_failure', value: p.sedoFailMult, target: { type: 'stage', id: stageId }, startMs: nowMs, endMs };
+  return { tg, effect, events: [{ type: 'sedoStart', stageId, endMs }] };
+}
+
+/** «Роздрукувати» (013 FR-12): −`sedoPrintPaper` аркушів, збій знято одразу; без паперу - помилка з тим, скільки бракує */
+export function printSedo(tg: TelegramState, eco: EconomyState, cfg: EconomyConfig, nowMs: number): { tg: TelegramState; eco: EconomyState; stageId: string; events: DomainEvent[] } | { error: 'none' } | { error: 'paper'; lack: number } {
+  const a = sedoActive(tg, nowMs);
+  if (!a) return { error: 'none' };
+  const cost = cfg.params.sedoPrintPaper;
+  const have = Math.floor(eco.paper);
+  if (have < cost) return { error: 'paper', lack: cost - have };
+  return {
+    tg: { ...tg, sedo: { ...tg.sedo, active: null } },
+    eco: { ...eco, paper: eco.paper - cost },
+    stageId: a.stageId,
+    events: [{ type: 'sedoPrint', stageId: a.stageId, paperSpent: cost }],
+  };
+}

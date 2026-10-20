@@ -2,7 +2,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
-import { formatBig, formatMult } from '@/economy/format';
+import { formatBig, formatDuration, formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { useTumbLine } from '@/features/inspections/useTumbLine';
 import { speakerOf } from '@/features/telegrams/lines';
@@ -31,6 +31,7 @@ export function DigitResult({ store }: { store: ConveyorStore }) {
           <Row k={digitT.rowLifetime} v={formatBig(c.lifetime, 'balance')} />
           <Row k={digitT.rowJournals} v={String(journals.length)} />
           <Row k={digitT.rowPoints} v={`+${c.points}`} testID="result-points" />
+          {c.level >= 5 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID="result-cycle">{digitT.cvCycle(formatDuration(c.cycleMs / 1000), c.prevCycleMs == null ? null : formatDuration(c.prevCycleMs / 1000))}</Text> : null}
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.total} testID="result-total">{digitT.total(c.pointsTotal, formatMult(c.multAfter))}</Text>
           {journals.length ? (
             <>

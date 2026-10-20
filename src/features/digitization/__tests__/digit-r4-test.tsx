@@ -82,8 +82,8 @@ describe('перехід Р3 → Р4', () => {
     await fireEvent.press(screen.getByTestId('tab-digital'));
     expect(screen.getByTestId('digit-cta')).toHaveTextContent('Оцифрувати зал доповідей');
     expect(screen.getByTestId('digit-track')).toHaveTextContent(has('Генштабзараз'));
-    expect(screen.getByTestId('digit-track')).toHaveTextContent(has('Без паперупізніше'));
-    expect(screen.getByTestId('digit-later')).toBeTruthy();
+    expect(screen.getByTestId('digit-track')).toHaveTextContent(has('Без паперупісля підсумкової'));
+    expect(screen.queryByTestId('digit-later')).toBeNull();
   });
 });
 

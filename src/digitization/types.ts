@@ -19,6 +19,9 @@ export interface Ceremony {
   journals: number[];
   /** 3-тя на Р1: після акта — level-up */
   levelUp: boolean;
+  /** Тривалість циклу, що закрито, і попереднього (013 FR-11: «Цей цикл: t · попередній: t0»), мс */
+  cycleMs: number;
+  prevCycleMs: number | null;
   /** Що ще не показано: акт, потім наказ про переведення */
   step: 'result' | 'levelUp';
 }
@@ -35,6 +38,10 @@ export interface DigitizationState {
   cycleStartMs: number;
   /** Підсумкова рівня пройдена: наступна цифровізація - з переходом (011 FR-1, FR-9); скидається на переході */
   levelExitAllowed: boolean;
+  /** Початок поточного рівня (stage_convert.sec_since_level_start), схема 13 */
+  levelStartMs: number;
+  /** Тривалість попереднього закритого циклу, мс; null до першої цифровізації */
+  lastCycleMs: number | null;
   /** Стос до наради Р4 (012 етап 2): скидається разом із циклом, схема 12 */
   stack: StackState;
 }

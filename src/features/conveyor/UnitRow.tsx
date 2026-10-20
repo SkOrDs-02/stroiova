@@ -9,6 +9,8 @@ import type { BuyMode, EconomyConfig, EconomyState, Effect, UnitDef, UnitRef } f
 import { color, radius, size, space, typeScale } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
 
+import { cvT } from '@/features/convert/texts';
+
 import { t } from './texts';
 
 interface Props {
@@ -30,9 +32,13 @@ interface Props {
   hireLocked?: boolean;
   /** Без діловода після першого найму (002 FR-17) */
   needsClerk?: boolean;
+  /** Р5 (013): ланку оцифровано - нова назва, без сповільнення */
+  digital?: boolean;
+  /** Р5: наступна за порядком конвертація цієї ланки */
+  convert?: { label: string; disabled: boolean; onPress: () => void };
 }
 
-export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effects, mode, nowMs, onBuy, onHire, coach, needsClerk, hireLocked }: Props) {
+export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effects, mode, nowMs, onBuy, onHire, coach, needsClerk, hireLocked, digital, convert }: Props) {
   const q = quote(state, cfg, unit, mode, nowMs, effects);
   // Р4: «Звіти про звіти» не мають власного виробітку - показуємо частку й виробіток наживо (012 FR-12)
   const zpz = def.share ? zpzInfo(state, cfg, nowMs, effects) : null;
@@ -59,7 +65,8 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
       testID={`unit-${def.id}`}
     >
       <View style={styles.head}>
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.name}>{def.name}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.name}>{digital ? (cvT.names[def.id] ?? def.name) : def.name}</Text>
+        {digital ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta} testID={`digital-${def.id}`}>{cvT.immuneNote}</Text> : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>
           {opened && zpz ? t.levelNoRate(level, hasClerk ? t.clerk : t.manual) : opened ? t.level(level, formatRate(rate), hasClerk ? t.clerk : t.manual) : q.locked ? t.locked : zpz ? t.zpzFirst(formatTenths(zpzFirst)) : t.firstLevel(formatRate(capAt(def, 1, cfg.params)))}
         </Text>
@@ -103,6 +110,11 @@ export function UnitRow({ def, unit, level, hasClerk, isNeck, state, cfg, effect
           </Pressable>
         ) : null}
       </View>
+      {convert ? (
+        <Pressable testID={`convert-${def.id}`} accessibilityRole="button" accessibilityState={{ disabled: convert.disabled }} disabled={convert.disabled} onPress={convert.onPress} style={[styles.btnGhost, convert.disabled && styles.btnOff]}>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.ghostText, convert.disabled && styles.btnTextOff]}>{convert.label}</Text>
+        </Pressable>
+      ) : null}
       {target?.target === 'hire' ? coachText : null}
       {dim ? <View style={styles.scrim} /> : null}
     </View>

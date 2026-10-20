@@ -15,6 +15,16 @@ export function unitFactor(ref: UnitRef, t: number, effects: readonly Effect[]):
   return f;
 }
 
+/**
+ * Цифрова ланка (013 FR-9): телеграми, «Комбат», «Нарада», «Доповідь тезово» її не сповільнюють; діють лише провал перевірки
+ * (ВП-2, рішення 105) і «Збій СЕДО».
+ */
+const DIGITAL_FACTOR_SOURCES: readonly Effect['source'][] = ['inspection_fail', 'sedo_failure'];
+
+export function isDigital(state: Pick<EconomyState, 'digital'>, stageId: string): boolean {
+  return state.digital.includes(stageId);
+}
+
 /** Діловод одиниці у відрядженні в момент t (003 `clerkAway`): офлайн одиниця працює як без діловода. */
 export function clerkAwayAt(ref: UnitRef, t: number, effects: readonly Effect[]): boolean {
   return effects.some((e) => e.source === 'clerk_away' && e.target?.type === ref.type && e.target.id === ref.id && activeAt(e, t));
@@ -88,8 +98,9 @@ function conveyor(state: EconomyState, cfg: EconomyConfig, t: number, effects: r
   });
   const stages: FlowStage[] = it.stages.map((u, j) => {
     const on = !idle || (!!state.stageClerks[j] && !clerkAwayAt({ type: 'stage', id: u.id }, t, effects));
-    const f = withFactors ? unitFactor({ type: 'stage', id: u.id }, t, effects) : 1;
-    return { cap: capAt(u, state.stageLevels[j] ?? 0, p) * mus(u.id) * f, on };
+    const digital = isDigital(state, u.id);
+    const f = withFactors ? unitFactor({ type: 'stage', id: u.id }, t, digital ? effects.filter((e) => DIGITAL_FACTOR_SOURCES.includes(e.source)) : effects) : 1;
+    return { cap: capAt(u, state.stageLevels[j] ?? 0, p) * mus(u.id) * (digital ? p.convert.mult : 1) * f, on };
   });
   return flow(streams, stages);
 }

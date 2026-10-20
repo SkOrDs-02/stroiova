@@ -69,6 +69,8 @@ export const DEFAULTS: EconomyParams = {
   sedoFailMult: 0.5,
   sedoFailMin: 30,
   sedoPrintPaper: 5,
+  slowPerDayLateMin: 1, // 013 FR-14: after the 4th conversion the script «weakens», 1–2 telegrams a day
+  slowPerDayLateMax: 2,
   // «Нарада затягнулась» (Р3+): the «Комбата шукають» template on the «Нарада» stage
   naradaChance: 0.2,
   naradaMult: 0.25,
@@ -163,6 +165,11 @@ export const DEFAULTS: EconomyParams = {
     { id: 'stack_meter', level: 4, min: 13 },
     { id: 'report_prep', level: 4, min: 6 },
     { id: 'brief_onepage', level: 4, min: 4 },
+    // 013 (рішення 105): Р5 - дзеркало Р4 за вагою пунктів, разом inspChecklistMin = 51
+    { id: 'print_ejournal', level: 5, min: 28 },
+    { id: 'laptop_glove', level: 5, min: 13 },
+    { id: 'dashboard_font', level: 5, min: 6 },
+    { id: 'act_kep', level: 5, min: 4 },
   ],
   digitJournals: { '1': { '1': [1, 2, 3], '2': [4, 5] }, '2': { '1': [9], '2': [10], '3': [11] } },
   inspPushVisit: 1, // minutes: the player opens the game on push № 3 (2 h before arrival) if no session falls between warning and arrival; 0 = never

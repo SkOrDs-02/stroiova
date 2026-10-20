@@ -44,11 +44,11 @@ export function track(level: number): { key: TrackKey; name: string; state: stri
 
 /** Тексти екранів цифровізації за рівнем, на якому гравець зараз (Р4 - 012) */
 export const byLevel = {
-  sub: (l: number) => (l >= 4 ? digitT.subR4 : l === 3 ? digitT.subR3 : l === 2 ? digitT.subR2 : digitT.subR1),
-  cta: (l: number, isLast: boolean) => (l >= 4 ? digitT.ctaR4 : l === 3 ? (isLast ? digitT.ctaToR3 : digitT.ctaR3) : l === 2 ? (isLast ? digitT.ctaToR3 : digitT.ctaR2) : isLast ? digitT.ctaLast : digitT.ctaR1),
-  confirmTitle: (l: number) => (l >= 4 ? digitT.confirmTitleR4 : l === 3 ? digitT.confirmTitleR3 : l === 2 ? digitT.confirmTitleR2 : digitT.confirmTitleR1),
-  confirmLvl: (l: number) => (l === 3 ? digitT.confirmLvlR4 : l === 2 ? digitT.confirmLvlR3 : digitT.confirmLvl),
-  place: (l: number) => (l >= 4 ? digitT.placeR4 : l === 3 ? digitT.placeR3 : digitT.placeR2),
+  sub: (l: number) => (l >= 5 ? digitT.subR5 : l >= 4 ? digitT.subR4 : l === 3 ? digitT.subR3 : l === 2 ? digitT.subR2 : digitT.subR1),
+  cta: (l: number, isLast: boolean) => (l >= 5 ? digitT.ctaR5 : l >= 4 ? (isLast ? digitT.ctaToR3 : digitT.ctaR4) : l === 3 ? (isLast ? digitT.ctaToR3 : digitT.ctaR3) : l === 2 ? (isLast ? digitT.ctaToR3 : digitT.ctaR2) : isLast ? digitT.ctaLast : digitT.ctaR1),
+  confirmTitle: (l: number) => (l >= 5 ? digitT.confirmTitleR5 : l >= 4 ? digitT.confirmTitleR4 : l === 3 ? digitT.confirmTitleR3 : l === 2 ? digitT.confirmTitleR2 : digitT.confirmTitleR1),
+  confirmLvl: (l: number) => (l === 4 ? digitT.confirmLvlR5 : l === 3 ? digitT.confirmLvlR4 : l === 2 ? digitT.confirmLvlR3 : digitT.confirmLvl),
+  place: (l: number) => (l >= 5 ? digitT.placeR5 : l >= 4 ? digitT.placeR4 : l === 3 ? digitT.placeR3 : digitT.placeR2),
   /** Примітка акта цифровізації: з переходом рівня або новий цикл */
-  note: (l: number, levelUp: boolean) => (levelUp ? (l >= 3 ? digitT.noteR4 : l >= 2 ? digitT.noteR3 : digitT.noteL2) : l >= 2 ? digitT.noteR2 : digitT.noteR1),
+  note: (l: number, levelUp: boolean) => (levelUp ? (l >= 4 ? digitT.noteR5 : l >= 3 ? digitT.noteR4 : l >= 2 ? digitT.noteR3 : digitT.noteL2) : l >= 5 ? digitT.noteR5 : l >= 2 ? digitT.noteR2 : digitT.noteR1),
 };

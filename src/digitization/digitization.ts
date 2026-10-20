@@ -8,14 +8,14 @@ import { newStack, resetCycle } from '@/stack/stack';
 
 import type { Ceremony, DigitizationState } from './types';
 
-/** Рівні, які можна пройти в цій збірці: Р3 відкрито 011, Р4 - 012 (етап 1); Р5 - 013. На останньому виходу ще немає. */
-export const PLAYABLE_LEVELS = 4;
+/** Рівні, які можна пройти в цій збірці: Р3 відкрито 011, Р4 - 012, Р5 - 013 (етап 1). З Р5 виходу немає (конвертації, фінал і Дублі - 013). */
+export const PLAYABLE_LEVELS = 5;
 
 /** Рівні, де підсумкова вже реалізована: Р2, Р3 (011) і Р4 (012); збігається з `FINALS` перевірок. Перехід на Р5 дасть 013 */
 export const FINAL_LEVELS = [2, 3, 4];
 
 export function newDigitization(nowMs: number): DigitizationState {
-  return { counts: {}, total: 0, howSeen: false, ceremony: null, cycleStartMs: nowMs, levelExitAllowed: false, stack: newStack() };
+  return { counts: {}, total: 0, howSeen: false, ceremony: null, cycleStartMs: nowMs, levelExitAllowed: false, levelStartMs: nowMs, lastCycleMs: null, stack: newStack() };
 }
 
 /** Скільки цифровізацій уже зроблено на рівні. */
@@ -147,6 +147,8 @@ export function digitize(
     multAfter: st.multAfter,
     journals: st.journals,
     levelUp: up,
+    cycleMs: Math.max(0, nowMs - ds.cycleStartMs),
+    prevCycleMs: ds.lastCycleMs,
     step: 'result',
   };
   const events: DomainEvent[] = [
@@ -155,7 +157,7 @@ export function digitize(
   if (up) events.push({ type: 'levelAdvance', from: level, to: level + 1, digitizationCount: nth, pointsTotal });
   return {
     state: next,
-    ds: { ...ds, counts: { ...ds.counts, [String(level)]: nth }, total: no, ceremony, cycleStartMs: nowMs, levelExitAllowed: up ? false : ds.levelExitAllowed, stack: resetCycle(ds.stack) },
+    ds: { ...ds, counts: { ...ds.counts, [String(level)]: nth }, total: no, ceremony, cycleStartMs: nowMs, levelExitAllowed: up ? false : ds.levelExitAllowed, levelStartMs: up ? nowMs : ds.levelStartMs, lastCycleMs: ceremony.cycleMs, stack: resetCycle(ds.stack) },
     events,
   };
 }
@@ -174,6 +176,7 @@ export function shiftDigitization(ds: DigitizationState, rawMs: number): Digitiz
   return {
     ...ds,
     cycleStartMs: ds.cycleStartMs + rawMs,
+    levelStartMs: ds.levelStartMs + rawMs,
     ceremony: ds.ceremony && { ...ds.ceremony, atMs: ds.ceremony.atMs + rawMs },
     // стос (012): мітка початку сесії зсувається разом з годинником
     stack: ds.stack.sessionStartMs == null ? ds.stack : { ...ds.stack, sessionStartMs: ds.stack.sessionStartMs + rawMs },

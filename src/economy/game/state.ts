@@ -27,6 +27,7 @@ export function newGame(cfg: EconomyConfig, nowMs: number): EconomyState {
     tapTimes: [],
     offlineDoubles: { date: '', count: 0 },
     museum: { unit: {}, storage: 1, paper: 1 },
+    digital: [],
   };
 }
 

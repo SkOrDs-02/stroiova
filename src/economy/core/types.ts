@@ -128,6 +128,14 @@ export interface EconomyParams {
   kombatRunnerMin: number;
   kombatRunnerCostMin: number;
   /** 011: «Нарада затягнулась» (Р3+) - шаблон «Комбата шукають» на ланці «Нарада» */
+  /** «Збій СЕДО» (013 FR-12): імовірність на добу, множник цифрової ланки, хвилини, аркуші на друк */
+  sedoFailChance: number;
+  sedoFailMult: number;
+  sedoFailMin: number;
+  sedoPrintPaper: number;
+  /** Телеграм на добу після конвертації № 4 (013 FR-14) */
+  slowPerDayLateMin: number;
+  slowPerDayLateMax: number;
   naradaChance: number;
   naradaMult: number;
   naradaMinMin: number;
@@ -153,6 +161,8 @@ export interface EconomyParams {
   boss: BossParams;
   pack: PackParams;
   zpz: ZpzParams;
+  /** Р5: порядок конвертацій ланок, множник цифрової ланки, ціна в хвилинах базового доходу (013 FR-4…FR-8) */
+  convert: { order: string[]; mult: number; costMin: number };
   stack: StackParams;
   brief: BriefParams;
   /** 005: подарунки й гонка (рішення 29–31); кроки акта — години (Акти, Комбат, Стройова, Фін.) */
