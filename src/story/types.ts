@@ -73,6 +73,10 @@ export interface StoryState {
   counters: { wins: Record<string, number>; gifts: Record<string, number> };
   /** Стани персонажів (`character_state`): лише вигляд */
   chars: Record<string, string>;
+  /** Аркуші Археолога, які гравець має: id -> мить (014 FR-16, FR-17) */
+  sheets: Record<string, number>;
+  /** Рівні, чия підсумкова пройдена (джерело аркушів `boss`) */
+  bosses: number[];
   diary: { got: DiaryGot[]; lastDay: string | null };
 }
 
@@ -87,6 +91,8 @@ export interface StoryCtx {
   packs: number;
   /** Початок поточного рівня, мс (час для `level_enter`) */
   levelStartMs: number;
+  /** Підсумкова поточного рівня пройдена, перехід дозволено (`digit.levelExitAllowed`) */
+  exitAllowed: boolean;
 }
 
 export type StoryEvent =
@@ -109,6 +115,21 @@ export interface PullOpts {
   supports: ReadonlySet<Carrier>;
   maxToasts: number;
 }
+
+/** Аркуш Археолога (`content/archive.json`) */
+export interface Sheet {
+  id: string;
+  no: number;
+  level: number;
+  title: string;
+  tabs: { name: string; columns: string[]; rows: string[][] }[];
+  footnote: string;
+  arcHint: string;
+  source: { kind: 'gift'; level: number; nth: number } | { kind: 'move'; level: number } | { kind: 'boss'; level: number } | { kind: 'conversion'; k: number };
+  review?: boolean;
+}
+
+export type SheetSource = 'gift' | 'move' | 'boss' | 'conversion' | 'catch_up';
 
 export interface Pulled {
   beat: Beat;

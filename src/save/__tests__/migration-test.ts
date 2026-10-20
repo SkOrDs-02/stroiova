@@ -2,6 +2,7 @@
 import { digitizationV6, inspectionsV4, MIGRATIONS, monetizationV8, museumV7, onboardingDone, raceV5, settingsV9, telegramsV3 } from '../migrations';
 import { KEY_BAK1, KEY_SAVE, loadSave, serialize, type SaveDraft } from '../repository';
 import { memoryStorage } from '../storage';
+import { newAwards } from '@/awards/awards';
 import { newStory } from '@/story/engine';
 import { draft } from '../test-saves';
 
@@ -15,7 +16,7 @@ function v1(): SaveDraft {
 
 const migrations = {
   1: (g: unknown) => { const x = g as { economy: object; sigs: number }; return { economy: { ...x.economy, signatures: x.sigs } }; },
-  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory() }),
+  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards() }),
 };
 
 describe('міграції', () => {
@@ -341,6 +342,8 @@ describe('справжні міграції', () => {
       dispatched: { st_cat_01: 60 },
       counters: { wins: { 'drone:3': 1 }, gifts: { '2': 2 } },
       chars: { granit: 'granit_on_leave' },
+      sheets: {},
+      bosses: [],
       diary: { got: [{ id: 'di_l1_01', atMs: 70, day: 2 }], lastDay: '2025-10-11' },
     };
     const museum = { ...d.game.museum, curios: [{ seq: 1, kind: 'story', atMs: 1, status: 'info', story: { beatId: 'st_who_writes_04', from: 'stroy', title: 'Зведення', body: 'Текст' } }], curioSeq: 1 };
@@ -350,5 +353,47 @@ describe('справжні міграції', () => {
     if (r.kind !== 'ok') return;
     expect(r.save.game.story).toEqual(story);
     expect(r.save.game.museum.curios[0]).toMatchObject({ kind: 'story', story: { beatId: 'st_who_writes_04' } });
+  });
+  test('14 → 15 (014 етап 2): аркуші Археолога й пройдені підсумкові порожні, решта сюжету на місці', () => {
+    const d = draft({ schemaVersion: 14, savedAt: 5000 });
+    const { sheets: _a, bosses: _b, ...storyV14 } = d.game.story;
+    const story = { ...storyV14, skipped: ['st_who_writes_01'], diary: { got: [{ id: 'di_l1_01', atMs: 7, day: 2 }], lastDay: '2025-10-11' } };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, story } as never }) });
+    const r = loadSave(kv, { current: 16, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 14 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.story).toMatchObject({ sheets: {}, bosses: [], skipped: ['st_who_writes_01'], diary: { lastDay: '2025-10-11' } });
+  });
+
+  test('15 → 16 (016 етап 2): грамоти з порожнім станом, решта запису на місці', () => {
+    const d = draft({ schemaVersion: 15, savedAt: 5000 });
+    const { awards: _a, ...gameV15 } = d.game;
+    const story = { ...d.game.story, sheets: { ar_01: 100 }, bosses: [2] };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV15, story } as never }) });
+    const r = loadSave(kv, { current: 16, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 15 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.awards).toEqual({ got: {}, counters: {}, sets: {}, seen: [], pendingPlatform: [], lastOrderNo: 0 });
+    expect(r.save.game.story).toMatchObject({ sheets: { ar_01: 100 }, bosses: [2] });
+  });
+
+  test('схема 16: грамоти, лічильники й номер наказу проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 16, savedAt: 5000 });
+    const awards = { got: { aw_level_bryhada: { atMs: 4, orderNo: 1, seq: 1 } }, counters: { digitizations: 3 }, sets: { race_gift_types_won: ['drone'] }, seen: [], pendingPlatform: ['aw_level_bryhada'], lastOrderNo: 1 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, awards } as never }) });
+    const r = loadSave(kv, { current: 16, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.awards).toEqual(awards);
+  });
+
+  test('схема 15: аркуші й підсумкові проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 15, savedAt: 5000 });
+    const story = { ...d.game.story, sheets: { ar_01: 100, ar_02: 200 }, bosses: [2] };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, story } as never }) });
+    const r = loadSave(kv, { current: 16, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.story).toMatchObject({ sheets: { ar_01: 100, ar_02: 200 }, bosses: [2] });
   });
 });

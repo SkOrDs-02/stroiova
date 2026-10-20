@@ -50,6 +50,7 @@ import { StageConvert } from '@/features/convert/StageConvert';
 import { cvT, sedoT } from '@/features/convert/texts';
 import { convertInfo } from '@/economy/game/convert';
 import { StackTower } from '@/features/stack/StackTower';
+import { FinaleScript } from '@/features/story/FinaleScript';
 import { StoryCall } from '@/features/story/StoryCall';
 import { storyT } from '@/features/story/texts';
 import { CallOverlay } from '@/features/onboarding/CallOverlay';
@@ -221,7 +222,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const tier = repTier(s.telegrams.reputation.value, s.cfg.params);
   // 006 FR-22: церемонія цифровізації (акт, наказ про переведення) показується, поки гравець її не закрив, і при запуску
   const ceremony = s.digit.ceremony;
-  const storyCallOpen = s.storyCall != null;
+  const storyCallOpen = s.storyCall != null || s.storyScene != null;
   const overlay = s.offline != null || s.clerkFirstOpen || storyCallOpen || view.kind !== 'main' || kombatAuto || meetingAuto || sedoAuto;
   const coachRow = !overlay && (rd === 'coachUpgrade' || rd === 'coachHire');
   const coachTab = !overlay && rd === 'coachTelegram';
@@ -553,7 +554,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           }}
         />
       ) : null}
-      {storyCallOpen ? <StoryCall store={store} /> : null}
+      {s.storyCall != null ? <StoryCall store={store} /> : null}
+      {s.storyScene != null ? <FinaleScript store={store} /> : null}
       {showCall ? (
         <CallOverlay
           onClaim={() => {

@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 14;
+export const CURRENT_SCHEMA = 16;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -355,10 +355,12 @@ export const storyStateSchema = z.object({
   dispatched: z.record(z.string(), z.number()),
   counters: z.object({ wins: z.record(z.string(), z.number().int()), gifts: z.record(z.string(), z.number().int()) }),
   chars: z.record(z.string(), z.string()),
+  sheets: z.record(z.string(), z.number()),
+  bosses: z.array(z.number().int()),
   diary: z.object({ got: z.array(z.object({ id: z.string(), atMs: z.number(), day: z.number().int().positive() })), lastDay: z.string().nullable() }),
 });
 
-/** Грамоти (016 FR-45): необов'язкове поле, старі записи дістають порожній стан при завантаженні (без підйому схеми, її ділять 014 і 013). */
+/** Грамоти (016 FR-45); схема 16. */
 export const awardsSchema = z.object({
   got: z.record(z.string(), z.object({ atMs: z.number(), orderNo: z.number().int().min(1).optional(), retro: z.boolean().optional(), offline: z.boolean().optional(), seq: z.number().int().min(1).optional(), toast: z.literal(true).optional() })),
   counters: z.record(z.string(), nonNeg),
@@ -393,7 +395,7 @@ export const gameSaveSchema = z.object({
   /** Сюжет і щоденник (014) */
   story: storyStateSchema,
   /** Грамоти (016) */
-  awards: awardsSchema.optional(),
+  awards: awardsSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

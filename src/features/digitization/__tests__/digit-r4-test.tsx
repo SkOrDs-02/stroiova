@@ -6,6 +6,7 @@ import { newGame } from '@/economy/game/state';
 import type { EconomyState } from '@/economy/game/types';
 import { createConveyorStore } from '@/features/conveyor/store';
 import { MainScreen } from '@/features/main/MainScreen';
+import { newStory } from '@/story/engine';
 import { onboardingDone } from '@/save/migrations';
 
 jest.mock('@/features/conveyor/useGameLoop', () => ({ useGameLoop: () => {} }));
@@ -34,6 +35,8 @@ function game(level: number, patch: Partial<EconomyState>, counts: Record<string
     lastMs: T0,
     state: { ...newGame(bundledConfig, T0), level, streamLevels: items(streams), stageLevels: items(stages), ...patch },
     digit: { ...store.getState().digit, counts, total: Object.values(counts).reduce((a, b) => a + b, 0), levelExitAllowed: exitAllowed },
+    // аркуші Археолога вже видані: тест про перехід рівня, а не про тост «Знайдено»
+    story: { ...newStory(), sheets: Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`ar_${String(i + 1).padStart(2, '0')}`, 1])) },
   });
   return store;
 }

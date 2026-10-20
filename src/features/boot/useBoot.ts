@@ -102,7 +102,7 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     settings: save.game.settings as Settings,
     notifications: save.game.notifications as NotificationsState,
     stats: save.game.stats as Stats,
-    awards: save.game.awards as AwardsState | undefined,
+    awards: save.game.awards as AwardsState,
     story: save.game.story as StoryState,
     installId: id,
   });

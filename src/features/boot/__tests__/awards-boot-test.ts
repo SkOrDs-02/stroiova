@@ -15,10 +15,10 @@ jest.mock('@sentry/react-native', () => ({ captureMessage: jest.fn(), init: jest
 const opts = { current: CURRENT_SCHEMA, migrations: MIGRATIONS };
 
 describe('збереження грамот', () => {
-  test('запис без поля awards завантажується з порожнім станом', () => {
-    const d = draft({ savedAt: T0 });
-    expect((d.game as { awards?: unknown }).awards).toBeUndefined();
-    const kv = memoryStorage({ [KEY_SAVE]: serialize(d) });
+  test('запис схеми 15 без поля awards мігрує в порожній стан', () => {
+    const d = draft({ savedAt: T0, schemaVersion: 15 });
+    const { awards: _a, ...game } = d.game;
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: game as never }) });
     const r = loadSave(kv, opts);
     if (r.kind !== 'ok') throw new Error(r.kind);
     const store = startGame(kv, r.save, T0);

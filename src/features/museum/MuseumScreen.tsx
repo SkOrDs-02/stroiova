@@ -10,6 +10,7 @@ import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
+import { ArchiveSheets } from '@/features/story/ArchiveSheets';
 import { AwardsScreen } from '@/features/awards/AwardsScreen';
 import { awT } from '@/features/awards/texts';
 import { unseen as unseenAwards } from '@/awards/awards';
@@ -21,7 +22,7 @@ import { COVER_COLOR, RARITY_COLOR, sections, slots, type Filter, type Slot } fr
 import { muT } from './texts';
 
 type Seg = 'journals' | 'curios' | 'awards';
-type Sheet = { kind: 'journal'; no: number } | { kind: 'curio'; seq: number } | null;
+type Sheet = { kind: 'journal'; no: number } | { kind: 'curio'; seq: number } | { kind: 'archive' } | null;
 
 const FILTERS: Filter[] = ['all', 'property', 'personnel'];
 
@@ -62,7 +63,7 @@ export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journ
       {seg === 'awards' ? (
         <AwardsScreen store={store} initialAward={initialAward} />
       ) : seg === 'curios' ? (
-        <CuriosList store={store} onOpen={(seq) => setSheet({ kind: 'curio', seq })} />
+        <CuriosList store={store} onOpen={(seq) => setSheet({ kind: 'curio', seq })} onArchive={() => setSheet({ kind: 'archive' })} />
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{muT.count}</Text>
@@ -130,6 +131,7 @@ export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journ
         </ScrollView>
       )}
       {sheet?.kind === 'journal' ? <JournalDetail store={store} no={sheet.no} onClose={() => setSheet(null)} /> : null}
+      {sheet?.kind === 'archive' ? <ArchiveSheets store={store} onClose={() => setSheet(null)} /> : null}
       {sheet?.kind === 'curio' ? <CurioDetail store={store} seq={sheet.seq} onClose={() => setSheet(null)} /> : null}
     </View>
   );

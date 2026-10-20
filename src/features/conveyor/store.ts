@@ -113,6 +113,8 @@ interface Store {
   storySession: SessionBudget;
   /** Дзвінок сюжету на екрані: id кроку (014); лише в пам'яті */
   storyCall: string | null;
+  /** Сцена сюжету на екрані (`finale-script` «знайдено»): id кроку; лише в пам'яті */
+  storyScene: string | null;
   /** Рядок щоденника першої сесії доби для `offline-return`; лише в пам'яті */
   diaryToday: string | null;
   /** Грамоти (016): лічильники, отримані й переглянуті; черга тостів - лише в пам'яті */
@@ -169,6 +171,7 @@ interface Store {
   storyRun: () => void;
   /** Дзвінок сюжету закрито */
   closeStoryCall: () => void;
+  closeStoryScene: () => void;
   showToast: (toast: Toast) => void;
   /** Закрити крок онбордингу (002 FR-1); false — крок не поточний */
   onbComplete: (step: StepNo, extra?: CompleteExtra) => boolean;
@@ -605,6 +608,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     story: init?.story ?? newStory(),
     storySession: newBudget(),
     storyCall: null,
+    storyScene: null,
     diaryToday: null,
     awards: retro0.awards,
     awardQueue: retro0.queue,
@@ -796,6 +800,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (patch) set(patch);
     },
     closeStoryCall: () => set({ storyCall: null }),
+    closeStoryScene: () => set({ storyScene: null }),
     clearToast: () => {
       const [next, ...rest] = get().toastQueue;
       set({ toast: next ?? null, toastQueue: rest });
@@ -1184,6 +1189,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         story: newStory(),
         storySession: newBudget(),
         storyCall: null,
+        storyScene: null,
         diaryToday: null,
         // 016 FR-22: грамоти лишаються, лічильники обнуляються
         awards: toastsShown(resetAwards(g.awards), g.awardQueue.map((q) => q.id)),

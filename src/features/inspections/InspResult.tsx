@@ -12,6 +12,7 @@ import { muT } from '@/features/museum/texts';
 import { titleOf } from '@/features/museum/present';
 import { journal, seriesBonusText } from '@/museum/journals';
 import { completesSeries } from '@/museum/museum';
+import { BEATS } from '@/story/content';
 
 import { PLAYABLE_LEVELS } from '@/digitization/digitization';
 
@@ -40,6 +41,8 @@ export function InspResult({ store }: { store: ConveyorStore }) {
   // 007 FR-19: журнал за цю перевірку розкривається блоком в акті
   const exhibits = s.museum.reveal.filter((r) => r.via === 'insp');
   // insp-result міг чекати в черзі: залишок ×3 — від приїзду (крайовий випадок spec)
+  // 014 FR-22: сюжетний рядок в акті «Аудиту усього» (носій `insp_act_line`); крок спрацьовує на проходженні й доставляється вже після акта
+  const actLine = o.kind === 'final' && o.passed ? BEATS.filter((x) => x.carrier === 'insp_act_line').find((b) => b.level === o.level && (s.story.fired[b.id] != null || s.story.delivered[b.id] != null)) : undefined;
   const x3Left = Math.max(0, o.arrMs + p.inspHours * 3_600_000 - s.lastMs);
   return (
     <View style={styles.scrim} testID="insp-result">
@@ -58,6 +61,11 @@ export function InspResult({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.cell, styles.strong, !o.passed && styles.bad]}>{inspT.verdict}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.cell, styles.strong, !o.passed && styles.bad]} testID="insp-verdict">{verdict}</Text>
           </View>
+          {actLine ? (
+            <View style={styles.row} testID="insp-act-line">
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{(actLine.payload as { line: string }).line}</Text>
+            </View>
+          ) : null}
           {exhibits.map((r) => (
             <View key={r.no} style={styles.exhibit} testID="insp-exhibit">
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{muT.inspBlock(r.nAfter)}</Text>

@@ -226,6 +226,7 @@ export type DomainEvent =
   | { type: 'pushPermissionRequest'; trigger: 'onboarding_session_end' | 'settings'; prePromptResult: 'accepted' | 'declined'; osResult: 'granted' | 'denied' | 'provisional' | 'not_shown' }
   | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number }
   // 014: сюжет; аналітика етапу 5 (story_beat_deliver, diary_open)
+  | { type: 'archiveSheetUnlock'; sheetId: string; sheetNumber: number; source: 'gift' | 'move' | 'boss' | 'conversion' | 'catch_up'; sheetsOwnedAfter: number }
   | { type: 'storyBeatDeliver'; beatId: string; arc: string; carrier: string; beatOrder: number; delaySec: number; isCatchUp: boolean; isWhileAway: boolean }
   // 016: грамоти; аналітика етапу 5 (award_unlock, awards_wall_open)
   | { type: 'awardUnlock'; awardId: string; category: string; awardType: 'gramota' | 'podyaka' | 'nakaz'; isHidden: boolean; awardsOwnedAfter: number; isRetroactive: boolean; isResolvedOffline: boolean; isMirrored: boolean }
