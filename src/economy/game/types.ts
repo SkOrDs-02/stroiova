@@ -179,6 +179,9 @@ export type DomainEvent =
       /** Пройдена підсумкова відкрила перехід на наступний рівень (011 FR-6) */
       exitUnlocked: boolean;
       result: 'passed' | 'failed';
+      /** Рівень перевірки і чи вона без зауваження № 16 (016 FR-19: лічильники грамот) */
+      level: number;
+      withoutRemarks: boolean;
       itemsDone: number;
       itemsTotal: number;
       offline: boolean;
@@ -188,7 +191,7 @@ export type DomainEvent =
   // 005: гонка з часом; аналітика етапу 5 (race_start, race_speedup_apply, race_finish), курйози 07
   | { type: 'raceStart'; id: string; giftType: 'drone' | 'shovel' | 'generator'; docSec: number; resourceSec: number; winnable: boolean }
   | { type: 'raceSpeedup'; id: string; method: 'digital_bonus' | 'ad' | 'no_ads_pass'; secSaved: number }
-  | { type: 'raceFinish'; id: string; giftType: 'drone' | 'shovel' | 'generator'; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean }
+  | { type: 'raceFinish'; id: string; giftType: 'drone' | 'shovel' | 'generator'; result: 'success' | 'fail'; marginSec: number; speedups: number; offline: boolean; level: number }
   /** Програна гонка: запис «Списано раніше, ніж поставлено на облік» (07) */
   | {
       type: 'raceCurio';
@@ -221,7 +224,10 @@ export type DomainEvent =
   // newValue: true/false -> on/off у tracking-plan; null (progress_reset) -> done; для progress_reset лічильники взято до стирання
   | { type: 'settingChange'; settingName: 'sound' | 'haptics' | 'notif_storage' | 'notif_telegrams' | 'notif_inspections' | 'notif_gifts' | 'notif_boosts' | 'analytics' | 'progress_reset'; newValue: boolean | null; digitizationCount?: number; playtimeSec?: number }
   | { type: 'pushPermissionRequest'; trigger: 'onboarding_session_end' | 'settings'; prePromptResult: 'accepted' | 'declined'; osResult: 'granted' | 'denied' | 'provisional' | 'not_shown' }
-  | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number };
+  | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number }
+  // 016: грамоти; аналітика етапу 5 (award_unlock, awards_wall_open)
+  | { type: 'awardUnlock'; awardId: string; category: string; awardType: 'gramota' | 'podyaka' | 'nakaz'; isHidden: boolean; awardsOwnedAfter: number; isRetroactive: boolean; isResolvedOffline: boolean; isMirrored: boolean }
+  | { type: 'awardsWallOpen'; source: 'segment' | 'award_toast' | 'profile'; awardsOwned: number; awardsUnseen: number };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */
 export type StoredEffect = Effect & { source: Exclude<Effect['source'], 'onboarding_bird'> };

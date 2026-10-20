@@ -211,6 +211,8 @@ function resolve(s0: InspectionState, eco: EconomyState, cfg: EconomyConfig, ctx
       mechDone: mechItem ? mechItem.done : null,
       exitUnlocked: final && passed,
       result: passed ? 'passed' : 'failed',
+      level: insp.level,
+      withoutRemarks: !insp.remark,
       itemsDone: done,
       itemsTotal: insp.items.length,
       offline: ctx.offline,

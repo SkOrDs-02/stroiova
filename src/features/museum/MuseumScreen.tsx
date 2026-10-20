@@ -10,24 +10,34 @@ import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
+import { AwardsScreen } from '@/features/awards/AwardsScreen';
+import { awT } from '@/features/awards/texts';
+import { unseen as unseenAwards } from '@/awards/awards';
+
 import { CuriosList } from './CuriosScreen';
 import { CurioDetail } from './CurioDetail';
 import { JournalDetail } from './JournalDetail';
 import { COVER_COLOR, RARITY_COLOR, sections, slots, type Filter, type Slot } from './present';
 import { muT } from './texts';
 
-type Seg = 'journals' | 'curios';
+type Seg = 'journals' | 'curios' | 'awards';
 type Sheet = { kind: 'journal'; no: number } | { kind: 'curio'; seq: number } | null;
 
 const FILTERS: Filter[] = ['all', 'property', 'personnel'];
 
-export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journals' }: { store: ConveyorStore; onToDigital: () => void; insetTop: number; initialSeg?: Seg }) {
+export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journals', initialAward = null }: { store: ConveyorStore; onToDigital: () => void; insetTop: number; initialSeg?: Seg; initialAward?: string | null }) {
   const s = useStore(store);
   const [seg, setSeg] = useState<Seg>(initialSeg);
   // 010 FR-30: бейдж «нове» в меню гасне, коли гравець побачив список записів
   useEffect(() => {
     if (seg === 'curios') store.getState().markCuriosSeen();
   }, [seg, store, s.museum.curioSeq]);
+  // 016 FR-29: показ сегмента «Грамоти» позначає всі грамоти переглянутими; крапка на сегменті, поки є нові
+  const awardsNew = unseenAwards(s.awards).length > 0;
+  useEffect(() => {
+    if (seg === 'awards') store.getState().openAwards(initialAward ? 'award_toast' : 'segment');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seg, store]);
   const [filter, setFilter] = useState<Filter>('all');
   const [sheet, setSheet] = useState<Sheet>(null);
   const n = count(s.museum);
@@ -40,14 +50,17 @@ export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journ
       <View style={[styles.head, { paddingTop: insetTop }]}>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{muT.screen}</Text>
         <View style={styles.segs} accessibilityRole="tablist">
-          {(['journals', 'curios'] as Seg[]).map((k) => (
+          {(['journals', 'curios', 'awards'] as Seg[]).map((k) => (
             <Pressable key={k} testID={`mu-seg-${k}`} accessibilityRole="tab" accessibilityState={{ selected: seg === k }} onPress={() => setSeg(k)} style={[styles.seg, seg === k && styles.segOn]}>
-              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.segText, seg === k && styles.segTextOn]}>{k === 'journals' ? muT.segJournals : muT.segCurios}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.segText, seg === k && styles.segTextOn]}>{k === 'journals' ? muT.segJournals : k === 'curios' ? muT.segCurios : awT.seg}</Text>
+              {k === 'awards' && awardsNew && seg !== 'awards' ? <View style={styles.dot} testID="mu-seg-awards-dot" accessibilityLabel={muT.newDot} /> : null}
             </Pressable>
           ))}
         </View>
       </View>
-      {seg === 'curios' ? (
+      {seg === 'awards' ? (
+        <AwardsScreen store={store} initialAward={initialAward} />
+      ) : seg === 'curios' ? (
         <CuriosList store={store} onOpen={(seq) => setSheet({ kind: 'curio', seq })} />
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -162,6 +175,7 @@ const styles = StyleSheet.create({
   title: { ...type('h2'), color: color.text },
   segs: { flexDirection: 'row', gap: space[8] },
   seg: { flex: 1, minHeight: size.touchMin, borderRadius: radius[6], borderWidth: 1, borderColor: color.borderStrong, alignItems: 'center', justifyContent: 'center' },
+  dot: { position: 'absolute', top: space[4], right: space[8], width: space[8], height: space[8], borderRadius: radius.pill, backgroundColor: color.accent },
   segOn: { backgroundColor: color.surface, borderColor: color.accent },
   segText: { ...type('body'), color: color.muted },
   segTextOn: { color: color.accent },

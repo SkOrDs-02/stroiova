@@ -6,6 +6,9 @@ import { formatDuration, formatMult } from '@/economy/format';
 import { advance, claimOffline, creditedAwayMs, offline, type OfflineResult } from '@/economy/game/advance';
 import { baseIncomePerMin } from '@/economy/game/income';
 import { catTap, refuel, tap } from '@/economy/game/actions';
+import { count as countAwards, markSeen as markAwardsSeen, newAwards, resetProgress as resetAwards, retroactive, unseen as unseenAwards } from '@/awards/awards';
+import type { AwardsState, Fact, Grant } from '@/awards/types';
+import { awardCtx, factsFrom, newEvents, run as awardsRun, toastsOf, type AwardToast } from './awards';
 import { buy, hire, isOk } from '@/economy/game/purchase';
 import { newGame } from '@/economy/game/state';
 import { absence, isNewSession, shiftTimers } from '@/economy/game/time';
@@ -63,7 +66,9 @@ export type Toast =
   | { kind: 'archive'; amount: number }
   | { kind: 'rep'; tier: 'low' | 'norm' | 'high' }
   /** Журнал, розкриття якого перервало вбивство застосунку (007 AC-18): тост з «Відкрити» */
-  | { kind: 'exhibit'; no: number };
+  | { kind: 'exhibit'; no: number }
+  /** Грамота (016 FR-31, FR-33): з «Переглянути» */
+  | AwardToast;
 
 /** Підписів за перший акт: 8 тапів × tapValue, на 8-му тапі (рішення 57). */
 export const ACT_TAPS = 8;
@@ -97,6 +102,9 @@ interface Store {
   /** Заплановані сповіщення й лічильник доби (010) */
   notifications: NotificationsState;
   stats: Stats;
+  /** Грамоти (016): лічильники, отримані й переглянуті; черга тостів - лише в пам'яті */
+  awards: AwardsState;
+  awardQueue: Grant[];
   /** Анонімний ID встановлення (009): для «Про гру» й листа про видалення даних */
   installId: string;
   /** «Пізніше» на push-preprompt у цій сесії: не перепитуємо (010 FR-10); у запис не йде */
@@ -133,6 +141,12 @@ interface Store {
   hire: (ref: UnitRef) => void;
   refuel: (nowMs: number) => void;
   cat: (nowMs: number) => void;
+  /** Локальна подія інтерфейсу для лічильників грамот (`ui:*`, 016 FR-19): тап по коту, шторка журналу, зміна позивного */
+  awardsUi: (event: 'cat_tap' | 'journal-detail' | 'callsign_change', props: Fact['props']) => void;
+  /** Показ сегмента «Грамоти» позначає всі грамоти переглянутими (FR-29); подія `awards_wall_open` */
+  openAwards: (source: 'segment' | 'award_toast' | 'profile') => void;
+  /** Тости грамот у спільну чергу (FR-32): викликає екран, коли нема модалок і церемоній */
+  flushAwardToasts: () => void;
   setMode: (mode: BuyMode) => void;
   away: (leftAtMs: number, backAtMs: number) => void;
   /** Забрати довідку; `doubled` - ×2 за ролик чи «Забрати» (008 FR-4); false - ліміт ×2 на добу вичерпано */
@@ -268,12 +282,13 @@ export interface Initial {
   settings?: Settings;
   notifications?: NotificationsState;
   stats?: Stats;
+  awards?: AwardsState;
   installId?: string;
   services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService }>;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
-  return create<Store>((set, get) => {
+  const store = create<Store>((set, get) => {
   /** Доменні події телеграм → ефекти, тости, журнал подій (003). */
   const handleEvents = (evs: DomainEvent[], nowMs: number) => {
     if (!evs.length) return;
@@ -543,6 +558,12 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     };
   // 007 AC-18: розкриття, перерване вбивством застосунку, стає тостами «Новий експонат» (рішення 79)
   const interrupted = museumInterrupted(init?.museum ?? newMuseum());
+  // 016 FR-23: нові умови над наявними лічильниками - заднім числом, одним тостом
+  const retro0 = (() => {
+    const base = init?.awards ?? newAwards();
+    const r = retroactive(base, awardCtx({ state: init?.state ?? newGame(cfg, nowMs), cfg, effects: [], museum: init?.museum ?? newMuseum(), lastMs: nowMs }), nowMs);
+    return { awards: r.s, queue: r.grants };
+  })();
   return {
     cfg,
     pinned: init?.pinned ?? null,
@@ -561,6 +582,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     settings: init?.settings ?? newSettings(),
     notifications: init?.notifications ?? newNotifications(),
     stats: init?.stats ?? newStats(),
+    awards: retro0.awards,
+    awardQueue: retro0.queue,
     installId: init?.installId ?? '',
     pushDeclined: false,
     busy: null,
@@ -638,7 +661,27 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (now < get().telegrams.refuelBlockedUntil) return;
       set({ state: refuel(get().state, get().cfg, now).state });
     },
-    cat: (now) => set({ state: catTap(get().state, get().cfg, now).state }),
+    cat: (now) => {
+      const r = catTap(get().state, get().cfg, now);
+      set({ state: r.state });
+      get().awardsUi('cat_tap', { is_bonus: r.gain > 0 });
+    },
+    awardsUi: (event, props) => {
+      const g = get();
+      const patch = awardsRun(g, [{ event: `ui:${event}`, props }], g.lastMs);
+      if (patch) set(patch);
+    },
+    openAwards: (source) => {
+      const g = get();
+      const ev: DomainEvent = { type: 'awardsWallOpen', source, awardsOwned: countAwards(g.awards), awardsUnseen: unseenAwards(g.awards).length };
+      set({ awards: markAwardsSeen(g.awards), events: [...g.events, ev].slice(-40) });
+    },
+    flushAwardToasts: () => {
+      const g = get();
+      if (!g.awardQueue.length) return;
+      set({ awardQueue: [] });
+      for (const t of toastsOf(g.awardQueue)) get().showToast(t);
+    },
     setMode: (mode) => set({ mode }),
     away: (leftAt, backAt) => {
       // перевірки без гравця — за станом чекліста на мить виходу (FR-24); до доходу, щоб ×3 потрапив у офлайн
@@ -1091,6 +1134,9 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         monetization: { ...g.monetization, starterGranted: false, offer: 'wait', success: [], inspAdId: null },
         notifications: newNotifications(),
         stats: newStats(),
+        // 016 FR-22: грамоти лишаються, лічильники обнуляються
+        awards: resetAwards(g.awards),
+        awardQueue: [],
         sessionLines: { count: 0, byUid: {} },
         actTaps: 0,
         clerkFirstOpen: false,
@@ -1106,6 +1152,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     changeCallsign: (text, gender) => {
       const o = get().onboarding;
       set({ onboarding: { ...o, callsign: { type: 'custom', text }, gender } });
+      if (o.step === 'done') get().awardsUi('callsign_change', { after_onboarding: true });
     },
     markCuriosSeen: () => set({ museum: markCuriosSeen(get().museum) }),
     closeReveal: () => set({ museum: closeRevealMuseum(get().museum) }),
@@ -1132,6 +1179,17 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     },
   };
   });
+  // 016 FR-19: грамоти слухають доменні події з журналу стору й раз на хвилину перевіряють станові умови (діловоди, частка ЗпЗ, курйози)
+  store.subscribe((s, prev) => {
+    const evs = newEvents(prev.events, s.events);
+    const minute = Math.floor(s.lastMs / 60_000) !== Math.floor(prev.lastMs / 60_000);
+    const sync = minute || s.museum.curios !== prev.museum.curios || s.state.streamClerks !== prev.state.streamClerks || s.state.stageClerks !== prev.state.stageClerks;
+    const facts = evs.length ? factsFrom(s, evs) : [];
+    if (!facts.length && !sync) return;
+    const patch = awardsRun(s, facts, s.lastMs);
+    if (patch) store.setState(patch);
+  });
+  return store;
 }
 
 export type ConveyorStore = ReturnType<typeof createConveyorStore>;
@@ -1152,7 +1210,8 @@ export function gameSave(store: ConveyorStore): {
   settings: Settings;
   notifications: NotificationsState;
   stats: Stats;
+  awards: AwardsState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats, awards } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats, awards };
 }

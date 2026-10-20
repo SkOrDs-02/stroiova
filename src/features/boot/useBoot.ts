@@ -15,6 +15,7 @@ import type { MonetizationState } from '@/monetization/types';
 import type { MuseumState } from '@/museum/types';
 import type { NotificationsState, Settings } from '@/notifications/types';
 import { bonuses as museumBonuses } from '@/museum/museum';
+import type { AwardsState } from '@/awards/types';
 import type { Stats } from '@/profile/stats';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
 import type { RaceState } from '@/race/types';
@@ -63,7 +64,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, awards: g.awards },
   };
 }
 
@@ -100,6 +101,7 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     settings: save.game.settings as Settings,
     notifications: save.game.notifications as NotificationsState,
     stats: save.game.stats as Stats,
+    awards: save.game.awards as AwardsState | undefined,
     installId: id,
   });
   applySettingsToDevice(store.getState().settings);
@@ -127,6 +129,8 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.telegrams.kombat !== prev.telegrams.kombat ||
     st.telegrams.meeting !== prev.telegrams.meeting ||
     st.telegrams.sedo !== prev.telegrams.sedo ||
+    // 016 FR-21: грамота записується в мить видачі, до тосту
+    st.awards.got !== prev.awards.got ||
     // 013 FR-7: конвертація ланки зберігається атомарно, в мить підтвердження
     st.state.digital !== prev.state.digital ||
     st.inspections.active !== prev.inspections.active ||

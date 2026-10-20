@@ -1,4 +1,5 @@
 // journal-detail (007 FR-17): шторка експоната - знайдений чи ні. «Поділитися» - етап 2 (рішення 75).
+import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
@@ -14,8 +15,14 @@ import { muT } from './texts';
 export function JournalDetail({ store, no, onClose }: { store: ConveyorStore; no: number; onClose: () => void }) {
   const s = useStore(store);
   const j = journal(no);
-  if (!j) return null;
   const owned = s.museum.owned.find((o) => o.no === no) ?? null;
+  // 016 FR-19: лічильник «journal_details_read» - шторка знайденого журналу, кожен журнал раз
+  const found = owned != null;
+  const jid = j?.id;
+  useEffect(() => {
+    if (found && jid) store.getState().awardsUi('journal-detail', { is_found: true, journal_id: jid });
+  }, [found, jid, store]);
+  if (!j) return null;
   const se = seriesOf(no);
   const seriesHave = se ? se.journals.filter((n) => s.museum.owned.some((o) => o.no === n)).length : 0;
   const bLevel = bonusLevel(j, s.cfg.params);

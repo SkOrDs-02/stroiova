@@ -148,6 +148,9 @@ describe('розкриття (рішення 79)', () => {
     // бонуси діють з моменту отримання
     expect(store.getState().state.museum.unit.stroy).toBeCloseTo(1.05, 10);
     expect(store.getState().state.museum.storage).toBeCloseTo(1.05, 10);
+    // 016 FR-29: ту саму крапку тримають і непереглянуті грамоти (перша цифровізація дала їх дві)
+    expect(screen.queryByTestId('tab-museum-dot')).not.toBeNull();
+    await act(async () => store.getState().openAwards('segment'));
     expect(screen.queryByTestId('tab-museum-dot')).toBeNull();
   });
 

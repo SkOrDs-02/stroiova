@@ -15,7 +15,7 @@ import { SettingsScreen } from './SettingsScreen';
 
 type Page = 'menu' | 'profile' | 'settings' | 'about' | 'funds' | 'licenses';
 
-export function MenuHost({ store, insetTop, onClose, onCurios }: { store: ConveyorStore; insetTop: number; onClose: () => void; onCurios: () => void }) {
+export function MenuHost({ store, insetTop, onClose, onCurios, onAwards }: { store: ConveyorStore; insetTop: number; onClose: () => void; onCurios: () => void; onAwards: () => void }) {
   const [page, setPage] = useState<Page>('menu');
   const [reset, setReset] = useState(false);
   const [pre, setPre] = useState(false);
@@ -25,7 +25,7 @@ export function MenuHost({ store, insetTop, onClose, onCurios }: { store: Convey
   return (
     <>
       {page === 'menu' ? <MenuSheet store={store} onClose={onClose} onProfile={() => setPage('profile')} onCurios={onCurios} onSettings={() => setPage('settings')} onAbout={() => setPage('about')} /> : null}
-      {page === 'profile' ? <ProfileScreen store={store} insetTop={insetTop} onBack={toMenu} /> : null}
+      {page === 'profile' ? <ProfileScreen store={store} insetTop={insetTop} onBack={toMenu} onAwards={onAwards} /> : null}
       {page === 'settings' ? (
         <SettingsScreen
           store={store}

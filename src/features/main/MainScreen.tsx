@@ -57,6 +57,9 @@ import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
 import { newRows } from '@/telegrams/packs';
 import { repTier } from '@/telegrams/reputation';
 import type { InboxItem } from '@/telegrams/types';
+import { award, TYPES } from '@/awards/content';
+import { unseen as unseenAwards } from '@/awards/awards';
+import { awT } from '@/features/awards/texts';
 import { t as onb } from '@/features/onboarding/texts';
 import { KombatSheet } from '@/features/telegrams/KombatSheet';
 import { NoteDetail } from '@/features/telegrams/NoteDetail';
@@ -91,7 +94,7 @@ type View3 =
   | { kind: 'convert' }
   | { kind: 'sedo' }
   | { kind: 'digital' }
-  | { kind: 'museum'; seg?: 'journals' | 'curios' }
+  | { kind: 'museum'; seg?: 'journals' | 'curios' | 'awards'; award?: string }
   | { kind: 'menu' }
   | { kind: 'shop' }
   | { kind: 'boosts' }
@@ -111,6 +114,14 @@ function toastText(toast: Toast): string {
       return tgT.repToast(tgT.tier[toast.tier]);
     case 'exhibit':
       return muT.toast(titleOf(toast.no));
+    case 'award': {
+      const a = award(toast.id);
+      return a ? TYPES[a.type].toast.replace('{title}', a.title) : '';
+    }
+    case 'awardMore':
+      return awT.toastMore(toast.count);
+    case 'awardRetro':
+      return awT.toastRetro(toast.count);
   }
 }
 
@@ -174,12 +185,13 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   }, [store]);
 
   const toast = s.toast;
+  const actionable = toast != null && (toast.kind === 'exhibit' || toast.kind === 'award' || toast.kind === 'awardMore' || toast.kind === 'awardRetro');
   useEffect(() => {
     if (toast == null) return;
     // тост «Новий експонат» з «Відкрити» тримаємо втричі довше: тапнути треба встигнути
-    const id = setTimeout(() => store.getState().clearToast(), duration.toast * (toast.kind === 'exhibit' ? 3 : 1));
+    const id = setTimeout(() => store.getState().clearToast(), duration.toast * (actionable ? 3 : 1));
     return () => clearTimeout(id);
-  }, [toast, store]);
+  }, [toast, actionable, store]);
 
   // «Комбата шукають» (003 FR-28): шторка відкривається сама на початку події
   const kombat = s.telegrams.kombat.active;
@@ -245,6 +257,13 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
   const starterOpen = calm && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
 
+  // 016 FR-32: тости грамот чекають онбординг, церемонії й модалки; решта тостів іде перед ними у спільній черзі
+  const awardsFree = calm && !iapOpen && !starterOpen && o.step === 'done';
+  const awardsPending = s.awardQueue.length;
+  useEffect(() => {
+    if (awardsFree && awardsPending > 0) store.getState().flushAwardToasts();
+  }, [store, awardsFree, awardsPending]);
+
   const coachFor = (id: string) => {
     if (!coachOn) return undefined;
     if (rd === 'coachUpgrade' && id === 'raporty') return { target: 'buy' as const, text: onb.b6Arrow };
@@ -286,7 +305,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : view.kind === 'shop' ? (
         <ShopScreen store={store} insetTop={insets.top + space[16]} />
       ) : view.kind === 'museum' ? (
-        <MuseumScreen store={store} initialSeg={view.seg} insetTop={insets.top + space[16]} onToDigital={() => setView({ kind: 'digital' })} />
+        <MuseumScreen store={store} initialSeg={view.seg} initialAward={view.award ?? null} insetTop={insets.top + space[16]} onToDigital={() => setView({ kind: 'digital' })} />
       ) : (
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
@@ -419,7 +438,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       <TabBar
         active={view.kind === 'list' ? 'telegrams' : view.kind === 'digital' || view.kind === 'digit-confirm' ? 'digital' : view.kind === 'museum' ? 'museum' : view.kind === 'shop' ? 'shop' : 'stroyova'}
         digitalDot={s.digitRec}
-        museumDot={unseen(s.museum) > 0}
+        museumDot={unseen(s.museum) > 0 || unseenAwards(s.awards).length > 0}
         telegramsNew={badge}
         coachTab={coachTab ? 'telegrams' : undefined}
         enabled={tabsEnabled}
@@ -429,7 +448,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       {/* над таббаром: тост (один, решта в черзі) і під ним підказка коуча кроку 8 */}
       <View style={[styles.bottomStack, { bottom: insets.bottom + size.tabHeight }]} pointerEvents="box-none">
         {toast != null ? (
-          <View style={styles.toast} testID="toast" pointerEvents={toast.kind === 'exhibit' ? 'auto' : 'none'}>
+          <View style={styles.toast} testID="toast" pointerEvents={actionable ? 'auto' : 'none'}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.toastText}>{toastText(toast)}</Text>
             {toast.kind === 'exhibit' ? (
               <Pressable
@@ -443,6 +462,19 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
                 style={styles.toastBtn}
               >
                 <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.toastOpen}>{muT.toastOpen}</Text>
+              </Pressable>
+            ) : null}
+            {toast.kind === 'award' || toast.kind === 'awardMore' || toast.kind === 'awardRetro' ? (
+              <Pressable
+                testID="toast-awards"
+                accessibilityRole="button"
+                onPress={() => {
+                  s.clearToast();
+                  setView({ kind: 'museum', seg: 'awards', ...(toast.kind === 'award' ? { award: toast.id } : {}) });
+                }}
+                style={styles.toastBtn}
+              >
+                <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.toastOpen}>{awT.toastCta}</Text>
               </Pressable>
             ) : null}
           </View>
@@ -539,7 +571,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
       {revealOpen ? <JournalNew store={store} /> : null}
-      {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} /> : null}
+      {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} onAwards={() => setView({ kind: 'museum', seg: 'awards' })} /> : null}
       {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => setView({ kind: 'shop' })} /> : null}
       {iapOpen ? <IapSuccess store={store} /> : null}
       {starterOpen ? <StarterOffer store={store} /> : null}

@@ -346,6 +346,16 @@ export const notificationsSchema = z.object({
 /** Лічильники особової справи (010 FR-26); схема 9. */
 export const statsSchema = z.object({ inspTotal: z.number().int().nonnegative(), inspPassed: z.number().int().nonnegative(), drones: z.number().int().nonnegative() });
 
+/** Грамоти (016 FR-45): необов'язкове поле, старі записи дістають порожній стан при завантаженні (без підйому схеми, її ділять 014 і 013). */
+export const awardsSchema = z.object({
+  got: z.record(z.string(), z.object({ atMs: z.number(), orderNo: z.number().int().min(1).optional(), retro: z.boolean().optional(), offline: z.boolean().optional() })),
+  counters: z.record(z.string(), nonNeg),
+  sets: z.record(z.string(), z.array(z.string())),
+  seen: z.array(z.string()),
+  pendingPlatform: z.array(z.string()),
+  lastOrderNo: z.number().int().nonnegative(),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -368,6 +378,8 @@ export const gameSaveSchema = z.object({
   settings: settingsSchema,
   notifications: notificationsSchema,
   stats: statsSchema,
+  /** Грамоти (016) */
+  awards: awardsSchema.optional(),
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

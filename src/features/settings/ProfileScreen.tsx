@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
+import { count } from '@/awards/awards';
+import { AWARDS_TOTAL } from '@/awards/content';
+import { awT } from '@/features/awards/texts';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { CallsignSheet } from '@/features/onboarding/CallsignSheet';
 import type { Gender } from '@/features/onboarding/steps';
@@ -14,7 +17,7 @@ import { Frame } from './Parts';
 import { profileRows } from './present';
 import { setT } from './texts';
 
-export function ProfileScreen({ store, insetTop, onBack }: { store: ConveyorStore; insetTop: number; onBack: () => void }) {
+export function ProfileScreen({ store, insetTop, onBack, onAwards }: { store: ConveyorStore; insetTop: number; onBack: () => void; onAwards: () => void }) {
   const s = useStore(store);
   const [edit, setEdit] = useState(false);
   const [pick, setPick] = useState<{ text: string; gender: Gender } | null>(null);
@@ -61,6 +64,18 @@ export function ProfileScreen({ store, insetTop, onBack }: { store: ConveyorStor
           </View>
         ))}
       </View>
+
+      <Pressable
+        testID="pf-awards"
+        accessibilityRole="button"
+        onPress={() => {
+          store.getState().openAwards('profile');
+          onAwards();
+        }}
+        style={styles.report}
+      >
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.reportTitle}>{awT.profile(count(s.awards), AWARDS_TOTAL)}</Text>
+      </Pressable>
 
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} accessibilityRole="header" style={styles.h3}>{pf.diary}</Text>
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note} testID="pf-diary-empty">{pf.diaryEmpty}</Text>
