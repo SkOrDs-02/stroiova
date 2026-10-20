@@ -151,6 +151,44 @@ export function checkStoryRules(file: unknown): string[] {
   return errs;
 }
 
+const sheetSource = z.union([
+  z.object({ kind: z.literal('gift'), level: z.number().int().min(2).max(5), nth: z.number().int().positive() }).strict(),
+  z.object({ kind: z.literal('move'), level: z.number().int().min(3).max(4) }).strict(),
+  z.object({ kind: z.literal('boss'), level: z.number().int().min(2).max(4) }).strict(),
+  z.object({ kind: z.literal('conversion'), k: z.number().int().min(1).max(6) }).strict(),
+]);
+const sheet = z
+  .object({
+    id: z.string().regex(/^ar_\d{2}$/),
+    no: z.number().int().min(1).max(12),
+    level: z.number().int().min(2).max(5),
+    title: str,
+    tabs: z.array(z.object({ name: str, columns: z.array(str).min(1).max(5), rows: z.array(z.array(z.string())).min(1).max(6) }).strict()).min(1).max(2),
+    footnote: str,
+    arcHint: str,
+    source: sheetSource,
+    review: z.boolean().optional(),
+  })
+  .strict();
+export const archiveFileSchema = z.object({ schema: z.literal(1), sheets: z.array(sheet).length(12) }).strict();
+
+/** Таблиці Археолога (FR-16): 12 аркушів, по 3 на Р2-Р5, сітка до 5 стовпців × 6 рядків, рядки рівні за довжиною стовпців */
+export function checkArchive(file: unknown): string[] {
+  const p = archiveFileSchema.safeParse(file);
+  if (!p.success) return p.error.issues.map((i) => `archive: ${i.path.join('.')}: ${i.message}`);
+  const errs: string[] = [];
+  const sheets = p.data.sheets;
+  sheets.forEach((s, i) => {
+    const srcLevel = s.source.kind === 'conversion' ? s.level : s.source.level;
+    if (srcLevel !== s.level) errs.push(`${s.id}: рівень джерела ${srcLevel} не збігається з рівнем аркуша ${s.level}`);
+    if (s.source.kind === 'conversion' && s.level !== 5) errs.push(`${s.id}: конвертації є лише на Р5`);
+    if (s.no !== i + 1 || s.id !== `ar_${String(i + 1).padStart(2, '0')}`) errs.push(`${s.id}: номер і id мають іти підряд (${i + 1})`);
+    for (const t of s.tabs) for (const r of t.rows) if (r.length !== t.columns.length) errs.push(`${s.id}/${t.name}: рядок ${JSON.stringify(r)} не збігається зі стовпцями`);
+  });
+  for (const lv of [2, 3, 4, 5]) if (sheets.filter((s) => s.level === lv).length !== 3) errs.push(`рівень ${lv}: має бути 3 аркуші`);
+  return errs;
+}
+
 export function checkDiary(file: unknown): string[] {
   const p = diaryFileSchema.safeParse(file);
   if (!p.success) return p.error.issues.map((i) => `diary: ${i.path.join('.')}: ${i.message}`);

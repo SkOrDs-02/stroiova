@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
+import { storyT } from '@/features/story/texts';
 import { curioSummary } from '@/museum/museum';
 import { color, radius, size, space } from '@/theme';
 import { MAX_FONT_SCALE } from '@/ui/Button';
@@ -11,13 +12,22 @@ import { type } from '@/ui/type';
 import { curioGroups } from './present';
 import { muT } from './texts';
 
-export function CuriosList({ store, onOpen }: { store: ConveyorStore; onOpen: (seq: number) => void }) {
+export function CuriosList({ store, onOpen, onArchive }: { store: ConveyorStore; onOpen: (seq: number) => void; onArchive?: () => void }) {
   const s = useStore(store);
   const sum = curioSummary(s.museum);
+  const sheets = Object.keys(s.story.sheets).length;
   const groups = curioGroups(s.museum, s.telegrams, s.onboarding.gender, s.lastMs);
   return (
     <ScrollView contentContainerStyle={styles.scroll} testID="curios">
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2} accessibilityRole="header">{muT.curiosTitle}</Text>
+      {sheets > 0 && onArchive ? (
+        <Pressable testID="archive-open" accessibilityRole="button" onPress={onArchive} style={styles.row}>
+          <View style={styles.main}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title}>{storyT.arch.title}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{storyT.arch.count(sheets)}</Text>
+          </View>
+        </Pressable>
+      ) : null}
       {sum.total === 0 ? (
         <View style={styles.empty} testID="curios-empty">
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4}>{muT.curiosEmptyTitle}</Text>

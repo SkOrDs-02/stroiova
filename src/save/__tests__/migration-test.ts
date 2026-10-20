@@ -341,6 +341,8 @@ describe('справжні міграції', () => {
       dispatched: { st_cat_01: 60 },
       counters: { wins: { 'drone:3': 1 }, gifts: { '2': 2 } },
       chars: { granit: 'granit_on_leave' },
+      sheets: {},
+      bosses: [],
       diary: { got: [{ id: 'di_l1_01', atMs: 70, day: 2 }], lastDay: '2025-10-11' },
     };
     const museum = { ...d.game.museum, curios: [{ seq: 1, kind: 'story', atMs: 1, status: 'info', story: { beatId: 'st_who_writes_04', from: 'stroy', title: 'Зведення', body: 'Текст' } }], curioSeq: 1 };
@@ -350,5 +352,25 @@ describe('справжні міграції', () => {
     if (r.kind !== 'ok') return;
     expect(r.save.game.story).toEqual(story);
     expect(r.save.game.museum.curios[0]).toMatchObject({ kind: 'story', story: { beatId: 'st_who_writes_04' } });
+  });
+  test('14 → 15 (014 етап 2): аркуші Археолога й пройдені підсумкові порожні, решта сюжету на місці', () => {
+    const d = draft({ schemaVersion: 14, savedAt: 5000 });
+    const { sheets: _a, bosses: _b, ...storyV14 } = d.game.story;
+    const story = { ...storyV14, skipped: ['st_who_writes_01'], diary: { got: [{ id: 'di_l1_01', atMs: 7, day: 2 }], lastDay: '2025-10-11' } };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, story } as never }) });
+    const r = loadSave(kv, { current: 15, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 14 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.story).toMatchObject({ sheets: {}, bosses: [], skipped: ['st_who_writes_01'], diary: { lastDay: '2025-10-11' } });
+  });
+
+  test('схема 15: аркуші й підсумкові проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 15, savedAt: 5000 });
+    const story = { ...d.game.story, sheets: { ar_01: 100, ar_02: 200 }, bosses: [2] };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, story } as never }) });
+    const r = loadSave(kv, { current: 15, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.story).toMatchObject({ sheets: { ar_01: 100, ar_02: 200 }, bosses: [2] });
   });
 });
