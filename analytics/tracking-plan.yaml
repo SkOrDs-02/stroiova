@@ -367,6 +367,7 @@ events:
       - {name: is_level_exit_unlocked, type: boolean, required: false, example: true, spec: "011", description: "Лише для final: levelExitAllowed став true"}
       - {name: zpz_share_pct, type: number, required: false, example: 42.5, spec: "012", description: "Лише Р4: частка «Звітів про звіти» від суми інших потоків на мить приїзду"}
       - {name: is_without_remarks, type: boolean, required: true, example: true, spec: "016", description: "Пройдено без зауважень (04 FR-18). Потрібно для лічильників insp_clean і insp_clean_streak"}
+      - {name: level_id, type: string, required: true, enum: [batalion, bryhada, komanduvannia, henshtab, bez_paperu], example: bryhada, spec: "016", description: "Рівень перевірки. Потрібно для умов aw_boss_r2, aw_boss_r3, aw_boss_r4, aw_insp_r5"}
 
   # ---------------- Гонка з часом ----------------
   - name: race_start
@@ -408,6 +409,7 @@ events:
       - {name: is_ad_used, type: boolean, required: true, example: true}
       - {name: is_resolved_offline, type: boolean, required: true, example: false}
       - {name: gift_type, type: string, required: true, enum: [drone, shovel, generator], example: drone, spec: "016", description: "Дублює race_start, щоб умову грамоти aw_race_all_gifts і звіти не треба було з'єднувати за race_id"}
+      - {name: level_id, type: string, required: true, enum: [batalion, bryhada, komanduvannia, henshtab, bez_paperu], example: komanduvannia, spec: "016", description: "Рівень гонки. Потрібно для лічильника race_won_on_r3"}
 
   # ---------------- Події й репутація ----------------
   - name: random_event_resolve

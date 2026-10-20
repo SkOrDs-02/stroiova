@@ -53,7 +53,7 @@ describe('main першої сесії', () => {
     await fireEvent.press(screen.getByTestId('hire-kombat', hidden));
     expect(store.getState().state.stageClerks).toEqual([false, false, false]);
     await fireEvent.press(screen.getByTestId('hire-stroy'));
-    expect(store.getState().events.at(-1)).toMatchObject({ type: 'clerkHire', target: { id: 'stroy' }, isFirstClerk: true });
+    expect(store.getState().events.filter((e) => e.type === 'clerkHire').at(-1)).toMatchObject({ type: 'clerkHire', target: { id: 'stroy' }, isFirstClerk: true });
     expect(store.getState().onboarding.step).toBe(8);
     expect(screen.getByTestId('clerk-first')).toHaveTextContent(/Оля «Штамп»/);
     await fireEvent.press(screen.getByTestId('clerk-first-next'));
@@ -88,7 +88,7 @@ describe('рішення 59', () => {
     store.getState().hire({ type: 'stream', id: 'raporty' });
     expect(store.getState().state.streamClerks[0]).toBe(false);
     await fireEvent.press(screen.getByTestId('hire-stroy'));
-    expect(store.getState().events.at(-1)).toMatchObject({ type: 'clerkHire', isFirstClerk: true });
+    expect(store.getState().events.filter((e) => e.type === 'clerkHire').at(-1)).toMatchObject({ type: 'clerkHire', isFirstClerk: true });
     await fireEvent.press(screen.getByTestId('clerk-first-next'));
     await fireEvent.press(screen.getByTestId('hire-raporty'));
     expect(store.getState().state.streamClerks[0]).toBe(true);

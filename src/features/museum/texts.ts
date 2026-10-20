@@ -7,6 +7,7 @@ export const muT = {
   screen: 'Музей',
   segJournals: 'Журнали',
   segCurios: 'Курйози',
+  newDot: 'Є нові грамоти',
   count: 'Скасованих журналів у колекції',
   sectionTitle: (title: string, n: number, m: number) => `${title} · ${n} з ${m}`,
   seriesDone: (bonus: string) => `Серію зібрано · ${bonus}`,
