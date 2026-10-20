@@ -1,13 +1,14 @@
 // archive-sheets (014 FR-18): 12 слотів («???» і джерело для незнайдених) і аркуш як таблиця Excel: літери стовпців, номери рядків,
 // межі, моноширинний шрифт, вкладки внизу. Сітка без горизонтальної прокрутки: стовпці ділять ширину, текст переноситься.
 import { useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { SHEETS } from '@/story/archive';
 import type { Sheet } from '@/story/types';
-import { color, radius, size, space } from '@/theme';
+import { color, radius, size, space, typeScale } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -21,6 +22,7 @@ export function sourceText(sh: Sheet): string {
 }
 
 export function ArchiveSheets({ store, onClose }: { store: ConveyorStore; onClose: () => void }) {
+  const insets = useSafeAreaInsets();
   const owned = useStore(store, (s) => s.story.sheets);
   const [open, setOpen] = useState<string | null>(null);
   const [tab, setTab] = useState(0);
@@ -29,7 +31,7 @@ export function ArchiveSheets({ store, onClose }: { store: ConveyorStore; onClos
   if (sheet) {
     const t = sheet.tabs[Math.min(tab, sheet.tabs.length - 1)]!;
     return (
-      <View style={styles.root} testID="archive-sheet">
+      <View style={[styles.root, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[16] }]} testID="archive-sheet">
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2} accessibilityRole="header">{`${storyT.arch.sheetNo(sheet.no)} · ${sheet.title}`}</Text>
         <ScrollView contentContainerStyle={styles.body}>
           <View style={styles.grid} testID="archive-grid">
@@ -68,7 +70,7 @@ export function ArchiveSheets({ store, onClose }: { store: ConveyorStore; onClos
     );
   }
   return (
-    <View style={styles.root} testID="archive-sheets">
+    <View style={[styles.root, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[16] }]} testID="archive-sheets">
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2} accessibilityRole="header">{storyT.arch.title}</Text>
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="archive-count">{storyT.arch.count(k)}</Text>
       <ScrollView contentContainerStyle={styles.body}>
@@ -101,15 +103,15 @@ const styles = StyleSheet.create({
   body: { gap: space[8], paddingBottom: space[16] },
   flex: { flex: 1, minWidth: 0 },
   slot: { flexDirection: 'row', alignItems: 'center', gap: space[12], backgroundColor: color.surface, borderRadius: radius[8], padding: space[12], minHeight: size.touchMin },
-  slotOff: { opacity: 0.7 },
+  slotOff: { borderWidth: 1, borderColor: color.border, borderStyle: 'dashed' },
   slotNo: { ...type('h4'), color: color.accent, width: space[24] },
   slotTitle: { ...type('body'), color: color.text },
   grid: { borderWidth: 1, borderColor: color.border, backgroundColor: color.paper },
   gridRow: { flexDirection: 'row' },
-  cell: { ...type('docMeta'), color: color.ink, borderWidth: 0.5, borderColor: color.paperLine, paddingHorizontal: space[4], paddingVertical: space[2] },
+  cell: { ...type('docMeta'), color: color.ink, borderWidth: StyleSheet.hairlineWidth, borderColor: color.paperLine, paddingHorizontal: space[4], paddingVertical: space[2] },
   corner: { width: space[24], textAlign: 'center', backgroundColor: color.surface, color: color.muted },
   head: { textAlign: 'center', backgroundColor: color.surface, color: color.muted },
-  colName: { fontWeight: '700' },
+  colName: { fontWeight: typeScale.cta.fontWeight },
   foot: { ...type('docMeta'), color: color.muted },
   tabs: { gap: space[4] },
   tab: { minHeight: size.touchMin, justifyContent: 'center', paddingHorizontal: space[12], borderWidth: 1, borderColor: color.border, borderRadius: radius[4] },

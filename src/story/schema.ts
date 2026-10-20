@@ -163,7 +163,7 @@ const sheet = z
     no: z.number().int().min(1).max(12),
     level: z.number().int().min(2).max(5),
     title: str,
-    tabs: z.array(z.object({ name: str, columns: z.array(str).min(1).max(5), rows: z.array(z.array(z.string())).min(1).max(6) }).strict()).min(1).max(3),
+    tabs: z.array(z.object({ name: str, columns: z.array(str).min(1).max(5), rows: z.array(z.array(z.string())).min(1).max(6) }).strict()).min(1).max(2),
     footnote: str,
     arcHint: str,
     source: sheetSource,
@@ -179,6 +179,9 @@ export function checkArchive(file: unknown): string[] {
   const errs: string[] = [];
   const sheets = p.data.sheets;
   sheets.forEach((s, i) => {
+    const srcLevel = s.source.kind === 'conversion' ? s.level : s.source.level;
+    if (srcLevel !== s.level) errs.push(`${s.id}: рівень джерела ${srcLevel} не збігається з рівнем аркуша ${s.level}`);
+    if (s.source.kind === 'conversion' && s.level !== 5) errs.push(`${s.id}: конвертації є лише на Р5`);
     if (s.no !== i + 1 || s.id !== `ar_${String(i + 1).padStart(2, '0')}`) errs.push(`${s.id}: номер і id мають іти підряд (${i + 1})`);
     for (const t of s.tabs) for (const r of t.rows) if (r.length !== t.columns.length) errs.push(`${s.id}/${t.name}: рядок ${JSON.stringify(r)} не збігається зі стовпцями`);
   });

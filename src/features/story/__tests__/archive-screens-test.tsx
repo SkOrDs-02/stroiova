@@ -41,6 +41,19 @@ function game(level: number) {
   return store;
 }
 
+type Json = { props?: Record<string, unknown>; children?: (Json | string)[] | null } | (Json | string)[] | null;
+const find = (n: Json, id: string): Json => {
+  if (!n || typeof n !== 'object') return null;
+  if (Array.isArray(n)) return n.map((x) => find(x as Json, id)).find((x) => x != null) ?? null;
+  if (n.props?.testID === id) return n;
+  return (n.children ?? []).map((c) => (typeof c === 'string' ? null : find(c, id))).find((x) => x != null) ?? null;
+};
+const hasHorizontalScroll = (n: Json): boolean => {
+  if (!n || typeof n !== 'object') return false;
+  if (Array.isArray(n)) return n.some((x) => hasHorizontalScroll(x as Json));
+  return n.props?.horizontal === true || (n.children ?? []).some((c) => typeof c !== 'string' && hasHorizontalScroll(c));
+};
+
 afterEach(async () => {
   await act(async () => {});
 });
@@ -56,6 +69,22 @@ describe('аркуші Археолога в грі (AC-11)', () => {
     expect(store.getState().story.delivered['st_archaeologist_01']).toBeTruthy();
     const texts = [store.getState().toast, ...store.getState().toastQueue].map((t) => JSON.stringify(t));
     expect(texts.some((t) => t.includes('Знайдено аркуш Археолога: Вхідні телеграми'))).toBe(true);
+  });
+
+  test('AC-11: гонку програно - аркуш усе одно виданий (видача не залежить від результату)', async () => {
+    const store = game(2);
+    store.setState({ story: { ...newStory(), skipped: ['st_who_writes_01'] } });
+    await render(<MainScreen store={store} />);
+    await act(async () =>
+      store.setState({
+        events: [
+          ...store.getState().events,
+          { type: 'raceStart', id: 'r1', giftType: 'drone', docSec: 60, resourceSec: 60, winnable: true },
+          { type: 'raceFinish', id: 'r1', giftType: 'drone', result: 'fail', marginSec: -5, speedups: 0, offline: false },
+        ],
+      }),
+    );
+    expect(Object.keys(store.getState().story.sheets)).toEqual(['ar_01']);
   });
 
   test('перший запуск на Р3: аркуші Р2 одним тостом з множиною', async () => {
@@ -80,6 +109,8 @@ describe('archive-sheets (AC-13)', () => {
     await fireEvent.press(screen.getByTestId('archive-slot-1'));
     expect(screen.getByTestId('archive-sheet')).toHaveTextContent(/Аркуш 1 · Вхідні телеграми/);
     const grid = screen.getByTestId('archive-grid');
+    expect(find(screen.toJSON(), 'archive-grid')).not.toBeNull();
+    expect(hasHorizontalScroll(find(screen.toJSON(), 'archive-grid'))).toBe(false);
     expect(grid).toHaveTextContent(/ABC/);
     expect(grid).toHaveTextContent(/Вх\. №/);
     expect(screen.getByTestId('archive-footnote')).toHaveTextContent(/Аркуш 1\./);
@@ -91,6 +122,15 @@ describe('archive-sheets (AC-13)', () => {
 });
 
 describe('finale-script «знайдено» (AC-10)', () => {
+  test('без аркуша server (st_archaeologist_04) сцени немає, хоч 4-ту сюжетну телеграму доставлено', async () => {
+    const store = game(4);
+    const base = storyForLevel(BEATS, 4);
+    const at = { at: T0 - HOUR, rev: 1, catchUp: false, away: false };
+    store.setState({ story: { ...base, delivered: Object.fromEntries(['st_who_writes_07', 'st_who_writes_08', 'st_who_writes_09', 'st_who_writes_10'].map((id) => [id, at])) } });
+    await render(<MainScreen store={store} />);
+    expect(screen.queryByTestId('finale-script')).toBeNull();
+  });
+
   test('після 4-ї сюжетної телеграми Р4 і аркуша server: сцена з кнопкою «Повернутися», без Y/N; закривається', async () => {
     const store = game(4);
     const base = storyForLevel(BEATS, 4);
@@ -115,12 +155,26 @@ describe('finale-script «знайдено» (AC-10)', () => {
 });
 
 describe('рядок кота в акті «Аудиту усього» (AC-16)', () => {
-  test('підсумкова Р4 пройдена: в акті «Неврахований об’єкт, спить.»', async () => {
-    const outcome = (kind: 'final' | 'regular', level: number) => ({ id: 'i1', no: 7, trigger: 'scheduled' as const, boss: 'command_commission' as const, level, kind, attempt: 1, arrMs: T0, passed: true, exitUnlocked: kind === 'final', remark: false, items: [], reason: null, offline: false, seen: false });
+  const outcome = (kind: 'final' | 'regular', level: number, passed = true) => ({ id: 'i1', no: 7, trigger: 'scheduled' as const, boss: 'command_commission' as const, level, kind, attempt: 1, arrMs: T0, passed, exitUnlocked: kind === 'final' && passed, remark: false, items: [], reason: null, offline: false, seen: false });
+
+  test('підсумкова Р4 пройдена (подія finalPassed): в акті «Неврахований об’єкт, спить.»', async () => {
     const store = game(4);
-    store.setState({ story: { ...newStory(), fired: { st_cat_02: { at: T0, away: false } } }, inspections: { ...store.getState().inspections, last: outcome('final', 4) } });
+    store.setState({ story: storyForLevel(BEATS, 4) });
+    await act(async () => store.setState({ events: [...store.getState().events, { type: 'finalPassed', id: 'i1', level: 4, attempt: 1 }], inspections: { ...store.getState().inspections, last: outcome('final', 4) } }));
+    expect(store.getState().story.fired['st_cat_02']).toBeTruthy();
     const r = await render(<InspResult store={store} />);
     expect(screen.getByTestId('insp-act-line')).toHaveTextContent('Неврахований об’єкт, спить.');
     r.unmount();
+  });
+
+  test('звичайна перевірка чи програна підсумкова рядка не мають', async () => {
+    const store = game(4);
+    store.setState({ story: { ...newStory(), fired: { st_cat_02: { at: T0, away: false } } }, inspections: { ...store.getState().inspections, last: outcome('regular', 4) } });
+    const r1 = await render(<InspResult store={store} />);
+    expect(screen.queryByTestId('insp-act-line')).toBeNull();
+    r1.unmount();
+    store.setState({ inspections: { ...store.getState().inspections, last: outcome('final', 4, false) } });
+    await render(<InspResult store={store} />);
+    expect(screen.queryByTestId('insp-act-line')).toBeNull();
   });
 });

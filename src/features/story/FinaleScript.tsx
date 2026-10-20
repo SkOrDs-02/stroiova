@@ -1,6 +1,7 @@
 // finale-script, стан «знайдено» (014 FR-15): серверна під залом доповідей, бежевий ПК з наліпкою, скрипт розсилки на екрані.
 // Вимкнення недоступне до фіналу (013): єдина кнопка - «Повернутися».
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
@@ -12,12 +13,13 @@ import { type } from '@/ui/type';
 import { storyT } from './texts';
 
 export function FinaleScript({ store }: { store: ConveyorStore }) {
+  const insets = useSafeAreaInsets();
   const id = useStore(store, (s) => s.storyScene);
   const beat = id ? beatById(id) : undefined;
   if (!beat) return null;
   const lines = (beat.payload as { lines: string[] }).lines;
   return (
-    <View style={styles.root} testID="finale-script">
+    <View style={[styles.root, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[16] }]} testID="finale-script">
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{storyT.finale.title}</Text>
       <View style={styles.pc}>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.sticker} testID="fs-sticker">{storyT.finale.sticker}</Text>
@@ -38,7 +40,7 @@ const styles = StyleSheet.create({
   title: { ...type('h2'), color: color.text },
   pc: { backgroundColor: color.paper, borderRadius: radius[8], padding: space[12], gap: space[8] },
   sticker: { ...type('docMeta'), color: color.ink, alignSelf: 'flex-start', borderWidth: 1, borderColor: color.ink, paddingHorizontal: space[6] },
-  screen: { backgroundColor: color.ink, borderRadius: radius[4], maxHeight: 280 },
+  screen: { backgroundColor: color.ink, borderRadius: radius[4], flexGrow: 0 },
   screenBody: { padding: space[8], gap: space[2] },
   code: { ...type('docMeta'), color: color.paper },
   note: { ...type('body'), color: color.text },
