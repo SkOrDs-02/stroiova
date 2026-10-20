@@ -2,7 +2,7 @@
 import diaryJson from '../../../content/diary.json';
 import storyJson from '../../../content/story.json';
 import { telegram } from '@/telegrams/content';
-import { checkDiary, checkStory } from '../schema';
+import { checkDiary, checkStory, checkStoryRules } from '../schema';
 import { BEATS, DIARY } from '../content';
 
 const knownTelegram = (id: string) => telegram(id) != null;
@@ -11,6 +11,23 @@ describe('content/story.json', () => {
   test('схема, носії, залежності без циклів', () => {
     const errs = checkStory(storyJson, { has: knownTelegram } as ReadonlySet<string>);
     expect(errs).toEqual([]);
+  });
+
+  test('правила тексту й порядку: форми статі, наскрізний order, бойових слів у Пташці немає', () => {
+    expect(checkStoryRules(storyJson)).toEqual([]);
+  });
+
+  test('AC-14: вісточка Пташки з бойовим словом відхиляється; непарна форма статі й прогалина в order - теж', () => {
+    const base = structuredClone(storyJson) as { beats: Record<string, unknown>[] };
+    const p = base.beats.find((b) => b.id === 'st_ptashka_02') as { payload: { body: string } };
+    p.payload.body = 'Пташка-3 у небі після атаки.';
+    expect(checkStoryRules(base).some((e) => e.includes('бойова деталь'))).toBe(true);
+    const g = base.beats.find((b) => b.id === 'st_ptashka_01') as { payload: { body: string }; order: number };
+    g.payload.body = '{m:Прийшов}.';
+    g.order = 7;
+    const errs = checkStoryRules(base);
+    expect(errs.some((e) => e.includes('без другої'))).toBe(true);
+    expect(errs.some((e) => e.includes('наскрізним'))).toBe(true);
   });
 
   test('усі телеграми кроків є в контенті (ВП-11)', () => {

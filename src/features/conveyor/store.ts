@@ -31,7 +31,7 @@ import { unavailableLinks } from '@/services/links';
 import { newStats, statsFromEvents, type Stats } from '@/profile/stats';
 import { newStory } from '@/story/engine';
 import type { SessionBudget, StoryState } from '@/story/types';
-import { applyEvents, diaryStart, newBudget, newEvents, run as storyRunPatch } from './story';
+import { applyEvents, diaryStart, newBudget, newEvents, run as storyRunPatch, syncAway } from './story';
 import { unavailableNotifications } from '@/services/notifications';
 import { unavailableAds } from '@/services/ads';
 import { unavailablePurchases } from '@/services/purchases';
@@ -669,6 +669,9 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       awayInner(leftAt, backAt);
       // 003: телеграми, що прийшли без гравця (FR-3); нова сесія — шанс «Комбата шукають» (FR-29)
       runTelegrams(leftAt, Math.max(leftAt, backAt), true);
+      // 014 FR-8: що спрацювало без гравця, показується після довідки
+      const sa = syncAway(get(), backAt);
+      if (sa) set(sa);
       resumeRaceIfFree(backAt);
       if (isNewSession(leftAt, backAt)) {
         set({ sessionLines: { count: 0, byUid: {} }, digitHintShown: false, storySession: newBudget() });

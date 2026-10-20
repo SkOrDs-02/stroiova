@@ -188,3 +188,46 @@ describe('носії: телеграма, курйоз, записка', () => {
     expect(screen.getByTestId('note-detail')).toHaveTextContent(/Ліна/);
   });
 });
+
+describe('без гравця (AC-6) і черга модалок (AC-4)', () => {
+  test('AC-6: пачка о 03:00, повернення о 09:00 - курйоз приходить після довідки, is_while_away = true', async () => {
+    const store = game(3, {});
+    store.setState({ story: storyForLevel(BEATS, 3) });
+    // 22:00 -> 09:00 наступної доби: пачка в 03:00 прийшла без гравця
+    const left = T0 + 10 * HOUR;
+    await act(async () => store.getState().away(left, T0 + 21 * HOUR));
+    expect(store.getState().telegrams.packs.seq).toBeGreaterThan(0);
+    expect(store.getState().story.fired['st_who_writes_04']).toMatchObject({ away: true });
+    store.setState({ inspections: { ...store.getState().inspections, active: null, last: null }, race: { ...store.getState().race, active: null, last: null } });
+    await render(<MainScreen store={store} />);
+    expect(store.getState().museum.curios.some((c) => c.kind === 'story')).toBe(false);
+    await act(async () => {
+      if (store.getState().offline) store.getState().claim();
+    });
+    expect(store.getState().museum.curios.some((c) => c.kind === 'story')).toBe(true);
+    expect(store.getState().events.find((e) => e.type === 'storyBeatDeliver' && e.beatId === 'st_who_writes_04')).toMatchObject({ isWhileAway: true });
+  });
+
+  test('AC-4: поки журнал чекає розкриття, дзвінок не показано; після розкриття - показано', async () => {
+    const store = game(1, { '1': 1 });
+    const m = store.getState().museum;
+    store.setState({ museum: { ...m, owned: [{ no: 1, atMs: T0, source: 'digitization', seen: false }], reveal: [{ no: 1, k: 1, m: 1, nAfter: 1, via: 'other' }] } });
+    await render(<MainScreen store={store} />);
+    expect(screen.queryByTestId('story-call')).toBeNull();
+    await act(async () => store.setState({ museum: { ...store.getState().museum, reveal: [] } }));
+    expect(screen.getByTestId('story-call')).toBeTruthy();
+  });
+});
+
+describe('підпис телеграми на екрані (AC-9)', () => {
+  test('звичайна телеграма: внизу «Оператор ЕОМ № 1»', async () => {
+    const store = game(1, {});
+    store.setState({ story: { ...newStory(), skipped: ['st_who_writes_01'] } });
+    const tg = store.getState().telegrams;
+    store.setState({ telegrams: { ...tg, inbox: [{ uid: 'tg_0002_less_paper#1', id: 'tg_0002_less_paper', kind: 'telegram', receivedAt: T0, status: 'new' }] } });
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('tab-telegrams'));
+    await fireEvent.press(screen.getByTestId('tg-row-tg_0002_less_paper#1'));
+    expect(screen.getByTestId('tg-sign')).toHaveTextContent('Оператор ЕОМ № 1');
+  });
+});

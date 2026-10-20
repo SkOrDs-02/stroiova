@@ -1,4 +1,5 @@
 // 014 AC-2…AC-5, AC-8, FR-3, FR-4, FR-7, FR-10: рушій сюжету.
+import { BEATS } from '../content';
 import { confirmTelegram, newStory, onEvent, pull, ready, storyForLevel, sync } from '../engine';
 import type { Beat, Carrier, SessionBudget, StoryCtx } from '../types';
 
@@ -149,5 +150,32 @@ describe('носій telegram', () => {
   test('непідтримуваний носій чекає в черзі й тримає арку (FR-28)', () => {
     const r = pull(newStory(), b, c, T0, FRESH, { supports: new Set<Carrier>(['note']), maxToasts: 2 });
     expect(r.out).toEqual([]);
+  });
+});
+
+describe('реальні кроки (AC-2, FR-29)', () => {
+  const REAL: SessionBudget = { interrupting: 0, toasts: 0 };
+  const o = { supports: ALL, maxToasts: 2 };
+
+  test('AC-2: третя пачка на Р3 дає записку Кави st_who_writes_05 після доставленого st_who_writes_04; без нього - ні', () => {
+    const c = ctx({ level: 3, packs: 3 });
+    const first = pull(storyForLevel(BEATS, 3), BEATS, c, T0, REAL, o);
+    expect(first.out.map((p) => p.beat.id)).toEqual(expect.arrayContaining(['st_who_writes_04', 'st_who_writes_05']));
+    const noPrev = ready({ ...storyForLevel(BEATS, 3), fired: { st_who_writes_05: { at: T0, away: false } } }, BEATS, c, T0, ALL);
+    expect(noPrev.map((r) => r.beat.id)).not.toContain('st_who_writes_05');
+  });
+
+  test('FR-29: гравець мігрував на Р4 - сюжетні телеграми Р4 не губляться, хоч їхні залежності з Р3 закрито міграцією', () => {
+    const c = ctx({ level: 4, counts: { '4': 1 } });
+    const r = pull(storyForLevel(BEATS, 4), BEATS, c, T0, REAL, o);
+    expect(r.out.map((p) => p.beat.id)).toContain('st_who_writes_07');
+  });
+
+  test('FR-29: гравець на Р5 з минулим тригером: крок Р5 доступний, кроки Р1-Р4 закриті', () => {
+    const c = ctx({ level: 5, conversions: 2 });
+    const r = pull(storyForLevel(BEATS, 5), BEATS, c, T0, REAL, o);
+    const ids = r.out.map((p) => p.beat.id);
+    expect(ids).not.toContain('st_who_writes_01');
+    expect(ids).toContain('st_ptashka_04');
   });
 });

@@ -180,7 +180,7 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
       tg = { ...tg, inbox: [...tg.inbox.slice(0, -1), item] };
     }
     delivered.push(item);
-    events.push({ type: 'telegramReceive', telegramId: id, uid: item.uid, delivery, scripted: false });
+    events.push({ type: 'telegramReceive', telegramId: id, uid: item.uid, delivery, scripted: telegram(id)?.schedule?.scripted === true });
   };
 
   for (const st of steps) {

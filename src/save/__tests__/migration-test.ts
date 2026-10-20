@@ -316,6 +316,22 @@ describe('справжні міграції', () => {
     expect(r.save.game.telegrams.inbox).toEqual(d.game.telegrams.inbox);
   });
 
+  test('13 → 14: Р1 - нічого не закрито; Р4 - закриті кроки Р1-Р3, відкрите Р4', () => {
+    const run = (level: number) => {
+      const d = draft({ schemaVersion: 13, savedAt: 5000 });
+      const { story: _story, ...gameV13 } = d.game;
+      const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV13, economy: { ...d.game.economy, level } } as never }) });
+      const r = loadSave(kv, { current: 14, migrations: MIGRATIONS });
+      if (r.kind !== 'ok') throw new Error(r.kind);
+      return r.save.game.story;
+    };
+    expect(run(1).skipped).toEqual([]);
+    const l4 = run(4).skipped;
+    expect(l4).toEqual(expect.arrayContaining(['st_who_writes_06', 'st_cat_01', 'st_kombat_leave_03']));
+    expect(l4).not.toContain('st_who_writes_07');
+    expect(l4).not.toContain('st_who_writes_12');
+  });
+
   test('схема 14: доставлені кроки, лічильники, стани персонажів і щоденник проходять збереження без втрат', () => {
     const d = draft({ schemaVersion: 14, savedAt: 5000 });
     const story = {

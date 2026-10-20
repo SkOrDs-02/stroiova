@@ -7,7 +7,7 @@ import { curioFromStory } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
 import { BEATS, DIARY } from '@/story/content';
 import { diaryOnSessionStart } from '@/story/diary';
-import { confirmTelegram, onEvent, pull, setCharacter } from '@/story/engine';
+import { confirmTelegram, onEvent, pull, setCharacter, sync } from '@/story/engine';
 import { storyText } from '@/story/text';
 import type { Carrier, SessionBudget, StoryCtx, StoryEvent, StoryState } from '@/story/types';
 import type { TelegramState } from '@/telegrams/types';
@@ -137,6 +137,12 @@ export function run(g: StoryHost): Patch | null {
   }
   for (const t of toasts) g.showToast(t);
   return { story, storySession: r.session, telegrams: tg, museum, storyCall: call, ...(events.length ? { events: [...g.events, ...events].slice(-40) } : {}) };
+}
+
+/** Гравця не було: тригери, що спрацювали за цей час (пачка о 03:00, гонка), позначаються `is_while_away` (FR-8) */
+export function syncAway(g: StoryHost, backAt: number): Patch | null {
+  const st = sync(g.story, BEATS, ctxOf(g), backAt, true);
+  return st === g.story ? null : { story: st };
 }
 
 /** Нова сесія: щоденник дає рядок першої сесії доби (FR-24) */

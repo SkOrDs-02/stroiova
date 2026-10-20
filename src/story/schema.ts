@@ -114,6 +114,43 @@ export function checkStory(file: unknown, telegramIds?: ReadonlySet<string>): st
   return errs;
 }
 
+/** Бойові деталі, яких у вісточках «Пташки» немає (FR-12, FR-20): лише добрі новини без війни */
+export const COMBAT_WORDS = /бо[йї]|бойов|снаряд|боєприпас|вибух|обстріл|уражен|ворож|ворог|окупант|ракет|атак|нальот|приціл|ціль|цілі/i;
+
+const textsOf = (b: Beat): string[] => {
+  const out: string[] = [];
+  const walk = (v: unknown) => {
+    if (typeof v === 'string') out.push(v);
+    else if (Array.isArray(v)) v.forEach(walk);
+    else if (v && typeof v === 'object') Object.values(v).forEach(walk);
+  };
+  walk(b.payload);
+  return out;
+};
+
+/** Додаткові правила тексту й порядку кроків (FR-1, FR-12) */
+export function checkStoryRules(file: unknown): string[] {
+  const p = storyFileSchema.safeParse(file);
+  if (!p.success) return [];
+  const beats = p.data.beats as unknown as Beat[];
+  const errs: string[] = [];
+  for (const b of beats) {
+    for (const t of textsOf(b)) {
+      for (const m of t.matchAll(/\{([mf]):[^|}]*(\|[^}]*)?\}/g)) if (!m[2]) errs.push(`${b.id}: форма ${m[0]} без другої`);
+      if (b.arc === 'ptashka' && COMBAT_WORDS.test(t)) errs.push(`${b.id}: бойова деталь у вісточці Пташки: ${t.slice(0, 60)}`);
+    }
+    if ((b.trigger.type === 'digitization_on_level' || b.trigger.type === 'boss_announced') && b.level == null) errs.push(`${b.id}: тригер ${b.trigger.type} без level ніколи не спрацює`);
+  }
+  // наскрізний order в арці: 1…n без прогалин
+  for (const arc of new Set(beats.map((b) => b.arc))) {
+    const orders = beats.filter((b) => b.arc === arc).map((b) => b.order).sort((a, c) => a - c);
+    orders.forEach((o, i) => {
+      if (o !== i + 1) errs.push(`арка ${arc}: порядок має бути наскрізним 1…${orders.length}, знайдено ${o} на місці ${i + 1}`);
+    });
+  }
+  return errs;
+}
+
 export function checkDiary(file: unknown): string[] {
   const p = diaryFileSchema.safeParse(file);
   if (!p.success) return p.error.issues.map((i) => `diary: ${i.path.join('.')}: ${i.message}`);

@@ -2,8 +2,9 @@
 import type { Beat, Carrier, Pulled, PullOpts, SessionBudget, StoryCtx, StoryEvent, StoryState } from './types';
 
 const HOUR = 3_600_000;
-/** Перебивні носії: не більше одного за сесію (FR-7) */
+/** Перебивні носії й їхній ліміт за сесію: правило FR-7 (≤ 1), не параметр балансу (рішення 106) */
 const INTERRUPTING: readonly Carrier[] = ['call', 'scene'];
+const INTERRUPTING_MAX = 1;
 
 export function newStory(): StoryState {
   return { delivered: {}, skipped: [], fired: {}, dispatched: {}, counters: { wins: {}, gifts: {} }, chars: {}, diary: { got: [], lastDay: null } };
@@ -19,6 +20,13 @@ const closed = (st: StoryState, b: Beat) => st.delivered[b.id] != null || st.ski
 /** Крок пройденого рівня без `required` мовчки пропускається (FR-10) */
 const lapsed = (b: Beat, ctx: StoryCtx) => b.level != null && b.level < ctx.level && !b.required;
 
+/** Крок закрито міграцією або він мовчки пропущений з минулим рівнем (FR-10, FR-29) */
+function isLapsed(st: StoryState, beats: readonly Beat[], ctx: StoryCtx, id: string): boolean {
+  if (st.skipped.includes(id)) return true;
+  const b = beats.find((x) => x.id === id);
+  return b != null && st.delivered[id] == null && lapsed(b, ctx);
+}
+
 const afterMs = (h: number | 'next_day' | undefined) => (typeof h === 'number' ? h * HOUR : 0);
 
 function fire(st: StoryState, id: string, at: number, away: boolean): StoryState {
@@ -29,23 +37,25 @@ function fire(st: StoryState, id: string, at: number, away: boolean): StoryState
  * Тригери, що виводяться зі стану (цифровізації, конвертації, пачки, рівень, доставлений крок): перевіряються на кожному виклику,
  * тож спрацювання не губиться, поки `requires` не виконано (FR-3), і діє ретроспективно після оновлення (FR-29).
  */
-export function sync(st: StoryState, beats: readonly Beat[], ctx: StoryCtx, nowMs: number): StoryState {
+export function sync(st: StoryState, beats: readonly Beat[], ctx: StoryCtx, nowMs: number, away = false): StoryState {
   let s = st;
   for (const b of beats) {
     if (closed(s, b) || s.fired[b.id]) continue;
     const t = b.trigger;
     if (t.type === 'digitization_on_level') {
-      if (b.level != null && (ctx.counts[String(b.level)] ?? 0) >= t.n) s = fire(s, b.id, nowMs, false);
+      if (b.level != null && (ctx.counts[String(b.level)] ?? 0) >= t.n) s = fire(s, b.id, nowMs, away);
     } else if (t.type === 'conversion') {
-      if (ctx.conversions >= t.k) s = fire(s, b.id, nowMs, false);
+      if (ctx.conversions >= t.k) s = fire(s, b.id, nowMs, away);
     } else if (t.type === 'pack_received') {
-      if (ctx.packs >= t.n) s = fire(s, b.id, nowMs, false);
+      if (ctx.packs >= t.n) s = fire(s, b.id, nowMs, away);
     } else if (t.type === 'level_enter') {
-      if (ctx.level === t.level) s = fire(s, b.id, ctx.levelStartMs, false);
-      else if (ctx.level > t.level) s = fire(s, b.id, nowMs, false);
+      if (ctx.level === t.level) s = fire(s, b.id, ctx.levelStartMs, away);
+      else if (ctx.level > t.level) s = fire(s, b.id, nowMs, away);
     } else if (t.type === 'beat_delivered') {
       const d = s.delivered[t.beat];
       if (d) s = fire(s, b.id, d.at, d.away);
+      // крок закрито міграцією чи пропущено з рівнем - залежний крок не лишається назавжди без тригера
+      else if (isLapsed(s, beats, ctx, t.beat)) s = fire(s, b.id, nowMs, away);
     }
   }
   return s;
@@ -87,8 +97,9 @@ function readyAtMs(st: StoryState, beats: readonly Beat[], b: Beat, ctx: StoryCt
   let at = f.at + afterMs(b.trigger.afterHours);
   for (const r of b.requires ?? []) {
     const d = st.delivered[r.beat];
-    if (!d) return null;
-    at = Math.max(at, d.at + afterMs(r.afterHours));
+    if (d) at = Math.max(at, d.at + afterMs(r.afterHours));
+    // залежність, закрита міграцією чи пропущена з рівнем, виконаною вважається без затримки (FR-29)
+    else if (!isLapsed(st, beats, ctx, r.beat)) return null;
   }
   // кроки арки йдуть за `order`: усі попередні мають бути доставлені чи пропущені (FR-4)
   for (const p of beats) {
@@ -127,7 +138,7 @@ export function pull(st0: StoryState, beats: readonly Beat[], ctx: StoryCtx, now
   const out: Pulled[] = [];
   for (let guard = 0; guard < beats.length + 1; guard++) {
     const next = ready(st, beats, ctx, nowMs, opts.supports).find((r) => {
-      if (INTERRUPTING.includes(r.beat.carrier)) return budget.interrupting < 1;
+      if (INTERRUPTING.includes(r.beat.carrier)) return budget.interrupting < INTERRUPTING_MAX;
       if (r.beat.carrier === 'event_toast') return budget.toasts < opts.maxToasts;
       return true;
     });
