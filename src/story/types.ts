@@ -93,6 +93,8 @@ export interface StoryCtx {
   levelStartMs: number;
   /** Підсумкова поточного рівня пройдена, перехід дозволено (`digit.levelExitAllowed`) */
   exitAllowed: boolean;
+  /** Зсув місцевого часу, хв: для `afterHours: next_day` (перша мить наступної календарної доби); 0 - UTC */
+  tzOffsetMin?: number;
 }
 
 export type StoryEvent =

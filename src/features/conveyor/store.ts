@@ -34,6 +34,8 @@ import { unavailableLinks } from '@/services/links';
 import { newStats, statsFromEvents, type Stats } from '@/profile/stats';
 import { newStory } from '@/story/engine';
 import type { SessionBudget, StoryState } from '@/story/types';
+import { autoSteps as finaleAuto, completeStep as finaleComplete, decline as finaleDecline, openLastBook as finaleOpenLastBook, startIfDue as finaleStartIfDue } from './finale';
+import { current as finaleCurrent, mailingStopped, newFinale, type FinaleState, type FinaleStep } from '@/finale/finale';
 import { applyEvents, diaryStart, newBudget, newEvents, run as storyRunPatch, syncAway } from './story';
 import { unavailableNotifications } from '@/services/notifications';
 import { unavailableAds } from '@/services/ads';
@@ -109,6 +111,9 @@ interface Store {
   stats: Stats;
   /** Сюжет і щоденник (014) */
   story: StoryState;
+  /** Фінал (013 FR-15): стан-машина кроків; `finaleBoot` - крок, на якому гру знайдено при запуску (лише в пам'яті) */
+  finale: FinaleState;
+  finaleBoot: FinaleStep | null;
   /** Перебивні кроки й тости цієї сесії (014 FR-7); лише в пам'яті */
   storySession: SessionBudget;
   /** Дзвінок сюжету на екрані: id кроку (014); лише в пам'яті */
@@ -172,6 +177,12 @@ interface Store {
   /** Дзвінок сюжету закрито */
   closeStoryCall: () => void;
   closeStoryScene: () => void;
+  /** Завершити крок фіналу (013 FR-15); false - не поточний */
+  finaleComplete: (step: FinaleStep) => boolean;
+  /** N на Y/N `finale-script`: нічого не завершує (FR-18) */
+  finaleDecline: () => void;
+  /** Екран `last-book` відкрито: журнал № 24 (FR-20) */
+  finaleOpenLastBook: () => void;
   showToast: (toast: Toast) => void;
   /** Закрити крок онбордингу (002 FR-1); false — крок не поточний */
   onbComplete: (step: StepNo, extra?: CompleteExtra) => boolean;
@@ -303,6 +314,7 @@ export interface Initial {
   notifications?: NotificationsState;
   stats?: Stats;
   story?: StoryState;
+  finale?: FinaleState;
   awards?: AwardsState;
   installId?: string;
   services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService }>;
@@ -552,6 +564,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       conversions: g.state.digital.length,
       raceActive: g.race.active?.type ?? null,
       away,
+      muted: mailingStopped(g.finale),
     });
     set({ telegrams: r.tg, state: r.eco });
     handleEvents(r.events, to);
@@ -606,6 +619,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     notifications: init?.notifications ?? newNotifications(),
     stats: init?.stats ?? newStats(),
     story: init?.story ?? newStory(),
+    finale: init?.finale ?? newFinale(),
+    finaleBoot: init?.finale ? finaleCurrent(init.finale, cfg.params.finaleQuietDays, nowMs) : null,
     storySession: newBudget(),
     storyCall: null,
     storyScene: null,
@@ -801,6 +816,19 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     },
     closeStoryCall: () => set({ storyCall: null }),
     closeStoryScene: () => set({ storyScene: null }),
+    finaleComplete: (step) => {
+      const p = finaleComplete(get(), step);
+      if (p) set(p);
+      return !!p;
+    },
+    finaleDecline: () => {
+      const p = finaleDecline(get());
+      if (p) set(p);
+    },
+    finaleOpenLastBook: () => {
+      const p = finaleOpenLastBook(get());
+      if (p) set(p);
+    },
     clearToast: () => {
       const [next, ...rest] = get().toastQueue;
       set({ toast: next ?? null, toastQueue: rest });
@@ -1191,6 +1219,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         storyCall: null,
         storyScene: null,
         diaryToday: null,
+        finale: newFinale(),
+        finaleBoot: null,
         // 016 FR-22: грамоти лишаються, лічильники обнуляються
         awards: toastsShown(resetAwards(g.awards), g.awardQueue.map((q) => q.id)),
         awardQueue: [],
@@ -1236,6 +1266,15 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     },
   };
   });
+  // 013 FR-15: конвертація № 6 запускає фінал; `call` і `quiet` закриваються самі (розмову доставлено, тиша сплила)
+  store.subscribe((s, prev) => {
+    const minute = Math.floor(s.lastMs / 60_000) !== Math.floor(prev.lastMs / 60_000);
+    if (!minute && s.state.digital === prev.state.digital && s.story === prev.story && s.finale === prev.finale) return;
+    const p1 = finaleStartIfDue(s);
+    if (p1) store.setState(p1);
+    const p2 = finaleAuto(store.getState());
+    if (p2) store.setState(p2);
+  });
   // 014: події гри -> тригери сюжету (без правок у кожному місці, що пише в `events`)
   store.subscribe((s, prev) => {
     if (s.events === prev.events) return;
@@ -1275,7 +1314,8 @@ export function gameSave(store: ConveyorStore): {
   stats: Stats;
   story: StoryState;
   awards: AwardsState;
+  finale: FinaleState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats, story, awards } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats, story, awards };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats, story, awards, finale } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats, story, awards, finale };
 }

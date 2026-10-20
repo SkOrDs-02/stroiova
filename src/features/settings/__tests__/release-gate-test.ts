@@ -1,6 +1,7 @@
 // Реліз-ворота (010, рішення 87): із STROIOVA_RELEASE=1 у content/about.json не лишається плейсхолдерів [N], [ФОНД], посилань.
 import appJson from '../../../../app.json';
 import rootPkg from '../../../../package.json';
+import credits from '../../../../content/credits.json';
 import { aboutCfg, unresolvedPlaceholders } from '../data';
 
 describe('плейсхолдери «Про гру»', () => {
@@ -15,6 +16,13 @@ describe('плейсхолдери «Про гру»', () => {
 
   (process.env.STROIOVA_RELEASE === '1' ? test : test.skip)('реліз: content/about.json без плейсхолдерів', () => {
     expect(unresolvedPlaceholders()).toEqual([]);
+  });
+});
+
+describe('титри (013 FR-21)', () => {
+  (process.env.STROIOVA_RELEASE === '1' ? test : test.skip)('реліз: content/credits.json без плейсхолдерів автора (діловоди Р3-Р5, автори й плейтестери)', () => {
+    const left = (credits.sections as { lines: { placeholder?: string }[] }[]).flatMap((x) => x.lines).filter((l) => l.placeholder);
+    expect(left).toEqual([]);
   });
 });
 

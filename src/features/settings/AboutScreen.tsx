@@ -14,8 +14,10 @@ import { setT } from './texts';
 
 const TEST_TAPS = 7;
 
-export function AboutScreen({ store, installId, insetTop, onBack, onReports, onLicenses }: { store: ConveyorStore; installId: string; insetTop: number; onBack: () => void; onReports: () => void; onLicenses: () => void }) {
+export function AboutScreen({ store, installId, insetTop, onBack, onReports, onLicenses, onCredits }: { store: ConveyorStore; installId: string; insetTop: number; onBack: () => void; onReports: () => void; onLicenses: () => void; onCredits: () => void }) {
   const links = useStore(store, (s) => s.services.links);
+  // 013 FR-21: титри відкриваються повторно, коли фінал їх уже показав
+  const creditsSeen = useStore(store, (s) => s.finale.done.credits != null);
   const [copied, setCopied] = useState(false);
   // прихований вхід у тестовий режим: 7 тапів по версії (відкрите питання 15 spec 010, рішення 92)
   const [taps, setTaps] = useState(0);
@@ -49,6 +51,7 @@ export function AboutScreen({ store, installId, insetTop, onBack, onReports, onL
 
       <LinkRow id="about-reports" label={ab.reports} onPress={onReports} />
       <LinkRow id="about-privacy" label={ab.privacy} onPress={() => links.open(aboutCfg.privacyUrl)} />
+      {creditsSeen ? <LinkRow id="about-credits" label={ab.credits} onPress={onCredits} /> : null}
       <LinkRow id="about-licenses" label={ab.licenses} onPress={onLicenses} />
       <LinkRow id="about-contact" label={ab.contact} onPress={() => links.open(`mailto:${aboutCfg.email}`)} />
 

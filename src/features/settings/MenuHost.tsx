@@ -9,12 +9,13 @@ import { FundReportsScreen } from './FundReportsScreen';
 import { LicensesScreen } from './LicensesScreen';
 import { MenuSheet } from './MenuSheet';
 import { DiaryScreen } from '@/features/story/DiaryScreen';
+import { Credits } from '@/features/finale/Credits';
 import { ProfileScreen } from './ProfileScreen';
 import { PushPreprompt } from './PushPreprompt';
 import { ResetConfirm } from './ResetConfirm';
 import { SettingsScreen } from './SettingsScreen';
 
-type Page = 'menu' | 'profile' | 'diary' | 'settings' | 'about' | 'funds' | 'licenses';
+type Page = 'menu' | 'profile' | 'diary' | 'settings' | 'about' | 'funds' | 'licenses' | 'credits';
 
 export function MenuHost({ store, insetTop, onClose, onCurios, onAwards }: { store: ConveyorStore; insetTop: number; onClose: () => void; onCurios: () => void; onAwards: () => void }) {
   const [page, setPage] = useState<Page>('menu');
@@ -39,7 +40,8 @@ export function MenuHost({ store, insetTop, onClose, onCurios, onAwards }: { sto
           }}
         />
       ) : null}
-      {page === 'about' ? <AboutScreen store={store} installId={store.getState().installId} insetTop={insetTop} onBack={toMenu} onReports={() => setPage('funds')} onLicenses={() => setPage('licenses')} /> : null}
+      {page === 'about' ? <AboutScreen store={store} installId={store.getState().installId} insetTop={insetTop} onBack={toMenu} onReports={() => setPage('funds')} onLicenses={() => setPage('licenses')} onCredits={() => setPage('credits')} /> : null}
+      {page === 'credits' ? <Credits store={store} final={false} onClose={() => setPage('about')} /> : null}
       {page === 'funds' ? <FundReportsScreen store={store} insetTop={insetTop} onBack={() => setPage('about')} /> : null}
       {page === 'licenses' ? <LicensesScreen insetTop={insetTop} onBack={() => setPage('about')} /> : null}
       {reset ? <ResetConfirm store={store} onCancel={() => setReset(false)} onDone={onClose} /> : null}

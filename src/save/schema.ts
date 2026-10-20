@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 16;
+export const CURRENT_SCHEMA = 17;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -370,6 +370,14 @@ export const awardsSchema = z.object({
   lastOrderNo: z.number().int().nonnegative(),
 });
 
+/** Фінал (013 FR-15, FR-30); схема 17. */
+export const finaleSchema = z.object({
+  startMs: z.number().nullable(),
+  done: z.record(z.string(), z.number()),
+  yMs: z.number().nullable(),
+  scriptNs: z.number().int().nonnegative(),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -396,6 +404,8 @@ export const gameSaveSchema = z.object({
   story: storyStateSchema,
   /** Грамоти (016) */
   awards: awardsSchema,
+  /** Фінал (013) */
+  finale: finaleSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

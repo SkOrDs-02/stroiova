@@ -119,6 +119,7 @@ export const setT = {
     reports: 'Звіти й квитанції',
     privacy: 'Політика приватності',
     licenses: 'Ліцензії',
+    credits: 'Титри',
     contact: 'Написати розробнику',
     version: (v: string) => `Версія ${v}`,
     id: (id: string) => `ID: ${id}`,

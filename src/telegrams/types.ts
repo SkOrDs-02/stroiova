@@ -22,6 +22,8 @@ export interface Effects {
   roll?: { pct: number; effects: Effects; text?: string };
   delayed?: { afterHours: number; effects: Effects; text?: string }[];
   returnsAfterHours?: number;
+  /** Відкрити екран після відповіді (013 FR-19): `finale-script` для «Y» на № 109 */
+  openScreen?: string;
   race?: Record<string, unknown>;
   fuel?: { refuelBlockedHours?: number; fillAfterHours?: number; fillTank?: boolean };
   kombat?: { pct: number; maxMin: number };

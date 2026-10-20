@@ -47,6 +47,13 @@ import { t } from '@/features/conveyor/texts';
 import { UnitRow } from '@/features/conveyor/UnitRow';
 import { SedoSheet } from '@/features/convert/SedoSheet';
 import { StageConvert } from '@/features/convert/StageConvert';
+import { Credits } from '@/features/finale/Credits';
+import { FinaleOrder } from '@/features/finale/FinaleOrder';
+import { FinaleShutdown } from '@/features/finale/FinaleShutdown';
+import { LastBook } from '@/features/finale/LastBook';
+import { finT } from '@/features/finale/texts';
+import { pendingAction } from '@/finale/finale';
+import { telegramOf } from '@/telegrams/effects';
 import { cvT, sedoT } from '@/features/convert/texts';
 import { convertInfo } from '@/economy/game/convert';
 import { StackTower } from '@/features/stack/StackTower';
@@ -95,6 +102,10 @@ type View3 =
   | { kind: 'kombat' }
   | { kind: 'meeting' }
   | { kind: 'convert' }
+  | { kind: 'fin-order' }
+  | { kind: 'fin-script' }
+  | { kind: 'last-book' }
+  | { kind: 'credits' }
   | { kind: 'sedo' }
   | { kind: 'digital' }
   | { kind: 'museum'; seg?: 'journals' | 'curios' | 'awards'; award?: string; source?: 'award_toast' | 'profile' }
@@ -252,7 +263,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const giftOpen = raceFree && !raceResult && race != null && !race.seen;
 
   // 007: розкриття журналів - після інших модалок; digit-result іде першим, level-up - після (FR-18, spec «Перехід рівня»)
-  const viewFree = view.kind === 'main' || view.kind === 'list';
+  // `last-book`: журнал № 24 розкривається всередині цього кроку (013 FR-20)
+  const viewFree = view.kind === 'main' || view.kind === 'list' || view.kind === 'last-book';
   const revealOpen =
     viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !storyCallOpen && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
 
@@ -268,6 +280,12 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   useEffect(() => {
     if (storyFree) store.getState().storyRun();
   }, [store, storyFree, storyMinute, s.story]);
+
+  // 013 FR-16: незавершений крок фіналу - банер на `main`; наказ і титри відкриваються самі, коли нічого не заважає
+  const finStep = pendingAction(s.finale);
+  const [finAuto, setFinAuto] = useState<string | null>(null);
+  // наказ і титри відкриваються самі поверх усього (крайовий випадок: перевірка чи гонка під час конвертації № 6 стають у чергу після кроку)
+  const finAutoOpen = finStep != null && (finStep === 'order' || finStep === 'credits') && !onboarding && s.offline == null && view.kind === 'main' && finAuto !== finStep;
 
   // 016 FR-32: тости грамот чекають онбординг, церемонії й модалки; решта тостів іде перед ними у спільній черзі
   const awardsFree = calm && !iapOpen && !starterOpen && o.step === 'done';
@@ -356,6 +374,16 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         {inspBanner ? (
           <Pressable testID="insp-banner" accessibilityRole="button" onPress={s.openInspPrep} style={styles.inspBar}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.inspText}>{`${inspT.banner(formatCountdown((insp!.arrMs - now) / 1000))} · ${inspT.prepare}`}</Text>
+          </Pressable>
+        ) : null}
+        {finStep && view.kind === 'main' ? (
+          <Pressable
+            testID="finale-banner"
+            accessibilityRole="button"
+            onPress={() => setView({ kind: finStep === 'order' ? 'fin-order' : finStep === 'script' ? 'fin-script' : finStep === 'last_book' ? 'last-book' : 'credits' })}
+            style={styles.inspBar}
+          >
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.inspText}>{finT.banner[finStep as keyof typeof finT.banner]}</Text>
           </Pressable>
         ) : null}
         {race && race.seen ? <RaceCard race={race} nowMs={now} p={s.cfg.params} onOpen={() => setRaceSheetId(race.id)} /> : null}
@@ -508,7 +536,13 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           store={store}
           uid={view.uid}
           coachText={view.coach ? onb.b8Tip : undefined}
-          onAnswered={(uid) => setView({ kind: 'result', uid, back: view.coach ? 'main' : 'list', pack: view.pack })}
+          onAnswered={(uid) => {
+            // 013 FR-19: «Y» на № 109 відкриває серверну (`openScreen: finale-script`), поки крок script не завершено
+            const item = s.telegrams.inbox.find((x) => x.uid === uid) ?? store.getState().telegrams.inbox.find((x) => x.uid === uid);
+            const open = item ? telegramOf(item)?.choices.find((c) => c.id === item.choiceId)?.effects?.openScreen : undefined;
+            if (open === 'finale-script' && store.getState().finale.done.script == null) setView({ kind: 'fin-script' });
+            else setView({ kind: 'result', uid, back: view.coach ? 'main' : 'list', pack: view.pack });
+          }}
           onFlag={(uid) => setView({ kind: 'flag', uid, back: 'detail' })}
           onReputation={view.coach ? undefined : () => setView({ kind: 'rep', back: 'list' })}
           onBack={view.coach ? undefined : () => setView(view.pack != null ? { kind: 'pack', no: view.pack } : { kind: 'list' })}
@@ -543,6 +577,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           }}
         />
       ) : null}
+      {view.kind === 'fin-order' ? <FinaleOrder store={store} onClose={() => setView({ kind: 'main' })} /> : null}
+      {view.kind === 'fin-script' ? <FinaleShutdown store={store} onClose={() => setView({ kind: 'main' })} onNext={() => setView({ kind: 'last-book' })} /> : null}
+      {view.kind === 'last-book' ? <LastBook store={store} onNext={() => setView({ kind: 'main' })} /> : null}
+      {view.kind === 'credits' ? <Credits store={store} final onClose={() => setView({ kind: 'main' })} /> : null}
       {view.kind === 'convert' ? <StageConvert store={store} onClose={() => setView({ kind: 'main' })} /> : null}
       {view.kind === 'meeting' || meetingAuto ? (
         <KombatSheet
@@ -585,6 +623,25 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
       {revealOpen ? <JournalNew store={store} /> : null}
+      {finAutoOpen && finStep === 'order' ? (
+        <FinaleOrder
+          store={store}
+          onClose={() => {
+            setFinAuto('order');
+            setView({ kind: 'main' });
+          }}
+        />
+      ) : null}
+      {finAutoOpen && finStep === 'credits' ? (
+        <Credits
+          store={store}
+          final
+          onClose={() => {
+            setFinAuto('credits');
+            setView({ kind: 'main' });
+          }}
+        />
+      ) : null}
       {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} onAwards={() => setView({ kind: 'museum', seg: 'awards', source: 'profile' })} /> : null}
       {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => setView({ kind: 'shop' })} /> : null}
       {iapOpen ? <IapSuccess store={store} /> : null}
