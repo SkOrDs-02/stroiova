@@ -75,7 +75,7 @@ describe('archive-sheets (AC-13)', () => {
     await render(<ArchiveSheets store={store} onClose={() => {}} />);
     expect(screen.getByTestId('archive-count')).toHaveTextContent('1 з 12');
     expect(screen.getByTestId('archive-slot-2')).toHaveTextContent(/\?\?\?/);
-    expect(screen.getByTestId('archive-slot-2')).toHaveTextContent(/Не знайдено · подарунок Ліни 2-й на Р2/);
+    expect(screen.getByTestId('archive-slot-2')).toHaveTextContent(/Не знайдено · 2-й подарунок Ліни на Р2/);
     expect(screen.getByTestId('archive-slot-12')).toHaveTextContent(/конвертація № 5/);
     await fireEvent.press(screen.getByTestId('archive-slot-1'));
     expect(screen.getByTestId('archive-sheet')).toHaveTextContent(/Аркуш 1 · Вхідні телеграми/);

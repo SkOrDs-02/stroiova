@@ -33,7 +33,7 @@ export const storyT = {
     open: 'Відкрити таблиці',
     back: 'Назад',
     sheetNo: (n: number) => `Аркуш ${n}`,
-    gift: (level: number, nth: number) => `подарунок Ліни ${nth}-й на Р${level}`,
+    gift: (level: number, nth: number) => `${nth}-й подарунок Ліни на Р${level}`,
     move: (level: number) => `переїзд на Р${level}`,
     boss: (level: number) => (level === 4 ? 'Аудит усього' : `підсумкова Р${level}`),
     conversion: (k: number) => `конвертація № ${k}`,
