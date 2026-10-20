@@ -34,7 +34,7 @@ export function MuseumScreen({ store, onToDigital, insetTop, initialSeg = 'journ
   const done = seriesDone(s.museum);
   const list = slots(s.museum, filter);
   const full = complete(s.museum);
-  const secs = sections(s.museum, s.state.level, s.cfg.params.levels.map((l) => l.name), s.cfg.params.museumSeriesPct);
+  const secs = sections(s.museum, s.state.level, s.cfg.params.levels.map((l) => l.name), s.cfg.params);
   return (
     <View style={styles.root} testID="museum">
       <View style={[styles.head, { paddingTop: insetTop }]}>

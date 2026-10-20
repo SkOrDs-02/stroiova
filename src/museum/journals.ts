@@ -66,6 +66,12 @@ export interface Series {
 
 const SERIES = museum.series as unknown as Series[];
 export const museumSeries = (): Series[] => SERIES;
+
+/** Бонус серії з контенту з підставленим параметром: «+{museumSeriesPct}% до всіх підписів» -> «+1% до всіх підписів» */
+export function seriesBonusText(se: Series, params: object): string {
+  const p = params as Record<string, unknown>;
+  return se.bonus.text.replace(/\{(\w+)\}/g, (m, k: string) => (typeof p[k] === 'number' ? String(p[k]).replace('.', ',') : m));
+}
 export const seriesOf = (no: number): Series | undefined => SERIES.find((s) => s.journals.includes(no));
 
 /** Номер журналу за `journal_id` чи псевдонімом, яким його називає контент телеграм */

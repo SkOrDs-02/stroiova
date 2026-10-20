@@ -20,11 +20,6 @@ export function count(ms: MuseumState): number {
   return ms.owned.filter((o) => o.no <= MUSEUM_SIZE).length;
 }
 
-/** Журнали першої серії для лічильника «N з 8» (07) */
-export function classicCount(ms: MuseumState): number {
-  return ms.owned.filter((o) => o.no <= CLASSIC_SIZE).length;
-}
-
 /** Непереглянуті журнали: на вкладці «Музей» горить крапка (FR-20) */
 export function unseen(ms: MuseumState): number {
   return ms.owned.filter((o) => !o.seen).length;
@@ -96,9 +91,9 @@ export function bonuses(ms: MuseumState, cfg: EconomyConfig): EconomyState['muse
 }
 
 /** Журнали, що скорочують кроки акта в гонці (005 FR-17); № 14 і № 20 - 016 (разом із № 24 множником) */
-export function raceJournals(ms: MuseumState, cfg?: EconomyConfig): Journals {
-  const b = cfg ? bonuses(ms, cfg) : null;
-  return { j6: has(ms, 6), j7: has(ms, 7), j8: has(ms, 8), ...(b?.kazna != null ? { kazna: b.kazna } : {}), ...(b?.service != null ? { service: b.service } : {}) };
+export function raceJournals(ms: MuseumState, cfg: EconomyConfig): Journals {
+  const b = bonuses(ms, cfg);
+  return { j6: has(ms, 6), j7: has(ms, 7), j8: has(ms, 8), ...(b.kazna != null ? { kazna: b.kazna } : {}), ...(b.service != null ? { service: b.service } : {}) };
 }
 
 export interface GrantResult {
@@ -137,7 +132,7 @@ export function grant(ms: MuseumState, eco: EconomyState, cfg: EconomyConfig, no
     const se = seriesOf(no);
     // серія зібрана саме цим журналом: усі її журнали в музеї, а цей - останній за часом у групі
     const done = se != null && se.journals.every((n) => owned.some((o) => o.no === n)) && !se.journals.every((n) => ms.owned.some((o) => o.no === n)) && se.journals.filter((n) => !ms.owned.some((o) => o.no === n)).at(-1) === no;
-    return { type: 'museumJournalUnlock', no, journalId: j.id, rarity: j.rarity, source, ownedAfter: base + i + 1, isSeriesComplete: done, seriesId: se?.id ?? '', seriesCompleteCount: (se?.no === 1 ? (has(next, 8) ? 1 : 0) : 0) + seriesAfter };
+    return { type: 'museumJournalUnlock', no, journalId: j.id, rarity: j.rarity, source, ownedAfter: base + i + 1, isSeriesComplete: done, seriesId: se?.id ?? '', seriesOwnedAfter: se ? se.journals.filter((n) => owned.some((o) => o.no === n)).length : 0, seriesCompleteCount: (has(next, 8) ? 1 : 0) + seriesAfter };
   });
   return { ms: next, eco: { ...eco, museum: bonuses(next, cfg) }, events };
 }
@@ -158,7 +153,7 @@ export function fromEvents(ms: MuseumState, eco: EconomyState, cfg: EconomyConfi
     // 016 FR-5: підсумкова Р2 -> № 12, Р3 -> № 16, «Аудит усього» Р4 -> № 20; конвертації № 2, 4, 5 -> № 21, 22, 23
     else if (e.type === 'finalPassed') {
       const no = FINAL_JOURNAL[e.level];
-      if (no != null) r = grant(cur.ms, cur.eco, cfg, [no], ctx.inspAtMs ?? atMs, 'inspection', ctx.offline ? 'other' : 'insp');
+      if (no != null) r = grant(cur.ms, cur.eco, cfg, [no], ctx.inspAtMs ?? atMs, 'final_inspection', ctx.offline ? 'other' : 'insp');
     } else if (e.type === 'stageConvert') {
       const no = CONVERT_JOURNAL[e.convertIndex];
       if (no != null) r = grant(cur.ms, cur.eco, cfg, [no], atMs, 'conversion');

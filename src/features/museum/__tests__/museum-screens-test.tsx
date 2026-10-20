@@ -323,24 +323,36 @@ describe('перевірка й телеграма дають журнали', (
     expect(screen.getByTestId('jn-counter')).toHaveTextContent('У музеї 4 з 24');
     expect(store.getState().museum.curios[0]).toMatchObject({ kind: 'telegram', status: 'info', telegramId: 'tg_0025b_prize_cancelled' });
   });
+});
+
 describe('музей на 24 (016 етап 1)', () => {
-  test('AC-4/FR-16: останній журнал серії «Особовий склад» - journal-new з «Серію зібрано», секція в музеї «Серію зібрано · +1% до всіх підписів»', async () => {
-    const store = game([9, 10, 11]);
+  test('AC-4/FR-16: останній журнал серії «Особовий склад» в акті підсумкової - блок експоната № 12 і «Серію зібрано»; потім секція в музеї і рядок «Серії музею»', async () => {
+    const store = game([1, 2, 3, 4, 5, 6, 7, 9, 10, 11]);
     store.setState({ state: { ...store.getState().state, level: 2 } });
-    const g = grant(store.getState().museum, store.getState().state, bundledConfig, [12], T0, 'inspection');
-    store.setState({ museum: g.ms, state: g.eco, events: [...store.getState().events, ...g.events] });
+    const g = grant(store.getState().museum, store.getState().state, bundledConfig, [12], T0, 'final_inspection', 'insp');
+    const outcome = { id: 'i1', no: 7, trigger: 'scheduled' as const, boss: 'brigade_commission' as const, level: 2, kind: 'final' as const, attempt: 1, arrMs: T0, passed: true, exitUnlocked: true, remark: false, items: [], reason: null, offline: false, seen: false };
+    store.setState({ museum: g.ms, state: g.eco, events: [...store.getState().events, ...g.events], inspections: { ...store.getState().inspections, last: outcome } });
     await render(<MainScreen store={store} />);
-    expect(screen.getByTestId('jn-title')).toHaveTextContent('Журнал контролю за станом обліку особового складу');
-    expect(screen.getByTestId('jn-note')).toHaveTextContent('Серію «Особовий склад» зібрано. +1% до всіх підписів. Уже діє.');
-    expect(store.getState().events.find((e) => e.type === 'museumJournalUnlock' && e.no === 12)).toMatchObject({ isSeriesComplete: true, seriesId: 'personnel', seriesCompleteCount: 1 });
-    await fireEvent.press(screen.getByTestId('jn-next'));
+    expect(screen.getByTestId('insp-exhibit')).toHaveTextContent(/№ 12 · Журнал контролю за станом обліку особового складу/);
+    expect(screen.getByTestId('insp-exhibit-series')).toHaveTextContent('Серію «Особовий склад» зібрано. +1% до всіх підписів. Уже діє.');
+    expect(store.getState().events.find((e) => e.type === 'museumJournalUnlock' && e.no === 12)).toMatchObject({ isSeriesComplete: true, seriesId: 'personnel', seriesOwnedAfter: 4, seriesCompleteCount: 2, source: 'final_inspection' });
+    await fireEvent.press(screen.getByTestId('insp-result-ok'));
     await fireEvent.press(screen.getByTestId('tab-museum'));
     expect(screen.getByTestId('mu-sec-done-2')).toHaveTextContent('Серію зібрано · +1% до всіх підписів');
     expect(screen.getByTestId('mu-sec-2')).toHaveTextContent(/Особовий склад · 4 з 4/);
-    // серія входить у M: рядок у розбивці множників
     await fireEvent.press(screen.getByTestId('tab-stroyova'));
     await fireEvent.press(screen.getByTestId('income-open'));
     expect(screen.getByTestId('boost-row-museum_series')).toHaveTextContent(/Серії музею.*×1,01.*1 з 4/);
+  });
+
+  test('офлайн: журнал № 12 розкривається модалкою journal-new із приміткою про серію', async () => {
+    const store = game([9, 10, 11]);
+    store.setState({ state: { ...store.getState().state, level: 2 } });
+    const g = grant(store.getState().museum, store.getState().state, bundledConfig, [12], T0, 'final_inspection');
+    store.setState({ museum: g.ms, state: g.eco });
+    await render(<MainScreen store={store} />);
+    expect(screen.getByTestId('jn-title')).toHaveTextContent('Журнал контролю за станом обліку особового складу');
+    expect(screen.getByTestId('jn-note')).toHaveTextContent('Серію «Особовий склад» зібрано. +1% до всіх підписів. Уже діє.');
   });
 
   test('AC-7 (016): шторка № 16 на Р2 - «Діятиме з рівня «Командування»», шторка № 9 - діє зараз; рядок серії в шапці', async () => {
@@ -365,5 +377,16 @@ describe('музей на 24 (016 етап 1)', () => {
     expect(screen.queryByTestId('mu-done')).toBeNull();
     expect(screen.getByTestId('mu-count')).toHaveTextContent('24 з 24');
   });
-});
+  test('AC-7: № 21 на Р5 без цифрових ланок - «Діятиме з рівня «Армія без паперу»»; після конвертації № 1 напису немає', async () => {
+    const store = game([21]);
+    store.setState({ state: { ...store.getState().state, level: 5, digital: [] } });
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('tab-museum'));
+    await fireEvent.press(screen.getByTestId('slot-21'));
+    expect(screen.getByTestId('jd-later')).toHaveTextContent('Діятиме з рівня «Армія без паперу»');
+    await fireEvent.press(screen.getByTestId('journal-detail-ok'));
+    await act(async () => store.setState({ state: { ...store.getState().state, digital: ['kombat'] } }));
+    await fireEvent.press(screen.getByTestId('slot-21'));
+    expect(screen.queryByTestId('jd-later')).toBeNull();
+  });
 });

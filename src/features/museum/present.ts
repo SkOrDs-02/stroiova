@@ -6,7 +6,7 @@ import { fill } from '@/features/telegrams/present';
 import { t as tgT } from '@/features/telegrams/texts';
 import { raceT } from '@/features/race/texts';
 import type { Journal } from '@/museum/journals';
-import { bonusText, journal, museumJournals, museumSeries, MUSEUM_SIZE } from '@/museum/journals';
+import { bonusText, journal, museumJournals, museumSeries, MUSEUM_SIZE, seriesBonusText } from '@/museum/journals';
 import { has, visibleCurios } from '@/museum/museum';
 import type { CurioEntry, MuseumState, OwnedJournal } from '@/museum/types';
 import { color } from '@/theme';
@@ -152,7 +152,7 @@ export interface Section {
 }
 
 /** Секції серій для фільтра «Усі» (016 FR-15, FR-16): заголовок «Назва · N з M», замкнені серії наступних рівнів */
-export function sections(ms: MuseumState, level: number, levelNames: readonly string[], seriesPct: number): Section[] {
+export function sections(ms: MuseumState, level: number, levelNames: readonly string[], params: object): Section[] {
   return museumSeries().map((se) => {
     const sl = se.journals.map((n) => ({ no: n, journal: journal(n)!, owned: ms.owned.find((o) => o.no === n) ?? null })).filter((x) => x.journal != null);
     const owned = sl.filter((x) => x.owned != null).length;
@@ -166,7 +166,7 @@ export function sections(ms: MuseumState, level: number, levelNames: readonly st
       done: owned === sl.length,
       locked: se.no > level,
       levelName: levelNames[se.no - 1] ?? '',
-      bonus: se.no === 1 ? muT.series1Bonus : muT.seriesBonus(seriesPct),
+      bonus: seriesBonusText(se, params),
     };
   });
 }

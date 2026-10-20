@@ -11,7 +11,7 @@ export function plural(n: number, one: string, few: string, many: string): strin
 }
 
 /** Години з десятковою комою: 1,75 */
-export const hoursText = (h: number): string => String(h).replace('.', ',');
+export const hoursText = (h: number): string => String(Math.round(h * 100) / 100).replace('.', ',');
 
 export const t = {
   screen: 'Телеграма',

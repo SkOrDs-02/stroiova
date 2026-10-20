@@ -30,7 +30,7 @@ describe('музей: підписи', () => {
 
   test('AC-2/FR-15: 5 секцій серій; серії наступних рівнів замкнені з назвою рівня; зібрана серія - done з бонусом', () => {
     const names = bundledConfig.params.levels.map((l) => l.name);
-    const secs = sections(newMuseum(), 1, names, 1);
+    const secs = sections(newMuseum(), 1, names, bundledConfig.params);
     expect(secs.map((s) => [s.title, s.owned, s.total, s.locked])).toEqual([
       ['Майно батальйону', 0, 8, false],
       ['Особовий склад', 0, 4, true],
@@ -40,7 +40,7 @@ describe('музей: підписи', () => {
     ]);
     expect(secs[1]!.levelName).toBe('Бригада');
     const g = grant(newMuseum(), newGame(bundledConfig, D(9)), bundledConfig, [9, 10, 11, 12], D(9), 'inspection');
-    const done = sections(g.ms, 2, names, 1);
+    const done = sections(g.ms, 2, names, bundledConfig.params);
     expect(done[1]).toMatchObject({ done: true, locked: false, owned: 4, bonus: '+1% до всіх підписів' });
   });
 

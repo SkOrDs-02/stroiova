@@ -74,7 +74,7 @@ function applySettingsToDevice(st: Settings): void {
 }
 
 /** Стан гри з запису: закріплений конфіг має пріоритет над вбудованим (FR-22, source cached). */
-function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
+export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
   const id = installId(kv, Crypto.randomUUID).id;
   if (!save) {
     const store = createConveyorStore(now, bundledConfig, { installId: id });

@@ -94,9 +94,10 @@ describe('джерела (FR-3…FR-9)', () => {
   });
 
   test('серія зібрана: подія is_series_complete з series_id і лічильником зібраних серій, повторне джерело нічого не дає (FR-4)', () => {
-    const base = owning(9, 10, 11);
+    const base = owning(1, 2, 3, 4, 5, 6, 7, 9, 10, 11);
     const a = fromEvents(base, eco(), cfg, [{ type: 'finalPassed', id: 'i', level: 2, attempt: 1 }], T, { offline: false });
-    expect(a.events).toMatchObject([{ no: 12, isSeriesComplete: true, seriesId: 'personnel', seriesCompleteCount: 1 }]);
+    // AC-4: серія 1 (з № 8) і серія 2 - разом 2; джерело - final_inspection
+    expect(a.events).toMatchObject([{ no: 12, isSeriesComplete: true, seriesId: 'personnel', seriesOwnedAfter: 4, seriesCompleteCount: 2, source: 'final_inspection' }]);
     const again = fromEvents(a.ms, a.eco, cfg, [{ type: 'finalPassed', id: 'i2', level: 2, attempt: 1 }], T, { offline: false });
     expect(again.events).toEqual([]);
   });
@@ -188,11 +189,11 @@ describe('бонуси в економіці (FR-10, FR-11, AC-8, AC-19)', () =>
   });
 
   test('AC-19: крок Фінслужби акта дрона 2 год 40 хв -> 2 год 24 хв з № 7 (з № 8 - 2 год 8 хв); № 6 скорочує кожен крок', () => {
-    const fin = (m: MuseumState) => routeFor('drone', 1, cfg, raceJournals(m)).find((s) => s.unit === 'fin')!.sec / 60;
+    const fin = (m: MuseumState) => routeFor('drone', 1, cfg, raceJournals(m, cfg)).find((s) => s.unit === 'fin')!.sec / 60;
     expect(fin(newMuseum())).toBe(160);
     expect(fin(owning(7))).toBe(144);
     expect(fin(owning(1, 7, 8))).toBe(128);
-    const all = (m: MuseumState) => routeFor('drone', 1, cfg, raceJournals(m)).map((s) => s.sec);
+    const all = (m: MuseumState) => routeFor('drone', 1, cfg, raceJournals(m, cfg)).map((s) => s.sec);
     const plain = all(newMuseum());
     const j6 = all(owning(6));
     j6.forEach((sec, i) => expect(sec).toBe(Math.round(plain[i]! * 0.9)));

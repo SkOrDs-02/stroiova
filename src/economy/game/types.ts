@@ -209,7 +209,7 @@ export type DomainEvent =
   /** Перша без зауважень після першої цифровізації: журнал № 7 (07 FR-8) */
   | { type: 'inspectionJournal'; id: string }
   // 007: музей; аналітика етапу 5 (museum_journal_unlock)
-  | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection' | 'conversion' | 'finale'; ownedAfter: number; isSeriesComplete: boolean; seriesId: string; seriesCompleteCount: number }
+  | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection' | 'final_inspection' | 'conversion' | 'story' | 'finale'; ownedAfter: number; isSeriesComplete: boolean; seriesId: string; seriesOwnedAfter: number; seriesCompleteCount: number }
   // 008: реклама й покупки; аналітика етапу 5 (ad_*, purchase_*, offline_income_claim)
   | { type: 'adRewardGrant'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; isNoAdsClaim: boolean }
   | { type: 'adFail'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; stage: 'not_ready' | 'load' | 'show' | 'closed_early' | 'consent_blocked'; code?: string }

@@ -4,6 +4,7 @@ import { convertPrice } from '@/economy/game/convert';
 import { itemsFor, newCycle } from '@/economy/game/state';
 import { itemDef, priceOf } from '@/inspections/checklist';
 import { routeFor } from '@/race/race';
+import { hoursText } from '@/features/telegrams/texts';
 import { answer, cutHours } from '@/telegrams/effects';
 import { cfg, ctx, eco, tgWith } from '@/telegrams/test-utils';
 
@@ -53,6 +54,11 @@ describe('інші бонуси (AC-6)', () => {
     expect(cutHours(1, e24) * 60).toBeCloseTo(Math.ceil(60 * (1 - s * k24)), 9);
     expect(cutHours(1.75, e) * 60).toBeCloseTo(Math.ceil(105 * (1 - s)), 9);
     expect(cutHours(1, eco())).toBe(1);
+  });
+
+  test('№ 11: у тексті ефекту пачки (1,75 год) години округлено до сотих, без «1,5833333333333333»', () => {
+    const e = { ...eco(), museum: bonuses(owning(11), cfg) };
+    expect(hoursText(cutHours(1.75, e))).toBe('1,58');
   });
 
   test('№ 11 у відповіді на телеграму: ефект Стройової закінчується раніше', () => {

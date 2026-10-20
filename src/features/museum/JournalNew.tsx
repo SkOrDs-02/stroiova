@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { bonusText, journal } from '@/museum/journals';
+import { bonusText, journal, seriesBonusText } from '@/museum/journals';
 import { completesSeries, nextReveal } from '@/museum/museum';
 import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
@@ -57,7 +57,7 @@ export function JournalNew({ store }: { store: ConveyorStore }) {
               {bonusText(j, s.cfg.params)}
             </Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="jn-note">
-              {j.no === 8 ? muT.noteSeries : se ? muT.newSeriesDone(se.title, muT.seriesBonus(s.cfg.params.museumSeriesPct)) : muT.note}
+              {j.no === 8 ? muT.noteSeries : se ? muT.newSeriesDone(se.title, seriesBonusText(se, s.cfg.params)) : muT.note}
             </Text>
             {j.fromText ? (
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>

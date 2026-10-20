@@ -80,10 +80,10 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
           </View>
         ) : null}
         <View style={styles.card} testID="digit-journals">
-          {shownJournals(st.journals).length ? (
+          {shownJournals(st.journals, s.cfg.params.museum).length ? (
             <>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2}>{digitT.journals}</Text>
-              {shownJournals(st.journals).map((n) => (
+              {shownJournals(st.journals, s.cfg.params.museum).map((n) => (
                 <Text key={n} maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{`№ ${n} · ${journalTitle(n)}`}</Text>
               ))}
             </>

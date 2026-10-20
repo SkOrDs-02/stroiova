@@ -237,7 +237,7 @@ export function answerPack(tg0: TelegramState, eco0: EconomyState, no: number, k
   if (f.slow) {
     const ref = unitRef(eco, cfg, 'narada')!;
     const slowHours = cutHours(f.slow.hours, eco);
-    workEnd = nowMs + slowHours * 3_600_000;
+    workEnd = nowMs + Math.round(slowHours * 3_600_000);
     effects.push({ kind: 'factor', source: 'telegram_slow', value: f.slow.mult, target: ref, startMs: nowMs, endMs: workEnd });
   }
   let hit = false;

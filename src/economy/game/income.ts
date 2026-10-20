@@ -21,6 +21,11 @@ export function unitFactor(ref: UnitRef, t: number, effects: readonly Effect[]):
  */
 const DIGITAL_FACTOR_SOURCES: readonly Effect['source'][] = ['inspection_fail', 'sedo_failure'];
 
+/** Множник одиниці з музею: журнали + додаток № 21 для цифрової ланки (016); єдине джерело для доходу й показу виробітку */
+export function unitMult(state: EconomyState, id: string): number {
+  return (state.museum.unit[id] ?? 1) + (isDigital(state, id) ? (state.museum.digital ?? 0) : 0);
+}
+
 export function isDigital(state: Pick<EconomyState, 'digital'>, stageId: string): boolean {
   return state.digital.includes(stageId);
 }
@@ -103,7 +108,7 @@ function conveyor(state: EconomyState, cfg: EconomyConfig, t: number, effects: r
     const digital = isDigital(state, u.id);
     const f = withFactors ? unitFactor({ type: 'stage', id: u.id }, t, digital ? effects.filter((e) => DIGITAL_FACTOR_SOURCES.includes(e.source)) : effects) : 1;
     // № 21 (016): додаток до множника кожної цифрової ланки
-    const m = mus(u.id) + (digital ? (state.museum.digital ?? 0) : 0);
+    const m = unitMult(state, u.id);
     return { cap: capAt(u, state.stageLevels[j] ?? 0, p) * m * (digital ? p.convert.mult : 1) * f, on };
   });
   return flow(streams, stages);

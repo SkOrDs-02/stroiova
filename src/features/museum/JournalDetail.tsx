@@ -19,7 +19,9 @@ export function JournalDetail({ store, no, onClose }: { store: ConveyorStore; no
   const se = seriesOf(no);
   const seriesHave = se ? se.journals.filter((n) => s.museum.owned.some((o) => o.no === n)).length : 0;
   const bLevel = bonusLevel(j, s.cfg.params);
-  const later = owned && bLevel > s.state.level ? s.cfg.params.levels[bLevel - 1]?.name : null;
+  // № 21 діє лише на цифрових ланках: доки жодної немає, бонус «чекає» (016 FR-11); решта - від рівня, де з'являється ціль
+  const forDigital = (j.bonus.target as unknown[])[0] === 'digital_stages';
+  const later = owned && (forDigital ? s.state.digital.length === 0 : bLevel > s.state.level) ? s.cfg.params.levels[bLevel - 1]?.name : null;
   const sub = owned ? `${muT.category[j.category]}${j.rarity === 'legendary' ? ` · ${muT.detailSeries}` : ''}` : muT.slotNotFound;
   return (
     <View style={styles.scrim} testID="journal-detail">

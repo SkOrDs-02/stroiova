@@ -10,8 +10,6 @@ export const muT = {
   count: 'Скасованих журналів у колекції',
   sectionTitle: (title: string, n: number, m: number) => `${title} · ${n} з ${m}`,
   seriesDone: (bonus: string) => `Серію зібрано · ${bonus}`,
-  series1Bonus: '×2 до журналів № 1-7',
-  seriesBonus: (pct: number) => `+${String(pct).replace('.', ',')}% до всіх підписів`,
   seriesLocked: (level: string) => `Відкриється на рівні «${level}»`,
   completeTitle: 'Музей укомплектовано',
   completeBody: 'Скасовані всі двадцять чотири. Двадцять четвертого не існувало.',

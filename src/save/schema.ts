@@ -271,7 +271,7 @@ export const digitizationStateSchema = z.object({
 
 /** Музей й журнал курйозів (007); схема 7. */
 export const museumStateSchema = z.object({
-  owned: z.array(z.object({ no: z.number().int().min(1), atMs: z.number(), source: z.enum(['digitization', 'telegram', 'inspection', 'conversion', 'finale']), seen: z.boolean() })),
+  owned: z.array(z.object({ no: z.number().int().min(1), atMs: z.number(), source: z.enum(['digitization', 'telegram', 'inspection', 'final_inspection', 'conversion', 'story', 'finale']), seen: z.boolean() })),
   reveal: z.array(z.object({ no: z.number().int().min(1), k: z.number().int().min(1), m: z.number().int().min(1), nAfter: z.number().int().min(1), via: z.enum(['insp', 'other']) })),
   curios: z.array(
     z.object({
