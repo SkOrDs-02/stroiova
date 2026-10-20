@@ -115,6 +115,11 @@ export const MIGRATIONS: Record<number, Migration> = {
     const g = game as { economy?: { level?: number } };
     return { ...(game as object), story: storyForLevel(BEATS, g.economy?.level ?? 1) };
   },
+  // 14 → 15 (014 етап 2): аркуші Археолога й пройдені підсумкові; відсутні аркуші минулих рівнів видасть наздоганяння (FR-29)
+  14: (game) => {
+    const g = game as { story?: object };
+    return { ...(game as object), story: { ...(g.story ?? {}), sheets: {}, bosses: [] } };
+  },
 };
 
 /** Налаштування й сповіщення схеми 9. */

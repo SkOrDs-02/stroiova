@@ -5,12 +5,12 @@ import type { Beat, Carrier, SessionBudget, StoryCtx } from '../types';
 
 const HOUR = 3_600_000;
 const T0 = 1_700_000_000_000;
-const ALL = new Set<Carrier>(['telegram', 'note', 'call', 'event_toast', 'curio', 'character_state']);
+const ALL = new Set<Carrier>(['telegram', 'note', 'call', 'event_toast', 'curio', 'character_state', 'archive_sheet', 'scene']);
 const OPTS = { supports: ALL, maxToasts: 2 };
 const FRESH: SessionBudget = { interrupting: 0, toasts: 0 };
 
 const beat = (id: string, o: Partial<Beat> & Pick<Beat, 'arc' | 'order' | 'trigger'>): Beat => ({ rev: 1, carrier: 'note', payload: { from: 'x', title: 't', body: 'b' }, id, ...o });
-const ctx = (o: Partial<StoryCtx> = {}): StoryCtx => ({ level: 3, counts: {}, conversions: 0, packs: 0, levelStartMs: T0, ...o });
+const ctx = (o: Partial<StoryCtx> = {}): StoryCtx => ({ level: 3, counts: {}, conversions: 0, packs: 0, levelStartMs: T0, exitAllowed: false, ...o });
 
 describe('готовність (FR-3, FR-4, AC-2)', () => {
   const beats = [

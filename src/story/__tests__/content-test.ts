@@ -2,7 +2,8 @@
 import diaryJson from '../../../content/diary.json';
 import storyJson from '../../../content/story.json';
 import { telegram } from '@/telegrams/content';
-import { checkDiary, checkStory, checkStoryRules } from '../schema';
+import archiveJson from '../../../content/archive.json';
+import { checkArchive, checkDiary, checkStory, checkStoryRules } from '../schema';
 import { BEATS, DIARY } from '../content';
 
 const knownTelegram = (id: string) => telegram(id) != null;
@@ -51,5 +52,17 @@ describe('content/diary.json', () => {
     const by = (l: number) => DIARY.filter((x) => x.level === l).length;
     expect([1, 2, 3, 4, 5].map(by)).toEqual([12, 20, 28, 28, 26]);
     expect(DIARY.filter((x) => x.quiet).length).toBe(7);
+  });
+});
+
+describe('content/archive.json', () => {
+  test('FR-16: 12 аркушів, по 3 на Р2-Р5, сітка до 5 × 6', () => {
+    expect(checkArchive(archiveJson)).toEqual([]);
+  });
+
+  test('аркуш із 6 стовпцями чи 7 рядками відхиляється', () => {
+    const bad = structuredClone(archiveJson) as { sheets: { tabs: { columns: string[]; rows: string[][] }[] }[] };
+    bad.sheets[0]!.tabs[0]!.columns = ['a', 'b', 'c', 'd', 'e', 'f'];
+    expect(checkArchive(bad).length).toBeGreaterThan(0);
   });
 });

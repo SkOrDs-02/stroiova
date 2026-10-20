@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 14;
+export const CURRENT_SCHEMA = 15;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -344,6 +344,8 @@ export const storyStateSchema = z.object({
   dispatched: z.record(z.string(), z.number()),
   counters: z.object({ wins: z.record(z.string(), z.number().int()), gifts: z.record(z.string(), z.number().int()) }),
   chars: z.record(z.string(), z.string()),
+  sheets: z.record(z.string(), z.number()),
+  bosses: z.array(z.number().int()),
   diary: z.object({ got: z.array(z.object({ id: z.string(), atMs: z.number(), day: z.number().int().positive() })), lastDay: z.string().nullable() }),
 });
 

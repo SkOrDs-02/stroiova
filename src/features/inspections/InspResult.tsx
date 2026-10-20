@@ -11,6 +11,7 @@ import { type } from '@/ui/type';
 import { muT } from '@/features/museum/texts';
 import { titleOf } from '@/features/museum/present';
 import { journal } from '@/museum/journals';
+import { beatById } from '@/story/content';
 
 import { PLAYABLE_LEVELS } from '@/digitization/digitization';
 
@@ -24,6 +25,9 @@ function stampDate(ms: number): { date: string; time: string } {
   const p2 = (n: number) => String(n).padStart(2, '0');
   return { date: `${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()}`, time: `${p2(d.getHours())}:${p2(d.getMinutes())}` };
 }
+
+/** Кроки-носії `insp_act_line` (014): рядок в акті підсумкової рівня */
+const BEAT_ACT_LINES = ['st_cat_02'];
 
 export function InspResult({ store }: { store: ConveyorStore }) {
   const s = useStore(store);
@@ -39,6 +43,8 @@ export function InspResult({ store }: { store: ConveyorStore }) {
   // 007 FR-19: журнал за цю перевірку розкривається блоком в акті
   const exhibits = s.museum.reveal.filter((r) => r.via === 'insp');
   // insp-result міг чекати в черзі: залишок ×3 — від приїзду (крайовий випадок spec)
+  // 014 FR-22: сюжетний рядок в акті «Аудиту усього» (носій `insp_act_line`); крок спрацьовує на проходженні й доставляється вже після акта
+  const actLine = o.kind === 'final' && o.passed ? BEAT_ACT_LINES.map(beatById).find((b) => b != null && b.level === o.level && (s.story.fired[b.id] != null || s.story.delivered[b.id] != null)) : undefined;
   const x3Left = Math.max(0, o.arrMs + p.inspHours * 3_600_000 - s.lastMs);
   return (
     <View style={styles.scrim} testID="insp-result">
@@ -57,6 +63,11 @@ export function InspResult({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.cell, styles.strong, !o.passed && styles.bad]}>{inspT.verdict}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={[styles.cell, styles.strong, !o.passed && styles.bad]} testID="insp-verdict">{verdict}</Text>
           </View>
+          {actLine ? (
+            <View style={styles.row} testID="insp-act-line">
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.cell}>{(actLine.payload as { line: string }).line}</Text>
+            </View>
+          ) : null}
           {exhibits.map((r) => (
             <View key={r.no} style={styles.exhibit} testID="insp-exhibit">
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{muT.inspBlock(r.nAfter)}</Text>

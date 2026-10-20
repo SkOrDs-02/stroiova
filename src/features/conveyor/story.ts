@@ -6,16 +6,19 @@ import type { InspectionState } from '@/inspections/types';
 import { curioFromStory } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
 import { BEATS, DIARY } from '@/story/content';
+import { grantSheets } from '@/story/archive';
 import { diaryOnSessionStart } from '@/story/diary';
 import { confirmTelegram, onEvent, pull, setCharacter, sync } from '@/story/engine';
 import { storyText } from '@/story/text';
 import type { Carrier, SessionBudget, StoryCtx, StoryEvent, StoryState } from '@/story/types';
 import type { TelegramState } from '@/telegrams/types';
 
+import { storyT } from '@/features/story/texts';
+
 import type { Toast } from './store';
 
 /** Носії, екран яких є в збірці (014 етап 1); решта чекає в черзі (FR-28) */
-export const SUPPORTED: ReadonlySet<Carrier> = new Set<Carrier>(['telegram', 'note', 'call', 'event_toast', 'curio', 'character_state']);
+export const SUPPORTED: ReadonlySet<Carrier> = new Set<Carrier>(['telegram', 'note', 'call', 'event_toast', 'curio', 'character_state', 'archive_sheet', 'scene', 'insp_act_line']);
 
 export const newBudget = (): SessionBudget => ({ interrupting: 0, toasts: 0 });
 
@@ -32,13 +35,14 @@ export interface StoryHost {
   story: StoryState;
   storySession: SessionBudget;
   storyCall: string | null;
+  storyScene: string | null;
   diaryToday: string | null;
   events: DomainEvent[];
   showToast: (t: Toast) => void;
 }
 
 export function ctxOf(g: StoryHost): StoryCtx {
-  return { level: g.state.level, counts: g.digit.counts, conversions: g.state.digital.length, packs: g.telegrams.packs.seq, levelStartMs: g.digit.levelStartMs };
+  return { level: g.state.level, counts: g.digit.counts, conversions: g.state.digital.length, packs: g.telegrams.packs.seq, levelStartMs: g.digit.levelStartMs, exitAllowed: g.digit.levelExitAllowed };
 }
 
 type Patch = Partial<Omit<StoryHost, 'showToast'>>;
@@ -102,14 +106,22 @@ export function run(g: StoryHost): Patch | null {
   const o = g.onboarding;
   if (o.step !== 'done') return null;
   const ctx = ctxOf(g);
-  const r = pull(g.story, BEATS, ctx, g.lastMs, g.storySession, { supports: SUPPORTED, maxToasts: g.cfg.params.storyMaxToasts });
+  // аркуші Археолога не мають ліміту (FR-7) і йдуть раніше за кроки, щоб тост «Знайдено» стояв перед репліками
+  const gr = grantSheets(g.story, ctx, g.lastMs);
+  const r = pull(gr.st, BEATS, ctx, g.lastMs, g.storySession, { supports: SUPPORTED, maxToasts: g.cfg.params.storyMaxToasts });
   if (!r.out.length && r.st === g.story) return null;
   let tg = g.telegrams;
   let museum = g.museum;
   let call = g.storyCall;
+  let scene = g.storyScene;
   let story = r.st;
   const events: DomainEvent[] = [];
   const toasts: Toast[] = [];
+  if (gr.grants.length) {
+    toasts.push({ kind: 'text', text: gr.grants.length === 1 ? storyT.arch.found(gr.grants[0]!.sheet.title) : storyT.arch.foundMany(gr.grants.length) });
+    let n = Object.keys(g.story.sheets).length;
+    for (const x of gr.grants) events.push({ type: 'archiveSheetUnlock', sheetId: x.sheet.id, sheetNumber: x.sheet.no, source: x.source, sheetsOwnedAfter: ++n });
+  }
   const gender = o.gender;
   const me = o.callsign?.text ?? '';
   // {n}: скільки паперових ланок лишилось (тост «Шлях наказу»)
@@ -126,6 +138,8 @@ export function run(g: StoryHost): Patch | null {
       museum = curioFromStory(museum, { beatId: b.id, from: pl.from as string, title: pl.title as string, body: pl.body as string }, g.lastMs);
     } else if (b.carrier === 'call') {
       call = b.id;
+    } else if (b.carrier === 'scene') {
+      scene = b.id;
     } else if (b.carrier === 'telegram') {
       const id = pl.telegramId as string;
       if (!tg.queue.includes(id)) tg = { ...tg, queue: [...tg.queue, id] };
@@ -136,7 +150,7 @@ export function run(g: StoryHost): Patch | null {
     if (!p.dispatchOnly) events.push(deliverEvent(b.id, b.arc, b.carrier, b.order, p.delaySec, p.catchUp, p.away));
   }
   for (const t of toasts) g.showToast(t);
-  return { story, storySession: r.session, telegrams: tg, museum, storyCall: call, ...(events.length ? { events: [...g.events, ...events].slice(-40) } : {}) };
+  return { story, storySession: r.session, telegrams: tg, museum, storyCall: call, storyScene: scene, ...(events.length ? { events: [...g.events, ...events].slice(-40) } : {}) };
 }
 
 /** Гравця не було: тригери, що спрацювали за цей час (пачка о 03:00, гонка), позначаються `is_while_away` (FR-8) */

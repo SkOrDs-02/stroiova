@@ -7,7 +7,7 @@ const INTERRUPTING: readonly Carrier[] = ['call', 'scene'];
 const INTERRUPTING_MAX = 1;
 
 export function newStory(): StoryState {
-  return { delivered: {}, skipped: [], fired: {}, dispatched: {}, counters: { wins: {}, gifts: {} }, chars: {}, diary: { got: [], lastDay: null } };
+  return { delivered: {}, skipped: [], fired: {}, dispatched: {}, counters: { wins: {}, gifts: {} }, chars: {}, sheets: {}, bosses: [], diary: { got: [], lastDay: null } };
 }
 
 /** Стан для запису, що вперше зустрів сюжет: кроки пройдених рівнів закрито, поточний рівень наздоганяє (FR-29). */
@@ -74,6 +74,7 @@ export function onEvent(st: StoryState, beats: readonly Beat[], ev: StoryEvent, 
     nth = (s.counters.gifts[k] ?? 0) + 1;
     s = { ...s, counters: { ...s.counters, gifts: { ...s.counters.gifts, [k]: nth } } };
   }
+  if (ev.type === 'boss_passed' && !s.bosses.includes(ev.level)) s = { ...s, bosses: [...s.bosses, ev.level] };
   for (const b of beats) {
     if (closed(s, b)) continue;
     const t = b.trigger;
