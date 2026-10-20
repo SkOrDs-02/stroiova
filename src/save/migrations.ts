@@ -11,6 +11,7 @@ import { newNotifications, newSettings } from '@/notifications/planner';
 import { newStats } from '@/profile/stats';
 import { newMuseum } from '@/museum/museum';
 import { newAwards } from '@/awards/awards';
+import { newFinale } from '@/finale/finale';
 import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
 
@@ -123,6 +124,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   },
   // 15 → 16 (016 етап 2): грамоти; лічильники з нуля, умови над ними перевірить запуск (FR-23, FR-45)
   15: (game) => ({ ...(game as object), awards: (game as { awards?: object }).awards ?? newAwards() }),
+  // 16 → 17 (013 етап 2): фінал; не почато. Гравець, що вже має 6 цифрових ланок, стартує фінал при запуску (AC-22)
+  16: (game) => ({ ...(game as object), finale: (game as { finale?: object }).finale ?? newFinale() }),
 };
 
 /** Налаштування й сповіщення схеми 9. */

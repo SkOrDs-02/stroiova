@@ -3,6 +3,7 @@ import { digitizationV6, inspectionsV4, MIGRATIONS, monetizationV8, museumV7, on
 import { KEY_BAK1, KEY_SAVE, loadSave, serialize, type SaveDraft } from '../repository';
 import { memoryStorage } from '../storage';
 import { newAwards } from '@/awards/awards';
+import { newFinale } from '@/finale/finale';
 import { newStory } from '@/story/engine';
 import { draft } from '../test-saves';
 
@@ -16,7 +17,7 @@ function v1(): SaveDraft {
 
 const migrations = {
   1: (g: unknown) => { const x = g as { economy: object; sigs: number }; return { economy: { ...x.economy, signatures: x.sigs } }; },
-  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards() }),
+  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards(), finale: newFinale() }),
 };
 
 describe('міграції', () => {
@@ -375,6 +376,28 @@ describe('справжні міграції', () => {
     if (r.kind !== 'ok') return;
     expect(r.save.game.awards).toEqual({ got: {}, counters: {}, sets: {}, seen: [], pendingPlatform: [], lastOrderNo: 0 });
     expect(r.save.game.story).toMatchObject({ sheets: { ar_01: 100 }, bosses: [2] });
+  });
+
+  test('16 → 17 (013 етап 2): фінал не почато, решта запису на місці (AC-22)', () => {
+    const d = draft({ schemaVersion: 16, savedAt: 5000 });
+    const { finale: _f, ...gameV16 } = d.game;
+    const awards = { ...d.game.awards, counters: { digitizations: 4 } };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV16, awards } as never }) });
+    const r = loadSave(kv, { current: 17, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 16 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.finale).toEqual({ startMs: null, done: {}, yMs: null, scriptNs: 0 });
+    expect(r.save.game.awards.counters).toEqual({ digitizations: 4 });
+  });
+
+  test('схема 17: стан фіналу проходить збереження без втрат', () => {
+    const d = draft({ schemaVersion: 17, savedAt: 5000 });
+    const finale = { startMs: 100, done: { order: 110, script: 200 }, yMs: 200, scriptNs: 2 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, finale } as never }) });
+    const r = loadSave(kv, { current: 17, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.finale).toEqual(finale);
   });
 
   test('схема 16: грамоти, лічильники й номер наказу проходять збереження без втрат', () => {

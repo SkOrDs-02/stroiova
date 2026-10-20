@@ -60,6 +60,9 @@ export function factsOf(evs: readonly DomainEvent[], opts: FactOpts = {}): Fact[
       case 'clerkHire':
         out.push({ event: 'clerk_hire', props: { target_id: e.target.id } });
         break;
+      case 'finaleStepComplete':
+        out.push({ event: 'finale_step_complete', props: { step_id: e.step } });
+        break;
       case 'stackReach':
         out.push({ event: 'stack_meter_reach', props: { cm: e.cm } });
         break;

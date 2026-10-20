@@ -18,7 +18,7 @@ import { storyT } from '@/features/story/texts';
 import type { Toast } from './store';
 
 /** Носії, екран яких є в збірці (014 етап 1); решта чекає в черзі (FR-28) */
-export const SUPPORTED: ReadonlySet<Carrier> = new Set<Carrier>(['telegram', 'note', 'call', 'event_toast', 'curio', 'character_state', 'archive_sheet', 'scene', 'insp_act_line']);
+export const SUPPORTED: ReadonlySet<Carrier> = new Set<Carrier>(['telegram', 'note', 'call', 'event_toast', 'curio', 'character_state', 'archive_sheet', 'scene', 'insp_act_line', 'credits_line']);
 
 export const newBudget = (): SessionBudget => ({ interrupting: 0, toasts: 0 });
 
@@ -42,7 +42,7 @@ export interface StoryHost {
 }
 
 export function ctxOf(g: StoryHost): StoryCtx {
-  return { level: g.state.level, counts: g.digit.counts, conversions: g.state.digital.length, packs: g.telegrams.packs.seq, levelStartMs: g.digit.levelStartMs, exitAllowed: g.digit.levelExitAllowed };
+  return { level: g.state.level, counts: g.digit.counts, conversions: g.state.digital.length, packs: g.telegrams.packs.seq, levelStartMs: g.digit.levelStartMs, exitAllowed: g.digit.levelExitAllowed, tzOffsetMin: -new Date(g.lastMs).getTimezoneOffset() };
 }
 
 type Patch = Partial<Omit<StoryHost, 'showToast'>>;
@@ -68,6 +68,11 @@ export function toStoryEvent(e: DomainEvent, level: number): StoryEvent | null {
       return { type: 'boss_passed', level: e.level };
     case 'telegramAnswer':
       return { type: 'telegram_answered', telegramId: e.telegramId, choiceKind: e.choiceKind };
+    // 013: крок фіналу стартував; `script` тригерить записку наступної доби після завершення (st_finale_01)
+    case 'finaleStepStart':
+      return { type: 'finale_step', step: e.step };
+    case 'finaleStepComplete':
+      return e.step === 'script' ? { type: 'finale_step', step: 'script' } : null;
     default:
       return null;
   }

@@ -552,7 +552,8 @@
   },
   "slowPerDayLateMin": 1,
   "slowPerDayLateMax": 2,
-  "storyMaxToasts": 2
+  "storyMaxToasts": 2,
+  "finaleQuietDays": 7
  },
  "SCENARIOS": [
   {
@@ -1046,7 +1047,8 @@
    },
    "slowPerDayLateMin": 1,
    "slowPerDayLateMax": 2,
-   "storyMaxToasts": 2
+   "storyMaxToasts": 2,
+   "finaleQuietDays": 7
   },
   "preset-v6": {
    "rev": "7.2",
@@ -1523,7 +1525,8 @@
    },
    "slowPerDayLateMin": 1,
    "slowPerDayLateMax": 2,
-   "storyMaxToasts": 2
+   "storyMaxToasts": 2,
+   "finaleQuietDays": 7
   },
   "preset-v7": {
    "rev": "7.2",
@@ -2078,7 +2081,8 @@
    },
    "slowPerDayLateMin": 1,
    "slowPerDayLateMax": 2,
-   "storyMaxToasts": 2
+   "storyMaxToasts": 2,
+   "finaleQuietDays": 7
   }
  },
  "levelItems": {

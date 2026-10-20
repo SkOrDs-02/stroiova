@@ -138,6 +138,8 @@ export interface EconomyParams {
   slowPerDayLateMax: number;
   /** Сюжет (014 FR-7): тостів сюжетних кроків за сесію */
   storyMaxToasts: number;
+  /** Тиждень тиші після Y на `finale-script` (013 FR-22), доби */
+  finaleQuietDays: number;
   naradaChance: number;
   naradaMult: number;
   naradaMinMin: number;

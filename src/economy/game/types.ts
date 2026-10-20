@@ -1,4 +1,5 @@
 // Типи гри поверх ядра (001 data-model.md). Числа балансу — лише в EconomyConfig.params (принцип I).
+import type { FinaleStep } from '@/finale/finale';
 import type { Big, EconomyParams } from '../core';
 
 export type { Big, EconomyParams, UnitDef } from '../core';
@@ -228,6 +229,9 @@ export type DomainEvent =
   // 014: сюжет; аналітика етапу 5 (story_beat_deliver, diary_open)
   | { type: 'archiveSheetUnlock'; sheetId: string; sheetNumber: number; source: 'gift' | 'move' | 'boss' | 'conversion' | 'catch_up'; sheetsOwnedAfter: number }
   | { type: 'storyBeatDeliver'; beatId: string; arc: string; carrier: string; beatOrder: number; delaySec: number; isCatchUp: boolean; isWhileAway: boolean }
+  // 013: фінал; аналітика етапу 5 (finale_step_complete). `finaleStepStart` - лише для тригерів сюжету (014 `finale_step`)
+  | { type: 'finaleStepStart'; step: FinaleStep }
+  | { type: 'finaleStepComplete'; step: FinaleStep; stepIndex: number; secSinceFinaleStart: number; isResumed: boolean; declinedCount: number }
   // 016: грамоти; аналітика етапу 5 (award_unlock, awards_wall_open)
   | { type: 'awardUnlock'; awardId: string; category: string; awardType: 'gramota' | 'podyaka' | 'nakaz'; isHidden: boolean; awardsOwnedAfter: number; isRetroactive: boolean; isResolvedOffline: boolean; isMirrored: boolean }
   | { type: 'awardsWallOpen'; source: 'segment' | 'award_toast' | 'profile'; awardsOwned: number; awardsUnseen: number };

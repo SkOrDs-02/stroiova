@@ -52,6 +52,17 @@ function makeItem(tg: TelegramState, id: string, kind: ItemKind, atMs: number): 
 }
 
 /**
+ * Сценарна телеграма фіналу (013 FR-19): № 108-113 приходять за кроками, поза квотою й розкладом; повторно не доставляється.
+ * `kind` береться з контенту (`notice` чи звичайна).
+ */
+export function deliverScripted(tg: TelegramState, id: string, nowMs: number, delivery: 'live' | 'while_away' = 'live'): { tg: TelegramState; item: InboxItem | null; events: DomainEvent[] } {
+  const t = telegram(id);
+  if (!t || tg.inbox.some((x) => x.id === id)) return { tg, item: null, events: [] };
+  const r = makeItem(tg, id, t.kind === 'notice' ? 'notice' : 'telegram', nowMs);
+  return { tg: r.tg, item: r.item, events: [{ type: 'telegramReceive', telegramId: id, uid: r.item.uid, delivery, scripted: true }] };
+}
+
+/**
  * Сценарна № 1 (FR-1; 02 FR-18): доба 1 починається з цієї миті, № 1 входить у її квоту (FR-2).
  * Повторно не доставляється.
  */
@@ -100,6 +111,8 @@ export interface TickCtx {
   raceActive: string | null;
   /** Гра була закрита: доставка з `delivery: while_away` (FR-3) */
   away: boolean;
+  /** Розсилку вимкнено Y на `finale-script` (013 FR-19): слоти за розкладом спливають без доставки, таймери йдуть */
+  muted?: boolean;
 }
 
 export interface TickResult {
@@ -142,6 +155,7 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
   const p = ctx.cfg.params;
   const rng = roller(tg0.rng);
   const planned = dueSlots(tg0, p, ctx.fromMs, ctx.nowMs, ctx.tzOffsetMin, () => rng.next(), ctx.level, ctx.conversions ?? 0);
+  if (ctx.muted) planned.slots = [];
   let tg = planned.tg;
   let eco = eco0;
   const events: DomainEvent[] = [];

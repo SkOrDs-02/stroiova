@@ -27,6 +27,17 @@ function isLapsed(st: StoryState, beats: readonly Beat[], ctx: StoryCtx, id: str
   return b != null && st.delivered[id] == null && lapsed(b, ctx);
 }
 
+const DAY = 24 * HOUR;
+
+/** Затримка після тригера: години, або `next_day` - до першої миті наступної календарної доби за місцевим часом (013 FR-19) */
+function dueAt(fired: number, h: number | 'next_day' | undefined, tzOffsetMin = 0): number {
+  if (h === 'next_day') {
+    const local = fired + tzOffsetMin * 60_000;
+    return (Math.floor(local / DAY) + 1) * DAY - tzOffsetMin * 60_000;
+  }
+  return fired + (typeof h === 'number' ? h * HOUR : 0);
+}
+
 const afterMs = (h: number | 'next_day' | undefined) => (typeof h === 'number' ? h * HOUR : 0);
 
 function fire(st: StoryState, id: string, at: number, away: boolean): StoryState {
@@ -95,7 +106,7 @@ export function onEvent(st: StoryState, beats: readonly Beat[], ev: StoryEvent, 
 function readyAtMs(st: StoryState, beats: readonly Beat[], b: Beat, ctx: StoryCtx): number | null {
   const f = st.fired[b.id];
   if (!f) return null;
-  let at = f.at + afterMs(b.trigger.afterHours);
+  let at = dueAt(f.at, b.trigger.afterHours, ctx.tzOffsetMin);
   for (const r of b.requires ?? []) {
     const d = st.delivered[r.beat];
     if (d) at = Math.max(at, d.at + afterMs(r.afterHours));
