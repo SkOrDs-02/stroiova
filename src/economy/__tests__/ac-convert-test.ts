@@ -54,7 +54,7 @@ describe('ціна (FR-6, AC-3)', () => {
   test('⌈costMin × базовий дохід⌉; бали не чіпаються; підписів мало - помилка', () => {
     const e = r5();
     const base = baseIncomePerMin(e, cfg);
-    expect(convertPrice(e, cfg)).toBe(Math.max(cfg.params.inspMinPrice, Math.ceil(120 * base)));
+    expect(convertPrice(e, cfg)).toBe(Math.ceil(120 * base));
     const r = convertStage(e, cfg, 0, ctx);
     if ('error' in r) throw new Error(r.error);
     expect(r.state.prestigePoints).toBe(77);

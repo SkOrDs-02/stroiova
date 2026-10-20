@@ -343,7 +343,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${sedoT.title} · ${tgT.left(formatDuration(Math.max(0, (sedo!.endMs - now) / 1000)))}`}</Text>
           </Pressable>
         ) : null}
-        {s.state.level >= 5 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="cv-counter">{digitT.cvCounter(s.state.digital.length)}</Text> : null}
+        {s.state.level >= 5 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="cv-counter">{digitT.cvCounter(s.state.digital.length, s.cfg.params.convert.order.length)}</Text> : null}
         {coachOn ? <View style={styles.scrim} /> : null}
       </View>
       <ScrollView contentContainerStyle={styles.list}>

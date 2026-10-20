@@ -5,7 +5,7 @@ import { useStore } from 'zustand';
 
 import { formatDuration, formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
-import { lineAt } from '@/features/telegrams/lines';
+import { useTumbLine } from '@/features/inspections/useTumbLine';
 import { t as tgT } from '@/features/telegrams/texts';
 import { color, radius, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
@@ -17,6 +17,8 @@ export function SedoSheet({ store, onClose, onPrinted }: { store: ConveyorStore;
   const s = useStore(store);
   const [printed, setPrinted] = useState(false);
   const a = s.telegrams.sedo.active;
+  // 09 FR-36: репліка з мішка, стабільна на весь збій
+  const line = useTumbLine(store, a ? 'sedo.line' : null, `sedo:${a?.startMs ?? 0}`);
   const now = s.lastMs;
   const paper = s.cfg.params.sedoPrintPaper;
   const have = Math.floor(s.state.paper);
@@ -43,7 +45,7 @@ export function SedoSheet({ store, onClose, onPrinted }: { store: ConveyorStore;
       <View style={styles.sheet} accessibilityViewIsModal>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{sedoT.title}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.unit}>{sedoT.unit(name, formatMult(s.cfg.params.sedoFailMult), left)}</Text>
-        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.line} testID="sedo-line">{lineAt('sedo.line', s.telegrams.deliveries)}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.line} testID="sedo-line">{line ?? ''}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{sedoT.waitText(left)}</Text>
         <Button testID="sedo-wait" variant="secondary" label={sedoT.wait(left)} onPress={onClose} />
         <Button

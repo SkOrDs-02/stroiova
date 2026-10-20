@@ -97,6 +97,11 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
   const slowEffect = (s: Slow) => {
     const ref = unitRef(eco, cfg, s.target);
     if (!ref) return;
+    // 013 FR-9: цифрову ланку телеграми не сповільнюють
+    if (ref.type === 'stage' && eco.digital.includes(ref.id)) {
+      res.immune = [...(res.immune ?? []), s.target];
+      return;
+    }
     const endMs = nowMs + s.hours * HOUR;
     effects.push({ kind: 'factor', source: 'telegram_slow', value: s.mult, target: ref, startMs: nowMs, endMs });
     res.slow.push(s);

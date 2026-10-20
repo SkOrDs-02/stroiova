@@ -23,9 +23,9 @@ export function hasConversions(state: EconomyState, cfg: EconomyConfig): boolean
   return !!L && (L as { convert?: number }).convert === 1;
 }
 
-/** Ціна: max(inspMinPrice, ⌈convert.costMin × базовий дохід⌉) (013 FR-6) */
+/** Ціна: ⌈convert.costMin × базовий дохід⌉ (013 FR-6, як `convCost()` у sim.js) */
 export function convertPrice(state: EconomyState, cfg: EconomyConfig): Big {
-  return Math.max(cfg.params.inspMinPrice, Math.ceil(cfg.params.convert.costMin * baseIncomePerMin(state, cfg)));
+  return Math.ceil(cfg.params.convert.costMin * baseIncomePerMin(state, cfg));
 }
 
 /**

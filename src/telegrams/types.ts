@@ -93,6 +93,8 @@ export interface ItemResult {
   repAfter: number;
   paper: number;
   slow: Slow[];
+  /** Цілі сповільнення, що припали на цифрову ланку (013 FR-9): ефекту немає, рядок «без сповільнення» */
+  immune?: string[];
   chancePct: number;
   inspHit: boolean;
   rollText?: string;
