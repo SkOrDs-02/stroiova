@@ -9,7 +9,7 @@ export const awT = {
   hiddenTitle: 'Для службового користування',
   hiddenHint: 'Умову оголосять після нагородження',
   ownedOn: (date: string) => `Оголошено ${date}`,
-  awardee: (gender: 'm' | 'f' | null, callsign: string) => `Нагороджується: ${gender === 'f' ? 'стройовичка' : 'стройовик'} ${callsign}`,
+  awardee: (gender: 'm' | 'f' | null, callsign: string) => (gender == null ? `Нагороджується: ${callsign}` : `Нагороджується: ${gender === 'f' ? 'стройовичка' : 'стройовик'} ${callsign}`),
   progress: (k: number, n: number) => `${k} з ${n}`,
   toastMore: (n: number) => `Ще ${n} на стіні грамот`,
   toastRetro: (n: number) => `Оголошено заднім числом: ${n}`,
