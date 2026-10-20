@@ -20,12 +20,13 @@ export const storyT = {
     title: 'Щоденник стройовика',
     day: (n: number, date: string) => `День ${n} · ${date}`,
     count: (n: number) => `${n} ${plural(n, 'запис', 'записи', 'записів')}`,
-    empty: 'Поки що нічого. Перший рядок з’явиться завтра.',
+    empty: 'Поки що нічого. Перший рядок з’явиться, коли повернешся до гри.',
     open: 'Відкрити щоденник',
   },
   call: {
     title: (from: string) => `Дзвінок · ${from}`,
     ok: 'Зрозуміло',
   },
-  toast: (from: string, title: string, body: string) => `${fromName(from)} · ${title}\n${body}`,
+  /** Заголовок, що збігається з іменем відправника, не повторюємо */
+  toast: (from: string, title: string, body: string) => (fromName(from) === title ? `${title}\n${body}` : `${fromName(from)} · ${title}\n${body}`),
 };
