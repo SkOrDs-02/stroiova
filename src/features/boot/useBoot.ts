@@ -14,6 +14,7 @@ import type { DigitizationState } from '@/digitization/types';
 import type { MonetizationState } from '@/monetization/types';
 import type { MuseumState } from '@/museum/types';
 import type { NotificationsState, Settings } from '@/notifications/types';
+import { bonuses as museumBonuses } from '@/museum/museum';
 import type { Stats } from '@/profile/stats';
 import type { StoryState } from '@/story/types';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
@@ -74,7 +75,7 @@ function applySettingsToDevice(st: Settings): void {
 }
 
 /** Стан гри з запису: закріплений конфіг має пріоритет над вбудованим (FR-22, source cached). */
-function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
+export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
   const id = installId(kv, Crypto.randomUUID).id;
   if (!save) {
     const store = createConveyorStore(now, bundledConfig, { installId: id });
@@ -85,7 +86,8 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
   const pinned = save.economyConfig as EconomyConfig | null;
   const cfg: EconomyConfig = pinned ? withBundled(pinned) : bundledConfig;
   const store = createConveyorStore(save.savedAt, cfg, {
-    state: save.game.economy as EconomyState,
+    // 016: бонуси журналів виводяться з музею (формули й відсотки можуть змінитись оновленням), тож рахуємо їх заново
+    state: { ...(save.game.economy as EconomyState), museum: museumBonuses(save.game.museum as MuseumState, cfg) },
     effects: save.game.effects as StoredEffect[],
     pinned,
     playtimeMs: save.game.playtimeMs,

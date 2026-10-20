@@ -7,7 +7,7 @@ import type { DomainEvent } from '@/economy/game/types';
 import { routeFor } from '@/race/race';
 import { cfg, eco, HOUR, tgWith } from '@/telegrams/test-utils';
 
-import { journal, museumJournals } from '../journals';
+import { bonusText, journal, museumJournals, museumSeries } from '../journals';
 import { bonuses, closeInspReveal, closeReveal, count, curioFromRace, curioFromTelegram, curioSummary, fromEvents, grant, has, interrupted, newMuseum, nextReveal, openTab, raceJournals, unseen, visibleCurios } from '../museum';
 import type { MuseumState } from '../types';
 
@@ -21,8 +21,19 @@ function owning(...nos: number[]): MuseumState {
 }
 
 describe('довідник журналів (FR-1, AC-1)', () => {
-  test('8 слотів у порядку № 1-8: назви, категорії, рідкості й бонуси з texts.md §3 і рішення 29', () => {
+  test('24 слоти (016): 15 звичайних, 7 рідкісних, 2 легендарних; серії покривають № 1-24 без перетинів', () => {
     const js = museumJournals();
+    expect(js.map((j) => j.no)).toEqual(Array.from({ length: 24 }, (_, i) => i + 1));
+    expect(js.filter((j) => j.rarity === 'common')).toHaveLength(15);
+    expect(js.filter((j) => j.rarity === 'rare')).toHaveLength(7);
+    expect(js.filter((j) => j.rarity === 'legendary')).toHaveLength(2);
+    const nos = museumSeries().flatMap((s) => s.journals).sort((a, b) => a - b);
+    expect(nos).toEqual(Array.from({ length: 24 }, (_, i) => i + 1));
+    expect(museumSeries().map((s) => s.journals.length)).toEqual([8, 4, 4, 4, 4]);
+  });
+
+  test('№ 1-8 за порядком слотів: назви, категорії, рідкості й бонуси з texts.md §3 і рішення 29', () => {
+    const js = museumJournals().slice(0, 8);
     expect(js.map((j) => j.no)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     expect(js.map((j) => [j.title, j.category, j.rarity, j.bonus.text])).toMatchSnapshot();
     expect(js.filter((j) => j.rarity === 'common')).toHaveLength(4);
@@ -53,15 +64,42 @@ describe('джерела (FR-3…FR-9)', () => {
     expect(b.ms.reveal.slice(3).map((r) => [r.no, r.k, r.m, r.nAfter])).toEqual([[4, 1, 2, 4], [5, 2, 2, 5]]);
   });
 
-  test('AC-3: третя цифровізація на Р1 журналів не дає; Р2 записує № 9-11 без розкриття й без лічильника', () => {
+  test('AC-3 (016): третя цифровізація на Р1 журналів не дає; цифровізація на Р2 дає № 9 з розкриттям, подією й series_id', () => {
     const a = fromEvents(owning(1, 2, 3, 4, 5), eco(), cfg, [dig([])], T, { offline: false });
     expect(count(a.ms)).toBe(5);
     const b = fromEvents(a.ms, a.eco, cfg, [dig([9])], T, { offline: false });
     expect(has(b.ms, 9)).toBe(true);
-    expect(count(b.ms)).toBe(5);
-    expect(b.events).toEqual([]);
-    expect(b.ms.reveal).toHaveLength(a.ms.reveal.length);
-    expect(unseen(b.ms)).toBe(unseen(a.ms));
+    expect(count(b.ms)).toBe(6);
+    expect(b.events).toMatchObject([{ type: 'museumJournalUnlock', no: 9, source: 'digitization', seriesId: 'personnel', isSeriesComplete: false, ownedAfter: 6 }]);
+    expect(b.ms.reveal.at(-1)).toMatchObject({ no: 9, nAfter: 6 });
+    expect(unseen(b.ms)).toBe(unseen(a.ms) + 1);
+  });
+
+  test('журнали № 9-24 не видаються в економіці з музеєм на 8 (museum = 1)', () => {
+    const old = { ...cfg, params: { ...cfg.params, museum: 1 } };
+    const a = grant(owning(1), eco(), old, [9, 10], T, 'digitization');
+    expect(has(a.ms, 9)).toBe(false);
+  });
+
+  test('016 FR-5: підсумкова Р2 -> № 12, Р3 -> № 16, «Аудит усього» -> № 20 (блок в акті; офлайн - модалка); конвертації № 2, 4, 5 -> № 21, 22, 23', () => {
+    const fin = (level: number): DomainEvent => ({ type: 'finalPassed', id: 'i', level, attempt: 1 });
+    const conv = (k: number): DomainEvent => ({ type: 'stageConvert', stageId: 'stroy', convertIndex: k, costLog10: 3, digitizationsOnLevel: 0, secSinceLevelStart: 1 });
+    const a = fromEvents(owning(), eco(), cfg, [fin(2), fin(3), fin(4)], T, { offline: false });
+    expect(a.ms.owned.map((o) => o.no)).toEqual([12, 16, 20]);
+    expect(a.ms.reveal.every((r) => r.via === 'insp')).toBe(true);
+    const off = fromEvents(owning(), eco(), cfg, [fin(2)], T, { offline: true });
+    expect(nextReveal(off.ms)).toMatchObject({ no: 12, via: 'other' });
+    const b = fromEvents(owning(), eco(), cfg, [conv(1), conv(2), conv(3), conv(4), conv(5), conv(6)], T, { offline: false });
+    expect(b.ms.owned.map((o) => [o.no, o.source])).toEqual([[21, 'conversion'], [22, 'conversion'], [23, 'conversion']]);
+  });
+
+  test('серія зібрана: подія is_series_complete з series_id і лічильником зібраних серій, повторне джерело нічого не дає (FR-4)', () => {
+    const base = owning(1, 2, 3, 4, 5, 6, 7, 9, 10, 11);
+    const a = fromEvents(base, eco(), cfg, [{ type: 'finalPassed', id: 'i', level: 2, attempt: 1 }], T, { offline: false });
+    // AC-4: серія 1 (з № 8) і серія 2 - разом 2; джерело - final_inspection
+    expect(a.events).toMatchObject([{ no: 12, isSeriesComplete: true, seriesId: 'personnel', seriesOwnedAfter: 4, seriesCompleteCount: 2, source: 'final_inspection' }]);
+    const again = fromEvents(a.ms, a.eco, cfg, [{ type: 'finalPassed', id: 'i2', level: 2, attempt: 1 }], T, { offline: false });
+    expect(again.events).toEqual([]);
   });
 
   test('AC-4: телеграма 25 без вибору дає № 6 (за псевдонімом з контенту), повторно - ні', () => {
@@ -109,6 +147,7 @@ describe('джерела (FR-3…FR-9)', () => {
 describe('бонуси в економіці (FR-10, FR-11, AC-8, AC-19)', () => {
   test('нейтральні без журналів і за відсотками з конфігу з ними', () => {
     expect(bonuses(newMuseum(), cfg)).toEqual({ unit: {}, storage: 1, paper: 1 });
+    expect(bonusText(journal(9)!, cfg.params)).toBe('+5% до потоку «Накази по частині»');
     const b = bonuses(owning(1, 2, 3, 4, 5), cfg);
     expect(b.unit).toEqual({ stroy: 1.05, nakladni: 1.05, raporty: 1.05 });
     expect(b.storage).toBe(1.05);
@@ -150,11 +189,11 @@ describe('бонуси в економіці (FR-10, FR-11, AC-8, AC-19)', () =>
   });
 
   test('AC-19: крок Фінслужби акта дрона 2 год 40 хв -> 2 год 24 хв з № 7 (з № 8 - 2 год 8 хв); № 6 скорочує кожен крок', () => {
-    const fin = (m: MuseumState) => routeFor('drone', 1, cfg, raceJournals(m)).find((s) => s.unit === 'fin')!.sec / 60;
+    const fin = (m: MuseumState) => routeFor('drone', 1, cfg, raceJournals(m, cfg)).find((s) => s.unit === 'fin')!.sec / 60;
     expect(fin(newMuseum())).toBe(160);
     expect(fin(owning(7))).toBe(144);
     expect(fin(owning(1, 7, 8))).toBe(128);
-    const all = (m: MuseumState) => routeFor('drone', 1, cfg, raceJournals(m)).map((s) => s.sec);
+    const all = (m: MuseumState) => routeFor('drone', 1, cfg, raceJournals(m, cfg)).map((s) => s.sec);
     const plain = all(newMuseum());
     const j6 = all(owning(6));
     j6.forEach((sec, i) => expect(sec).toBe(Math.round(plain[i]! * 0.9)));

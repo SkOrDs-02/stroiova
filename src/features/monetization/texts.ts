@@ -116,6 +116,7 @@ export const boostsT = {
   rows: {
     prestige: 'Цифрові бали',
     no_ads: 'Без реклами',
+    museum_series: 'Серії музею',
     ad_boost: 'Буст за рекламу',
     ad_boost_free: 'Буст без перегляду',
     onboarding_bird: 'Пташка в небі',
@@ -127,6 +128,7 @@ export const boostsT = {
   museum: 'Музей журналів',
   museumNote: 'окремо',
   forever: 'назавжди',
+  seriesOf: (k: number, n: number) => `${k} з ${n}`,
   shopLink: 'Постійний ×1,3 - у магазині',
   close: 'Закрити',
 };

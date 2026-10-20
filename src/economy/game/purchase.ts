@@ -1,6 +1,6 @@
 // Покупки й діловоди (001 FR-7…FR-14, FR-29): котирування, атомарна покупка, доменні події.
 import { capAt, milestoneTarget, packPrice } from '../core';
-import { income } from './income';
+import { income, unitMult } from './income';
 import { itemsFor } from './state';
 import type { Big, BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, UnitDef, UnitRef } from './types';
 
@@ -55,7 +55,7 @@ export function quote(state: EconomyState, cfg: EconomyConfig, ref: UnitRef, mod
   const n = levelsFor(L, mode, cfg);
   const price = packPrice(def, L, n);
   const locked = ref.type === 'stream' && L === 0 && index > 0 && (state.streamLevels[index - 1] ?? 0) === 0;
-  const mus = state.museum.unit[def.id] ?? 1;
+  const mus = unitMult(state, def.id);
   const before = income(state, cfg, t, effects).perMin;
   const after = income(withLevel(state, ref, index, L + n), cfg, t, effects).perMin;
   const affordable = !locked && state.signatures >= price;

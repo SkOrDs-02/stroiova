@@ -33,6 +33,12 @@ export function telegramOf(item: InboxItem): Telegram | undefined {
   return telegram(item.kind === 'override' ? OVERRIDE_ID : item.id);
 }
 
+/** Тривалість сповільнення від телеграми з журналом № 11: ⌈d·(1 − s·k24)⌉ хв (016 FR-10) */
+export function cutHours(hours: number, eco: EconomyState): number {
+  const cut = eco.museum.slowCut ?? 1;
+  return cut === 1 ? hours : Math.ceil(hours * 60 * cut - 1e-9) / 60;
+}
+
 /** Ціль сповільнення: ланка чи потік поточного рівня; на Р1 «Казначейства» немає — null. */
 export function unitRef(eco: EconomyState, cfg: EconomyConfig, id: string): UnitRef | null {
   const it = itemsFor(eco, cfg);
@@ -94,7 +100,9 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
   let workUntil = 0;
   let returnsAfter: number | null = null;
 
-  const slowEffect = (s: Slow) => {
+  const slowEffect = (s0: Slow) => {
+    // № 11 (016): сповільнення від телеграми триває коротше, до хвилини вгору; події (комбат, нарада) не чіпаємо
+    const s: Slow = { ...s0, hours: cutHours(s0.hours, eco) };
     const ref = unitRef(eco, cfg, s.target);
     if (!ref) return;
     // 013 FR-9: цифрову ланку телеграми не сповільнюють
@@ -102,7 +110,7 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
       res.immune = [...(res.immune ?? []), s.target];
       return;
     }
-    const endMs = nowMs + s.hours * HOUR;
+    const endMs = nowMs + Math.round(s.hours * HOUR);
     effects.push({ kind: 'factor', source: 'telegram_slow', value: s.mult, target: ref, startMs: nowMs, endMs });
     res.slow.push(s);
     workUntil = Math.max(workUntil, endMs);

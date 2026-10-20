@@ -19,7 +19,7 @@ import { digitT } from './texts';
 export function DigitResult({ store }: { store: ConveyorStore }) {
   const s = useStore(store);
   const c = s.digit.ceremony!;
-  const journals = shownJournals(c.journals);
+  const journals = shownJournals(c.journals, s.cfg.params.museum);
   const line = useTumbLine(store, 'digit.line', `digit:${c.no}`);
   const note = byLevel.note(c.level, c.levelUp);
   return (

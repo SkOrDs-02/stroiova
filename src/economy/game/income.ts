@@ -21,6 +21,11 @@ export function unitFactor(ref: UnitRef, t: number, effects: readonly Effect[]):
  */
 const DIGITAL_FACTOR_SOURCES: readonly Effect['source'][] = ['inspection_fail', 'sedo_failure'];
 
+/** Множник одиниці з музею: журнали + додаток № 21 для цифрової ланки (016); єдине джерело для доходу й показу виробітку */
+export function unitMult(state: EconomyState, id: string): number {
+  return (state.museum.unit[id] ?? 1) + (isDigital(state, id) ? (state.museum.digital ?? 0) : 0);
+}
+
 export function isDigital(state: Pick<EconomyState, 'digital'>, stageId: string): boolean {
   return state.digital.includes(stageId);
 }
@@ -51,7 +56,7 @@ export function tankPct(state: EconomyState, t: number): number {
 }
 
 export interface MultRow {
-  source: 'prestige' | 'no_ads' | Effect['source'] | 'fuel';
+  source: 'prestige' | 'no_ads' | 'museum_series' | Effect['source'] | 'fuel';
   value: number;
   endsAtMs?: number;
 }
@@ -62,6 +67,8 @@ export function multStack(state: EconomyState, cfg: EconomyConfig, t: number, ef
   const rows: MultRow[] = [];
   if (state.prestigePoints > 0) rows.push({ source: 'prestige', value: prestigeMult(state.prestigePoints, p) });
   if (state.hasNoAds) rows.push({ source: 'no_ads', value: p.paidMult });
+  // 016 FR-12: серії музею - окремий множник у M, не залежить від журналів № 8 і № 24
+  if ((state.museum.series ?? 1) !== 1) rows.push({ source: 'museum_series', value: state.museum.series! });
   const order: Effect['source'][] = ['onboarding_bird', 'ad_boost', 'gift_drone', 'gift_shovel', 'inspection_pass'];
   for (const src of order) {
     for (const e of effects) {
@@ -100,7 +107,9 @@ function conveyor(state: EconomyState, cfg: EconomyConfig, t: number, effects: r
     const on = !idle || (!!state.stageClerks[j] && !clerkAwayAt({ type: 'stage', id: u.id }, t, effects));
     const digital = isDigital(state, u.id);
     const f = withFactors ? unitFactor({ type: 'stage', id: u.id }, t, digital ? effects.filter((e) => DIGITAL_FACTOR_SOURCES.includes(e.source)) : effects) : 1;
-    return { cap: capAt(u, state.stageLevels[j] ?? 0, p) * mus(u.id) * (digital ? p.convert.mult : 1) * f, on };
+    // № 21 (016): додаток до множника кожної цифрової ланки
+    const m = unitMult(state, u.id);
+    return { cap: capAt(u, state.stageLevels[j] ?? 0, p) * m * (digital ? p.convert.mult : 1) * f, on };
   });
   return flow(streams, stages);
 }
@@ -116,7 +125,7 @@ export function income(state: EconomyState, cfg: EconomyConfig, t: number, effec
 /** Базовий дохід (FR-31): без тимчасових множників і факторів подій; від нього ціни «у хвилинах доходу». */
 export function baseIncomePerMin(state: EconomyState, cfg: EconomyConfig): Big {
   const fl = conveyor(state, cfg, 0, [], false, false);
-  return fl.v * prestigeMult(state.prestigePoints, cfg.params) * (state.hasNoAds ? cfg.params.paidMult : 1);
+  return fl.v * prestigeMult(state.prestigePoints, cfg.params) * (state.hasNoAds ? cfg.params.paidMult : 1) * (state.museum.series ?? 1);
 }
 
 export interface ZpzInfo {

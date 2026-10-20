@@ -42,14 +42,20 @@ function game(owned: number[] = [], lifetime = 0) {
 }
 
 describe('музей на екрані', () => {
-  test('AC-1: новий гравець - 8 слотів «???», «0 з 8», 0 заповнених сегментів, «До цифровізації» відкриває «Цифру»; фільтрів немає', async () => {
+  test('AC-1: новий гравець - 24 слоти «???» у 5 секціях, «0 з 24», 0 заповнених сегментів, «До цифровізації» відкриває «Цифру»; фільтрів немає', async () => {
     const store = game();
     await render(<MainScreen store={store} />);
     await fireEvent.press(screen.getByTestId('tab-museum'));
-    expect(screen.getByTestId('mu-count')).toHaveTextContent('0 з 8');
-    expect(screen.getAllByTestId('mu-pip-off', { includeHiddenElements: true })).toHaveLength(8);
+    expect(screen.getByTestId('mu-count')).toHaveTextContent('0 з 24');
+    expect(screen.getAllByTestId('mu-pip-off', { includeHiddenElements: true })).toHaveLength(24);
     expect(screen.queryAllByTestId('mu-pip-on', { includeHiddenElements: true })).toHaveLength(0);
-    for (let n = 1; n <= 8; n++) expect(screen.getByTestId(`slot-${n}`)).toHaveTextContent(/\?\?\?/);
+    for (let n = 1; n <= 24; n++) expect(screen.getByTestId(`slot-${n}`)).toHaveTextContent(/\?\?\?/);
+    // 016 FR-15: п'ять секцій серій; серії наступних рівнів замкнені з назвою рівня
+    expect(screen.getByTestId('mu-sec-1')).toHaveTextContent(/Майно батальйону · 0 з 8/);
+    expect(screen.getByTestId('mu-sec-2')).toHaveTextContent(/Особовий склад · 0 з 4/);
+    expect(screen.getByTestId('mu-sec-locked-2')).toHaveTextContent('Відкриється на рівні «Бригада»');
+    expect(screen.getByTestId('mu-sec-locked-5')).toHaveTextContent(/Відкриється на рівні «Армія без паперу»/);
+    expect(screen.queryByTestId('mu-sec-locked-1')).toBeNull();
     expect(screen.getByTestId('mu-empty')).toHaveTextContent(/Музей порожній.*Перші три скасує перша цифровізація/);
     expect(screen.queryByTestId('mu-filter-all')).toBeNull();
     await fireEvent.press(screen.getByTestId('mu-empty-cta'));
@@ -60,7 +66,7 @@ describe('музей на екрані', () => {
     const store = game([1, 2, 3, 6]);
     await render(<MainScreen store={store} />);
     await fireEvent.press(screen.getByTestId('tab-museum'));
-    expect(screen.getByTestId('mu-count')).toHaveTextContent('4 з 8');
+    expect(screen.getByTestId('mu-count')).toHaveTextContent('4 з 24');
     expect(screen.getAllByTestId('mu-pip-on', { includeHiddenElements: true })).toHaveLength(4);
     expect(screen.getByTestId('slot-3')).toHaveTextContent(/Рідкісний.*\+10% паперу з будь-якого джерела/);
     expect(screen.getByTestId('slot-1')).toHaveTextContent(/Скасовано/);
@@ -84,11 +90,11 @@ describe('музей на екрані', () => {
     expect(screen.queryByTestId('slot-4')).toBeNull();
   });
 
-  test('AC-7 (екран): 8 з 8 - банер «Серію зібрано» з «×2 уже діє»', async () => {
+  test('AC-7 (екран): 8 з 24 - банер «Серію зібрано» з «×2 уже діє»', async () => {
     const store = game([1, 2, 3, 4, 5, 6, 7]);
     await render(<MainScreen store={store} />);
     await fireEvent.press(screen.getByTestId('tab-museum'));
-    expect(screen.getByTestId('mu-count')).toHaveTextContent('8 з 8');
+    expect(screen.getByTestId('mu-count')).toHaveTextContent('8 з 24');
     expect(screen.getByTestId('mu-done')).toHaveTextContent(/Серію зібрано.*×2 уже діє/);
   });
 
@@ -97,7 +103,7 @@ describe('музей на екрані', () => {
     await render(<MainScreen store={store} />);
     await fireEvent.press(screen.getByTestId('tab-museum'));
     await fireEvent.press(screen.getByTestId('slot-7'));
-    expect(screen.getByTestId('journal-detail')).toHaveTextContent(/Експонат № 7 з 8.*Не знайдено.*\?\?\?/);
+    expect(screen.getByTestId('journal-detail')).toHaveTextContent(/Експонат № 7 з 24.*Не знайдено.*\?\?\?/);
     expect(screen.getByTestId('jd-source')).toHaveTextContent('Перевірка без зауважень');
     expect(screen.getByTestId('jd-hint')).toHaveTextContent('Спершу цифровізація. Потім перевірка без зауважень.');
     await fireEvent.press(screen.getByTestId('journal-detail-ok'));
@@ -107,7 +113,7 @@ describe('музей на екрані', () => {
     await fireEvent.press(screen.getByTestId('journal-detail-ok'));
     await fireEvent.press(screen.getByTestId('slot-1'));
     const d = screen.getByTestId('journal-detail');
-    expect(d).toHaveTextContent(/Експонат № 1 з 8.*Книга обліку видавання мила.*Звичайний.*Бонус · діє завжди.*\+5% до швидкості Стройової частини/);
+    expect(d).toHaveTextContent(/Експонат № 1 з 24.*Книга обліку видавання мила.*Звичайний.*Бонус · діє завжди.*\+5% до швидкості Стройової частини/);
     expect(d).toHaveTextContent(/Історія скасування.*16 паперових форм.*Джерело: тези-роз'яснення МОУ, 2024/);
     expect(screen.getByTestId('jd-since')).toHaveTextContent('09.10.2025');
   });
@@ -126,13 +132,13 @@ describe('розкриття (рішення 79)', () => {
     expect(screen.queryByTestId('journal-new')).toBeNull();
     expect(screen.getByTestId('tab-museum-dot')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('digit-result-ok'));
-    expect(screen.getByTestId('jn-counter')).toHaveTextContent('1 з 3 нових · у музеї 1 з 8');
+    expect(screen.getByTestId('jn-counter')).toHaveTextContent('1 з 3 нових · у музеї 1 з 24');
     expect(screen.getByTestId('jn-note')).toHaveTextContent('Уже діє. Назавжди.');
     expect(screen.getByTestId('jn-next')).toHaveTextContent('Наступний експонат');
     await fireEvent.press(screen.getByTestId('jn-next'));
-    expect(screen.getByTestId('jn-counter')).toHaveTextContent('2 з 3 нових · у музеї 2 з 8');
+    expect(screen.getByTestId('jn-counter')).toHaveTextContent('2 з 3 нових · у музеї 2 з 24');
     await fireEvent.press(screen.getByTestId('jn-next'));
-    expect(screen.getByTestId('jn-counter')).toHaveTextContent('3 з 3 нових · у музеї 3 з 8');
+    expect(screen.getByTestId('jn-counter')).toHaveTextContent('3 з 3 нових · у музеї 3 з 24');
     expect(screen.getByTestId('jn-rarity')).toHaveTextContent('Рідкісний');
     expect(screen.getByTestId('jn-next')).toHaveTextContent('Добре');
     await fireEvent.press(screen.getByTestId('jn-next'));
@@ -146,7 +152,7 @@ describe('розкриття (рішення 79)', () => {
     expect(screen.queryByTestId('tab-museum-dot')).toBeNull();
   });
 
-  test('AC-3 (екран): цифровізація на Р2 журналів у музей не розкриває - «без журналів» з лічильником «У музеї 5 з 8», кнопка «До стройової»', async () => {
+  test('AC-3 (016, екран): цифровізація на Р2 дає № 9 - digit-result «Далі», journal-new з бонусом та лічильником «У музеї 6 з 24»; 4-та журналу не дає', async () => {
     const store = game([1, 2, 3, 4, 5], 6.27e9 * 1600);
     store.setState({
       state: { ...store.getState().state, level: 2, streamLevels: [30, 20, 10, 5, 3], stageLevels: [20, 20, 20, 20], prestigePoints: 100 },
@@ -156,12 +162,14 @@ describe('розкриття (рішення 79)', () => {
     await act(async () => {
       expect(store.getState().digitize()).toBe(true);
     });
-    expect(screen.getByTestId('result-museum')).toHaveTextContent('У музеї 5 з 8');
-    expect(screen.getByTestId('digit-result-ok')).toHaveTextContent('До стройової');
+    expect(screen.getByTestId('digit-result-ok')).toHaveTextContent('Далі');
     await fireEvent.press(screen.getByTestId('digit-result-ok'));
+    expect(screen.getByTestId('jn-title')).toHaveTextContent('Іменний список для проведення вечірньої повірки');
+    expect(screen.getByTestId('jn-counter')).toHaveTextContent('У музеї 6 з 24');
+    expect(store.getState().state.museum.unit.nakazy).toBeCloseTo(1.05, 10);
+    expect(store.getState().events.find((e) => e.type === 'museumJournalUnlock' && e.no === 9)).toMatchObject({ seriesId: 'personnel', source: 'digitization', isSeriesComplete: false });
+    await fireEvent.press(screen.getByTestId('jn-next'));
     expect(screen.queryByTestId('journal-new')).toBeNull();
-    // № 9 записано без розкриття й без лічильника (рішення 76)
-    expect(store.getState().museum.owned.map((o) => o.no)).toContain(9);
     expect(unseen(store.getState().museum)).toBe(0);
   });
 
@@ -173,7 +181,7 @@ describe('розкриття (рішення 79)', () => {
     });
     await fireEvent.press(screen.getByTestId('digit-result-ok'));
     await fireEvent.press(screen.getByTestId('jn-detail'));
-    expect(screen.getByTestId('journal-detail')).toHaveTextContent(/Експонат № 1 з 8/);
+    expect(screen.getByTestId('journal-detail')).toHaveTextContent(/Експонат № 1 з 24/);
     await fireEvent.press(screen.getByTestId('journal-detail-ok'));
     expect(screen.queryByTestId('journal-detail')).toBeNull();
     expect(screen.getByTestId('jn-counter')).toHaveTextContent(/^1 з 3 нових/);
@@ -208,7 +216,7 @@ describe('розкриття (рішення 79)', () => {
     expect(screen.getByTestId('tab-museum-dot')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('toast-open'));
     expect(screen.getByTestId('museum')).toBeTruthy();
-    expect(screen.getByTestId('mu-count')).toHaveTextContent('3 з 8');
+    expect(screen.getByTestId('mu-count')).toHaveTextContent('3 з 24');
     expect(screen.queryByTestId('tab-museum-dot')).toBeNull();
     expect(second.getState().events.at(-1)).toMatchObject({ type: 'museumOpen', source: 'unlock_toast', journalsUnseen: 2 });
   });
@@ -256,11 +264,11 @@ describe('перевірка й телеграма дають журнали', (
     expect(store.getState().museum.owned).toEqual([]);
   });
 
-  test('AC-5: після 1-ї цифровізації «без зауважень» дає № 7 блоком «Новий експонат · 4 з 8» в акті; повторна - ні', async () => {
+  test('AC-5: після 1-ї цифровізації «без зауважень» дає № 7 блоком «Новий експонат · 4 з 24» в акті; повторна - ні', async () => {
     const { store, arr } = inspected(1);
     store.getState().tick(arr + 1000);
     await render(<MainScreen store={store} />);
-    expect(screen.getByTestId('insp-exhibit')).toHaveTextContent(/Новий експонат · 4 з 8.*№ 7 · Журнал результатів звірки обліку військового майна/);
+    expect(screen.getByTestId('insp-exhibit')).toHaveTextContent(/Новий експонат · 4 з 24.*№ 7 · Журнал результатів звірки обліку військового майна/);
     // журнал діє з моменту отримання, у гонці крок Фінслужби коротший
     expect(store.getState().museum.owned.map((o) => o.no)).toEqual([1, 2, 3, 7]);
     await fireEvent.press(screen.getByTestId('insp-result-ok'));
@@ -277,7 +285,7 @@ describe('перевірка й телеграма дають журнали', (
     expect(screen.queryByTestId('journal-new')).toBeNull();
     await fireEvent.press(screen.getByTestId('offline-claim'));
     expect(screen.getByTestId('jn-title')).toHaveTextContent('Журнал результатів звірки обліку військового майна');
-    expect(screen.getByTestId('jn-counter')).toHaveTextContent('У музеї 4 з 8');
+    expect(screen.getByTestId('jn-counter')).toHaveTextContent('У музеї 4 з 24');
   });
 
   test('AC-7: 6 з 8 без № 7 - № 7 і одразу № 8 «Легендарний» з «Серію зібрано. Уже діє.»', async () => {
@@ -314,7 +322,73 @@ describe('перевірка й телеграма дають журнали', (
     await fireEvent.press(screen.getByTestId('tab-stroyova'));
     expect(screen.getByTestId('jn-title')).toHaveTextContent('Книга обліку призів і подарунків');
     expect(screen.getByTestId('jn-rarity')).toHaveTextContent('Рідкісний');
-    expect(screen.getByTestId('jn-counter')).toHaveTextContent('У музеї 4 з 8');
+    expect(screen.getByTestId('jn-counter')).toHaveTextContent('У музеї 4 з 24');
     expect(store.getState().museum.curios[0]).toMatchObject({ kind: 'telegram', status: 'info', telegramId: 'tg_0025b_prize_cancelled' });
+  });
+});
+
+describe('музей на 24 (016 етап 1)', () => {
+  test('AC-4/FR-16: останній журнал серії «Особовий склад» в акті підсумкової - блок експоната № 12 і «Серію зібрано»; потім секція в музеї і рядок «Серії музею»', async () => {
+    const store = game([1, 2, 3, 4, 5, 6, 7, 9, 10, 11]);
+    store.setState({ state: { ...store.getState().state, level: 2 } });
+    const g = grant(store.getState().museum, store.getState().state, bundledConfig, [12], T0, 'final_inspection', 'insp');
+    const outcome = { id: 'i1', no: 7, trigger: 'scheduled' as const, boss: 'brigade_commission' as const, level: 2, kind: 'final' as const, attempt: 1, arrMs: T0, passed: true, exitUnlocked: true, remark: false, items: [], reason: null, offline: false, seen: false };
+    store.setState({ museum: g.ms, state: g.eco, events: [...store.getState().events, ...g.events], inspections: { ...store.getState().inspections, last: outcome } });
+    await render(<MainScreen store={store} />);
+    expect(screen.getByTestId('insp-exhibit')).toHaveTextContent(/№ 12 · Журнал контролю за станом обліку особового складу/);
+    expect(screen.getByTestId('insp-exhibit-series')).toHaveTextContent('Серію «Особовий склад» зібрано. +1% до всіх підписів. Уже діє.');
+    expect(store.getState().events.find((e) => e.type === 'museumJournalUnlock' && e.no === 12)).toMatchObject({ isSeriesComplete: true, seriesId: 'personnel', seriesOwnedAfter: 4, seriesCompleteCount: 2, source: 'final_inspection' });
+    await fireEvent.press(screen.getByTestId('insp-result-ok'));
+    await fireEvent.press(screen.getByTestId('tab-museum'));
+    expect(screen.getByTestId('mu-sec-done-2')).toHaveTextContent('Серію зібрано · +1% до всіх підписів');
+    expect(screen.getByTestId('mu-sec-2')).toHaveTextContent(/Особовий склад · 4 з 4/);
+    await fireEvent.press(screen.getByTestId('tab-stroyova'));
+    await fireEvent.press(screen.getByTestId('income-open'));
+    expect(screen.getByTestId('boost-row-museum_series')).toHaveTextContent(/Серії музею.*×1,01.*1 з 4/);
+  });
+
+  test('офлайн: журнал № 12 розкривається модалкою journal-new із приміткою про серію', async () => {
+    const store = game([9, 10, 11]);
+    store.setState({ state: { ...store.getState().state, level: 2 } });
+    const g = grant(store.getState().museum, store.getState().state, bundledConfig, [12], T0, 'final_inspection');
+    store.setState({ museum: g.ms, state: g.eco });
+    await render(<MainScreen store={store} />);
+    expect(screen.getByTestId('jn-title')).toHaveTextContent('Журнал контролю за станом обліку особового складу');
+    expect(screen.getByTestId('jn-note')).toHaveTextContent('Серію «Особовий склад» зібрано. +1% до всіх підписів. Уже діє.');
+  });
+
+  test('AC-7 (016): шторка № 16 на Р2 - «Діятиме з рівня «Командування»», шторка № 9 - діє зараз; рядок серії в шапці', async () => {
+    const store = game([9, 16]);
+    store.setState({ state: { ...store.getState().state, level: 2 } });
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('tab-museum'));
+    await fireEvent.press(screen.getByTestId('slot-16'));
+    expect(screen.getByTestId('jd-later')).toHaveTextContent('Діятиме з рівня «Командування»');
+    expect(screen.getByTestId('jd-series')).toHaveTextContent('Серія «Транспорт і склад» · 1 з 4');
+    expect(screen.getByTestId('jd-bonus')).toHaveTextContent('+10% до ланки «Нарада»');
+    await fireEvent.press(screen.getByTestId('journal-detail-ok'));
+    await fireEvent.press(screen.getByTestId('slot-9'));
+    expect(screen.queryByTestId('jd-later')).toBeNull();
+  });
+
+  test('FR-16: усі 24 - банер «Музей укомплектовано» замість банера серії', async () => {
+    const store = game(Array.from({ length: 24 }, (_, i) => i + 1));
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('tab-museum'));
+    expect(screen.getByTestId('mu-full')).toHaveTextContent(/Музей укомплектовано.*Двадцять четвертого не існувало/);
+    expect(screen.queryByTestId('mu-done')).toBeNull();
+    expect(screen.getByTestId('mu-count')).toHaveTextContent('24 з 24');
+  });
+  test('AC-7: № 21 на Р5 без цифрових ланок - «Діятиме з рівня «Армія без паперу»»; після конвертації № 1 напису немає', async () => {
+    const store = game([21]);
+    store.setState({ state: { ...store.getState().state, level: 5, digital: [] } });
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('tab-museum'));
+    await fireEvent.press(screen.getByTestId('slot-21'));
+    expect(screen.getByTestId('jd-later')).toHaveTextContent('Діятиме з рівня «Армія без паперу»');
+    await fireEvent.press(screen.getByTestId('journal-detail-ok'));
+    await act(async () => store.setState({ state: { ...store.getState().state, digital: ['kombat'] } }));
+    await fireEvent.press(screen.getByTestId('slot-21'));
+    expect(screen.queryByTestId('jd-later')).toBeNull();
   });
 });

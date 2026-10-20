@@ -2,7 +2,7 @@
 import type { DomainEvent, EconomyConfig, EconomyState, StoredEffect } from '@/economy/game/types';
 
 import { allPacks, type PackDef } from './content';
-import { answer, paperCost, telegramOf, unitRef, type AnswerCtx } from './effects';
+import { answer, cutHours, paperCost, telegramOf, unitRef, type AnswerCtx } from './effects';
 import { applyRep, replyChance, repTier } from './reputation';
 import { roller } from './rng';
 import type { Choice, ChoiceKind, Effects, InboxItem, ItemResult, TelegramState } from './types';
@@ -236,7 +236,8 @@ export function answerPack(tg0: TelegramState, eco0: EconomyState, no: number, k
   let workEnd = 0;
   if (f.slow) {
     const ref = unitRef(eco, cfg, 'narada')!;
-    workEnd = nowMs + f.slow.hours * 3_600_000;
+    const slowHours = cutHours(f.slow.hours, eco);
+    workEnd = nowMs + Math.round(slowHours * 3_600_000);
     effects.push({ kind: 'factor', source: 'telegram_slow', value: f.slow.mult, target: ref, startMs: nowMs, endMs: workEnd });
   }
   let hit = false;
@@ -255,7 +256,7 @@ export function answerPack(tg0: TelegramState, eco0: EconomyState, no: number, k
 
   const repAfter = tg.reputation.value;
   const zeroResult: ItemResult = { rep: 0, repAfter, paper: 0, slow: [], chancePct: 0, inspHit: false, shield: false };
-  const mergedResult: ItemResult = { ...zeroResult, rep: f.rep, paper: f.paper, chancePct: f.chancePct, inspHit: hit, slow: f.slow ? [{ target: 'narada', mult: f.slow.mult, hours: f.slow.hours }] : [] };
+  const mergedResult: ItemResult = { ...zeroResult, rep: f.rep, paper: f.paper, chancePct: f.chancePct, inspHit: hit, slow: f.slow ? [{ target: 'narada', mult: f.slow.mult, hours: cutHours(f.slow.hours, eco) }] : [] };
   // записи пачки: вид зведеної відповіді; діти в роботі, поки триває сповільнення
   const uids = new Set(g.items.map((i) => i.uid));
   tg = {

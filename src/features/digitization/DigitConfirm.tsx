@@ -24,7 +24,7 @@ export function DigitConfirm({ store, onClose, onDone }: { store: ConveyorStore;
       <View style={styles.sheet} accessibilityViewIsModal>
         <ScrollView contentContainerStyle={styles.body}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{byLevel.confirmTitle(level)}</Text>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{shownJournals(st.journals).length ? digitT.confirmSub : digitT.confirmSubNone}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{shownJournals(st.journals, s.cfg.params.museum).length ? digitT.confirmSub : digitT.confirmSubNone}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.big} testID="confirm-points">{digitT.points(st.points)}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} testID="confirm-mult">{digitT.mult(formatMult(st.multBefore), formatMult(st.multAfter))}</Text>
           {toNext ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note} testID="confirm-lvl">{byLevel.confirmLvl(level)}</Text> : null}
@@ -32,7 +32,7 @@ export function DigitConfirm({ store, onClose, onDone }: { store: ConveyorStore;
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{digitT.resetsList}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h}>{digitT.stays}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{digitT.staysList}</Text>
-          {shownJournals(st.journals).map((n) => (
+          {shownJournals(st.journals, s.cfg.params.museum).map((n) => (
             <Text key={n} maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{`№ ${n} · ${journalTitle(n)}`}</Text>
           ))}
         </ScrollView>
