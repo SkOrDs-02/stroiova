@@ -509,5 +509,14 @@
       {"id": "formal_reply", "kind": "formal_reply", "title": "Вважати звіреним", "effects": {"durationMin": 1, "rep": -5, "inspPct": 10, "digitalShield": true}, "result": "Скасування звірки не звіряли. Як і звірку."},
       {"id": "drawer", "kind": "drawer", "title": "Покласти в шухляду", "effects": {}, "note": "Журнал звірки лежить. Звіряти нічого."}
     ]
+  },
+  {
+    "id": "tg_notice_kopiyka_numbering", "no": "5093", "level": 2, "kind": "notice",
+    "from": "bde_support", "to": "stroy_chief", "title": "Про нумерацію вихідних",
+    "body": "Звірив вихідні номери всіх телеграм, які ми отримали. Ідуть підряд, без жодного розриву, через усі роки. З якого року почали - не знайшов. Журналу вихідних, де їх реєструють, теж. Копійка.",
+    "deadline": "std",
+    "schedule": {"scripted": true},
+    "review": true,
+    "choices": []
   }
 ]

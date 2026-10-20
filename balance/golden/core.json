@@ -532,7 +532,8 @@
    "minGapDays": 3
   },
   "slowPerDayLateMin": 1,
-  "slowPerDayLateMax": 2
+  "slowPerDayLateMax": 2,
+  "storyMaxToasts": 2
  },
  "SCENARIOS": [
   {
@@ -1006,7 +1007,8 @@
     "minGapDays": 3
    },
    "slowPerDayLateMin": 1,
-   "slowPerDayLateMax": 2
+   "slowPerDayLateMax": 2,
+   "storyMaxToasts": 2
   },
   "preset-v6": {
    "rev": "7.2",
@@ -1463,7 +1465,8 @@
     "minGapDays": 3
    },
    "slowPerDayLateMin": 1,
-   "slowPerDayLateMax": 2
+   "slowPerDayLateMax": 2,
+   "storyMaxToasts": 2
   },
   "preset-v7": {
    "rev": "7.2",
@@ -1998,7 +2001,8 @@
     "minGapDays": 3
    },
    "slowPerDayLateMin": 1,
-   "slowPerDayLateMax": 2
+   "slowPerDayLateMax": 2,
+   "storyMaxToasts": 2
   }
  },
  "levelItems": {

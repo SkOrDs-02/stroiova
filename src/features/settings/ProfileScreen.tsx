@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
+import { storyT } from '@/features/story/texts';
 import { CallsignSheet } from '@/features/onboarding/CallsignSheet';
 import type { Gender } from '@/features/onboarding/steps';
 import { color, radius, size, space } from '@/theme';
@@ -14,7 +15,7 @@ import { Frame } from './Parts';
 import { profileRows } from './present';
 import { setT } from './texts';
 
-export function ProfileScreen({ store, insetTop, onBack }: { store: ConveyorStore; insetTop: number; onBack: () => void }) {
+export function ProfileScreen({ store, insetTop, onBack, onDiary }: { store: ConveyorStore; insetTop: number; onBack: () => void; onDiary: () => void }) {
   const s = useStore(store);
   const [edit, setEdit] = useState(false);
   const [pick, setPick] = useState<{ text: string; gender: Gender } | null>(null);
@@ -63,7 +64,11 @@ export function ProfileScreen({ store, insetTop, onBack }: { store: ConveyorStor
       </View>
 
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} accessibilityRole="header" style={styles.h3}>{pf.diary}</Text>
-      <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note} testID="pf-diary-empty">{pf.diaryEmpty}</Text>
+      {s.story.diary.got.length === 0 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note} testID="pf-diary-empty">{pf.diaryEmpty}</Text> : null}
+      <Pressable testID="pf-diary" accessibilityRole="button" onPress={onDiary} style={styles.report}>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.reportTitle}>{storyT.diary.open}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.note}>{s.story.diary.got.length ? storyT.diary.count(s.story.diary.got.length) : pf.diarySub}</Text>
+      </Pressable>
 
       <Pressable testID="pf-report" accessibilityRole="button" onPress={() => setEdit(true)} style={styles.report}>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.reportTitle}>{pf.report}</Text>

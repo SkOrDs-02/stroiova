@@ -15,6 +15,7 @@ import type { MonetizationState } from '@/monetization/types';
 import type { MuseumState } from '@/museum/types';
 import type { NotificationsState, Settings } from '@/notifications/types';
 import type { Stats } from '@/profile/stats';
+import type { StoryState } from '@/story/types';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
 import type { RaceState } from '@/race/types';
 import type { TelegramState } from '@/telegrams/types';
@@ -62,7 +63,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story },
   };
 }
 
@@ -98,6 +99,7 @@ function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { sna
     settings: save.game.settings as Settings,
     notifications: save.game.notifications as NotificationsState,
     stats: save.game.stats as Stats,
+    story: save.game.story as StoryState,
     installId: id,
   });
   applySettingsToDevice(store.getState().settings);
@@ -125,6 +127,8 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.telegrams.kombat !== prev.telegrams.kombat ||
     st.telegrams.meeting !== prev.telegrams.meeting ||
     st.telegrams.sedo !== prev.telegrams.sedo ||
+    // 014: крок сюжету і рядок щоденника зберігаються в мить доставки
+    st.story !== prev.story ||
     // 013 FR-7: конвертація ланки зберігається атомарно, в мить підтвердження
     st.state.digital !== prev.state.digital ||
     st.inspections.active !== prev.inspections.active ||

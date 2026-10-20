@@ -186,6 +186,7 @@ var StroiovaEconomy = (() => {
     slowPerDayLateMin: 1,
     // 013 FR-14: after the 4th conversion the script «weakens», 1–2 telegrams a day
     slowPerDayLateMax: 2,
+    storyMaxToasts: 2,
     // «Нарада затягнулась» (Р3+): the «Комбата шукають» template on the «Нарада» stage
     naradaChance: 0.2,
     naradaMult: 0.25,
