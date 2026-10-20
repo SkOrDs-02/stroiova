@@ -18,7 +18,7 @@ const notDone = 'не виконано';
 export const inspT = {
   title: 'Їде комісія',
   titleUnsched: 'Позапланова перевірка',
-  boss: { brigade_commission: 'Комісія бригади', command_commission: 'Комісія командування' } satisfies Record<BossId, string>,
+  boss: { brigade_commission: 'Комісія бригади', command_commission: 'Комісія командування', digital_commission: 'Комісія з цифрової трансформації' } satisfies Record<BossId, string>,
   bossWho: (b: BossId) => `${inspT.boss[b]} · полковник Тумбочкін`,
   reason: (no: string, title: string) => `Причина: відписка на телеграму № ${no} «${title}»`,
   untilArrival: 'До приїзду комісії',
@@ -45,6 +45,7 @@ export const inspT = {
   scope: {
     brigade_commission: 'Бойову підготовку комісія не перевіряє.',
     command_commission: 'Міряє коридор рулеткою, пил білою рукавичкою. Бойову підготовку не перевіряє.',
+    digital_commission: 'На кожному пункті питає, де папір. Бойову підготовку не перевіряє.',
   } satisfies Record<BossId, string>,
   readiness: 'Готовність до перевірки',
   readyPct: (pct: number) => (pct >= 100 ? '100% · готово' : `${pct}%`),
@@ -60,10 +61,11 @@ export const inspT = {
   readyLine: {
     brigade_commission: 'Бордюри білі. Комісія буде задоволена.',
     command_commission: 'Пилу немає. Рукавичка лишилась білою.',
+    digital_commission: 'Ноутбук протерто. Паперу ніде немає.',
   } satisfies Record<BossId, string>,
   // insp-result
   act: (no: number) => `Акт перевірки № ${no}`,
-  signer: { brigade_commission: 'Голова комісії полковник Тумбочкін', command_commission: 'Голова комісії командування полковник Тумбочкін' } satisfies Record<BossId, string>,
+  signer: { brigade_commission: 'Голова комісії полковник Тумбочкін', command_commission: 'Голова комісії командування полковник Тумбочкін', digital_commission: 'Голова комісії з цифрової трансформації полковник Тумбочкін' } satisfies Record<BossId, string>,
   checked: 'Перевірено',
   verdict: 'Висновок',
   passed: 'зауважень немає',
@@ -102,6 +104,11 @@ export const inspT = {
     carafe_full: { title: 'Наповнити графин на столі наради', meta: 'Воду не пити', short: 'Графин', ok: 'повний' },
     kettles_hide: { title: 'Прибрати чайники з кабінетів', meta: 'У шафу, не під стіл', short: 'Чайники', ok: 'у шафі' },
     summary_check: { title: 'Звірити зведення зі зведенням про зведення', meta: '', short: 'Зведення', ok: 'збігається', no: 'не збігається' },
+    // 013: пункти Р5 (spec «Пункти перевірки Р5», на вичитку)
+    print_ejournal: { title: 'Роздрукувати електронний журнал для огляду', meta: 'І відмовитись', short: 'Журнал', ok: 'роздруковано', no: 'не роздруковано' },
+    laptop_glove: { title: 'Протерти ноутбук білою рукавичкою', meta: 'А де папір?', short: 'Ноутбук', ok: 'протерто', no: 'не протерто' },
+    dashboard_font: { title: 'Перевірити кегль у дашборді', meta: 'Чотирнадцятий, як на папері', short: 'Дашборд', ok: 'чотирнадцятий', no: 'інший кегль' },
+    act_kep: { title: 'Підписати акт перевірки КЕП', meta: 'Тумбочкін просить ще й ручкою', short: 'Акт КЕП', ok: 'підписано', no: 'не підписано' },
     // 012: пункти Р4 (spec «Пункти перевірок», на вичитку)
     slides_number: { title: 'Пронумерувати слайди', meta: 'У правому верхньому куті, олівцем', short: 'Слайди', ok: 'пронумеровано', no: 'без номерів' },
     stack_meter: { title: 'Вирівняти стос до одного метра', meta: 'Лінійкою Наталі', short: 'Стос', ok: 'рівно метр', no: 'не вирівняно' },

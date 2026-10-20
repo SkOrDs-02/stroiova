@@ -37,7 +37,8 @@ import { dayKey } from '@/telegrams/clock';
 import { FIRST_TELEGRAM_ID, telegram } from '@/telegrams/content';
 import { answer as answerTg, openNotice as openNoticeTg, type AnswerResult } from '@/telegrams/effects';
 import { answerPack as answerPackTg, lastPack, resolvedSeparately, type SummaryKind } from '@/telegrams/packs';
-import { briefOnSessionStart, fromTelegram, hasStage, onSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
+import { convertStage as convertStageDomain } from '@/economy/game/convert';
+import { briefOnSessionStart, fromTelegram, hasStage, onSessionStart, printSedo as printSedoTg, sedoOnSessionStart, sendRunner as sendRunnerTg } from '@/telegrams/events';
 import { grow as growStack, growOffline as growStackOffline, startSession as startStackSession } from '@/stack/stack';
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
 import type { TelegramState } from '@/telegrams/types';
@@ -47,6 +48,8 @@ export type { StoredEffect } from '@/economy/game/types';
 
 /** Рішення 45: не більше 2 реплік персонажів за сесію (сюжет, онбординг, перевірки, телеграми й пуші — поза лімітом). */
 const SESSION_LINES_MAX = 2;
+/** Сповільнення ланки, що знімаються на конвертації (013 «Крайові випадки»); провал перевірки й відрядження діловода лишаються */
+const SLOW_SOURCES: readonly Effect['source'][] = ['telegram_slow', 'telegram_stop', 'kombat_away', 'meeting_overrun', 'pack_beats'];
 
 /** Зсув місцевого часу пристрою, хв (= −getTimezoneOffset): розклад телеграм за годинником пристрою (003 FR-2). */
 export function tzOffsetAt(ms: number): number {
@@ -150,6 +153,10 @@ interface Store {
   receiveTg1: () => void;
   /** Відповідь на телеграму (003 FR-12…FR-20); на № 1 закриває крок 8 онбордингу */
   answerTelegram: (uid: string, choiceId: string) => AnswerResult['item'] | { error: string };
+  /** «Роздрукувати» у «Збої СЕДО» (013 FR-12): −5 аркушів, збій знято */
+  printSedo: () => { ok: true } | { error: 'none' } | { error: 'paper'; lack: number };
+  /** Оцифрувати наступну ланку Р5 (013 FR-7); `price` - ціна зі шторки (ВП-1) */
+  convertStage: (price?: number) => { ok: true } | { error: string };
   /** «Звести в одну відповідь» (011 FR-19…FR-24): зведена відповідь пачки № N видом `kind` */
   answerPack: (no: number, kind: SummaryKind) => { ok: true } | { error: string };
   /** Відкрити телеграму без вибору чи записку (FR-11, FR-27) */
@@ -277,7 +284,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     const added: string[] = [];
     let prep = false;
     for (const e of evs) {
-      if (e.type === 'kombatRequest') {
+      // 013 FR-10: з першої конвертації «Комбата шукають» не стартує і з телеграми
+      if (e.type === 'kombatRequest' && get().state.digital.length === 0) {
         const k = fromTelegram(tg, get().cfg, nowMs, tzOffsetAt(nowMs), e.maxMin);
         tg = k.tg;
         if (k.effect) effects = [...effects.filter((x) => x.source !== 'kombat_away' || x.endMs <= nowMs), k.effect];
@@ -505,6 +513,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       tzOffsetMin: tzOffsetAt(to),
       level: g.state.level,
       digitizations: g.digit.total,
+      conversions: g.state.digital.length,
       raceActive: g.race.active?.type ?? null,
       away,
     });
@@ -642,16 +651,23 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (isNewSession(leftAt, backAt)) {
         set({ sessionLines: { count: 0, byUid: {} }, digitHintShown: false });
         const g = get();
-        const k = onSessionStart(g.telegrams, g.cfg, backAt, tzOffsetAt(backAt), false);
+        // 013 FR-10: після конвертації № 1 «Комбата шукають» зникає з гри назавжди
+        const k = g.state.digital.length >= 1 ? { tg: g.telegrams, effect: null, events: [] as DomainEvent[] } : onSessionStart(g.telegrams, g.cfg, backAt, tzOffsetAt(backAt), false);
         // чинна подія не накладається: ×0,25 не множиться вдруге (рішення 25)
         set({ telegrams: k.tg, ...(k.effect ? { effects: [...g.effects.filter((x) => x.source !== 'kombat_away' || x.endMs <= backAt), k.effect] } : {}) });
         handleEvents(k.events, backAt);
         // 011 FR-25: «Нарада затягнулась» - з Р3, той самий шаблон; поки йде комбат, не стартує
         const g1 = get();
-        if (hasStage('meeting', g1.state)) {
+        if (hasStage('meeting', g1.state) && !g1.state.digital.includes('narada')) {
           const m = onSessionStart(g1.telegrams, g1.cfg, backAt, tzOffsetAt(backAt), false, 'meeting');
           set({ telegrams: m.tg, ...(m.effect ? { effects: [...g1.effects.filter((x) => x.source !== 'meeting_overrun' || x.endMs <= backAt), m.effect] } : {}) });
           handleEvents(m.events, backAt);
+        }
+        // 013 FR-12: «Збій СЕДО» - з появи цифрових ланок, не більше однієї одночасно
+        const gd = get();
+        if (gd.state.digital.length > 0) {
+          const sd = sedoOnSessionStart(gd.telegrams, gd.cfg, gd.state, backAt, tzOffsetAt(backAt));
+          set({ telegrams: sd.tg, ...(sd.effect ? { effects: [...gd.effects, sd.effect] } : {}), ...(sd.events.length ? { events: [...gd.events, ...sd.events].slice(-40) } : {}) });
         }
         // 012 FR-13: нова сесія - стос з нуля; зарахований офлайн додає висоту одразу
         const gs = get();
@@ -765,6 +781,25 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       }
       return r.item;
     },
+    printSedo: () => {
+      const g = get();
+      const r = printSedoTg(g.telegrams, g.state, g.cfg, g.lastMs);
+      if ('error' in r) return r;
+      set({ telegrams: r.tg, state: r.eco, effects: g.effects.filter((e) => !(e.source === 'sedo_failure' && e.target?.id === r.stageId)), events: [...g.events, ...r.events].slice(-40) });
+      return { ok: true };
+    },
+    convertStage: (price) => {
+      const g = get();
+      const lc = g.digit.counts[String(g.state.level)] ?? 0;
+      const r = convertStageDomain(g.state, g.cfg, lc, { levelStartMs: g.digit.levelStartMs, nowMs: g.lastMs }, price);
+      if ('error' in r) return r;
+      // сповільнення, що діяло на ланку в мить конвертації, знімається (spec 013 «Крайові випадки»)
+      const effects = g.effects.filter((e) => !(e.kind === 'factor' && e.target?.type === 'stage' && e.target.id === r.stageId && SLOW_SOURCES.includes(e.source)));
+      // конвертація № 1: «Комбата шукають» зникає назавжди (FR-10)
+      const tg = r.index === 1 && g.telegrams.kombat.active ? { ...g.telegrams, kombat: { ...g.telegrams.kombat, active: null } } : g.telegrams;
+      set({ state: r.state, effects, telegrams: tg, events: [...g.events, ...r.events].slice(-40) });
+      return { ok: true };
+    },
     answerPack: (no, kind) => {
       const g = get();
       const now = g.lastMs;
@@ -832,7 +867,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({ digit: next });
       // перехід на Р2: unit-unlock і coach Казначейства замінює тост k.tip (рішення 71, 73)
       // перехід на Р3: так само тост замість unit-unlock і coach (011 FR-15, відкладено, рішення 97)
-      if (c?.step === 'levelUp') get().showToast({ kind: 'text', text: c.level >= 3 ? digitT.kTipR4 : c.level >= 2 ? digitT.kTipR3 : digitT.kTip });
+      if (c?.step === 'levelUp') get().showToast({ kind: 'text', text: c.level >= 4 ? digitT.kTipR5 : c.level >= 3 ? digitT.kTipR4 : c.level >= 2 ? digitT.kTipR3 : digitT.kTip });
     },
     ackDigitHow: () => set({ digit: { ...get().digit, howSeen: true } }),
     closeRaceResult: () => {

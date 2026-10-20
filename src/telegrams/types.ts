@@ -74,6 +74,8 @@ export interface Telegram {
     outsideQuota?: boolean;
     endless?: boolean;
     requires?: { raceActive?: boolean | string; digitizationsMin?: number; conversionsMin?: number };
+    /** Р5 (013 FR-14): приходить першою після конвертації № 4 */
+    fading?: boolean;
     fromDay?: number;
     minGapDays?: number;
     orderNoStart?: number;
@@ -91,6 +93,8 @@ export interface ItemResult {
   repAfter: number;
   paper: number;
   slow: Slow[];
+  /** Цілі сповільнення, що припали на цифрову ланку (013 FR-9): ефекту немає, рядок «без сповільнення» */
+  immune?: string[];
   chancePct: number;
   inspHit: boolean;
   rollText?: string;
@@ -150,6 +154,8 @@ export interface TelegramState {
   packs: { day: string | null; seq: number };
   /** «Доповідь тезово» (012 FR-17): останній день події (індекс місцевої доби) для `brief.minGapDays` */
   brief: { lastDay: number | null };
+  /** «Збій СЕДО» (013 FR-12): цифрова ланка ×sedoFailMult; stageId - яка */
+  sedo: { lastDayKey: string | null; active: { startMs: number; endMs: number; stageId: string } | null };
   deliveries: number;
   /** Мішки реплік за пулами content/lines.json (рішення 41) */
   lineBags: Record<string, { used: number[]; last: number | null }>;

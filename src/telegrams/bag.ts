@@ -8,12 +8,16 @@ export interface BagCtx {
   nowMs: number;
   level: number;
   digitizations: number;
+  /** Конвертацій ланок Р5 (013): умова `requires.conversionsMin`, перші `fading` після № 4 */
+  conversions?: number;
   month: number;
   raceActive: string | null;
   repeatMinDays: number;
 }
 
 const SUMMER = [6, 7, 8];
+/** Після скількох конвертацій телеграми «згасають» і приходять першими */
+export const FADING_FROM = 4;
 
 function conditionsMet(t: Telegram, c: BagCtx): boolean {
   const s = t.schedule ?? {};
@@ -21,7 +25,7 @@ function conditionsMet(t: Telegram, c: BagCtx): boolean {
   const r = s.requires ?? {};
   if (r.digitizationsMin != null && c.digitizations < r.digitizationsMin) return false;
   if (r.raceActive != null && (c.raceActive == null || (typeof r.raceActive === 'string' && r.raceActive !== c.raceActive))) return false;
-  if (r.conversionsMin != null) return false; // Р5 (013)
+  if (r.conversionsMin != null && (c.conversions ?? 0) < r.conversionsMin) return false;
   return true;
 }
 
@@ -47,7 +51,10 @@ export function pick(tg: TelegramState, c: BagCtx, rand: () => number): { id: st
     const open = tg.inbox.some((x) => x.id === t.id && x.status !== 'archive');
     return every != null && !open && c.nowMs - last >= every * DAY;
   });
-  if (fresh.length) return { id: fresh[Math.floor(rand() * fresh.length)]!.id, fromQueue: false };
+  // Р5 після конвертації № 4: спершу телеграми, що «згасають» (013 FR-14, пропозиція level5.sources.md п. 4)
+  const fading = (c.conversions ?? 0) >= FADING_FROM ? fresh.filter((t) => t.schedule?.fading) : [];
+  const among = fading.length ? fading : fresh;
+  if (among.length) return { id: among[Math.floor(rand() * among.length)]!.id, fromQueue: false };
   // другий прохід: архівна з найдавнішою відповіддю, не частіше ніж раз на repeatMinDays (FR-31)
   const pool = new Set(poolFor(c.level).filter((t) => conditionsMet(t, c)).map((t) => t.id));
   let best: { id: string; at: number } | null = null;

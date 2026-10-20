@@ -2,7 +2,7 @@
 import type { Big } from '@/economy/core/big';
 
 export type InspTrigger = 'scheduled' | 'unscheduled';
-export type BossId = 'brigade_commission' | 'command_commission';
+export type BossId = 'brigade_commission' | 'command_commission' | 'digital_commission';
 /** Звичайна (04) чи підсумкова рівня (011): та сама перевірка з іншими числами й пунктом механіки */
 export type InspKind = 'regular' | 'final';
 

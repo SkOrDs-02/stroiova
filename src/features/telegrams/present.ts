@@ -3,6 +3,7 @@ import { formatDuration, formatMult } from '@/economy/format';
 import type { EconomyConfig, EconomyState } from '@/economy/game/types';
 import { gendered } from '@/features/onboarding/callsign';
 import type { Gender } from '@/features/onboarding/steps';
+import { cvT } from '@/features/convert/texts';
 import { canChoose, paperCost } from '@/telegrams/effects';
 import { BRIEF_ID } from '@/telegrams/events';
 import { replyChance } from '@/telegrams/reputation';
@@ -42,7 +43,11 @@ export function choiceView(c: Choice, tg: TelegramState, eco: EconomyState, cfg:
   if (e.durationMin) parts.push(t.minutes(e.durationMin));
   const paper = paperCost(e, tg.flags);
   if (paper) parts.push(t.sheets(paper));
-  for (const s of e.slow ?? []) parts.push(t.slow(short(unitName(cfg, s.target)), formatMult(s.mult), s.hours));
+  for (const s of e.slow ?? []) {
+    // 013 FR-9: на цифровій ланці сповільнення немає
+    if (eco.digital.includes(s.target)) parts.push(cvT.immuneNote);
+    else parts.push(t.slow(short(unitName(cfg, s.target)), formatMult(s.mult), s.hours));
+  }
   const shield = !!e.digitalShield && eco.prestigePoints >= 1;
   if (shield) parts.push(t.shield);
   else {
@@ -66,6 +71,7 @@ export function resultRows(item: InboxItem, tel: Telegram, cfg: EconomyConfig, t
   if (!c || !r) return [];
   const rows: [string, string][] = [[t.resDecision, t.kind[c.kind] ?? c.title]];
   for (const s of r.slow) rows.push([unitName(cfg, s.target), `${formatMult(s.mult)} на ${hoursText(s.hours)} год`]);
+  for (const id of r.immune ?? []) rows.push([unitName(cfg, id), cvT.immuneNote]);
   if (c.effects.durationMin) rows.push([t.resSpent, t.minutes(c.effects.durationMin)]);
   if (r.paper) rows.push([t.resPaper, t.sheets(r.paper)]);
   if (r.rep || c.kind !== 'drawer') rows.push([t.resRep, `${r.rep > 0 ? '+' : r.rep < 0 ? '−' : ''}${Math.abs(r.rep)} · ${tierWord}`]);

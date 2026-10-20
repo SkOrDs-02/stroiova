@@ -475,6 +475,26 @@
     "id": "brief_onepage",
     "level": 4,
     "min": 4
+   },
+   {
+    "id": "print_ejournal",
+    "level": 5,
+    "min": 28
+   },
+   {
+    "id": "laptop_glove",
+    "level": 5,
+    "min": 13
+   },
+   {
+    "id": "dashboard_font",
+    "level": 5,
+    "min": 6
+   },
+   {
+    "id": "act_kep",
+    "level": 5,
+    "min": 4
    }
   ],
   "digitJournals": {
@@ -510,7 +530,9 @@
   "brief": {
    "chance": 0.2,
    "minGapDays": 3
-  }
+  },
+  "slowPerDayLateMin": 1,
+  "slowPerDayLateMax": 2
  },
  "SCENARIOS": [
   {
@@ -927,6 +949,26 @@
      "id": "brief_onepage",
      "level": 4,
      "min": 4
+    },
+    {
+     "id": "print_ejournal",
+     "level": 5,
+     "min": 28
+    },
+    {
+     "id": "laptop_glove",
+     "level": 5,
+     "min": 13
+    },
+    {
+     "id": "dashboard_font",
+     "level": 5,
+     "min": 6
+    },
+    {
+     "id": "act_kep",
+     "level": 5,
+     "min": 4
     }
    ],
    "digitJournals": {
@@ -962,7 +1004,9 @@
    "brief": {
     "chance": 0.2,
     "minGapDays": 3
-   }
+   },
+   "slowPerDayLateMin": 1,
+   "slowPerDayLateMax": 2
   },
   "preset-v6": {
    "rev": "7.2",
@@ -1362,6 +1406,26 @@
      "id": "brief_onepage",
      "level": 4,
      "min": 4
+    },
+    {
+     "id": "print_ejournal",
+     "level": 5,
+     "min": 28
+    },
+    {
+     "id": "laptop_glove",
+     "level": 5,
+     "min": 13
+    },
+    {
+     "id": "dashboard_font",
+     "level": 5,
+     "min": 6
+    },
+    {
+     "id": "act_kep",
+     "level": 5,
+     "min": 4
     }
    ],
    "digitJournals": {
@@ -1397,7 +1461,9 @@
    "brief": {
     "chance": 0.2,
     "minGapDays": 3
-   }
+   },
+   "slowPerDayLateMin": 1,
+   "slowPerDayLateMax": 2
   },
   "preset-v7": {
    "rev": "7.2",
@@ -1875,6 +1941,26 @@
      "id": "brief_onepage",
      "level": 4,
      "min": 4
+    },
+    {
+     "id": "print_ejournal",
+     "level": 5,
+     "min": 28
+    },
+    {
+     "id": "laptop_glove",
+     "level": 5,
+     "min": 13
+    },
+    {
+     "id": "dashboard_font",
+     "level": 5,
+     "min": 6
+    },
+    {
+     "id": "act_kep",
+     "level": 5,
+     "min": 4
     }
    ],
    "digitJournals": {
@@ -1910,7 +1996,9 @@
    "brief": {
     "chance": 0.2,
     "minGapDays": 3
-   }
+   },
+   "slowPerDayLateMin": 1,
+   "slowPerDayLateMax": 2
   }
  },
  "levelItems": {

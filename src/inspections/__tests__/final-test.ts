@@ -4,7 +4,7 @@ import { baseIncomePerMin } from '@/economy/game/income';
 import { itemsFor, newGame } from '@/economy/game/state';
 import type { Effect, EconomyState } from '@/economy/game/types';
 
-import { baseChecklist } from '../checklist';
+import { baseChecklist, bossFor } from '../checklist';
 import { offlineLines } from '../offline';
 import { buyItem, completeAll, fromTelegramEvent, newInspections, readinessLive, tick } from '../lifecycle';
 import { FINAL_LEVELS } from '@/digitization/digitization';
@@ -303,3 +303,14 @@ describe('рівні з підсумковою перевіркою', () => {
     expect(Object.keys(FINALS).map(Number).sort()).toEqual([...FINAL_LEVELS].sort());
   });
 });
+
+describe('Р5 «Комісія з цифрової трансформації» (013 FR-13, AC-9)', () => {
+  test('звичайна перевірка Р5: 4 пункти про цифру, комісія digital_commission, підсумкової немає', () => {
+    const g = { ...newGame(cfg, at(0)), level: 5 };
+    expect(baseChecklist(g, cfg, 5).map((i) => i.id)).toEqual(['print_ejournal', 'laptop_glove', 'dashboard_font', 'act_kep']);
+    expect(bossFor(5)).toBe('digital_commission');
+    expect(bossFor(4)).toBe('command_commission');
+    expect(FINALS[5]).toBeUndefined();
+  });
+});
+

@@ -45,6 +45,10 @@ import { Seal } from '@/features/conveyor/Seal';
 import { birdEffect, canHireNow, type ConveyorStore, type Toast } from '@/features/conveyor/store';
 import { t } from '@/features/conveyor/texts';
 import { UnitRow } from '@/features/conveyor/UnitRow';
+import { SedoSheet } from '@/features/convert/SedoSheet';
+import { StageConvert } from '@/features/convert/StageConvert';
+import { cvT, sedoT } from '@/features/convert/texts';
+import { convertInfo } from '@/economy/game/convert';
 import { StackTower } from '@/features/stack/StackTower';
 import { CallOverlay } from '@/features/onboarding/CallOverlay';
 import { ClerkFirst } from '@/features/onboarding/ClerkFirst';
@@ -84,6 +88,8 @@ type View3 =
   | { kind: 'rep'; back: 'main' | 'list' }
   | { kind: 'kombat' }
   | { kind: 'meeting' }
+  | { kind: 'convert' }
+  | { kind: 'sedo' }
   | { kind: 'digital' }
   | { kind: 'museum'; seg?: 'journals' | 'curios' }
   | { kind: 'menu' }
@@ -187,13 +193,19 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const [meetingSeen, setMeetingSeen] = useState<number | null>(null);
   const meetingAuto = meetingOn && meeting!.startMs !== meetingSeen && view.kind === 'main' && s.offline == null && !kombatAuto;
 
+  const conv = convertInfo(s.state, s.cfg, s.digit.counts[String(s.state.level)] ?? 0);
+  // 013 FR-12: «Збій СЕДО» - той самий шаблон, шторка відкривається сама на початку
+  const sedo = s.telegrams.sedo.active;
+  const sedoOn = sedo != null && sedo.endMs > now;
+  const [sedoSeen, setSedoSeen] = useState<number | null>(null);
+  const sedoAuto = sedoOn && sedo!.startMs !== sedoSeen && view.kind === 'main' && s.offline == null && !kombatAuto && !meetingAuto;
   const inbox = s.telegrams.inbox;
   // пачка Р3 займає в «Нових» один рядок (011 FR-18)
   const badge = newRows(s.telegrams) + inbox.filter((x) => x.kind === 'note' && !x.read).length;
   const tier = repTier(s.telegrams.reputation.value, s.cfg.params);
   // 006 FR-22: церемонія цифровізації (акт, наказ про переведення) показується, поки гравець її не закрив, і при запуску
   const ceremony = s.digit.ceremony;
-  const overlay = s.offline != null || s.clerkFirstOpen || view.kind !== 'main' || kombatAuto || meetingAuto;
+  const overlay = s.offline != null || s.clerkFirstOpen || view.kind !== 'main' || kombatAuto || meetingAuto || sedoAuto;
   const coachRow = !overlay && (rd === 'coachUpgrade' || rd === 'coachHire');
   const coachTab = !overlay && rd === 'coachTelegram';
   const coachOn = coachRow || coachTab;
@@ -224,11 +236,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // 007: розкриття журналів - після інших модалок; digit-result іде першим, level-up - після (FR-18, spec «Перехід рівня»)
   const viewFree = view.kind === 'main' || view.kind === 'list';
   const revealOpen =
-    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
+    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
 
   // 008: iap-success і starter-offer - після інших модалок і розкриття журналів (порядок «оцінка → журнал → оферта», 09)
   const calm =
-    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && nextReveal(s.museum) == null;
+    (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && nextReveal(s.museum) == null;
   const iapOpen = calm && s.busy == null && !onboarding && s.monetization.success.length > 0;
   // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
   const starterOpen = calm && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
@@ -326,6 +338,12 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${tgT.mtTitle} · ${tgT.left(formatDuration(Math.max(0, (meeting!.endMs - now) / 1000)))}`}</Text>
           </Pressable>
         ) : null}
+        {sedoOn ? (
+          <Pressable testID="sedo-bar" accessibilityRole="button" onPress={() => setView({ kind: 'sedo' })} style={styles.kombatBar}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.kombatText}>{`${sedoT.title} · ${tgT.left(formatDuration(Math.max(0, (sedo!.endMs - now) / 1000)))}`}</Text>
+          </Pressable>
+        ) : null}
+        {s.state.level >= 5 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="cv-counter">{digitT.cvCounter(s.state.digital.length, s.cfg.params.convert.order.length)}</Text> : null}
         {coachOn ? <View style={styles.scrim} /> : null}
       </View>
       <ScrollView contentContainerStyle={styles.list}>
@@ -381,6 +399,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
               mode={s.mode}
               nowMs={now}
               coach={coachFor(def.id)}
+              digital={s.state.digital.includes(def.id)}
+              convert={conv.next && conv.next.stageId === def.id && conv.status !== 'none' && conv.status !== 'done' ? { label: conv.status === 'available' ? cvT.rowCta : cvT.status[conv.status]!, disabled: conv.status !== 'available', onPress: () => setView({ kind: 'convert' }) } : undefined}
               hireLocked={!canHireNow(o, { type: 'stage', id: def.id })}
               onBuy={() => s.buy({ type: 'stage', id: def.id }, Date.now())}
               onHire={() => s.hire({ type: 'stage', id: def.id })}
@@ -469,6 +489,17 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           }}
         />
       ) : null}
+      {view.kind === 'sedo' || sedoAuto ? (
+        <SedoSheet
+          store={store}
+          onPrinted={() => setView({ kind: 'sedo' })}
+          onClose={() => {
+            setSedoSeen(sedo?.startMs ?? null);
+            setView({ kind: 'main' });
+          }}
+        />
+      ) : null}
+      {view.kind === 'convert' ? <StageConvert store={store} onClose={() => setView({ kind: 'main' })} /> : null}
       {view.kind === 'meeting' || meetingAuto ? (
         <KombatSheet
           store={store}

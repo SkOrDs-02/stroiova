@@ -3,11 +3,12 @@ import tgMain from '../../content/telegrams.json';
 import tgL12 from '../../content/tg/level1-2.json';
 import tgL3 from '../../content/tg/level3.json';
 import tgL4 from '../../content/tg/level4.json';
+import tgL5 from '../../content/tg/level5.json';
 
 import type { Telegram } from './types';
 
 // Р3 (011): окремі телеграми та телеграми пачок; пачки не входять у звичайний мішок (FR-18), їх видає `packs.ts`. Р4 (012): окремі телеграми, без пачок
-const ALL: Telegram[] = [...(tgMain as unknown as Telegram[]), ...(tgL12 as unknown as Telegram[]), ...(tgL3.telegrams as unknown as Telegram[]), ...(tgL4 as unknown as Telegram[])];
+const ALL: Telegram[] = [...(tgMain as unknown as Telegram[]), ...(tgL12 as unknown as Telegram[]), ...(tgL3.telegrams as unknown as Telegram[]), ...(tgL4 as unknown as Telegram[]), ...(tgL5 as unknown as Telegram[])];
 
 export interface PackSummaryText {
   reply?: string;
@@ -57,8 +58,8 @@ export function poolFor(level: number): Telegram[] {
     const kind = t.kind ?? 'standard';
     const lv = t.level ?? 1;
     if (t.pack) return false;
-    // Р3 і Р4 беруть лише телеграми свого рівня (011 рішення 99; 012 FR-25)
-    if ((level === 3 || level === 4) && lv !== level) return false;
+    // Р3-Р5 беруть лише телеграми свого рівня (011 рішення 99; 012 FR-25; 013 FR-14)
+    if (level >= 3 && lv !== level) return false;
     return lv <= level && kind === 'standard' && !s.scripted && !s.outsideQuota && !s.endless;
   });
 }

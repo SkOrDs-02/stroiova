@@ -245,10 +245,11 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 1] }, ds, cfg, T0)).toMatchObject({ kind: 'available', points: 40 });
   });
 
-  test('Р4 (012): 7 потоків і 6 ланок, ЗпЗ - потік-частка; вихід на Р5 ще немає (isLast завжди false)', () => {
+  test('Р4 (012): 7 потоків і 6 ланок, ЗпЗ - потік-частка; вихід на Р5 лише після пройденої підсумкової (013)', () => {
     const ds = { ...newDigitization(T0), counts: { '4': 20 }, levelExitAllowed: true };
     const e = { ...newGame(cfg, T0), level: 4, streamLevels: [1, 0, 0, 0, 0, 0, 0], stageLevels: [1, 1, 1, 1, 1, 1] };
-    expect(status(e, ds, cfg, T0).isLast).toBe(false);
+    expect(status(e, ds, cfg, T0).isLast).toBe(true);
+    expect(status(e, { ...ds, levelExitAllowed: false }, cfg, T0).isLast).toBe(false);
     const it = itemsFor(e, cfg);
     expect(it.streams.map((u) => u.id)).toEqual(['raporty', 'akty', 'dovidky', 'nakladni', 'nakazy', 'zvedennia', 'zpz']);
     expect(it.stages.map((u) => u.id)).toEqual(['kombat', 'stroy', 'fin', 'kazna', 'narada', 'dopovid']);
@@ -265,5 +266,20 @@ describe('вихід з Р2 (011 FR-1, FR-8, FR-9, FR-14)', () => {
     const base = { ...newGame(cfg, T0), level: 4, stageLevels: [1, 1, 1, 1, 1, 1], lifetimeCycle: 2.29e13 * 40 * 40 };
     expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 2, 0] }, newDigitization(T0), cfg, T0)).toMatchObject({ kind: 'locked', lockedStreams: ['zpz'] });
     expect(status({ ...base, streamLevels: [30, 20, 10, 5, 3, 2, 1] }, newDigitization(T0), cfg, T0)).toMatchObject({ kind: 'available' });
+  });
+
+  test('Р5 (013): ті самі 7 потоків і 6 ланок, нових немає, виходу з рівня немає; цифрові ланки переживають цифровізацію', () => {
+    const e = { ...newGame(cfg, T0), level: 5, streamLevels: [30, 20, 10, 5, 3, 2, 1], stageLevels: [10, 10, 10, 10, 10, 10], digital: ['kombat', 'stroy'], lifetimeCycle: 9.01e22 * 40 * 40, signatures: 1e30 };
+    const it = itemsFor(e, cfg);
+    expect(it.streams.map((u) => u.id)).toEqual(['raporty', 'akty', 'dovidky', 'nakladni', 'nakazy', 'zvedennia', 'zpz']);
+    expect(it.stages).toHaveLength(6);
+    const ds = { ...newDigitization(T0), counts: { '5': 9 }, levelExitAllowed: true };
+    expect(status(e, ds, cfg, T0).isLast).toBe(false);
+    expect(finalDue(cfg, ds, 5)).toBe(false);
+    const r = digitize(e, ds, cfg, T0, false);
+    if ('error' in r) throw new Error(r.error);
+    expect(r.state.level).toBe(5);
+    expect(r.state.digital).toEqual(['kombat', 'stroy']);
+    expect(r.state.streamLevels).toEqual([1, 0, 0, 0, 0, 0, 0]);
   });
 });

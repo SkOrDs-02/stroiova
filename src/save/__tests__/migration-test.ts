@@ -269,4 +269,36 @@ describe('справжні міграції', () => {
     expect(r.save.game.telegrams.brief.lastDay).toBe(20300);
     expect(r.save.game.museum.curios[0]).toMatchObject({ kind: 'stack', stack: { cm: 100 } });
   });
+
+  test('12 → 13 (013 етап 1): порожні цифрові ланки, початок рівня, «Збій СЕДО» без події; акт цифровізації отримує тривалість циклу', () => {
+    const d = draft({ schemaVersion: 12, savedAt: 5000 });
+    const { digital: _d, ...ecoV12 } = d.game.economy;
+    const { sedo: _s, ...tgV12 } = d.game.telegrams;
+    const { levelStartMs: _l, lastCycleMs: _c, ...digitV12 } = d.game.digitization;
+    const ceremony = { no: 1, level: 3, levelCount: 1, atMs: 100, lifetime: 1, points: 40, pointsTotal: 40, multBefore: 1, multAfter: 1.8, journals: [], levelUp: false, step: 'result' };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, economy: ecoV12, telegrams: tgV12, digitization: { ...digitV12, cycleStartMs: 777, ceremony } } as never }) });
+    const r = loadSave(kv, { current: 13, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 12 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.economy.digital).toEqual([]);
+    expect(r.save.game.telegrams.sedo).toEqual({ lastDayKey: null, active: null });
+    expect(r.save.game.digitization).toMatchObject({ levelStartMs: 777, lastCycleMs: null, ceremony: { cycleMs: 0, prevCycleMs: null } });
+    expect(r.save.game.telegrams.inbox).toEqual(d.game.telegrams.inbox);
+  });
+
+  test('схема 13: цифрові ланки, «Збій СЕДО», тривалість циклу й комісія Р5 проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 13, savedAt: 5000 });
+    const economy = { ...d.game.economy, level: 5, digital: ['kombat', 'stroy'] };
+    const telegrams = { ...d.game.telegrams, sedo: { lastDayKey: '2025-10-10', active: { startMs: 1, endMs: 2, stageId: 'stroy' } } };
+    const digitization = { ...d.game.digitization, levelStartMs: 50, lastCycleMs: 72_000_000 };
+    const effects = [{ kind: 'factor', source: 'sedo_failure', value: 0.5, target: { type: 'stage', id: 'stroy' }, startMs: 1, endMs: 2 }];
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, economy, telegrams, digitization, effects } as never }) });
+    const r = loadSave(kv, { current: 13, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.economy.digital).toEqual(['kombat', 'stroy']);
+    expect(r.save.game.telegrams.sedo.active).toMatchObject({ stageId: 'stroy' });
+    expect(r.save.game.digitization).toMatchObject({ levelStartMs: 50, lastCycleMs: 72_000_000 });
+    expect(r.save.game.effects[0]).toMatchObject({ source: 'sedo_failure' });
+  });
 });
