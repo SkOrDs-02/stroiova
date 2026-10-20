@@ -4,6 +4,9 @@ import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { t as onb } from '@/features/onboarding/texts';
+import { fromName } from '@/features/story/texts';
+import { beatById } from '@/story/content';
+import { storyText } from '@/story/text';
 import { color, radius, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
@@ -13,15 +16,22 @@ import { t } from './texts';
 export const NOTE_CALL = 'note_call';
 
 /** Заголовок і зміст записки за id (артборд NoteDetail). */
-export function noteView(id: string): { title: string; who: string; lines: string[] } {
+export function noteView(id: string, gender: 'm' | 'f' | null = null, callsign = ''): { title: string; who: string; lines: string[] } {
   if (id === NOTE_CALL) return { title: t.noteCall, who: onb.b9Arch, lines: [onb.b9A1, onb.b9A2] };
+  // записка сюжету (014): id - id кроку
+  const b = beatById(id);
+  if (b?.carrier === 'note') {
+    const p = b.payload as { from: string; title: string; body: string };
+    return { title: p.title, who: fromName(p.from), lines: [storyText(p.body, gender, callsign)] };
+  }
   return { title: t.noteFallback, who: '', lines: [] };
 }
 
 export function NoteDetail({ store, uid, onClose }: { store: ConveyorStore; uid: string; onClose: () => void }) {
   const item = useStore(store, (s) => s.telegrams.inbox.find((x) => x.uid === uid));
+  const o = useStore(store, (s) => s.onboarding);
   if (!item) return null;
-  const v = noteView(item.id);
+  const v = noteView(item.id, o.gender, o.callsign?.text ?? '');
   return (
     <View style={styles.scrim} testID="note-detail">
       <View style={styles.sheet} accessibilityViewIsModal>

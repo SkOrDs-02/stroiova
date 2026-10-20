@@ -73,6 +73,7 @@ export const muT = {
   actNum: (no: number, time: string) => `АКТ № ${no} · ${time}`,
   stackNum: (time: string) => `МЕТР ЗВІТІВ · ${time}`,
   stackTitle: 'Метр звітів',
+  storyNum: (time: string) => `ЗАПИС · ${time}`,
   packNum: (no: number, time: string) => `ЗВЕДЕННЯ № ${no} · ${time}`,
   packNos: (nos: string) => `Телеграми: ${nos}`,
   status: { diligent: 'сумлінно', formal: 'відписка', drawer: 'у шухляді', special: 'особливо', info: 'до відома', gift: 'списано' },

@@ -2,6 +2,7 @@
 import { digitizationV6, inspectionsV4, MIGRATIONS, monetizationV8, museumV7, onboardingDone, raceV5, settingsV9, telegramsV3 } from '../migrations';
 import { KEY_BAK1, KEY_SAVE, loadSave, serialize, type SaveDraft } from '../repository';
 import { memoryStorage } from '../storage';
+import { newStory } from '@/story/engine';
 import { draft } from '../test-saves';
 
 // схема 1 «у минулому»: гра без effects і з полем `sigs` замість economy.signatures
@@ -14,7 +15,7 @@ function v1(): SaveDraft {
 
 const migrations = {
   1: (g: unknown) => { const x = g as { economy: object; sigs: number }; return { economy: { ...x.economy, signatures: x.sigs } }; },
-  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9() }),
+  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory() }),
 };
 
 describe('міграції', () => {
@@ -300,5 +301,54 @@ describe('справжні міграції', () => {
     expect(r.save.game.telegrams.sedo.active).toMatchObject({ stageId: 'stroy' });
     expect(r.save.game.digitization).toMatchObject({ levelStartMs: 50, lastCycleMs: 72_000_000 });
     expect(r.save.game.effects[0]).toMatchObject({ source: 'sedo_failure' });
+  });
+  test('13 → 14 (014 етап 1): сюжет на Р3 - кроки Р1-Р2 закрито, щоденник порожній, прогрес на місці', () => {
+    const d = draft({ schemaVersion: 13, savedAt: 5000 });
+    const { story: _story, ...gameV13 } = d.game;
+    const economy = { ...d.game.economy, level: 3 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV13, economy } as never }) });
+    const r = loadSave(kv, { current: 14, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 13 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.story.skipped).toEqual(expect.arrayContaining(['st_who_writes_01', 'st_who_writes_02', 'st_archaeologist_01', 'st_ptashka_01']));
+    expect(r.save.game.story.skipped).not.toContain('st_who_writes_04');
+    expect(r.save.game.story).toMatchObject({ delivered: {}, fired: {}, dispatched: {}, diary: { got: [], lastDay: null } });
+    expect(r.save.game.telegrams.inbox).toEqual(d.game.telegrams.inbox);
+  });
+
+  test('13 → 14: Р1 - нічого не закрито; Р4 - закриті кроки Р1-Р3, відкрите Р4', () => {
+    const run = (level: number) => {
+      const d = draft({ schemaVersion: 13, savedAt: 5000 });
+      const { story: _story, ...gameV13 } = d.game;
+      const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV13, economy: { ...d.game.economy, level } } as never }) });
+      const r = loadSave(kv, { current: 14, migrations: MIGRATIONS });
+      if (r.kind !== 'ok') throw new Error(r.kind);
+      return r.save.game.story;
+    };
+    expect(run(1).skipped).toEqual([]);
+    const l4 = run(4).skipped;
+    expect(l4).toEqual(expect.arrayContaining(['st_who_writes_06', 'st_cat_01', 'st_kombat_leave_03']));
+    expect(l4).not.toContain('st_who_writes_07');
+    expect(l4).not.toContain('st_who_writes_12');
+  });
+
+  test('схема 14: доставлені кроки, лічильники, стани персонажів і щоденник проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 14, savedAt: 5000 });
+    const story = {
+      delivered: { st_ptashka_02: { at: 100, rev: 1, catchUp: false, away: true } },
+      skipped: ['st_who_writes_01'],
+      fired: { st_cat_01: { at: 50, away: false } },
+      dispatched: { st_cat_01: 60 },
+      counters: { wins: { 'drone:3': 1 }, gifts: { '2': 2 } },
+      chars: { granit: 'granit_on_leave' },
+      diary: { got: [{ id: 'di_l1_01', atMs: 70, day: 2 }], lastDay: '2025-10-11' },
+    };
+    const museum = { ...d.game.museum, curios: [{ seq: 1, kind: 'story', atMs: 1, status: 'info', story: { beatId: 'st_who_writes_04', from: 'stroy', title: 'Зведення', body: 'Текст' } }], curioSeq: 1 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, story, museum } as never }) });
+    const r = loadSave(kv, { current: 14, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.story).toEqual(story);
+    expect(r.save.game.museum.curios[0]).toMatchObject({ kind: 'story', story: { beatId: 'st_who_writes_04' } });
   });
 });

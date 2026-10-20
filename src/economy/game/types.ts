@@ -225,6 +225,8 @@ export type DomainEvent =
   | { type: 'settingChange'; settingName: 'sound' | 'haptics' | 'notif_storage' | 'notif_telegrams' | 'notif_inspections' | 'notif_gifts' | 'notif_boosts' | 'analytics' | 'progress_reset'; newValue: boolean | null; digitizationCount?: number; playtimeSec?: number }
   | { type: 'pushPermissionRequest'; trigger: 'onboarding_session_end' | 'settings'; prePromptResult: 'accepted' | 'declined'; osResult: 'granted' | 'denied' | 'provisional' | 'not_shown' }
   | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number }
+  // 014: сюжет; аналітика етапу 5 (story_beat_deliver, diary_open)
+  | { type: 'storyBeatDeliver'; beatId: string; arc: string; carrier: string; beatOrder: number; delaySec: number; isCatchUp: boolean; isWhileAway: boolean }
   // 016: грамоти; аналітика етапу 5 (award_unlock, awards_wall_open)
   | { type: 'awardUnlock'; awardId: string; category: string; awardType: 'gramota' | 'podyaka' | 'nakaz'; isHidden: boolean; awardsOwnedAfter: number; isRetroactive: boolean; isResolvedOffline: boolean; isMirrored: boolean }
   | { type: 'awardsWallOpen'; source: 'segment' | 'award_toast' | 'profile'; awardsOwned: number; awardsUnseen: number };
