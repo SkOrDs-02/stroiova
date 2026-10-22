@@ -21,6 +21,8 @@ export type Gender = 'm' | 'f';
 
 /** Телеграма № 1 приходить не раніше 300 с ігрового часу (FR-18). */
 export const TELEGRAM_AT_MS = 300_000;
+/** Крок 10: коуч «буст» не раніше 540 с ігрового часу (FR-21, FR-29) */
+export const BOOST_COACH_AT_MS = 540_000;
 /** Кроки 1–5 — повноекранні, таббар з'являється на кроці 6 (FR-13). */
 export const FIRST_MAIN_STEP = 6;
 
@@ -95,7 +97,7 @@ export function isDone(o: OnboardingState, step: StepNo): boolean {
   return o.step === 'done' || o.step > step;
 }
 
-export type Ready = 'coachUpgrade' | 'coachHire' | 'telegramArrive' | 'coachTelegram' | 'call' | null;
+export type Ready = 'coachUpgrade' | 'coachHire' | 'telegramArrive' | 'coachTelegram' | 'call' | 'coachBoost' | 'pushPrompt' | null;
 
 export interface ReadyCtx {
   playMs: number;
@@ -120,6 +122,11 @@ export function ready(o: OnboardingState, c: ReadyCtx): Ready {
       return 'coachTelegram';
     case 9:
       return c.playMs >= c.callAtMs ? 'call' : null;
+    case 10:
+      return c.playMs >= BOOST_COACH_AT_MS ? 'coachBoost' : null;
+    // FR-26, FR-27: шторка дозволу одразу після ad-offer-first або в наступній сесії
+    case 11:
+      return 'pushPrompt';
     default:
       return null;
   }
