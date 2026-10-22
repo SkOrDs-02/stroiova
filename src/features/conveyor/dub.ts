@@ -1,5 +1,5 @@
 // Дублі у сторі (013 FR-23…FR-29): прийняття «Дублювати на папері», закриття Дубля. Чисті функції над знімком стору; повертають патч чи null.
-import { accept, closeIfDue, dubConfig, type DubState } from '@/dub/dub';
+import { accept, closeIfDue, dubConfig } from '@/dub/dub';
 import { newCycle } from '@/economy/game/state';
 import type { DomainEvent, EconomyConfig, EconomyState, StoredEffect } from '@/economy/game/types';
 import type { DigitizationState } from '@/digitization/types';
