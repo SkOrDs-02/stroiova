@@ -27,7 +27,7 @@ import { addBoost, addPending, boostLeftMs, boostView, bump, closeSuccess, grant
 import type { AdResult, AdService, MonetizationState, Placement, ProductId, PurchaseResult, PurchaseService } from '@/monetization/types';
 import { adT, iapT, shopT } from '@/features/monetization/texts';
 import { newNotifications, newSettings, plan as planPushes, settle } from '@/notifications/planner';
-import type { LinkService, NotificationService, NotificationsState, PushCategory, PushPermission, Settings } from '@/notifications/types';
+import type { LinkService, NotificationService, NotificationsState, PushCategory, PushOpen, PushPermission, PushTarget, ReviewService, Settings } from '@/notifications/types';
 import { pushText } from '@/features/settings/pushText';
 import { setHapticsEnabled, setSoundEnabled } from '@/features/onboarding/haptics';
 import { unavailableLinks } from '@/services/links';
@@ -44,6 +44,7 @@ import { autoSteps as finaleAuto, completeStep as finaleComplete, decline as fin
 import { current as finaleCurrent, mailingStopped, newFinale, type FinaleState, type FinaleStep } from '@/finale/finale';
 import { applyEvents, diaryStart, newBudget, newEvents, run as storyRunPatch, syncAway } from './story';
 import { unavailableNotifications } from '@/services/notifications';
+import { unavailableReview } from '@/services/review';
 import { unavailableAds } from '@/services/ads';
 import { unavailableShare, type ShareCardInfo, type ShareOutcome, type ShareService } from '@/share/types';
 import { shT } from '@/features/share/texts';
@@ -111,7 +112,7 @@ interface Store {
   museum: MuseumState;
   /** Реклама й покупки (008) */
   monetization: MonetizationState;
-  services: { ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService; share: ShareService };
+  services: { ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService; share: ShareService; review: ReviewService };
   /** Лічильники аналітики: номер сесії, кінець попередньої, чи був перший запуск */
   analytics: AnalyticsState;
   /** Налаштування (010) */
@@ -143,6 +144,10 @@ interface Store {
   pushDeclined: boolean;
   /** Ролик чи оплата йде: повторні тапи ігноруються (крайовий випадок); лише в пам'яті */
   busy: 'ad' | 'purchase' | 'share' | null;
+  /** Куди вести після тапу по сповіщенню (010 FR-8): `main` відкриває ціль, щойно немає офлайн-довідки; у запис не йде */
+  pushNav: { target: PushTarget; ref?: string } | null;
+  /** Гра у фоні (між goBackground і comeForeground): перехід за тапом чекає повернення й офлайн-довідки */
+  background: boolean;
   /** Підказка «Час цифровізуватися» активна (FR-9); оновлюється раз на хвилину гри, лише в пам'яті */
   digitRec: boolean;
   /** Остання перевірка підказки, мс */
@@ -262,6 +267,9 @@ interface Store {
   setSetting: (key: 'sound' | 'haptics' | 'analytics' | 'testUser', value: boolean) => void;
   /** Категорія сповіщень (FR-15) */
   setNotifCategory: (cat: PushCategory, value: boolean) => void;
+  /** Тап по сповіщенню (FR-8): `push_open` і ціль переходу; повторний тап з тим самим `id` нічого не робить */
+  pushOpened: (p: PushOpen, nowMs: number) => void;
+  clearPushNav: () => void;
   /** Системний запит дозволу після `push-preprompt` (FR-9…FR-11); повертає відповідь ОС */
   requestPush: (trigger: 'onboarding_session_end' | 'settings') => Promise<PushPermission>;
   /** Дозвіл ОС міг змінитись поза грою (FR-12) */
@@ -341,7 +349,7 @@ export interface Initial {
   bootEvents?: BootEvent[];
   awards?: AwardsState;
   installId?: string;
-  services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService; share: ShareService }>;
+  services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService; share: ShareService; review: ReviewService }>;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -421,6 +429,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     }
   };
   const pushEvent = (e: DomainEvent) => set({ events: [...get().events, e].slice(-40) });
+  /** Тапи по сповіщеннях, уже враховані в цьому запуску */
+  const pushSeen = new Set<string>();
   /** Товар отримано: права, ефект, події (008 FR-17, FR-18, FR-23); `silent` - відновлення без iap-success */
   const grantNow = (id: ProductId, silent: boolean) => {
     const g = get();
@@ -645,7 +655,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     digit: init?.digit ?? newDigitization(nowMs),
     museum: interrupted.ms,
     monetization: init?.monetization ?? newMonetization(),
-    services: { ads: init?.services?.ads ?? unavailableAds, purchases: init?.services?.purchases ?? unavailablePurchases, notifications: init?.services?.notifications ?? unavailableNotifications, links: init?.services?.links ?? unavailableLinks, analytics: init?.services?.analytics ?? unavailableAnalytics, share: init?.services?.share ?? unavailableShare },
+    services: { ads: init?.services?.ads ?? unavailableAds, purchases: init?.services?.purchases ?? unavailablePurchases, notifications: init?.services?.notifications ?? unavailableNotifications, links: init?.services?.links ?? unavailableLinks, analytics: init?.services?.analytics ?? unavailableAnalytics, share: init?.services?.share ?? unavailableShare, review: init?.services?.review ?? unavailableReview },
     analytics: (() => {
       const a = init?.analytics ?? newAnalytics();
       return { ...a, sessionNumber: a.sessionNumber + 1 };
@@ -665,6 +675,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     installId: init?.installId ?? '',
     pushDeclined: false,
     busy: null,
+    pushNav: null,
+    background: false,
     digitRec: false,
     digitCheckedAt: 0,
     digitHintShown: false,
@@ -1064,6 +1076,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const c = g.digit.ceremony;
       const next = closeCeremonyStep(g.digit);
       set({ digit: next });
+      // FR-24: після акта цифровізації (`digit-result`) - системне вікно оцінки
+      if (c?.step === 'result') g.services.review.request();
       // перехід на Р2: unit-unlock і coach Казначейства замінює тост k.tip (рішення 71, 73)
       // перехід на Р3: так само тост замість unit-unlock і coach (011 FR-15, відкладено, рішення 97)
       if (c?.step === 'levelUp') get().showToast({ kind: 'text', text: c.level >= 4 ? digitT.kTipR5 : c.level >= 3 ? digitT.kTipR4 : c.level >= 2 ? digitT.kTipR3 : digitT.kTip });
@@ -1095,6 +1109,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (ins.last && !ins.last.seen) set({ inspections: { ...ins, last: { ...ins.last, seen: true } } });
       // блок «Новий експонат» показано в акті (007 FR-19)
       set({ museum: closeInspReveal(get().museum), monetization: offerDue(get().monetization) });
+      // FR-24: після пройденої перевірки - лише системне вікно оцінки
+      if (ins.last && !ins.last.seen && ins.last.passed) get().services.review.request();
     },
     watchAd: async (placement) => {
       const g = get();
@@ -1251,6 +1267,13 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       set({ settings: { ...g.settings, notif: { ...g.settings.notif, [cat]: value } } });
       pushEvent({ type: 'settingChange', settingName: `notif_${cat}` as 'notif_storage', newValue: value });
     },
+    pushOpened: (p, nowMs) => {
+      if (pushSeen.has(p.id)) return;
+      pushSeen.add(p.id);
+      pushEvent({ type: 'pushOpen', pushType: p.type, delaySec: Math.max(0, Math.round((nowMs - p.atMs) / 1000)) });
+      set({ pushNav: { target: p.target, ...(p.ref ? { ref: p.ref } : {}) } });
+    },
+    clearPushNav: () => set({ pushNav: null }),
     requestPush: async (trigger) => {
       const os = await get().services.notifications.request();
       set({ settings: { ...get().settings, pushPermission: os } });
@@ -1269,6 +1292,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     },
     goBackground: async (nowMs) => {
       // docs/analytics.md, принцип 6: `session_end` іде одразу, потім черга подій відправляється
+      set({ background: true });
       pushEvent({ type: 'appBackground', atMs: nowMs });
       void get().services.analytics.flush();
       const g = get();
@@ -1288,6 +1312,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (planned.length) await g.services.notifications.schedule(planned);
     },
     comeForeground: async (nowMs) => {
+      set({ background: false });
       pushEvent({ type: 'appForeground', atMs: nowMs });
       await get().services.notifications.cancelAll();
       set({ notifications: settle(get().notifications, nowMs, tzOffsetAt(nowMs)) });

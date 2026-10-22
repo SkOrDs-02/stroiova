@@ -296,6 +296,45 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // 013 FR-23: пропозиція Дубля чекає - банер на `main`
   const dubBanner = s.dub.offer != null && !dubActOpen && view.kind === 'main' && !onboarding;
 
+  // 010 FR-8: тап по сповіщенню - ціль відкривається, щойно немає офлайн-довідки (після «Забрати»); в онбордингу лише головний екран
+  const pushNav = s.pushNav;
+  useEffect(() => {
+    if (!pushNav || s.offline != null || s.background) return;
+    let live = true;
+    // перехід - у колбеку, а не в тілі ефекту (react-hooks/set-state-in-effect); ціль знімаємо після переходу
+    void Promise.resolve().then(() => {
+      if (!live) return;
+      if (!onboarding) go(pushNav);
+      store.getState().clearPushNav();
+    });
+    return () => {
+      live = false;
+    };
+    function go(nav: NonNullable<typeof pushNav>) {
+      const st = store.getState();
+      switch (nav.target) {
+        case 'tg-detail': {
+          // № 2 планується до приходу телеграми: відкриваємо найсвіжішу нову
+          const fresh = st.telegrams.inbox.filter((x) => x.status === 'new' && x.kind === 'telegram').sort((a, b) => b.receivedAt - a.receivedAt)[0];
+          const item = (nav.ref && st.telegrams.inbox.find((x) => x.uid === nav.ref)) || fresh;
+          if (item) setView({ kind: 'detail', uid: item.uid, coach: false });
+          break;
+        }
+        case 'insp-prep':
+          st.openInspPrep();
+          break;
+        case 'race-sheet':
+          if (st.race.active) setRaceSheetId(st.race.active.id);
+          break;
+        case 'boosts-sheet':
+          setView({ kind: 'boosts' });
+          break;
+        default:
+          break;
+      }
+    }
+  }, [pushNav, s.offline, s.background, onboarding, store]);
+
   // 016 FR-32: тости грамот чекають онбординг, церемонії й модалки; решта тостів іде перед ними у спільній черзі
   const awardsFree = calm && !iapOpen && !starterOpen && o.step === 'done';
   const awardsPending = s.awardQueue.length;

@@ -58,8 +58,21 @@ export interface Candidate {
   item?: string;
 }
 
+/** Тап по сповіщенню (FR-8): що це було й коли мало прийти; `id` - ідентифікатор запиту ОС, щоб один тап не рахувати двічі */
+export interface PushOpen {
+  id: string;
+  type: PushType;
+  target: PushTarget;
+  ref?: string;
+  atMs: number;
+}
+
 /** Доставка сповіщень (expo-notifications, етап 2) */
 export interface NotificationService {
+  /** Тап, яким гру запущено з нуля (холодний старт); null - запущено з іконки */
+  initialOpen(): PushOpen | null;
+  /** Тапи по сповіщеннях, поки гра жива (зокрема у фоні); повертає відписку */
+  listen(cb: (p: PushOpen) => void): () => void;
   permission(): Promise<PushPermission>;
   request(): Promise<PushPermission>;
   schedule(items: readonly PlannedPush[]): Promise<void>;
@@ -71,4 +84,9 @@ export interface NotificationService {
 export interface LinkService {
   open(url: string): void;
   copy(text: string): void;
+}
+
+/** Системне вікно оцінки (FR-24): SKStoreReviewController / In-App Review; частоту обмежує сама ОС */
+export interface ReviewService {
+  request(): void;
 }

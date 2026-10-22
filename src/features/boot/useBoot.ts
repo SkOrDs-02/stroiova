@@ -33,6 +33,7 @@ import { CURRENT_SCHEMA, type SaveFile } from '@/save/schema';
 import type { KeyValue } from '@/save/storage';
 
 import { createAutosave } from './autosave';
+import { deviceLinks, deviceNotifications, deviceReview } from '@/services/device';
 import { clearShareCache, deviceShare } from '@/services/share';
 
 /** Версія пакета контенту. До завантажувача контенту (003) — дата контенту в репо. */
@@ -100,8 +101,16 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
   const id = installId(kv, Crypto.randomUUID).id;
   // 007: картинки, що лишились після вбивства гри під час меню «Поділитися»
   clearShareCache();
+  const services = { share: deviceShare, notifications: deviceNotifications, links: deviceLinks, review: deviceReview };
+  // 010 FR-8: гру запущено тапом по сповіщенню - session_start з entry_point = push, push_open і ціль переходу
+  const opened = deviceNotifications.initialOpen();
+  const env: AnalyticsEnv = { ...analyticsEnv(), entryPoint: opened ? 'push' : 'icon' };
+  const started = (store: ConveyorStore) => {
+    if (opened) store.getState().pushOpened(opened, now);
+    return store;
+  };
   if (!save) {
-    const store = createConveyorStore(now, bundledConfig, { installId: id, env: analyticsEnv(), bootEvents: opts.bootEvents, services: { share: deviceShare } });
+    const store = started(createConveyorStore(now, bundledConfig, { installId: id, env, bootEvents: opts.bootEvents, services }));
     const d = draftOf(store);
     if (d) writeSave(kv, d);
     return store;
@@ -128,8 +137,8 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     finale: save.game.finale as FinaleState,
     dub: save.game.dub as DubState,
     analytics: save.game.analytics,
-    services: { share: deviceShare },
-    env: analyticsEnv(),
+    services,
+    env,
     bootEvents: opts.bootEvents,
     story: save.game.story as StoryState,
     installId: id,
@@ -138,7 +147,7 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
   // новий холодний старт — нова сесія (FR-4); після міграції знімок уже зроблено в loadSave
   if (!opts.snapshotted) snapshot(kv);
   store.getState().away(save.savedAt, now); // офлайн чи годинник назад (01, FR-13, FR-14)
-  return store;
+  return started(store);
 }
 
 /**
@@ -222,6 +231,8 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
     const unsubStep = store.subscribe((st, prev) => {
       if (needsSaveNow(st, prev)) auto.saveNow();
     });
+    // 010 FR-8: тап по сповіщенню, поки гра жива (у фоні): push_open і ціль переходу
+    const unlisten = store.getState().services.notifications.listen((p) => store.getState().pushOpened(p, clock()));
     let leftAt: number | null = null;
     const sub = AppState.addEventListener('change', (s) => {
       if (s !== 'active') {
@@ -238,6 +249,7 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
       auto.saveNow();
       auto.stop();
       sub.remove();
+      unlisten();
       unsubStep();
     };
   }, [kv, store, clock]);
