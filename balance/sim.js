@@ -364,9 +364,10 @@ function simulate(p, scenario) {
   function maybePrestige(t) {
     if (unlockedStreams() < SR.length) return;
     var pts = points(st.life);
-    var need = Math.max(p.prestigeMinPoints, p.prestigeGrowth * prestigeTotal);
+    // Дубль (013): P_total already carries a huge multiplier, so the player digitizes as soon as the game allows (prestigeMinPoints) - only to leave the level
+    var need = dubN > 0 ? p.prestigeMinPoints : Math.max(p.prestigeMinPoints, p.prestigeGrowth * prestigeTotal);
     var share = p.prestigeStallShare == null ? 0.5 : p.prestigeStallShare;
-    if (pts < need && p.prestigeStallHours > 0 && pts >= Math.max(p.prestigeMinPoints, share * prestigeTotal) && stuck()) need = pts;
+    if (dubN === 0 && pts < need && p.prestigeStallHours > 0 && pts >= Math.max(p.prestigeMinPoints, share * prestigeTotal) && stuck()) need = pts;
     if (pts >= need && pts > 0) {
       var zs = zpzShareNow(); if (zpzIdx() >= 0) (out.zpzShare[level] = out.zpzShare[level] || []).push(Math.round(zs * 1000) / 1000);
       prestigeTotal += pts;
