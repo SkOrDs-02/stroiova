@@ -3,12 +3,13 @@ import Constants from 'expo-constants';
 import * as Crypto from 'expo-crypto';
 import { getLocales } from 'expo-localization';
 import { useEffect, useMemo, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import { bundledConfig, withBundled } from '@/economy/config';
 import { isNewSession } from '@/economy/game/time';
 import type { EconomyConfig, EconomyState } from '@/economy/game/types';
-import type { AnalyticsEnv } from '@/features/conveyor/analytics';
+import { saveErrorEvent } from '@/analytics/boot';
+import type { AnalyticsEnv, BootEvent } from '@/features/conveyor/analytics';
 import { createConveyorStore, gameSave, type ConveyorStore, type StoredEffect } from '@/features/conveyor/store';
 import type { OnboardingState } from '@/features/onboarding/steps';
 import type { InspectionState } from '@/inspections/types';
@@ -45,6 +46,7 @@ function analyticsEnv(): AnalyticsEnv {
     contentVersion: CONTENT_VERSION,
     buildChannel: channel === 'production' || channel === 'preview' ? channel : __DEV__ ? 'development' : 'production',
     appVersion: APP_VERSION,
+    store: Platform.OS === 'ios' ? 'app_store' : 'play_store',
     deviceRegion: loc?.regionCode ?? 'XX',
     deviceLocale: loc?.languageTag ?? 'und',
   };
@@ -94,12 +96,12 @@ function applySettingsToDevice(st: Settings): void {
 }
 
 /** Стан гри з запису: закріплений конфіг має пріоритет над вбудованим (FR-22, source cached). */
-export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
+export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean; bootEvents?: BootEvent[] } = {}): ConveyorStore {
   const id = installId(kv, Crypto.randomUUID).id;
   // 007: картинки, що лишились після вбивства гри під час меню «Поділитися»
   clearShareCache();
   if (!save) {
-    const store = createConveyorStore(now, bundledConfig, { installId: id, env: analyticsEnv(), services: { share: deviceShare } });
+    const store = createConveyorStore(now, bundledConfig, { installId: id, env: analyticsEnv(), bootEvents: opts.bootEvents, services: { share: deviceShare } });
     const d = draftOf(store);
     if (d) writeSave(kv, d);
     return store;
@@ -128,6 +130,7 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     analytics: save.game.analytics,
     services: { share: deviceShare },
     env: analyticsEnv(),
+    bootEvents: opts.bootEvents,
     story: save.game.story as StoryState,
     installId: id,
   });
@@ -244,11 +247,13 @@ export function useBoot(kv: KeyValue, clock: () => number = Date.now): { route: 
       route,
       restore() {
         const b = restoreFromBackup(kv, opts());
-        if (b) setRoute({ kind: 'game', store: startGame(kv, b, clock()) });
+        const failure = route.kind === 'error' ? saveErrorEvent(route.corrupt, 'backup_slot') : null;
+        if (b) setRoute({ kind: 'game', store: startGame(kv, b, clock(), { bootEvents: failure ? [failure] : [] }) });
       },
       startNew() {
         // «Почати заново» (FR-7): новий прогрес, той самий install_id; онбординг — 002, покупки — 08
-        setRoute({ kind: 'game', store: startGame(kv, null, clock()) });
+        const failure = route.kind === 'error' ? saveErrorEvent(route.corrupt, 'defaults') : null;
+        setRoute({ kind: 'game', store: startGame(kv, null, clock(), { bootEvents: failure ? [failure] : [] }) });
       },
       report() {
         if (route.kind !== 'error') return;

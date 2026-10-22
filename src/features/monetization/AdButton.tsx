@@ -1,9 +1,10 @@
 // Кнопка нагороди за рекламу (008 FR-8, FR-9): готова / вантажиться / недоступна / ліміт / межа 12 год / «Забрати».
 import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
 import { useStore } from 'zustand';
 
 import { formatDuration } from '@/economy/format';
-import type { ConveyorStore } from '@/features/conveyor/store';
+import { analyticsOf, type ConveyorStore } from '@/features/conveyor/store';
 import type { AdView } from '@/monetization/monetization';
 import type { AdAvailability, Placement } from '@/monetization/types';
 import { color, space } from '@/theme';
@@ -31,16 +32,25 @@ interface Props {
   note: (left: number, limit: number) => string;
   takeNote?: (left: number, limit: number) => string;
   limitLabel?: string;
+  /** Звідки показано пропозицію (лише `income_boost`, аналітика) */
+  entryPoint?: 'boosts_sheet' | 'shop' | 'ad_offer_first';
   /** Після нагороди (закрити шторку тощо) */
   onGranted?: () => void;
   testID: string;
 }
 
-export function AdButton({ store, placement, view, label, takeLabel, note, takeNote, limitLabel = adT.limit, onGranted, testID }: Props) {
+export function AdButton({ store, placement, view, label, takeLabel, note, takeNote, limitLabel = adT.limit, entryPoint, onGranted, testID }: Props) {
   const s = useStore(store);
   const loading = s.busy === 'ad';
   const av = s.state.hasNoAds ? 'ready' : s.services.ads.availability();
   const off = view.button === 'ready' ? unavailableText(av) : null;
+  // ad_offer_show: кнопка з'явилась, ліміт не вичерпано
+  const offerable = view.button === 'ready' || view.button === 'claim';
+  useEffect(() => {
+    if (!offerable) return;
+    analyticsOf(store).adOffer(placement, { isNoAdsClaim: view.button === 'claim', isReady: view.button === 'claim' || av === 'ready', usesToday: view.limit - view.left, dailyLimit: view.limit, ...(entryPoint ? { entryPoint } : {}) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offerable, placement]);
   const onPress = async () => {
     const r = await store.getState().watchAd(placement);
     if (r === 'granted') onGranted?.();

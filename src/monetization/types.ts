@@ -55,6 +55,8 @@ export type PurchaseResult = { kind: 'success' } | { kind: 'cancelled' } | { kin
 export interface PurchaseService {
   status(): StoreStatus;
   prices(): Partial<Record<ProductId, string>>;
+  /** Ціна числом і валюта ISO 4217 для аналітики (`purchase_*`); немає - подія піде з `0` і `XXX` */
+  priceInfo?(id: ProductId): { amount: number; currency: string } | null;
   purchase(id: ProductId): Promise<PurchaseResult>;
   restore(): Promise<{ kind: 'ok'; owned: ProductId[] } | { kind: 'error' }>;
   /** Актуальні права; null - стор недосяжний (права лишаються за кешем) */

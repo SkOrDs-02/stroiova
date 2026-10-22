@@ -36,7 +36,7 @@ export function StarterOffer({ store }: { store: ConveyorStore }) {
         ) : (
           <>
             {pending ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted} testID="so-pending">{shopT.pendingLabel}</Text> : null}
-            <Button testID="so-buy" label={shopT.buy(price)} disabled={pending} onPress={() => void store.getState().purchase('starter_pack')} />
+            <Button testID="so-buy" label={shopT.buy(price)} disabled={pending} onPress={() => void store.getState().purchase('starter_pack', 'starter_offer')} />
             <Button testID="so-later" variant="ghost" label={soT.later} onPress={s.ackStarterOffer} />
           </>
         )}

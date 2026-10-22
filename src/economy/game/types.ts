@@ -230,9 +230,13 @@ export type DomainEvent =
   | { type: 'museumJournalUnlock'; no: number; journalId: string; rarity: 'common' | 'rare' | 'legendary'; source: 'digitization' | 'telegram' | 'inspection' | 'final_inspection' | 'conversion' | 'story' | 'finale'; ownedAfter: number; isSeriesComplete: boolean; seriesId: string; seriesOwnedAfter: number; seriesCompleteCount: number }
   // 008: реклама й покупки; аналітика етапу 5 (ad_*, purchase_*, offline_income_claim)
   | { type: 'adRewardGrant'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; isNoAdsClaim: boolean }
+  /** Ролик пішов у показ / нагорода зароблена (аналітика ad_start, ad_complete; контракт SDK уточнить справжні значення) */
+  | { type: 'adStart'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; loadWaitMs: number }
+  | { type: 'adComplete'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; watchMs: number }
+  | { type: 'purchaseStart'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; source: 'tab' | 'offline_storage_link' | 'starter_pack_card' | 'starter_offer' | 'ad_limit_reached' | 'boost_card' }
   | { type: 'adFail'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; stage: 'not_ready' | 'load' | 'show' | 'closed_early' | 'consent_blocked'; code?: string }
   | { type: 'purchaseComplete'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; isFirstPurchase: boolean; purchaseNumber: number }
-  | { type: 'purchaseFail'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; reason: 'user_cancelled' | 'payment_pending' | 'store_problem' | 'network' | 'product_unavailable' | 'already_owned' | 'not_allowed' | 'unknown' }
+  | { type: 'purchaseFail'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; reason: 'user_cancelled' | 'payment_pending' | 'store_problem' | 'network' | 'product_unavailable' | 'already_owned' | 'not_allowed' | 'unknown'; code?: string }
   | { type: 'purchaseRestore'; trigger: 'shop_button' | 'settings_button' | 'auto_check'; isSuccess: boolean; restoredProductIds: ('no_ads' | 'starter_pack' | 'storage_24h')[] }
   | {
       type: 'offlineIncomeClaim';
