@@ -33,6 +33,7 @@ import { CURRENT_SCHEMA, type SaveFile } from '@/save/schema';
 import type { KeyValue } from '@/save/storage';
 
 import { createAutosave } from './autosave';
+import { clearShareCache, deviceShare } from '@/services/share';
 
 /** Версія пакета контенту. До завантажувача контенту (003) — дата контенту в репо. */
 export const CONTENT_VERSION = 'content-2026.10.10';
@@ -97,8 +98,10 @@ function applySettingsToDevice(st: Settings): void {
 /** Стан гри з запису: закріплений конфіг має пріоритет над вбудованим (FR-22, source cached). */
 export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean; bootEvents?: BootEvent[] } = {}): ConveyorStore {
   const id = installId(kv, Crypto.randomUUID).id;
+  // 007: картинки, що лишились після вбивства гри під час меню «Поділитися»
+  clearShareCache();
   if (!save) {
-    const store = createConveyorStore(now, bundledConfig, { installId: id, env: analyticsEnv(), bootEvents: opts.bootEvents });
+    const store = createConveyorStore(now, bundledConfig, { installId: id, env: analyticsEnv(), bootEvents: opts.bootEvents, services: { share: deviceShare } });
     const d = draftOf(store);
     if (d) writeSave(kv, d);
     return store;
@@ -125,6 +128,7 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     finale: save.game.finale as FinaleState,
     dub: save.game.dub as DubState,
     analytics: save.game.analytics,
+    services: { share: deviceShare },
     env: analyticsEnv(),
     bootEvents: opts.bootEvents,
     story: save.game.story as StoryState,

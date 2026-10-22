@@ -1,6 +1,7 @@
 // Типи гри поверх ядра (001 data-model.md). Числа балансу — лише в EconomyConfig.params (принцип I).
 import type { DubModifier } from '@/dub/dub';
 import type { FinaleStep } from '@/finale/finale';
+import type { ShareEntryType } from '@/share/types';
 import type { Big, EconomyParams } from '../core';
 
 export type { Big, EconomyParams, UnitDef } from '../core';
@@ -276,6 +277,9 @@ export type DomainEvent =
   | { type: 'personalRecordUpdate'; recordType: 'dub' | 'lifetime_signatures'; value: number; previous: number }
   // 016: грамоти; аналітика етапу 5 (award_unlock, awards_wall_open)
   | { type: 'awardUnlock'; awardId: string; category: string; awardType: 'gramota' | 'podyaka' | 'nakaz'; isHidden: boolean; awardsOwnedAfter: number; isRetroactive: boolean; isResolvedOffline: boolean; isMirrored: boolean }
+  // 007 етап 2: «Поділитися» (curio_entry_share; помилка рендеру - app_error_log, source = share_render)
+  | { type: 'curioShare'; entryType: ShareEntryType; entryId: string; giftType?: 'drone' | 'shovel' | 'generator'; result: 'shared' | 'dismissed'; activityType?: string }
+  | { type: 'shareError'; code: string }
   | { type: 'awardsWallOpen'; source: 'segment' | 'award_toast' | 'profile'; awardsOwned: number; awardsUnseen: number };
 
 /** Ефекти, що потрапляють у запис: «Пташка» онбордингу живе лише в пам'яті стору (002 R3). */

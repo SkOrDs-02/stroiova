@@ -9,6 +9,7 @@ import type { AwardCategory, AwardDef, AwardsState } from '@/awards/types';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { ddmmyyyy } from '@/features/museum/present';
 import { color, radius, size, space } from '@/theme';
+import { ShareAction } from '@/features/share/ShareCard';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -142,6 +143,7 @@ export function AwardDetail({ store, id, onClose }: { store: ConveyorStore; id: 
             </View>
           )}
         </ScrollView>
+        {got ? <ShareAction store={store} entry={{ kind: 'award', id }} /> : null}
         <Button testID="award-detail-ok" label={awT.ok} onPress={onClose} />
       </View>
     </View>

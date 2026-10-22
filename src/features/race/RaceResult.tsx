@@ -6,6 +6,7 @@ import { formatMult } from '@/economy/format';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { useTumbLine } from '@/features/inspections/useTumbLine';
 import { color, radius, space, typeScale } from '@/theme';
+import { ShareAction } from '@/features/share/ShareCard';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -24,6 +25,8 @@ export function RaceResult({ store }: { store: ConveyorStore }) {
   const o = s.race.last!;
   const p = s.cfg.params;
   const line = useTumbLine(store, `lina.${o.won ? 'won' : 'lost'}.${o.type}`, `race:${o.id}:end`);
+  // race-lost: списаний подарунок - запис курйозу, ним і ділимось (007 FR-26)
+  const curio = o.won ? undefined : s.museum.curios.find((c) => c.kind === 'gift' && c.gift?.raceNo === o.no);
   const leftMs = Math.max(0, o.endMs + o.marginSec * 1000 - s.lastMs);
   return (
     <View style={styles.scrim} testID={o.won ? 'race-won' : 'race-lost'}>
@@ -59,6 +62,7 @@ export function RaceResult({ store }: { store: ConveyorStore }) {
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.quote}>{line}</Text>
           </>
         ) : null}
+        {curio ? <ShareAction store={store} entry={{ kind: 'curio', seq: curio.seq }} /> : null}
         <Button testID="race-result-ok" label={raceT.toMain} onPress={s.closeRaceResult} />
       </View>
     </View>

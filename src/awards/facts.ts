@@ -66,6 +66,9 @@ export function factsOf(evs: readonly DomainEvent[], opts: FactOpts = {}): Fact[
       case 'dubStart':
         out.push({ event: 'dub_start', props: { dub_number: e.dubNumber, modifier_id: e.modifier } });
         break;
+      case 'curioShare':
+        out.push({ event: 'curio_entry_share', props: { share_result: e.result } });
+        break;
       case 'stackReach':
         out.push({ event: 'stack_meter_reach', props: { cm: e.cm } });
         break;

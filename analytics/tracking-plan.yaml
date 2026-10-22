@@ -312,7 +312,7 @@ events:
     sampling: all
     properties:
       - {name: entry_type, type: string, required: true, enum: [telegram, gift_written_off, journal, pack, stack_meter, finale_card, personal_record, ptashka, award], example: telegram, description: "pack — 011; stack_meter — 012; finale_card, personal_record — 013; ptashka — 014; award — 016 (entry_id = award_id, поширення з award-detail)"}
-      - {name: entry_id, type: string, required: true, example: "tg_0006_shovels", description: "telegram_id, race_id, journal_id або award_id"}
+      - {name: entry_id, type: string, required: true, example: "tg_0006_shovels", description: "telegram_id, race_id, journal_id, pack_id, curio_N (стос), finale, dub_N (рекорд) або award_id"}
       - {name: gift_type, type: string, required: false, enum: [drone, shovel, generator], example: drone, description: "Лише для gift_written_off"}
       - {name: share_result, type: string, required: true, enum: [shared, dismissed], example: shared, description: "Android завжди повертає shared"}
       - {name: activity_type, type: string, required: false, example: "ph.telegra.Telegraph.Share", description: "Лише iOS: куди поширили"}

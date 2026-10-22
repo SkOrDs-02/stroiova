@@ -1,4 +1,4 @@
-// curio-detail (007 FR-24): документ запису - телеграма з вибором і наслідком або акт списаного подарунка. «Поділитися» - етап 2.
+// curio-detail (007 FR-24): документ запису - телеграма з вибором і наслідком або акт списаного подарунка. «Поділитися» (FR-26) - share-card.
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
@@ -15,6 +15,7 @@ import { storyText } from '@/story/text';
 import { packDef, telegram } from '@/telegrams/content';
 import { repTier } from '@/telegrams/reputation';
 import { color, radius, space } from '@/theme';
+import { ShareAction } from '@/features/share/ShareCard';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -31,7 +32,8 @@ export function CurioDetail({ store, seq, onClose }: { store: ConveyorStore; seq
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2} accessibilityRole="header">{muT.curioDetailTitle}</Text>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.muted}>{muT.curioNo(e.seq)}</Text>
         <ScrollView contentContainerStyle={styles.scroll}>{e.kind === 'gift' ? <GiftDoc store={store} seq={seq} /> : e.kind === 'pack' ? <PackDoc store={store} seq={seq} /> : e.kind === 'stack' ? <StackDoc store={store} seq={seq} /> : e.kind === 'story' ? <StoryDoc store={store} seq={seq} /> : <TelegramDoc store={store} seq={seq} />}</ScrollView>
-        <Button testID="curio-detail-ok" label={muT.curioBack} variant="secondary" onPress={onClose} />
+        <ShareAction store={store} entry={{ kind: 'curio', seq }} />
+        <Button testID="curio-detail-ok" label={muT.curioBack} variant="ghost" onPress={onClose} />
       </View>
     </View>
   );
