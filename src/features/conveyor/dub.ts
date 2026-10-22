@@ -39,8 +39,9 @@ export function acceptDub(g: DubHost, base: EconomyConfig, now: number, tzOffset
   const state: EconomyState = newCycle({ ...g.state, level: 1, digital: [] }, cfg);
   const digit: DigitizationState = { ...g.digit, counts: {}, levelExitAllowed: false, ceremony: null, cycleStartMs: now, levelStartMs: now, lastCycleMs: null, stack: resetCycle(g.digit.stack) };
   // перевірка, що йшла на Р5, не переходить у Дубль: наступну планову ставимо від цієї миті
+  // планова, що ще не оголошена, теж перераховується: інтервал «Мокрої печатки» діє від старту Дубля
   let inspections = g.inspections;
-  if (inspections.active) {
+  if (inspections.active || inspections.nextArrMs != null) {
     const rng = roller(inspections.rng);
     inspections = { ...inspections, active: null, nextArrMs: nextArrival(now, cfg.params, tzOffsetMin, () => rng.next()), rng: rng.state };
   }

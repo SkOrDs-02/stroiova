@@ -206,3 +206,48 @@ describe('FR-30: збереження', () => {
     expect(store.getState().cfg).toBe(bundledConfig);
   });
 });
+
+describe('AC-18, AC-19: вихід з рівня, пальне, перевірки', () => {
+  function inDub1() {
+    const store = atOffer(true);
+    store.getState().tick(T0 + 60_000);
+    store.getState().dubAccept();
+    return store;
+  }
+
+  test('AC-18: на Р1 у Дублі вихід - після dup.exitDigitizations цифровізацій; онбординг не повертається', () => {
+    const store = inDub1();
+    const exit = bundledConfig.params.dup.exitDigitizations;
+    store.setState({ state: { ...store.getState().state, streamLevels: [1, 1, 1, 1], lifetimeCycle: 4e18 } });
+    for (let i = 1; i < exit; i++) {
+      expect(store.getState().digitize()).toBe(true);
+      expect(store.getState().state.level).toBe(1);
+      store.getState().closeDigitStep();
+      store.getState().closeDigitStep();
+      store.setState({ state: { ...store.getState().state, streamLevels: [1, 1, 1, 1], lifetimeCycle: 4e18 } });
+    }
+    expect(store.getState().digitize()).toBe(true);
+    expect(store.getState().state.level).toBe(2);
+    expect(store.getState().onboarding.step).toBe('done');
+  });
+
+  test('AC-19: «Без Діда» - повний бак дає ×fuelMult; «Мокра печатка» - планова перераховується від старту Дубля', () => {
+    const store = atOffer(true);
+    store.getState().tick(T0 + 60_000);
+    store.setState({ dub: { ...store.getState().dub, offer: { ...store.getState().dub.offer!, modifier: 'no_did' } } });
+    store.getState().dubAccept();
+    const c = store.getState().cfg;
+    expect(c.params.fuelBonus).toBe(bundledConfig.params.dup.noDid.fuelMult);
+
+    const w = atOffer(true);
+    w.getState().tick(T0 + 60_000);
+    w.setState({
+      dub: { ...w.getState().dub, offer: { ...w.getState().dub.offer!, modifier: 'wet_seal' } },
+      inspections: { ...w.getState().inspections, nextArrMs: T0 + 100 * DAY },
+    });
+    w.getState().dubAccept();
+    const next = w.getState().inspections.nextArrMs!;
+    expect(next).toBeLessThan(T0 + 100 * DAY);
+    expect(w.getState().cfg.params.inspIntervalMaxH).toBeCloseTo(bundledConfig.params.inspIntervalMaxH * bundledConfig.params.dup.wetSeal.intervalMult, 6);
+  });
+});
