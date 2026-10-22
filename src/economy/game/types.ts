@@ -191,7 +191,17 @@ export type DomainEvent =
       offline: boolean;
       secFromStart: number;
     }
-  | { type: 'boostActivate'; boostType: 'income_x2' | 'inspection_x3' | 'drone_x2' | 'shovels_x1_5' | 'generator_fuel_hold'; mult: number; durationSec: number }
+  | {
+      type: 'boostActivate';
+      boostType: 'income_x2' | 'inspection_x3' | 'drone_x2' | 'shovels_x1_5' | 'generator_fuel_hold';
+      /** Звідки буст (аналітика `boost_activate.source`) */
+      source: 'ad' | 'no_ads_pass' | 'inspection' | 'race' | 'onboarding';
+      mult: number;
+      durationSec: number;
+      /** Лише буст за рекламу: скільки лишилось після накопичення і чи впертись у стелю `adCapHours` */
+      stackedRemainingSec?: number;
+      isCapped?: boolean;
+    }
   // 005: гонка з часом; аналітика етапу 5 (race_start, race_speedup_apply, race_finish), курйози 07
   | { type: 'raceStart'; id: string; giftType: 'drone' | 'shovel' | 'generator'; docSec: number; resourceSec: number; winnable: boolean }
   | { type: 'raceSpeedup'; id: string; method: 'digital_bonus' | 'ad' | 'no_ads_pass'; secSaved: number }
@@ -223,7 +233,28 @@ export type DomainEvent =
   | { type: 'purchaseComplete'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; isFirstPurchase: boolean; purchaseNumber: number }
   | { type: 'purchaseFail'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; reason: 'user_cancelled' | 'payment_pending' | 'store_problem' | 'network' | 'product_unavailable' | 'already_owned' | 'not_allowed' | 'unknown' }
   | { type: 'purchaseRestore'; trigger: 'shop_button' | 'settings_button' | 'auto_check'; isSuccess: boolean; restoredProductIds: ('no_ads' | 'starter_pack' | 'storage_24h')[] }
-  | { type: 'offlineIncomeClaim'; isDoubled: boolean; doubleSource: 'ad' | 'no_ads_pass' | 'none'; offlineDoublesToday: number }
+  | {
+      type: 'offlineIncomeClaim';
+      isDoubled: boolean;
+      doubleSource: 'ad' | 'no_ads_pass' | 'none';
+      offlineDoublesToday: number;
+      /** Дані для `offline_income_claim` (довідка повернення, 001 FR-25): відсутність, сховище, обрізане, зароблене до подвоєння й зараховане */
+      awaySec: number;
+      storageCapSec: number;
+      cappedSec: number;
+      earned: Big;
+      claimed: Big;
+      clerksCount: number;
+      giftsWrittenOff: number;
+      fuelBonusSec: number;
+    }
+  // 001: «Заправити» (generator_refuel)
+  | { type: 'generatorRefuel'; tankPctBefore: number; tankCapacitySec: number; bonusOffSec: number }
+  // 002: крок онбордингу закрито (onboarding_step_complete); `bonus` - бонус архіву кроку 9
+  | { type: 'onboardingStep'; no: number; durationSec: number; skipped: boolean; gender: 'm' | 'f' | null; bonus: number | null }
+  // застосунок пішов у фон / повернувся (аналітика сесій, docs/analytics.md)
+  | { type: 'appBackground'; atMs: number }
+  | { type: 'appForeground'; atMs: number }
   // 010: налаштування; аналітика етапу 5 (setting_change, push_permission_request)
   // newValue: true/false -> on/off у tracking-plan; null (progress_reset) -> done; для progress_reset лічильники взято до стирання
   | { type: 'settingChange'; settingName: 'sound' | 'haptics' | 'notif_storage' | 'notif_telegrams' | 'notif_inspections' | 'notif_gifts' | 'notif_boosts' | 'analytics' | 'progress_reset'; newValue: boolean | null; digitizationCount?: number; playtimeSec?: number }

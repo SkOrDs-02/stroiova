@@ -222,7 +222,7 @@ function resolve(s0: InspectionState, eco: EconomyState, cfg: EconomyConfig, ctx
   if (passed && insp.trigger === 'scheduled') {
     // FR-19: ×3 на 2 год від приїзду; позапланова ×3 не дає (рішення 28)
     effects.push({ kind: 'mult', source: 'inspection_pass', value: p.inspMult, startMs: arr, endMs: arr + p.inspHours * HOUR });
-    events.push({ type: 'boostActivate', boostType: 'inspection_x3', mult: p.inspMult, durationSec: p.inspHours * 3600 });
+    events.push({ type: 'boostActivate', boostType: 'inspection_x3', source: 'inspection', mult: p.inspMult, durationSec: p.inspHours * 3600 });
   }
   if (final && passed) events.push({ type: 'finalPassed', id: insp.id, level: insp.level, attempt: insp.attempt });
   if (!passed) {

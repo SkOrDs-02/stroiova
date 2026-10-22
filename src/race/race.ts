@@ -119,7 +119,7 @@ function finish(s0: RaceState, cfg: EconomyConfig, offline: boolean): { s: RaceS
       else effects.push({ kind: 'mult', source: r.type === 'drone' ? 'gift_drone' : 'gift_shovel', value: g.mult, startMs: endMs, endMs: r.svcEndMs });
     }
     const boostType = g.fuel ? 'generator_fuel_hold' : r.type === 'drone' ? 'drone_x2' : 'shovels_x1_5';
-    events.push({ type: 'boostActivate', boostType, mult: g.fuel ? p.fuelBonus : g.mult, durationSec: marginSec });
+    events.push({ type: 'boostActivate', boostType, source: 'race', mult: g.fuel ? p.fuelBonus : g.mult, durationSec: marginSec });
   }
   events.unshift({ type: 'raceFinish', id: r.id, giftType: r.type, result: won ? 'success' : 'fail', marginSec, speedups, offline, level: r.level });
   const last: RaceOutcome = {

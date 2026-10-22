@@ -1,11 +1,11 @@
 // archive-sheets (014 FR-18): 12 слотів («???» і джерело для незнайдених) і аркуш як таблиця Excel: літери стовпців, номери рядків,
 // межі, моноширинний шрифт, вкладки внизу. Сітка без горизонтальної прокрутки: стовпці ділять ширину, текст переноситься.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
-import type { ConveyorStore } from '@/features/conveyor/store';
+import { analyticsOf, type ConveyorStore } from '@/features/conveyor/store';
 import { SHEETS } from '@/story/archive';
 import type { Sheet } from '@/story/types';
 import { color, radius, size, space, typeScale } from '@/theme';
@@ -28,6 +28,10 @@ export function ArchiveSheets({ store, onClose }: { store: ConveyorStore; onClos
   const [tab, setTab] = useState(0);
   const sheet = open ? SHEETS.find((x) => x.id === open) : undefined;
   const k = SHEETS.filter((x) => owned[x.id] != null).length;
+  // archive_open: шторку аркушів відкрито (з музею)
+  useEffect(() => {
+    analyticsOf(store).tracker.track('archive_open', { source: 'museum', sheets_owned: SHEETS.filter((x) => store.getState().story.sheets[x.id] != null).length });
+  }, [store]);
   if (sheet) {
     const t = sheet.tabs[Math.min(tab, sheet.tabs.length - 1)]!;
     return (

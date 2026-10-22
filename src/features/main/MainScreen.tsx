@@ -311,12 +311,24 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   };
 
   const tg1 = inbox.find((x) => x.id === FIRST_TELEGRAM_ID);
+  /** digitization_screen_open: звідки відкрито екран цифровізації */
+  const openDigital = (source: 'hint' | 'tab') => {
+    const g = store.getState();
+    const st = digitStatus(g.state, g.digit, g.cfg, g.lastMs, g.effects);
+    analyticsOf(store).tracker.track('digitization_screen_open', { source, points_available: st.points, is_eligible: st.kind === 'available', multiplier_after: Math.round(st.multAfter * 100) / 100 });
+    setView({ kind: 'digital' });
+  };
+  /** shop_view: звідки відкрито магазин (джерела всередині магазину й довідки повернення шле сам екран) */
+  const openShop = (source: 'tab' | 'boost_card') => {
+    analyticsOf(store).tracker.track('shop_view', { source, is_starter_pack_available: !store.getState().monetization.rights.starter_pack });
+    setView({ kind: 'shop' });
+  };
   const onTab = (tab: TabId) => {
     // 002 FR-19: на кроці 8 підсвічена вкладка відкриває саму телеграму № 1, без списку
     if (tab === 'telegrams' && o.step === 8 && tg1?.status === 'new') setView({ kind: 'detail', uid: tg1.uid, coach: true });
     else if (tab === 'telegrams') setView({ kind: 'list' });
-    else if (tab === 'digital') setView({ kind: 'digital' });
-    else if (tab === 'shop') setView({ kind: 'shop' });
+    else if (tab === 'digital') openDigital('tab');
+    else if (tab === 'shop') openShop('tab');
     else if (tab === 'museum') {
       if (view.kind !== 'museum') s.openMuseum();
       setView({ kind: 'museum' });
@@ -324,7 +336,10 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     else if (tab === 'stroyova') setView({ kind: 'main' });
   };
   const openItem = (item: InboxItem, pack?: number) => {
-    analyticsOf(store).noteOpened(item.uid, Date.now());
+    // telegram_open: перше відкриття запису (sec_since_open у відповіді рахується від нього)
+    if (analyticsOf(store).noteOpened(item.uid, Date.now()) && item.kind !== 'note') {
+      analyticsOf(store).tracker.track('telegram_open', { telegram_id: item.id, sec_since_received: Math.max(0, Math.round((Date.now() - item.receivedAt) / 1000)), source: 'inbox' });
+    }
     if (item.kind === 'note') {
       s.openItem(item.uid);
       setView({ kind: 'note', uid: item.uid });
@@ -383,7 +398,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           ) : null}
         </View>
         {s.digitRec ? (
-          <Pressable testID="digit-hint" accessibilityRole="button" onPress={() => setView({ kind: 'digital' })} style={styles.hintBar}>
+          <Pressable testID="digit-hint" accessibilityRole="button" onPress={() => openDigital('hint')} style={styles.hintBar}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.hintText}>{digitT.hint(formatDuration(Math.max(0, (digitEta ?? 0)))) }</Text>
           </Pressable>
         ) : null}
@@ -666,7 +681,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         />
       ) : null}
       {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} onAwards={() => setView({ kind: 'museum', seg: 'awards', source: 'profile' })} /> : null}
-      {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => setView({ kind: 'shop' })} /> : null}
+      {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => openShop('boost_card')} /> : null}
       {iapOpen ? <IapSuccess store={store} /> : null}
       {starterOpen ? <StarterOffer store={store} /> : null}
       {s.offline ? <OfflineReturn store={store} res={s.offline} inspRows={[...offlineRows(ins.last, s.cfg.params, s.offlineBackAt ?? now), ...offlineRaceRows(s.race.last)]} onClaim={() => s.claim()} /> : null}
