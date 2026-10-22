@@ -31,6 +31,8 @@ jobs:
         run: npm test -- --ci
       - name: Бандл економіки збігається з src/economy/core
         run: npm run build:economy -- --check
+      - name: Типи аналітики збігаються з tracking-plan.yaml
+        run: node tools/gen_analytics.mjs --check
       - name: Тема збігається з дизайн-системою
         run: python3 tools/gen_theme.py --check
       - name: Expo Doctor

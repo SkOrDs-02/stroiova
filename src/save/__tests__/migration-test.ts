@@ -3,6 +3,7 @@ import { digitizationV6, inspectionsV4, MIGRATIONS, monetizationV8, museumV7, on
 import { KEY_BAK1, KEY_SAVE, loadSave, serialize, type SaveDraft } from '../repository';
 import { memoryStorage } from '../storage';
 import { newAwards } from '@/awards/awards';
+import { newAnalytics } from '@/analytics/state';
 import { newDub } from '@/dub/dub';
 import { newFinale } from '@/finale/finale';
 import { newStory } from '@/story/engine';
@@ -18,7 +19,7 @@ function v1(): SaveDraft {
 
 const migrations = {
   1: (g: unknown) => { const x = g as { economy: object; sigs: number }; return { economy: { ...x.economy, signatures: x.sigs } }; },
-  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards(), finale: newFinale(), dub: newDub('dub-test') }),
+  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards(), finale: newFinale(), dub: newDub('dub-test'), analytics: newAnalytics() }),
 };
 
 describe('міграції', () => {
@@ -412,6 +413,28 @@ describe('справжні міграції', () => {
     expect(r.save.game.dub).toEqual(newDub(`dub-${d.game.telegrams.rng}`));
     expect(r.save.game.dub).toMatchObject({ n: 0, modifier: null, offer: null, closed: null, earned: 0, record: { dub: 0, lifetimeLog10: 0 } });
     expect(r.save.game.finale).toEqual(finale);
+  });
+
+  test('18 → 19 (аналітика): лічильники з нуля, перший запуск уже вважається надісланим, решта запису на місці', () => {
+    const d = draft({ schemaVersion: 18, savedAt: 5000 });
+    const { analytics: _a, ...gameV18 } = d.game;
+    const dub = { ...d.game.dub, n: 2, modifier: 'no_did' as const, record: { dub: 2, lifetimeLog10: 12 } };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV18, dub } as never }) });
+    const r = loadSave(kv, { current: 19, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 18 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.analytics).toEqual({ sessionNumber: 0, lastSessionEndMs: null, firstOpenSent: true });
+    expect(r.save.game.dub).toEqual(dub);
+  });
+
+  test('схема 19: лічильники аналітики проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 19, savedAt: 5000 });
+    const analytics = { sessionNumber: 14, lastSessionEndMs: 4000, firstOpenSent: true };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, analytics } as never }) });
+    const r = loadSave(kv, { current: 19, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.analytics).toEqual(analytics);
   });
 
   test('схема 18: стан Дубля проходить збереження без втрат', () => {

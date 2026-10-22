@@ -11,6 +11,7 @@ import { newNotifications, newSettings } from '@/notifications/planner';
 import { newStats } from '@/profile/stats';
 import { newMuseum } from '@/museum/museum';
 import { newAwards } from '@/awards/awards';
+import { newAnalytics } from '@/analytics/state';
 import { newDub } from '@/dub/dub';
 import { newFinale } from '@/finale/finale';
 import { newRace } from '@/race/race';
@@ -132,6 +133,8 @@ export const MIGRATIONS: Record<number, Migration> = {
     const g = game as { dub?: object; telegrams?: { rng?: number } };
     return { ...(game as object), dub: g.dub ?? newDub(`dub-${g.telegrams?.rng ?? 0}`) };
   },
+  // 18 → 19 (аналітика): лічильники сесій з нуля; гравець, що вже грав, уже «відкривав» застосунок - `app_first_open` йому не шлемо
+  18: (game) => ({ ...(game as object), analytics: (game as { analytics?: object }).analytics ?? { ...newAnalytics(), firstOpenSent: true } }),
 };
 
 /** Налаштування й сповіщення схеми 9. */

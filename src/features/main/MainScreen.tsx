@@ -42,7 +42,7 @@ import { RaceCard } from '@/features/race/RaceCard';
 import { RaceResult } from '@/features/race/RaceResult';
 import { RaceSheet } from '@/features/race/RaceSheet';
 import { Seal } from '@/features/conveyor/Seal';
-import { birdEffect, canHireNow, type ConveyorStore, type Toast } from '@/features/conveyor/store';
+import { analyticsOf, birdEffect, canHireNow, type ConveyorStore, type Toast } from '@/features/conveyor/store';
 import { t } from '@/features/conveyor/texts';
 import { UnitRow } from '@/features/conveyor/UnitRow';
 import { SedoSheet } from '@/features/convert/SedoSheet';
@@ -324,6 +324,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
     else if (tab === 'stroyova') setView({ kind: 'main' });
   };
   const openItem = (item: InboxItem, pack?: number) => {
+    analyticsOf(store).noteOpened(item.uid, Date.now());
     if (item.kind === 'note') {
       s.openItem(item.uid);
       setView({ kind: 'note', uid: item.uid });

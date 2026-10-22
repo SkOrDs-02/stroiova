@@ -13,6 +13,7 @@
     "expo-crypto": "MIT",
     "expo-haptics": "MIT",
     "expo-linking": "MIT",
+    "expo-localization": "MIT",
     "expo-router": "MIT",
     "expo-status-bar": "MIT",
     "react": "MIT",
