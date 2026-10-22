@@ -295,6 +295,16 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
           props: { award_id: e.awardId, award_category: e.category as EventProps['award_unlock']['award_category'], award_type: e.awardType, is_hidden: e.isHidden, awards_owned_after: e.awardsOwnedAfter, is_retroactive: e.isRetroactive, is_resolved_offline: e.isResolvedOffline, is_mirrored: e.isMirrored, sec_since_install: sec(c.nowMs - c.installMs) },
         },
       ];
+    case 'curioShare':
+      return [
+        {
+          name: 'curio_entry_share',
+          props: { entry_type: e.entryType, entry_id: e.entryId, ...(e.giftType ? { gift_type: e.giftType } : {}), share_result: e.result, ...(e.activityType ? { activity_type: e.activityType } : {}) },
+        },
+      ];
+    case 'shareError':
+      // гравець може спробувати ще раз: картинку не відновлено автоматично
+      return [{ name: 'app_error_log', props: { source: 'share_render', error_code: e.code, is_recovered: false, recovery: 'none' } }];
     case 'awardsWallOpen':
       return [{ name: 'awards_wall_open', props: { source: e.source, awards_owned: e.awardsOwned, awards_unseen: e.awardsUnseen } }];
     default:

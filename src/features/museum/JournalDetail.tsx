@@ -1,4 +1,4 @@
-// journal-detail (007 FR-17): шторка експоната - знайдений чи ні. «Поділитися» - етап 2 (рішення 75).
+// journal-detail (007 FR-17): шторка експоната - знайдений чи ні. «Поділитися» (FR-26) - share-card.
 import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
@@ -6,6 +6,7 @@ import { useStore } from 'zustand';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { bonusText, journal, seriesOf } from '@/museum/journals';
 import { color, radius, size, space } from '@/theme';
+import { ShareAction } from '@/features/share/ShareCard';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -69,6 +70,7 @@ export function JournalDetail({ store, no, onClose }: { store: ConveyorStore; no
             </>
           )}
         </ScrollView>
+        {owned ? <ShareAction store={store} entry={{ kind: 'journal', no }} /> : null}
         <Button testID="journal-detail-ok" label={muT.ok} onPress={onClose} />
       </View>
     </View>

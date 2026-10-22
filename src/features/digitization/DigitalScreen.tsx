@@ -7,6 +7,7 @@ import { formatBig, formatCountdown, formatMult } from '@/economy/format';
 import { itemsFor } from '@/economy/game/state';
 import { recordNow } from '@/dub/dub';
 import { dupT, recordLabel, recordLine } from '@/features/dub/texts';
+import { ShareAction } from '@/features/share/ShareCard';
 import { FINAL_LEVELS, PLAYABLE_LEVELS, finalDue, status } from '@/digitization/digitization';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, size, space, typeScale } from '@/theme';
@@ -104,6 +105,8 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
           <View style={styles.card} testID="digit-record">
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2}>{dupT.recTitle}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} accessibilityLabel={recordLabel(rec.dub, rec.lifetimeLog10)} testID="digit-record-line">{recordLine(rec.dub, rec.lifetimeLog10)}</Text>
+            {/* 013 FR-29: картка «Особистий рекорд» */}
+            <ShareAction store={store} entry={{ kind: 'record' }} testID="digit-record-share" />
           </View>
         ) : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} testID="digit-counter">{level >= 5 ? digitT.cvCounter(s.state.digital.length, s.cfg.params.convert.order.length) : level >= 2 ? digitT.counterLvl(st.levelCount, total) : digitT.counterR1(st.levelCount)}</Text>

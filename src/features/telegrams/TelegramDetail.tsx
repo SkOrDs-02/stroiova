@@ -8,6 +8,7 @@ import { telegramOf } from '@/telegrams/effects';
 import type { Telegram } from '@/telegrams/types';
 import { repTier } from '@/telegrams/reputation';
 import { color, radius, size, space, typeScale } from '@/theme';
+import { ShareAction } from '@/features/share/ShareCard';
 import { MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -124,6 +125,12 @@ export function TelegramDetail({ store, uid, coachText, onAnswered, onFlag, onRe
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.flagText}>{item.flagged ? t.flagged : t.notFunny}</Text>
         </Pressable>
       </ScrollView>
+      {/* 007 FR-26: «Поділитися» закріплена внизу; поки йде навчання, кнопки немає */}
+      {coachText ? null : (
+        <View style={[styles.foot, { paddingBottom: insets.bottom + space[8] }]}>
+          <ShareAction store={store} entry={{ kind: 'telegram', uid }} />
+        </View>
+      )}
     </View>
   );
 }
@@ -132,6 +139,7 @@ const styles = StyleSheet.create({
   root: { ...StyleSheet.absoluteFill, backgroundColor: color.bg },
   bar: { flexDirection: 'row', alignItems: 'center', gap: space[8], paddingHorizontal: space[16], minHeight: size.touchMin },
   back: { minHeight: size.touchMin, justifyContent: 'center' },
+  foot: { paddingHorizontal: space[16], paddingTop: space[8], borderTopWidth: 1, borderTopColor: color.border },
   backText: { ...type('body'), color: color.accent },
   screen: { ...type('h4'), color: color.muted },
   scroll: { padding: space[16], gap: space[8] },

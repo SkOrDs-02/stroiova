@@ -8,6 +8,7 @@ import type { ConveyorStore } from '@/features/conveyor/store';
 import { beatById } from '@/story/content';
 import { storyText } from '@/story/text';
 import { color, radius, space } from '@/theme';
+import { ShareAction } from '@/features/share/ShareCard';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
@@ -62,6 +63,8 @@ export function Credits({ store, onClose, final }: { store: ConveyorStore; onClo
           </View>
         ))}
       </ScrollView>
+      {/* FR-21: картка «Армію переведено на цифру» */}
+      <ShareAction store={store} entry={{ kind: 'finale' }} />
       <Button
         testID="credits-close"
         label={finT.creditsClose}

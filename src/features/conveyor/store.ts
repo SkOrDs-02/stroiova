@@ -45,6 +45,8 @@ import { current as finaleCurrent, mailingStopped, newFinale, type FinaleState, 
 import { applyEvents, diaryStart, newBudget, newEvents, run as storyRunPatch, syncAway } from './story';
 import { unavailableNotifications } from '@/services/notifications';
 import { unavailableAds } from '@/services/ads';
+import { unavailableShare, type ShareCardInfo, type ShareOutcome, type ShareService } from '@/share/types';
+import { shT } from '@/features/share/texts';
 import { unavailablePurchases } from '@/services/purchases';
 import { digitT } from '@/features/digitization/texts';
 import { dayKey } from '@/telegrams/clock';
@@ -109,7 +111,7 @@ interface Store {
   museum: MuseumState;
   /** Реклама й покупки (008) */
   monetization: MonetizationState;
-  services: { ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService };
+  services: { ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService; share: ShareService };
   /** Лічильники аналітики: номер сесії, кінець попередньої, чи був перший запуск */
   analytics: AnalyticsState;
   /** Налаштування (010) */
@@ -140,7 +142,7 @@ interface Store {
   /** «Пізніше» на push-preprompt у цій сесії: не перепитуємо (010 FR-10); у запис не йде */
   pushDeclined: boolean;
   /** Ролик чи оплата йде: повторні тапи ігноруються (крайовий випадок); лише в пам'яті */
-  busy: 'ad' | 'purchase' | null;
+  busy: 'ad' | 'purchase' | 'share' | null;
   /** Підказка «Час цифровізуватися» активна (FR-9); оновлюється раз на хвилину гри, лише в пам'яті */
   digitRec: boolean;
   /** Остання перевірка підказки, мс */
@@ -246,6 +248,8 @@ interface Store {
   watchAd: (placement: Placement) => Promise<'granted' | 'closed' | 'unavailable' | 'blocked' | 'busy'>;
   /** Купити товар (FR-15…FR-24) */
   purchase: (id: ProductId) => Promise<void>;
+  /** «Поділитися» на прев'ю (007 FR-29): знімок `target`, системне меню, `curio_entry_share`; помилка рендеру - тост і `app_error_log` */
+  share: (card: ShareCardInfo, target: unknown) => Promise<ShareOutcome | 'busy'>;
   /** Відновити покупки (FR-27) */
   restore: (trigger: 'shop_button' | 'settings_button' | 'auto_check') => Promise<void>;
   /** Тихо звірити права зі стором на запуску (FR-26, FR-27) */
@@ -335,7 +339,7 @@ export interface Initial {
   env?: AnalyticsEnv;
   awards?: AwardsState;
   installId?: string;
-  services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService }>;
+  services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService; share: ShareService }>;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -639,7 +643,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     digit: init?.digit ?? newDigitization(nowMs),
     museum: interrupted.ms,
     monetization: init?.monetization ?? newMonetization(),
-    services: { ads: init?.services?.ads ?? unavailableAds, purchases: init?.services?.purchases ?? unavailablePurchases, notifications: init?.services?.notifications ?? unavailableNotifications, links: init?.services?.links ?? unavailableLinks, analytics: init?.services?.analytics ?? unavailableAnalytics },
+    services: { ads: init?.services?.ads ?? unavailableAds, purchases: init?.services?.purchases ?? unavailablePurchases, notifications: init?.services?.notifications ?? unavailableNotifications, links: init?.services?.links ?? unavailableLinks, analytics: init?.services?.analytics ?? unavailableAnalytics, share: init?.services?.share ?? unavailableShare },
     analytics: (() => {
       const a = init?.analytics ?? newAnalytics();
       return { ...a, sessionNumber: a.sessionNumber + 1 };
@@ -1165,6 +1169,25 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
           get().showToast({ kind: 'text', text: iapT.fail });
         } else grantNow(id, false);
       }
+    },
+    share: async (card, target) => {
+      if (get().busy) return 'busy';
+      set({ busy: 'share' });
+      let r: ShareOutcome;
+      try {
+        r = await get().services.share.share(target, shT.message);
+      } catch (e) {
+        r = { kind: 'error', code: e instanceof Error ? e.message.slice(0, 60) : 'share' };
+      } finally {
+        set({ busy: null });
+      }
+      if (r.kind === 'error') {
+        pushEvent({ type: 'shareError', code: r.code });
+        get().showToast({ kind: 'text', text: shT.err });
+      } else {
+        pushEvent({ type: 'curioShare', entryType: card.type, entryId: card.id, ...(card.giftType ? { giftType: card.giftType } : {}), result: r.kind, ...(r.activityType ? { activityType: r.activityType } : {}) });
+      }
+      return r;
     },
     restore: async (trigger) => {
       const g = get();
