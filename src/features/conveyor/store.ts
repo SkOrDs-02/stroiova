@@ -9,7 +9,7 @@ import { catTap, refuel, tap } from '@/economy/game/actions';
 import { count as countAwards, markSeen as markAwardsSeen, newAwards, pendingToasts, resetProgress as resetAwards, retroactive, toastsShown, unseen as unseenAwards } from '@/awards/awards';
 import type { AwardsState, Fact, Grant } from '@/awards/types';
 import { awardCtx, factsFrom, newEvents as newAwardEvents, run as awardsRun, toastsOf, unlockEvents, type AwardToast } from './awards';
-import { buy, hire, isOk } from '@/economy/game/purchase';
+import { buy, clerkCount, hire, isOk } from '@/economy/game/purchase';
 import { newGame } from '@/economy/game/state';
 import { absence, isNewSession, shiftTimers } from '@/economy/game/time';
 import type { BuyMode, DomainEvent, EconomyConfig, EconomyState, Effect, StoredEffect, UnitRef } from '@/economy/game/types';
@@ -23,7 +23,7 @@ import { closeCeremonyStep, digitize as digitizeNow, finalDue, newDigitization, 
 import type { DigitizationState } from '@/digitization/types';
 import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromPack, curioFromRace, curioFromStack, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, markCuriosSeen, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
-import { addBoost, addPending, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, applyRights, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
+import { addBoost, addPending, boostLeftMs, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, applyRights, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
 import type { AdResult, AdService, MonetizationState, Placement, ProductId, PurchaseResult, PurchaseService } from '@/monetization/types';
 import { adT, iapT, shopT } from '@/features/monetization/texts';
 import { newNotifications, newSettings, plan as planPushes, settle } from '@/notifications/planner';
@@ -436,8 +436,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     if (placement === 'income_boost') {
       const v = boostView(g.monetization, g.effects, now, date, g.cfg, g.state.hasNoAds);
       if (v.button === 'limit' || v.button === 'cap') return false;
-      set({ effects: addBoost(g.effects, now, g.cfg) as StoredEffect[], monetization: bump(g.monetization, 'boost', date) });
-      pushEvent({ type: 'boostActivate', boostType: 'income_x2', mult: p.adMult, durationSec: p.adHours * 3600 });
+      const boosted = addBoost(g.effects, now, g.cfg) as StoredEffect[];
+      const stacked = boostLeftMs(boosted, now);
+      set({ effects: boosted, monetization: bump(g.monetization, 'boost', date) });
+      pushEvent({ type: 'boostActivate', boostType: 'income_x2', source: method, mult: p.adMult, durationSec: p.adHours * 3600, stackedRemainingSec: Math.round(stacked / 1000), isCapped: stacked >= p.adCapHours * 3_600_000 });
       get().showToast({ kind: 'text', text: adT.reward });
       ok = true;
     } else if (placement === 'offline_double') {
@@ -729,7 +731,9 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     refuel: (now) => {
       // № 24 «у шухляду»: заправку заблоковано на годину (003 FR-20)
       if (now < get().telegrams.refuelBlockedUntil) return;
-      set({ state: refuel(get().state, get().cfg, now).state });
+      const r = refuel(get().state, get().cfg, now);
+      set({ state: r.state });
+      pushEvent({ type: 'generatorRefuel', tankPctBefore: r.info.tankPctBefore, tankCapacitySec: r.info.tankCapacitySec, bonusOffSec: r.info.bonusOffSec });
     },
     cat: (now) => {
       const before = get().state;
@@ -831,7 +835,24 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       // рядки перевірки показано в довідці (FR-25): insp-result не потрібен
       const last = get().inspections.last;
       const seen = last?.offline && !last.seen ? { inspections: { ...get().inspections, last: { ...last, seen: true } } } : {};
-      const claimEv: DomainEvent = { type: 'offlineIncomeClaim', isDoubled: doubled, doubleSource: doubled ? (state.hasNoAds ? 'no_ads_pass' : 'ad') : 'none', offlineDoublesToday: r.state.offlineDoubles.count };
+      const claimEv: DomainEvent = {
+        type: 'offlineIncomeClaim',
+        isDoubled: doubled,
+        doubleSource: doubled ? (state.hasNoAds ? 'no_ads_pass' : 'ad') : 'none',
+        offlineDoublesToday: r.state.offlineDoubles.count,
+        awaySec: Math.round(res.awayMs / 1000),
+        storageCapSec: Math.round(res.storageMs / 1000),
+        cappedSec: Math.round(res.cappedMs / 1000),
+        earned: res.earned,
+        claimed: r.claimed,
+        clerksCount: clerkCount(state),
+        // у стані лишається лише остання гонка: більше однієї програної за відсутність довідка не розрізнить
+        giftsWrittenOff: (() => {
+          const l = get().race.last;
+          return l && l.offline && !l.seen && !l.won ? 1 : 0;
+        })(),
+        fuelBonusSec: Math.round(res.fuelBonusMs / 1000),
+      };
       // 008 FR-19: результат перевірки побачено в довідці - час для стартової пропозиції
       const insp = last?.offline && !last.seen;
       set({ diaryToday: null, state: r.state, offline: null, offlineBackAt: null, events: [...get().events, ...(res.earned > 0 ? [claimEv] : [])].slice(-40), ...(insp ? { monetization: offerDue(get().monetization) } : {}), ...seen });
@@ -880,6 +901,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const n = complete(o, step, get().playtimeMs, extra);
       if (n === o) return false;
       set({ onboarding: n });
+      const rec = n.completed.find((c) => c.step === step);
+      if (rec && !o.completed.some((c) => c.step === step)) {
+        pushEvent({ type: 'onboardingStep', no: step, durationSec: Math.round(rec.durationMs / 1000), skipped: rec.skipped, gender: step === 3 ? n.gender : null, bonus: step === 9 ? (n.archiveBonus ?? null) : null });
+      }
       return true;
     },
     actSign: () => {
@@ -900,6 +925,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (!get().onbComplete(5)) return;
       const o = get().onboarding;
       set({ onboarding: { ...o, birdLeftMs: get().cfg.params.onboardingBirdMin * 60_000 }, actResultOpen: true });
+      pushEvent({ type: 'boostActivate', boostType: 'income_x2', source: 'onboarding', mult: get().cfg.params.onboardingBirdMult, durationSec: get().cfg.params.onboardingBirdMin * 60 });
     },
     toMain: () => set({ actResultOpen: false }),
     closeClerkFirst: () => set({ clerkFirstOpen: false }),
@@ -1211,7 +1237,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (p !== cur && !(p === 'not_asked' && cur !== 'not_asked')) set({ settings: { ...get().settings, pushPermission: p } });
     },
     goBackground: async (nowMs) => {
-      // docs/analytics.md, принцип 6: черга подій відправляється при переході у фон
+      // docs/analytics.md, принцип 6: `session_end` іде одразу, потім черга подій відправляється
+      pushEvent({ type: 'appBackground', atMs: nowMs });
       void get().services.analytics.flush();
       const g = get();
       await g.services.notifications.cancelAll();
@@ -1230,6 +1257,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (planned.length) await g.services.notifications.schedule(planned);
     },
     comeForeground: async (nowMs) => {
+      pushEvent({ type: 'appForeground', atMs: nowMs });
       await get().services.notifications.cancelAll();
       set({ notifications: settle(get().notifications, nowMs, tzOffsetAt(nowMs)) });
       await get().refreshPermission();

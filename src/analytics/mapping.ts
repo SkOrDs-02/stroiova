@@ -4,6 +4,7 @@
 import { levelId } from '@/awards/facts';
 import type { DomainEvent } from '@/economy/game/types';
 import type { InboxItem } from '@/telegrams/types';
+import { STEP_IDS } from '@/features/onboarding/steps';
 import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
 
 import type { EventName, EventProps, GlobalProps } from './plan.generated';
@@ -213,6 +214,49 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
         {
           name: 'museum_journal_unlock',
           props: { journal_id: e.journalId, rarity: e.rarity, source: e.source, journals_owned_after: e.ownedAfter, is_series_complete: e.isSeriesComplete, series_id: e.seriesId as EventProps['museum_journal_unlock']['series_id'], series_owned_after: e.seriesOwnedAfter, series_complete_count: e.seriesCompleteCount },
+        },
+      ];
+    case 'generatorRefuel':
+      return [{ name: 'generator_refuel', props: { tank_pct_before: e.tankPctBefore, tank_capacity_sec: e.tankCapacitySec, bonus_off_sec: e.bonusOffSec } }];
+    case 'offlineIncomeClaim':
+      return [
+        {
+          name: 'offline_income_claim',
+          props: {
+            away_sec: e.awaySec,
+            storage_cap_sec: e.storageCapSec,
+            capped_sec: e.cappedSec,
+            earned_log10: log10(e.earned),
+            is_doubled: e.isDoubled,
+            double_source: e.doubleSource,
+            claimed_log10: log10(e.claimed),
+            offline_doubles_today: e.offlineDoublesToday,
+            clerks_count: e.clerksCount,
+            gifts_written_off: e.giftsWrittenOff,
+            fuel_bonus_sec: e.fuelBonusSec,
+          },
+        },
+      ];
+    case 'boostActivate':
+      return [
+        {
+          name: 'boost_activate',
+          props: { boost_type: e.boostType, source: e.source, multiplier: e.mult, duration_sec: Math.round(e.durationSec), stacked_remaining_sec: e.stackedRemainingSec ?? Math.round(e.durationSec), is_capped: e.isCapped ?? false },
+        },
+      ];
+    case 'onboardingStep':
+      return [
+        {
+          name: 'onboarding_step_complete',
+          props: {
+            step_id: STEP_IDS[e.no - 1]!,
+            step_index: e.no,
+            sec_since_first_open: sec(c.nowMs - c.installMs),
+            step_duration_sec: e.durationSec,
+            is_skipped: e.skipped,
+            ...(e.no === 3 && e.gender ? { protagonist_gender: e.gender } : {}),
+            ...(e.no === 9 && e.bonus != null ? { bonus_signatures_log10: log10(e.bonus) } : {}),
+          },
         },
       ];
     case 'settingChange':

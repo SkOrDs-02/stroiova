@@ -161,7 +161,7 @@ describe('фінал (FR-20…FR-24, FR-26)', () => {
     expect(r.effects).toEqual([{ kind: 'mult', source: 'gift_drone', value: 2, startMs: at(15, 30, 1), endMs: at(17, 0, 1) }]);
     expect(r.events).toEqual([
       { type: 'raceFinish', id: 'race_0001', giftType: expect.any(String), result: 'success', marginSec: 5400, speedups: 0, offline: false, level: 1 },
-      { type: 'boostActivate', boostType: 'drone_x2', mult: 2, durationSec: 5400 },
+      { type: 'boostActivate', boostType: 'drone_x2', source: 'race', mult: 2, durationSec: 5400 },
     ]);
   });
 
