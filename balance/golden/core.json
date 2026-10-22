@@ -553,7 +553,20 @@
   "slowPerDayLateMin": 1,
   "slowPerDayLateMax": 2,
   "storyMaxToasts": 2,
-  "finaleQuietDays": 7
+  "finaleQuietDays": 7,
+  "dup": {
+   "mult": 10,
+   "exitDigitizations": 6,
+   "divisorMult": 20,
+   "wetSeal": {
+    "intervalMult": 0.75,
+    "boostMult": 1.5
+   },
+   "noDid": {
+    "fuelMult": 1.15
+   }
+  },
+  "dubs": 0
  },
  "SCENARIOS": [
   {
@@ -1048,7 +1061,20 @@
    "slowPerDayLateMin": 1,
    "slowPerDayLateMax": 2,
    "storyMaxToasts": 2,
-   "finaleQuietDays": 7
+   "finaleQuietDays": 7,
+   "dup": {
+    "mult": 10,
+    "exitDigitizations": 6,
+    "divisorMult": 20,
+    "wetSeal": {
+     "intervalMult": 0.75,
+     "boostMult": 1.5
+    },
+    "noDid": {
+     "fuelMult": 1.15
+    }
+   },
+   "dubs": 0
   },
   "preset-v6": {
    "rev": "7.2",
@@ -1526,7 +1552,20 @@
    "slowPerDayLateMin": 1,
    "slowPerDayLateMax": 2,
    "storyMaxToasts": 2,
-   "finaleQuietDays": 7
+   "finaleQuietDays": 7,
+   "dup": {
+    "mult": 10,
+    "exitDigitizations": 6,
+    "divisorMult": 20,
+    "wetSeal": {
+     "intervalMult": 0.75,
+     "boostMult": 1.5
+    },
+    "noDid": {
+     "fuelMult": 1.15
+    }
+   },
+   "dubs": 0
   },
   "preset-v7": {
    "rev": "7.2",
@@ -2082,7 +2121,20 @@
    "slowPerDayLateMin": 1,
    "slowPerDayLateMax": 2,
    "storyMaxToasts": 2,
-   "finaleQuietDays": 7
+   "finaleQuietDays": 7,
+   "dup": {
+    "mult": 10,
+    "exitDigitizations": 6,
+    "divisorMult": 20,
+    "wetSeal": {
+     "intervalMult": 0.75,
+     "boostMult": 1.5
+    },
+    "noDid": {
+     "fuelMult": 1.15
+    }
+   },
+   "dubs": 0
   }
  },
  "levelItems": {

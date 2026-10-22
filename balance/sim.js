@@ -17,6 +17,8 @@
 // bonuses go through the systems the model already has (stream and stage output, telegram slowdowns, checklist price,
 // the race, gift service, conversion price); series 2–5 give +museumSeriesPct % each to all income; № 24 multiplies
 // the bonuses of № 9–23. museum 1 keeps the 8 journals of 07, so older presets give the same results.
+// v7.4 (spec 013, decision 111): `dubs` > 0 plays the loop «Дубль N» after the finale (levels Р1–Р5 again with rateMult/costMult ×
+// dup.mult^N and the points divisor × dup.divisorMult^N); with `dubs` 0 (the default) the run stops at the finale as before.
 // Pure functions, no DOM, deterministic (seeded random); the sandbox page embeds this file as is.
 // v7.2+ (spec 001, decision 52, principle II): the parameters and the formulas live in the economy module of the game
 // (src/economy/core), built into balance/economy.js; this file keeps the bot, the scenarios and the events.
@@ -26,6 +28,7 @@ var copyInto = E.copyInto, withDefaults = E.withDefaults, reachableLevels = E.re
 var capAt = E.capAt, priceAt = E.priceAt;
 
 function simulate(p, scenario) {
+  var p0 = p, dubN = 0; // v7.4 (013 FR-23…FR-27): `p.dubs` > 0 plays the loop «Дубль N» after the finale; p0 is the original, p the scaled one
   var nLevels = reachableLevels(p);
   var level = 1, items = levelItems(p, 1), B = p.levels[0];
   var SR = items.streams, ST = items.stages;
@@ -150,7 +153,7 @@ function simulate(p, scenario) {
   function bossNeedsZpz() { return boss && !boss.done && boss.mech === 'zpz' && zpzShareNow() < p.boss.zpzMin; }
   function convOpen() { // the next conversion is open on this level
     if (!B.convert || nDigital >= ST.length) return false;
-    var nL = 0; out.prestiges.forEach(function (x) { if (x.level === level) nL++; });
+    var nL = 0; out.prestiges.forEach(function (x) { if ((x.dub || 0) === dubN && x.level === level) nL++; });
     return nDigital < 1 + nL;
   }
 
@@ -275,12 +278,44 @@ function simulate(p, scenario) {
       out.conversions.push({ t: t, id: id, cost: convCost, n: nDigital });
       convCost = null;
       if (M24) { if (nDigital === 2) grant(21, t); if (nDigital === 4) grant(22, t); if (nDigital === 5) grant(23, t); if (nDigital >= ST.length) grant(24, t); } // № 24: «Остання книга» of the finale
-      if (nDigital >= ST.length) { out.finaleAt = t; ended = true; return Infinity; }
+      if (nDigital >= ST.length) return finishRun(t);
       return priorityBuys(t);
     }
     return 0;
   }
 
+  // v7.4: scaled parameters of Дубль N (013 FR-25): rateMult, costMult (and clerks) × dup.mult^N, the points divisor × dup.divisorMult^N;
+  // the exit from Р1–Р4 is dup.exitDigitizations digitizations (+ the final inspection on Р2–Р4); modifiers change the plain parameters
+  function dubParams(N) {
+    var D = p0.dup, q = JSON.parse(JSON.stringify(p0)), pw = Math.pow(D.mult, N), dw = Math.pow(D.divisorMult, N);
+    q.levels = p0.levels.map(function (L, i) {
+      var c = JSON.parse(JSON.stringify(L));
+      c.rateMult = L.rateMult * pw; c.costMult = L.costMult * pw;
+      if (L.clerkMult != null) c.clerkMult = L.clerkMult * pw;
+      c.prestigeDivisor = L.prestigeDivisor * dw;
+      if (L.exitDigitizations > 0) c.exitDigitizations = D.exitDigitizations;
+      return c;
+    });
+    // modifiers (013 FR-27), for a run with `p.dubMod`: «Без Діда» - the fuel bonus; «Мокра печатка» - the ×3 lasts longer
+    // (the announcement schedule of the scheduled inspections is fixed before the run, so its shorter interval is not modelled here)
+    if (p0.dubMod === 'nodid') q.fuelBonus = D.noDid.fuelMult;
+    if (p0.dubMod === 'wet') q.inspHours = p0.inspHours * D.wetSeal.boostMult;
+    return q;
+  }
+  function finishRun(t) {
+    if (dubN === 0) out.finaleAt = t;
+    if (p0.dubs > 0) (out.dubs = out.dubs || []).push({ n: dubN, end: t, digitizations: out.prestiges.filter(function (x) { return (x.dub || 0) === dubN; }).length });
+    if (p0.dubs > 0 && dubN < p0.dubs && p0.dup) { // «Прийняти до виконання»: the loop starts at once (the quiet week is not modelled)
+      dubN++; p = dubParams(dubN); fuelBonus = p.fuelBonus || 1;
+      level = 1; B = p.levels[0]; items = levelItems(p, 1); SR = items.streams; ST = items.stages;
+      boss = null; bossPassed = false; bossPending = false; convCost = null; digital = {}; nDigital = 0;
+      (out.dubLevelAt = out.dubLevelAt || {})[dubN] = { 1: t };
+      reset(); lastBuy = t;
+      return 0;
+    }
+    ended = true;
+    return Infinity;
+  }
   function priorityPrice() { // the lowest price among boss items and the open conversion still to buy
     var x = Infinity;
     if (boss && !boss.done && boss.paidItems < p.boss.items) x = boss.cost / p.boss.items;
@@ -324,9 +359,10 @@ function simulate(p, scenario) {
     return (best.cost - st.sig) / Math.max(ipm(false), 1e-9) / 60 >= p.prestigeStallHours;
   }
   function levelUp(t) {
-    out.earned[level] = earned - (out.earned0[level] || 0);
-    level++; out.levelAt[level] = t; out.earned0[level] = earned;
-    if (level === 2) out.level2At = t;
+    if (dubN === 0) out.earned[level] = earned - (out.earned0[level] || 0);
+    level++;
+    if (dubN === 0) { out.levelAt[level] = t; out.earned0[level] = earned; } else out.dubLevelAt[dubN][level] = t;
+    if (level === 2 && dubN === 0) out.level2At = t;
     B = p.levels[level - 1];
     items = levelItems(p, level); SR = items.streams; ST = items.stages;
     boss = null; bossPassed = false; bossPending = false;
@@ -334,14 +370,20 @@ function simulate(p, scenario) {
   function maybePrestige(t) {
     if (unlockedStreams() < SR.length) return;
     var pts = points(st.life);
-    var need = Math.max(p.prestigeMinPoints, p.prestigeGrowth * prestigeTotal);
+    if (dubN > 0) { // a rational player digitizes in a Дубль only to leave the level: not past the exit while the final inspection is due, and on Р5 only to open the next conversion
+      var nL0 = 0; out.prestiges.forEach(function (x) { if ((x.dub || 0) === dubN && x.level === level) nL0++; });
+      var allowed = B.convert ? nDigital >= 1 + nL0 : (nL0 < B.exitDigitizations || bossPassed);
+      if (!allowed) return;
+    }
+    // Дубль (013): P_total already carries a huge multiplier, so the player digitizes as soon as the game allows (prestigeMinPoints) - only to leave the level
+    var need = dubN > 0 ? p.prestigeMinPoints : Math.max(p.prestigeMinPoints, p.prestigeGrowth * prestigeTotal);
     var share = p.prestigeStallShare == null ? 0.5 : p.prestigeStallShare;
-    if (pts < need && p.prestigeStallHours > 0 && pts >= Math.max(p.prestigeMinPoints, share * prestigeTotal) && stuck()) need = pts;
+    if (dubN === 0 && pts < need && p.prestigeStallHours > 0 && pts >= Math.max(p.prestigeMinPoints, share * prestigeTotal) && stuck()) need = pts;
     if (pts >= need && pts > 0) {
       var zs = zpzShareNow(); if (zpzIdx() >= 0) (out.zpzShare[level] = out.zpzShare[level] || []).push(Math.round(zs * 1000) / 1000);
       prestigeTotal += pts;
-      out.prestiges.push({ t: t, points: pts, total: prestigeTotal, level: level });
-      var nL = 0; out.prestiges.forEach(function (x) { if (x.level === level) nL++; });
+      out.prestiges.push({ t: t, points: pts, total: prestigeTotal, level: level, dub: dubN || undefined });
+      var nL = 0; out.prestiges.forEach(function (x) { if ((x.dub || 0) === dubN && x.level === level) nL++; });
       if (level === 1) {
         if (nL === 1) { grant(1, t); grant(2, t); grant(3, t); firstDigT = t; }
         if (nL === 2) { grant(4, t); grant(5, t); }
@@ -822,7 +864,7 @@ function simulate(p, scenario) {
     if (ended || si === sess.length - 1 || Math.floor(sess[si + 1].t / day) > Math.floor(t0 / day)) paperByDay.push(Math.round(paper * 10) / 10);
   }
   settleRace(tEnd);
-  out.earned[level] = earned - (out.earned0[level] || 0);
+  if (dubN === 0) out.earned[level] = earned - (out.earned0[level] || 0);
   // v7.1 content counters: random events that really happened, with the level at that moment
   function levelAtT(t) { var L = 1; for (var k in out.levelAt) if (out.levelAt[k] <= t && +k > L) L = +k; return L; }
   kombats.forEach(function (k) { if (k.t <= tEnd) out.kombatAt.push({ t: k.t, level: levelAtT(k.t) }); });

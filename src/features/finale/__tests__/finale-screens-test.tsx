@@ -20,7 +20,6 @@ jest.mock('expo-haptics', () => ({
 }));
 
 const T0 = new Date(2025, 9, 10, 12).getTime();
-const DAY = 86_400_000;
 const ORDER = bundledConfig.params.convert.order;
 
 const DONE = { start: [], order: ['order'], script: ['order', 'script'], last_book: ['order', 'script', 'last_book'] } as const;
