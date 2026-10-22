@@ -89,6 +89,18 @@ export interface BriefParams {
   minGapDays: number;
 }
 
+/** Масштаб і модифікатори Дублів (013): rateMult, costMult і clerkMult рівнів × mult^N, дільник балів × divisorMult^N */
+export interface DupParams {
+  mult: number;
+  /** Цифровізацій на Р1-Р4 для виходу з рівня в Дублі (на Р2-Р4 ще й підсумкова перевірка) */
+  exitDigitizations: number;
+  divisorMult: number;
+  /** «Мокра печатка»: проміжок між плановими перевірками × intervalMult, ×3 триває × boostMult */
+  wetSeal: { intervalMult: number; boostMult: number };
+  /** «Без Діда»: бонус пального замість fuelBonus */
+  noDid: { fuelMult: number };
+}
+
 export interface EconomyParams {
   streams: UnitDef[];
   stages: UnitDef[];
@@ -140,6 +152,10 @@ export interface EconomyParams {
   storyMaxToasts: number;
   /** Тиждень тиші після Y на `finale-script` (013 FR-22), доби */
   finaleQuietDays: number;
+  /** Нескінченний режим «Дубль N» (013 FR-24…FR-27, рішення 111) */
+  dup: DupParams;
+  /** Скільки Дублів програє `simulate` після фіналу (лише модель; у грі не читається), 0 - фінал зупиняє прогін */
+  dubs: number;
   naradaChance: number;
   naradaMult: number;
   naradaMinMin: number;

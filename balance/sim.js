@@ -17,6 +17,8 @@
 // bonuses go through the systems the model already has (stream and stage output, telegram slowdowns, checklist price,
 // the race, gift service, conversion price); series 2–5 give +museumSeriesPct % each to all income; № 24 multiplies
 // the bonuses of № 9–23. museum 1 keeps the 8 journals of 07, so older presets give the same results.
+// v7.4 (spec 013, decision 111): `dubs` > 0 plays the loop «Дубль N» after the finale (levels Р1–Р5 again with rateMult/costMult ×
+// dup.mult^N and the points divisor × dup.divisorMult^N); with `dubs` 0 (the default) the run stops at the finale as before.
 // Pure functions, no DOM, deterministic (seeded random); the sandbox page embeds this file as is.
 // v7.2+ (spec 001, decision 52, principle II): the parameters and the formulas live in the economy module of the game
 // (src/economy/core), built into balance/economy.js; this file keeps the bot, the scenarios and the events.
@@ -37,7 +39,7 @@ function simulate(p, scenario) {
   var st;
   var out = { firstClerk: null, allStreams: null, level2At: null, prestiges: [], unlocks: [], purchases: 0, waits: [], stalls: [],
     insp: [], races: [], journals: {}, kombats: 0, cats: 0, archive: 0, starterAt: null,
-    levelAt: { 1: 0 }, bossAnn: {}, bosses: [], conversions: [], finaleAt: null, zpzShare: {}, dubs: [], dubLevelAt: {},
+    levelAt: { 1: 0 }, bossAnn: {}, bosses: [], conversions: [], finaleAt: null, zpzShare: {},
     sessions: [], returns: [], telegrams: [], packs: [], pushes: [], naradaAt: [], sedoAt: [], kombatAt: [], earned: {}, earned0: { 1: 0 } }; // v7.1: content counters
   var H = 3600, day = 86400, clock0 = (p.dayStartHour || 0) * H;
   function localH(t) { return ((clock0 + t) % day + day) % day / H; }
@@ -151,7 +153,7 @@ function simulate(p, scenario) {
   function bossNeedsZpz() { return boss && !boss.done && boss.mech === 'zpz' && zpzShareNow() < p.boss.zpzMin; }
   function convOpen() { // the next conversion is open on this level
     if (!B.convert || nDigital >= ST.length) return false;
-    var nL = 0; out.prestiges.forEach(function (x) { if (x.level === level && x.dub === dubN) nL++; });
+    var nL = 0; out.prestiges.forEach(function (x) { if ((x.dub || 0) === dubN && x.level === level) nL++; });
     return nDigital < 1 + nL;
   }
 
@@ -294,16 +296,20 @@ function simulate(p, scenario) {
       if (L.exitDigitizations > 0) c.exitDigitizations = D.exitDigitizations;
       return c;
     });
+    // modifiers (013 FR-27), for a run with `p.dubMod`: «Без Діда» - the fuel bonus; «Мокра печатка» - the ×3 lasts longer
+    // (the announcement schedule of the scheduled inspections is fixed before the run, so its shorter interval is not modelled here)
+    if (p0.dubMod === 'nodid') q.fuelBonus = D.noDid.fuelMult;
+    if (p0.dubMod === 'wet') q.inspHours = p0.inspHours * D.wetSeal.boostMult;
     return q;
   }
   function finishRun(t) {
     if (dubN === 0) out.finaleAt = t;
-    out.dubs.push({ n: dubN, end: t, digitizations: out.prestiges.filter(function (x) { return x.dub === dubN; }).length });
+    if (p0.dubs > 0) (out.dubs = out.dubs || []).push({ n: dubN, end: t, digitizations: out.prestiges.filter(function (x) { return (x.dub || 0) === dubN; }).length });
     if (p0.dubs > 0 && dubN < p0.dubs && p0.dup) { // «Прийняти до виконання»: the loop starts at once (the quiet week is not modelled)
       dubN++; p = dubParams(dubN); fuelBonus = p.fuelBonus || 1;
       level = 1; B = p.levels[0]; items = levelItems(p, 1); SR = items.streams; ST = items.stages;
       boss = null; bossPassed = false; bossPending = false; convCost = null; digital = {}; nDigital = 0;
-      out.dubLevelAt[dubN] = { 1: t };
+      (out.dubLevelAt = out.dubLevelAt || {})[dubN] = { 1: t };
       reset(); lastBuy = t;
       return 0;
     }
@@ -365,7 +371,7 @@ function simulate(p, scenario) {
     if (unlockedStreams() < SR.length) return;
     var pts = points(st.life);
     if (dubN > 0) { // a rational player digitizes in a Дубль only to leave the level: not past the exit while the final inspection is due, and on Р5 only to open the next conversion
-      var nL0 = 0; out.prestiges.forEach(function (x) { if (x.level === level && x.dub === dubN) nL0++; });
+      var nL0 = 0; out.prestiges.forEach(function (x) { if ((x.dub || 0) === dubN && x.level === level) nL0++; });
       var allowed = B.convert ? nDigital >= 1 + nL0 : (nL0 < B.exitDigitizations || bossPassed);
       if (!allowed) return;
     }
@@ -376,8 +382,8 @@ function simulate(p, scenario) {
     if (pts >= need && pts > 0) {
       var zs = zpzShareNow(); if (zpzIdx() >= 0) (out.zpzShare[level] = out.zpzShare[level] || []).push(Math.round(zs * 1000) / 1000);
       prestigeTotal += pts;
-      out.prestiges.push({ t: t, points: pts, total: prestigeTotal, level: level, dub: dubN });
-      var nL = 0; out.prestiges.forEach(function (x) { if (x.level === level && x.dub === dubN) nL++; });
+      out.prestiges.push({ t: t, points: pts, total: prestigeTotal, level: level, dub: dubN || undefined });
+      var nL = 0; out.prestiges.forEach(function (x) { if ((x.dub || 0) === dubN && x.level === level) nL++; });
       if (level === 1) {
         if (nL === 1) { grant(1, t); grant(2, t); grant(3, t); firstDigT = t; }
         if (nL === 2) { grant(4, t); grant(5, t); }

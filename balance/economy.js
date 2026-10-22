@@ -189,6 +189,9 @@ var StroiovaEconomy = (() => {
     storyMaxToasts: 2,
     // 013 FR-22: тиждень тиші від вимкнення розсилки (docs/levels-3-5.md §4.2)
     finaleQuietDays: 7,
+    // 013, рішення 111: підібрано на sim.js (Дубль ≈ 15 днів з рекламою, ≈ 19 без реклами, ≈ 11,5 платний; стабільно на 6 Дублях)
+    dup: { mult: 10, exitDigitizations: 6, divisorMult: 20, wetSeal: { intervalMult: 0.75, boostMult: 1.5 }, noDid: { fuelMult: 1.15 } },
+    dubs: 0,
     // «Нарада затягнулась» (Р3+): the «Комбата шукають» template on the «Нарада» stage
     naradaChance: 0.2,
     naradaMult: 0.25,
