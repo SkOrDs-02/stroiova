@@ -3,6 +3,7 @@ import { refuel } from '@/economy/game/actions';
 import type { DomainEvent, EconomyConfig, EconomyState, EconomyParams } from '@/economy/game/types';
 
 import { FADING_FROM, pick } from './bag';
+import { copiesK, scaledRep } from './effects';
 import { dayKey, dayNumber, dayStart, DAY, HOUR, monthOf } from './clock';
 import { FIRST_TELEGRAM_ID, OVERRIDE_ID, telegram } from './content';
 import { deliverPack, newRows, PACK_HOUR } from './packs';
@@ -43,7 +44,15 @@ export function newTelegrams(p: EconomyParams, seedText: string): TelegramState 
 
 /** Місць у «Нових»: пачка Р3 - одне (011 FR-18) */
 export function newCount(tg: TelegramState): number {
-  return newRows(tg);
+  // № 112 лежить у «Нових» до `dub_start` і не займає ліміт (013 FR-23)
+  const kept = tg.inbox.filter((x) => x.status === 'new' && telegram(x.id)?.schedule?.keepInNewUntil).length;
+  return newRows(tg) - kept;
+}
+
+/** `dub_start`: телеграми, що лежали у «Нових» до цієї миті (№ 112), йдуть в архів «до відома» (013 FR-23) */
+export function releaseKept(tg: TelegramState, nowMs: number): TelegramState {
+  if (!tg.inbox.some((x) => x.status === 'new' && telegram(x.id)?.schedule?.keepInNewUntil === 'dub_start')) return tg;
+  return { ...tg, inbox: tg.inbox.map((x) => (x.status === 'new' && telegram(x.id)?.schedule?.keepInNewUntil === 'dub_start' ? { ...x, status: 'archive' as const, read: true, answeredAt: nowMs } : x)) };
 }
 
 function makeItem(tg: TelegramState, id: string, kind: ItemKind, atMs: number): { tg: TelegramState; item: InboxItem } {
@@ -113,6 +122,8 @@ export interface TickCtx {
   away: boolean;
   /** Розсилку вимкнено Y на `finale-script` (013 FR-19): слоти за розкладом спливають без доставки, таймери йдуть */
   muted?: boolean;
+  /** Поточний Дубль (013 FR-28): мішок бере ще й пул Дублів */
+  dub?: { n: number; modifier: string | null };
 }
 
 export interface TickResult {
@@ -220,7 +231,7 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
         deliver(OVERRIDE_ID, 'override', at, { vars: { n, n1: n + 1 } });
         continue;
       }
-      const choice = pick(tg, { nowMs: at, level: ctx.level, digitizations: ctx.digitizations, conversions: ctx.conversions ?? 0, month: monthOf(at, ctx.tzOffsetMin), raceActive: ctx.raceActive, repeatMinDays: p.tgRepeatMinDays }, () => rng.next());
+      const choice = pick(tg, { nowMs: at, level: ctx.level, digitizations: ctx.digitizations, conversions: ctx.conversions ?? 0, month: monthOf(at, ctx.tzOffsetMin), raceActive: ctx.raceActive, repeatMinDays: p.tgRepeatMinDays, dub: ctx.dub }, () => rng.next());
       if (!choice) continue;
       // черга чиститься й від уже отриманих id (FR-6)
       tg = { ...tg, queue: tg.queue.filter((q) => q !== choice.id && !tg.inbox.some((x) => x.id === q)) };
@@ -230,8 +241,9 @@ export function tick(tg0: TelegramState, eco0: EconomyState, ctx: TickCtx): Tick
     const t = st.timer!;
     const item = tg.inbox.find((x) => x.uid === t.itemUid);
     if (t.kind === 'delayed' && t.effects) {
-      if (t.effects.rep) tg = applyRep(tg, t.effects.rep, t.atMs, t.itemUid);
-      if (t.effects.paper) eco = { ...eco, paper: Math.max(0, eco.paper - t.effects.paper) };
+      const k = copiesK(ctx.cfg);
+      if (t.effects.rep) tg = applyRep(tg, scaledRep(t.effects.rep, k), t.atMs, t.itemUid);
+      if (t.effects.paper) eco = { ...eco, paper: Math.max(0, eco.paper - t.effects.paper * k) };
     } else if (t.kind === 'return' && item) {
       // повертається в «Нові» (№ 26 із шухляди, повернення після відписки)
       tg = { ...tg, inbox: tg.inbox.map((x) => (x.uid === item.uid ? { ...x, status: 'new', receivedAt: t.atMs, choiceId: undefined, result: undefined, workUntil: undefined } : x)) };

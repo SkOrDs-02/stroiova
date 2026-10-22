@@ -47,6 +47,9 @@ import { t } from '@/features/conveyor/texts';
 import { UnitRow } from '@/features/conveyor/UnitRow';
 import { SedoSheet } from '@/features/convert/SedoSheet';
 import { StageConvert } from '@/features/convert/StageConvert';
+import { DubClosed } from '@/features/dub/DubClosed';
+import { EndlessIntro } from '@/features/dub/EndlessIntro';
+import { dupT } from '@/features/dub/texts';
 import { Credits } from '@/features/finale/Credits';
 import { FinaleOrder } from '@/features/finale/FinaleOrder';
 import { FinaleShutdown } from '@/features/finale/FinaleShutdown';
@@ -106,6 +109,7 @@ type View3 =
   | { kind: 'fin-script' }
   | { kind: 'last-book' }
   | { kind: 'credits' }
+  | { kind: 'endless-intro' }
   | { kind: 'sedo' }
   | { kind: 'digital' }
   | { kind: 'museum'; seg?: 'journals' | 'curios' | 'awards'; award?: string; source?: 'award_toast' | 'profile' }
@@ -287,6 +291,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // наказ і титри відкриваються самі поверх усього (крайовий випадок: перевірка чи гонка під час конвертації № 6 стають у чергу після кроку)
   const finAutoOpen = finStep != null && (finStep === 'order' || finStep === 'credits') && !onboarding && s.offline == null && view.kind === 'main' && finAuto !== finStep;
 
+  // 013 FR-26: акт «Дубль N закрито» відкривається сам, коли нічого не заважає; далі - наказ про наступний Дубль
+  const dubActOpen = s.dub.closed != null && !s.dub.closed.seen && !onboarding && s.offline == null && view.kind === 'main' && !ceremonyOpen;
+  // 013 FR-23: пропозиція Дубля чекає - банер на `main`
+  const dubBanner = s.dub.offer != null && !dubActOpen && view.kind === 'main' && !onboarding;
+
   // 016 FR-32: тости грамот чекають онбординг, церемонії й модалки; решта тостів іде перед ними у спільній черзі
   const awardsFree = calm && !iapOpen && !starterOpen && o.step === 'done';
   const awardsPending = s.awardQueue.length;
@@ -320,6 +329,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       setView({ kind: 'note', uid: item.uid });
     } else {
       if (item.kind === 'notice') s.openItem(item.uid);
+      // 013 FR-23: № 112 «Дублювати на папері» відкриває `endless-intro` (поки пропозиція чекає)
+      if (item.kind === 'notice' && telegramOf(item)?.effects?.openScreen === 'endless-intro' && store.getState().dub.offer) {
+        setView({ kind: 'endless-intro' });
+        return;
+      }
       if (item.kind === 'telegram' && item.status === 'new') s.kavaLineFor(item.uid);
       setView({ kind: 'detail', uid: item.uid, coach: false, pack });
     }
@@ -340,6 +354,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         <>
       <View style={[styles.header, { paddingTop: insets.top + space[16] }]} pointerEvents={coachOn ? 'none' : 'auto'}>
         {s.state.level >= 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="place">{byLevel.place(s.state.level)}</Text> : null}
+        {s.dub.n >= 1 && s.dub.modifier ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.place} testID="dub-chip">{dupT.chip(s.dub.n, dupT.mod[s.dub.modifier].name)}</Text> : null}
         <StackTower store={store} />
         {!onboarding ? (
           <Pressable testID="menu-open" accessibilityRole="button" accessibilityLabel={setT.menuOpen} onPress={() => setView({ kind: 'menu' })} style={[styles.menuBtn, { top: insets.top + space[8] }]}>
@@ -384,6 +399,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
             style={styles.inspBar}
           >
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.inspText}>{finT.banner[finStep as keyof typeof finT.banner]}</Text>
+          </Pressable>
+        ) : null}
+        {dubBanner ? (
+          <Pressable testID="dub-banner" accessibilityRole="button" onPress={() => setView({ kind: 'endless-intro' })} style={styles.inspBar}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.inspText}>{dupT.banner(s.dub.offer!.n)}</Text>
           </Pressable>
         ) : null}
         {race && race.seen ? <RaceCard race={race} nowMs={now} p={s.cfg.params} onOpen={() => setRaceSheetId(race.id)} /> : null}
@@ -581,6 +601,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       {view.kind === 'fin-script' ? <FinaleShutdown store={store} onClose={() => setView({ kind: 'main' })} onNext={() => setView({ kind: 'last-book' })} /> : null}
       {view.kind === 'last-book' ? <LastBook store={store} onNext={() => setView({ kind: 'main' })} /> : null}
       {view.kind === 'credits' ? <Credits store={store} final onClose={() => setView({ kind: 'main' })} /> : null}
+      {view.kind === 'endless-intro' ? <EndlessIntro store={store} onClose={() => setView({ kind: 'main' })} /> : null}
+      {dubActOpen ? <DubClosed store={store} onNext={() => setView({ kind: 'endless-intro' })} /> : null}
       {view.kind === 'convert' ? <StageConvert store={store} onClose={() => setView({ kind: 'main' })} /> : null}
       {view.kind === 'meeting' || meetingAuto ? (
         <KombatSheet

@@ -4,7 +4,7 @@ import type { EconomyConfig, EconomyState } from '@/economy/game/types';
 import { gendered } from '@/features/onboarding/callsign';
 import type { Gender } from '@/features/onboarding/steps';
 import { cvT } from '@/features/convert/texts';
-import { canChoose, cutHours, paperCost } from '@/telegrams/effects';
+import { canChoose, copiesK, cutHours, paperCost, scaledRep } from '@/telegrams/effects';
 import { BRIEF_ID } from '@/telegrams/events';
 import { replyChance } from '@/telegrams/reputation';
 import type { Choice, InboxItem, Telegram, TelegramState } from '@/telegrams/types';
@@ -41,7 +41,8 @@ export function choiceView(c: Choice, tg: TelegramState, eco: EconomyState, cfg:
   const e = c.effects;
   const parts: string[] = [];
   if (e.durationMin) parts.push(t.minutes(e.durationMin));
-  const paper = paperCost(e, tg.flags);
+  const k = copiesK(cfg);
+  const paper = paperCost(e, tg.flags, k);
   if (paper) parts.push(t.sheets(paper));
   for (const s of e.slow ?? []) {
     // 013 FR-9: на цифровій ланці сповільнення немає
@@ -51,7 +52,7 @@ export function choiceView(c: Choice, tg: TelegramState, eco: EconomyState, cfg:
   const shield = !!e.digitalShield && eco.prestigePoints >= 1;
   if (shield) parts.push(t.shield);
   else {
-    if (e.rep) parts.push(t.rep(e.rep));
+    if (e.rep) parts.push(t.rep(scaledRep(e.rep, k)));
     // шанс показуємо лише коли він є (FR-15: до першої планової — без рядка)
     if (e.inspPct) {
       const pr = replyChance(tg, cfg.params, e.inspPct, !!e.digitalShield, eco.prestigePoints);
@@ -59,7 +60,7 @@ export function choiceView(c: Choice, tg: TelegramState, eco: EconomyState, cfg:
     }
   }
   const summary = parts.length ? parts.join(' · ') : (c.note ?? '');
-  const av = canChoose(tg, eco, c, fromDrawer);
+  const av = canChoose(tg, eco, c, fromDrawer, k);
   const disabled = av.ok ? null : av.reason === 'paper' ? t.noPaper(av.n) : (c.disabledReason ?? t.ovDisabled);
   return { choice: c, summary, disabled };
 }

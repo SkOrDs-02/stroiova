@@ -4,6 +4,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useStore } from 'zustand';
 
 import { count } from '@/awards/awards';
+import { recordNow } from '@/dub/dub';
+import { dupT, recordLabel, recordLine } from '@/features/dub/texts';
 import { AWARDS_TOTAL } from '@/awards/content';
 import { awT } from '@/features/awards/texts';
 import type { ConveyorStore } from '@/features/conveyor/store';
@@ -26,6 +28,7 @@ export function ProfileScreen({ store, insetTop, onBack, onDiary, onAwards }: { 
   const gender: Gender = o.gender ?? 'm';
   const r = profileRows({ level: s.state.level, digit: s.digit, installMs: s.inspections.installMs, points: s.state.prestigePoints, params: s.cfg.params, exit: s.cfg.params.levels[s.state.level - 1]?.exitDigitizations ?? null, inbox: s.telegrams.inbox, stats: s.stats, gender });
   const pf = setT.pf;
+  const rec = recordNow(s.dub, s.state.lifetimeCycle);
   const rows: [string, string, string][] = [
     ['pf-form', pf.form, r.form],
     ['pf-post', pf.post, pf.postValue],
@@ -65,6 +68,13 @@ export function ProfileScreen({ store, insetTop, onBack, onDiary, onAwards }: { 
           </View>
         ))}
       </View>
+
+      {rec.dub >= 1 ? (
+        <View style={styles.report} testID="pf-record">
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.reportTitle}>{dupT.recTitle}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tileNote} accessibilityLabel={recordLabel(rec.dub, rec.lifetimeLog10)} testID="pf-record-line">{recordLine(rec.dub, rec.lifetimeLog10)}</Text>
+        </View>
+      ) : null}
 
       <Pressable
         testID="pf-awards"

@@ -90,9 +90,9 @@ export function declineScript(f: FinaleState): FinaleState {
   return f.startMs == null || f.done.script != null ? f : { ...f, scriptNs: f.scriptNs + 1 };
 }
 
-/** Розсилка вимкнена Y (FR-19): за розкладом телеграми не приходять; відновить її Дубль 1 (етап 2b, № 113) */
+/** Розсилка вимкнена Y (FR-19): за розкладом телеграми не приходять, поки Дубль 1 не відновить її (№ 113, `endless_offer` закрито) */
 export function mailingStopped(f: FinaleState): boolean {
-  return f.yMs != null;
+  return f.yMs != null && f.done.endless_offer == null;
 }
 
 /** Секунд від початку фіналу (властивість `sec_since_finale_start`) */

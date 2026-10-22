@@ -77,7 +77,9 @@ export interface Telegram {
     repeatEveryDays?: number;
     outsideQuota?: boolean;
     endless?: boolean;
-    requires?: { raceActive?: boolean | string; digitizationsMin?: number; conversionsMin?: number };
+    requires?: { raceActive?: boolean | string; digitizationsMin?: number; conversionsMin?: number; dubMin?: number; dubModifier?: 'two_copies' | 'wet_seal' | 'no_did' };
+    /** № 112 (013 FR-23): лежить у «Нових», поза квотою `tgMaxNew`, поки не настане подія */
+    keepInNewUntil?: 'dub_start';
     /** Р5 (013 FR-14): приходить першою після конвертації № 4 */
     fading?: boolean;
     fromDay?: number;

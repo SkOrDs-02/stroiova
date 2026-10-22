@@ -1,5 +1,5 @@
 // Мішок телеграм (003 FR-5, FR-6, FR-31; рішення 27, 41; 09 FR-36): черга, неотримані з виконаними умовами, далі повтор архівних.
-import { poolFor, telegram } from './content';
+import { endlessPool, poolFor, telegram } from './content';
 import type { Telegram, TelegramState } from './types';
 
 const DAY = 86_400_000;
@@ -13,6 +13,8 @@ export interface BagCtx {
   month: number;
   raceActive: string | null;
   repeatMinDays: number;
+  /** Поточний Дубль (013 FR-28): умови пулу Дублів `requires.dubMin`/`dubModifier`; немає - Дублів не було */
+  dub?: { n: number; modifier: string | null };
 }
 
 const SUMMER = [6, 7, 8];
@@ -26,6 +28,8 @@ function conditionsMet(t: Telegram, c: BagCtx): boolean {
   if (r.digitizationsMin != null && c.digitizations < r.digitizationsMin) return false;
   if (r.raceActive != null && (c.raceActive == null || (typeof r.raceActive === 'string' && r.raceActive !== c.raceActive))) return false;
   if (r.conversionsMin != null && (c.conversions ?? 0) < r.conversionsMin) return false;
+  if (r.dubMin != null && (c.dub?.n ?? 0) < r.dubMin) return false;
+  if (r.dubModifier != null && c.dub?.modifier !== r.dubModifier) return false;
   return true;
 }
 
@@ -56,7 +60,10 @@ export function pick(tg: TelegramState, c: BagCtx, rand: () => number): { id: st
   const among = fading.length ? fading : fresh;
   if (among.length) return { id: among[Math.floor(rand() * among.length)]!.id, fromQueue: false };
   // другий прохід: архівна з найдавнішою відповіддю, не частіше ніж раз на repeatMinDays (FR-31)
-  const pool = new Set(poolFor(c.level).filter((t) => conditionsMet(t, c)).map((t) => t.id));
+  // Дубль (013 FR-28, ВП-9): неотримані телеграми пулу Дублів - у спільному мішку з архівними повторами
+  const endless = c.dub && c.dub.n >= 1 ? endlessPool().filter((t) => conditionsMet(t, c)) : [];
+  const unseen = endless.filter((t) => lastReceived(tg, t.id) == null).map((t) => t.id);
+  const pool = new Set([...poolFor(c.level), ...endless].filter((t) => conditionsMet(t, c)).map((t) => t.id));
   let best: { id: string; at: number } | null = null;
   const lastAnswer = new Map<string, number>();
   for (const x of tg.inbox) {
@@ -74,5 +81,6 @@ export function pick(tg: TelegramState, c: BagCtx, rand: () => number): { id: st
     if (c.nowMs - recv < c.repeatMinDays * DAY) continue;
     if (!best || at < best.at) best = { id, at };
   }
-  return best ? { id: best.id, fromQueue: false } : null;
+  const bag = best ? [...unseen, best.id] : unseen;
+  return bag.length ? { id: bag[Math.floor(rand() * bag.length)]!, fromQueue: false } : null;
 }

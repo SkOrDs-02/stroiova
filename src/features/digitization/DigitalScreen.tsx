@@ -5,6 +5,8 @@ import { useStore } from 'zustand';
 
 import { formatBig, formatCountdown, formatMult } from '@/economy/format';
 import { itemsFor } from '@/economy/game/state';
+import { recordNow } from '@/dub/dub';
+import { dupT, recordLabel, recordLine } from '@/features/dub/texts';
 import { FINAL_LEVELS, PLAYABLE_LEVELS, finalDue, status } from '@/digitization/digitization';
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { color, radius, size, space, typeScale } from '@/theme';
@@ -19,6 +21,7 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
   const [how, setHow] = useState(false);
   const st = status(s.state, s.digit, s.cfg, s.lastMs, s.effects);
   const level = s.state.level;
+  const rec = recordNow(s.dub, s.state.lifetimeCycle);
   const it = itemsFor(s.state, s.cfg);
   const showHow = how || (!s.digit.howSeen && st.kind === 'available');
   const L = s.cfg.params.levels[level - 1];
@@ -97,6 +100,12 @@ export function DigitalScreen({ store, onOpenConfirm }: { store: ConveyorStore; 
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2}>{digitT.stays}</Text>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text}>{digitT.staysList}</Text>
         </View>
+        {rec.dub >= 1 ? (
+          <View style={styles.card} testID="digit-record">
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h2}>{dupT.recTitle}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} accessibilityLabel={recordLabel(rec.dub, rec.lifetimeLog10)} testID="digit-record-line">{recordLine(rec.dub, rec.lifetimeLog10)}</Text>
+          </View>
+        ) : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.text} testID="digit-counter">{level >= 5 ? digitT.cvCounter(s.state.digital.length, s.cfg.params.convert.order.length) : level >= 2 ? digitT.counterLvl(st.levelCount, total) : digitT.counterR1(st.levelCount)}</Text>
         {st.isLast && level < 2 ? <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tag} testID="digit-last">{digitT.last}</Text> : null}
         {hasFinalHere && fin ? (

@@ -7,6 +7,8 @@ import { color, radius, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
 
+import { dupT } from '@/features/dub/texts';
+
 import { digitT } from './texts';
 
 export function LevelUp({ store }: { store: ConveyorStore }) {
@@ -16,10 +18,20 @@ export function LevelUp({ store }: { store: ConveyorStore }) {
   const to3 = from === 2;
   const to4 = from === 3;
   const to5 = from >= 4;
+  const dubN = s.dub.n;
+  // 013 FR-28: у Дублі наказ про переведення короткий - заголовок і бали, без розповіді й реплік
+  const docTitle = to5 ? digitT.l5DocTitle : to4 ? digitT.l4DocTitle : to3 ? digitT.l3DocTitle : digitT.l2DocTitle;
+  const points = (to5 ? digitT.l5Points : to4 ? digitT.l4Points : to3 ? digitT.l3Points : digitT.l2Points)(s.state.prestigePoints);
   return (
     <View style={styles.scrim} testID="level-up">
       <View style={styles.wrap} accessibilityViewIsModal>
-        {to5 ? (
+        {dubN >= 1 ? (
+          <View style={styles.paper} testID="level-up-dub">
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{dupT.levelUpShort(dubN)}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{docTitle}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.doc} testID="level-points">{points}</Text>
+          </View>
+        ) : to5 ? (
           <View style={styles.paper} testID="level-up-r5">
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.meta}>{digitT.l5DocNo}</Text>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">{digitT.l5DocTitle}</Text>

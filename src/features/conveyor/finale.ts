@@ -1,5 +1,6 @@
 // Фінал у сторі (013 FR-15…FR-22): конвертація № 6 запускає кроки, кроки доставляють сценарні телеграми № 108-111, видають журнал № 24
 // і дають тригери сюжету (014 `finale_step`). Чисті функції над знімком стору; повертають патч чи null.
+import { makeOffer, type DubState } from '@/dub/dub';
 import { complete, current, declineScript, secSinceStart, start, STEPS, type FinaleState, type FinaleStep } from '@/finale/finale';
 import type { DomainEvent, EconomyConfig, EconomyState } from '@/economy/game/types';
 import { grant } from '@/museum/museum';
@@ -9,7 +10,7 @@ import type { TelegramState } from '@/telegrams/types';
 import type { StoryState } from '@/story/types';
 
 /** Сценарні телеграми кроків (content/tg/level5.json, `schedule.trigger`) */
-const AT_START: Partial<Record<FinaleStep, string>> = { order: 'tg_0108_shutdown_order', script: 'tg_0109_shutdown_yn' };
+const AT_START: Partial<Record<FinaleStep, string>> = { order: 'tg_0108_shutdown_order', script: 'tg_0109_shutdown_yn', endless_offer: 'tg_0112_duplicate_on_paper' };
 const AT_COMPLETE: Partial<Record<FinaleStep, string>> = { script: 'tg_0110_mailing_stopped', last_book: 'tg_0111_last_book_delivered' };
 /** Крок `call` закривається, коли доставлено (чи пропущено) фінальну розмову Археолога (014) */
 export const FINALE_CALL_BEAT = 'st_archaeologist_05';
@@ -18,6 +19,8 @@ export const LAST_BOOK_JOURNAL = 24;
 
 export interface FinaleHost {
   finale: FinaleState;
+  /** Дублі (013 FR-23): кінець тижня тиші дає пропозицію Дубля 1 */
+  dub: DubState;
   /** Крок, на якому гру було знайдено при запуску: його завершення - `is_resumed` */
   finaleBoot: FinaleStep | null;
   state: EconomyState;
@@ -29,7 +32,7 @@ export interface FinaleHost {
   lastMs: number;
 }
 
-export type FinalePatch = Partial<Pick<FinaleHost, 'finale' | 'telegrams' | 'museum' | 'state' | 'events'>>;
+export type FinalePatch = Partial<Pick<FinaleHost, 'finale' | 'dub' | 'telegrams' | 'museum' | 'state' | 'events'>>;
 
 /** Запустити крок: сценарна телеграма «на старті» і тригер сюжету */
 function begin(step: FinaleStep, now: number, acc: { tg: TelegramState; evs: DomainEvent[] }): void {
@@ -57,10 +60,11 @@ export function completeStep(g: FinaleHost, step: FinaleStep, now = g.lastMs): F
     acc.tg = d.tg;
     acc.evs.push(...d.events);
   }
-  // наступний крок, що чекає дії чи розмови, стартує одразу; `quiet` і `endless_offer` - за часом
+  // наступний крок, що чекає дії чи розмови, стартує одразу; `quiet` - за часом (тиша від Y); `endless_offer` - № 112 і пропозиція Дубля 1 (FR-23)
   const next = STEPS[STEPS.indexOf(step) + 1];
-  if (next && next !== 'quiet' && next !== 'endless_offer') begin(next, now, acc);
-  return { finale: r.f, telegrams: acc.tg, events: [...g.events, ...acc.evs].slice(-40) };
+  if (next && next !== 'quiet') begin(next, now, acc);
+  const offer = next === 'endless_offer' ? { dub: makeOffer(g.dub, now) } : {};
+  return { finale: r.f, ...offer, telegrams: acc.tg, events: [...g.events, ...acc.evs].slice(-40) };
 }
 
 /** Старт фіналу: конвертація № 6 (FR-15). Спрацьовує й заднім числом для гравця, що вже має 6 цифрових ланок */
@@ -84,6 +88,11 @@ export function autoSteps(g: FinaleHost): FinalePatch | null {
   if (f.startMs == null) return null;
   if (f.done.last_book != null && f.done.call == null && (g.story.delivered[FINALE_CALL_BEAT] || g.story.skipped.includes(FINALE_CALL_BEAT))) return completeStep(g, 'call');
   if (current(f, g.cfg.params.finaleQuietDays, g.lastMs) === 'quiet') return completeStep(g, 'quiet');
+  // запис, що застав тишу вже закритою без пропозиції (вбивство між кроками): пропозиція й № 112 відновлюються
+  if (f.done.quiet != null && f.done.endless_offer == null && g.dub.n === 0 && !g.dub.offer) {
+    const d = deliverScripted(g.telegrams, AT_START.endless_offer!, g.lastMs);
+    return { dub: makeOffer(g.dub, g.lastMs), telegrams: d.tg, events: [...g.events, ...d.events].slice(-40) };
+  }
   return null;
 }
 

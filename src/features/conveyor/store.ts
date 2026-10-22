@@ -34,6 +34,9 @@ import { unavailableLinks } from '@/services/links';
 import { newStats, statsFromEvents, type Stats } from '@/profile/stats';
 import { newStory } from '@/story/engine';
 import type { SessionBudget, StoryState } from '@/story/types';
+import { ackClosed as ackDubClosed, dubConfig, newDub, shiftDub, type DubState } from '@/dub/dub';
+import { acceptDub, closeDubIfDue } from './dub';
+import { dupT } from '@/features/dub/texts';
 import { autoSteps as finaleAuto, completeStep as finaleComplete, decline as finaleDecline, openLastBook as finaleOpenLastBook, startIfDue as finaleStartIfDue } from './finale';
 import { current as finaleCurrent, mailingStopped, newFinale, type FinaleState, type FinaleStep } from '@/finale/finale';
 import { applyEvents, diaryStart, newBudget, newEvents, run as storyRunPatch, syncAway } from './story';
@@ -114,6 +117,8 @@ interface Store {
   /** Фінал (013 FR-15): стан-машина кроків; `finaleBoot` - крок, на якому гру знайдено при запуску (лише в пам'яті) */
   finale: FinaleState;
   finaleBoot: FinaleStep | null;
+  /** Дублі (013 FR-23…FR-29): номер, модифікатор, пропозиція, акт закриття, рекорд. `cfg` вище - вже масштабований `dubConfig` */
+  dub: DubState;
   /** Перебивні кроки й тости цієї сесії (014 FR-7); лише в пам'яті */
   storySession: SessionBudget;
   /** Дзвінок сюжету на екрані: id кроку (014); лише в пам'яті */
@@ -183,6 +188,10 @@ interface Store {
   finaleDecline: () => void;
   /** Екран `last-book` відкрито: журнал № 24 (FR-20) */
   finaleOpenLastBook: () => void;
+  /** «Прийняти до виконання» (013 FR-23, FR-24): старт Дубля; false - пропозиції немає */
+  dubAccept: () => boolean;
+  /** Акт «Дубль N закрито» показано (FR-26) */
+  dubAck: () => void;
   showToast: (toast: Toast) => void;
   /** Закрити крок онбордингу (002 FR-1); false — крок не поточний */
   onbComplete: (step: StepNo, extra?: CompleteExtra) => boolean;
@@ -315,12 +324,16 @@ export interface Initial {
   stats?: Stats;
   story?: StoryState;
   finale?: FinaleState;
+  dub?: DubState;
   awards?: AwardsState;
   installId?: string;
   services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService }>;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
+  /** Конфіг без масштабу Дубля: його закріплюємо (009 FR-22) і з нього рахуємо `cfg` Дубля N */
+  const baseCfg = cfg;
+  const dub0 = init?.dub ?? newDub(`dub-${nowMs}`);
   const store = create<Store>((set, get) => {
   /** Доменні події телеграм → ефекти, тости, журнал подій (003). */
   const handleEvents = (evs: DomainEvent[], nowMs: number) => {
@@ -565,6 +578,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       raceActive: g.race.active?.type ?? null,
       away,
       muted: mailingStopped(g.finale),
+      ...(g.dub.n >= 1 ? { dub: { n: g.dub.n, modifier: g.dub.modifier } } : {}),
     });
     set({ telegrams: r.tg, state: r.eco });
     handleEvents(r.events, to);
@@ -576,7 +590,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (a.clockBack) {
         // 009 FR-14: офлайн 0, таймери зсунуто так, щоб залишок дорівнював залишку на момент запису
         const sh = shiftTimers(state, effects, a.rawMs);
-        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), digit: shiftDigitization(get().digit, a.rawMs), digitCheckedAt: 0, lastMs: backAt });
+        set({ state: sh.state, effects: sh.effects as StoredEffect[], inspections: shiftInspections(get().inspections, a.rawMs), race: shiftRace(get().race, a.rawMs), digit: shiftDigitization(get().digit, a.rawMs), dub: shiftDub(get().dub, a.rawMs), digitCheckedAt: 0, lastMs: backAt });
         get().showToast({ kind: 'clockBack' });
         return;
       }
@@ -601,7 +615,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     return { awards: r.s, queue: pendingToasts(r.s), events: unlockEvents(countAwards(base), r.grants) };
   })();
   return {
-    cfg,
+    cfg: dubConfig(baseCfg, dub0),
+    dub: dub0,
     pinned: init?.pinned ?? null,
     state: init?.state ?? newGame(cfg, nowMs),
     effects: init?.effects ?? [],
@@ -684,7 +699,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       // 009 FR-22: на першій покупці рівня конфіг закріплюється, далі його не змінює ні прапор, ні оновлення
       const purchased = r.events.some((e) => e.type === 'purchase');
       const firstUpgrade = pinned == null && purchased;
-      set({ state: r.state, events: [...get().events, ...r.events].slice(-20), ...(firstUpgrade ? { pinned: c } : {}) });
+      set({ state: r.state, events: [...get().events, ...r.events].slice(-20), ...(firstUpgrade ? { pinned: baseCfg } : {}) });
       // 002 FR-16: крок 6 закриває перша покупка рівня
       if (purchased) get().onbComplete(6);
       // 006 FR-9: підказка зникає, щойно умова хибна (після покупки наступна покупка далі)
@@ -828,6 +843,20 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     finaleOpenLastBook: () => {
       const p = finaleOpenLastBook(get());
       if (p) set(p);
+    },
+    dubAccept: () => {
+      const g = get();
+      const now = g.lastMs;
+      const p = acceptDub(g, baseCfg, now, tzOffsetAt(now));
+      if (!p) return false;
+      const { record, ...patch } = p;
+      set({ ...patch, inspPrepOpen: false, digitRec: false, digitCheckedAt: 0 });
+      if (record) get().showToast({ kind: 'text', text: dupT.recordToast });
+      return true;
+    },
+    dubAck: () => {
+      const d = ackDubClosed(get().dub);
+      if (d !== get().dub) set({ dub: d });
     },
     clearToast: () => {
       const [next, ...rest] = get().toastQueue;
@@ -981,7 +1010,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       const r = digitizeNow(g.state, g.digit, g.cfg, g.lastMs, fromHint);
       if ('error' in r) return false;
       // L і підписи в нуль, нові потоки: ціни й дохід інші, тож підказка перераховується
-      set({ state: r.state, digit: { ...r.ds, howSeen: true }, digitRec: false, events: [...g.events, ...r.events].slice(-40) });
+      // 013 FR-29: цикл, що закінчується, іде в лічильник «підписів за весь час»
+      set({ state: r.state, digit: { ...r.ds, howSeen: true }, digitRec: false, dub: { ...g.dub, earned: g.dub.earned + g.state.lifetimeCycle }, events: [...g.events, ...r.events].slice(-40) });
       absorbMuseum(r.events, g.lastMs);
       return true;
     },
@@ -1221,6 +1251,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         diaryToday: null,
         finale: newFinale(),
         finaleBoot: null,
+        dub: newDub(`dub-${now}`),
+        cfg: baseCfg,
         // 016 FR-22: грамоти лишаються, лічильники обнуляються
         awards: toastsShown(resetAwards(g.awards), g.awardQueue.map((q) => q.id)),
         awardQueue: [],
@@ -1274,6 +1306,9 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     if (p1) store.setState(p1);
     const p2 = finaleAuto(store.getState());
     if (p2) store.setState(p2);
+    // 013 FR-26: шоста конвертація в Дублі закриває його
+    const p3 = closeDubIfDue(store.getState());
+    if (p3) store.setState(p3);
   });
   // 014: події гри -> тригери сюжету (без правок у кожному місці, що пише в `events`)
   store.subscribe((s, prev) => {
@@ -1315,7 +1350,8 @@ export function gameSave(store: ConveyorStore): {
   story: StoryState;
   awards: AwardsState;
   finale: FinaleState;
+  dub: DubState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats, story, awards, finale } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats, story, awards, finale };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats, story, awards, finale, dub } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats, story, awards, finale, dub };
 }
