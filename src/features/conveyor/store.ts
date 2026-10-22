@@ -34,7 +34,7 @@ import { unavailableLinks } from '@/services/links';
 import { newStats, statsFromEvents, type Stats } from '@/profile/stats';
 import { newStory } from '@/story/engine';
 import type { SessionBudget, StoryState } from '@/story/types';
-import { attachAnalytics, DEFAULT_ENV, type Analytics, type AnalyticsEnv } from './analytics';
+import { attachAnalytics, DEFAULT_ENV, type Analytics, type AnalyticsEnv, type BootEvent } from './analytics';
 import { newAnalytics, type AnalyticsState } from '@/analytics/state';
 import { unavailableAnalytics, type AnalyticsService } from '@/analytics/service';
 import { ackClosed as ackDubClosed, dubConfig, newDub, shiftDub, type DubState } from '@/dub/dub';
@@ -245,7 +245,7 @@ interface Store {
   /** Нагорода за рекламу чи «Забрати» (008 FR-1…FR-14): ролик показується лише з обробника тапу */
   watchAd: (placement: Placement) => Promise<'granted' | 'closed' | 'unavailable' | 'blocked' | 'busy'>;
   /** Купити товар (FR-15…FR-24) */
-  purchase: (id: ProductId) => Promise<void>;
+  purchase: (id: ProductId, source?: Extract<DomainEvent, { type: 'purchaseStart' }>['source']) => Promise<void>;
   /** Відновити покупки (FR-27) */
   restore: (trigger: 'shop_button' | 'settings_button' | 'auto_check') => Promise<void>;
   /** Тихо звірити права зі стором на запуску (FR-26, FR-27) */
@@ -333,6 +333,8 @@ export interface Initial {
   analytics?: AnalyticsState;
   /** Збірка: версія контенту, канал, мова пристрою (аналітика) */
   env?: AnalyticsEnv;
+  /** Події, що сталися до створення стору (збій збереження на запуску): летять після `session_start` */
+  bootEvents?: BootEvent[];
   awards?: AwardsState;
   installId?: string;
   services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService }>;
@@ -1110,6 +1112,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         return 'unavailable';
       }
       set({ busy: 'ad' });
+      const tappedAt = Date.now();
+      pushEvent({ type: 'adStart', placement, loadWaitMs: 0 });
       // збій SDK не повинен лишити busy назавжди: виняток - це збій показу
       let res: AdResult;
       try {
@@ -1119,7 +1123,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       } finally {
         set({ busy: null });
       }
-      if (res.kind === 'earned') return rewardAd(placement, 'ad') ? 'granted' : 'blocked';
+      if (res.kind === 'earned') {
+        pushEvent({ type: 'adComplete', placement, watchMs: Math.max(0, Date.now() - tappedAt) });
+        return rewardAd(placement, 'ad') ? 'granted' : 'blocked';
+      }
       if (res.kind === 'closed_early') {
         pushEvent({ type: 'adFail', placement, stage: 'closed_early' });
         get().showToast({ kind: 'text', text: adT.closed });
@@ -1129,12 +1136,13 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       get().showToast({ kind: 'text', text: adT.nofill });
       return 'unavailable';
     },
-    purchase: async (id) => {
+    purchase: async (id, source = 'tab') => {
       const g = get();
       if (g.busy) return;
       const svc = g.services.purchases;
       if (svc.status() !== 'ready' || g.monetization.rights[id]) return;
       set({ busy: 'purchase' });
+      pushEvent({ type: 'purchaseStart', productId: id, source });
       let r: PurchaseResult;
       try {
         r = await svc.purchase(id);
@@ -1359,7 +1367,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     if (patch) store.setState(patch);
   });
   // аналітика: події гри -> `track()`, глобальні властивості, вимикач (docs/analytics.md)
-  ANALYTICS.set(store, attachAnalytics(store, store.getState().services.analytics, init?.env ?? DEFAULT_ENV));
+  ANALYTICS.set(store, attachAnalytics(store, store.getState().services.analytics, init?.env ?? DEFAULT_ENV, init?.bootEvents));
   // 016 FR-19: грамоти слухають доменні події з журналу стору й раз на хвилину перевіряють станові умови (діловоди, частка ЗпЗ, курйози)
   store.subscribe((s, prev) => {
     const evs = newAwardEvents(prev.events, s.events);
