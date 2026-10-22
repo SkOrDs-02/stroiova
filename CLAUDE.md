@@ -44,6 +44,7 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 | `src/finale/` | Фінал (013): чистий домен - стан-машина кроків order → script → last_book → call → credits → quiet → endless_offer; у сторі - `src/features/conveyor/finale.ts`; екрани (`finale-order`, Y/N, `last-book`, `credits`) - `src/features/finale/`; титри - `content/credits.json` |
 | `src/awards/` | Грамоти (016): чистий домен — лічильники над подіями з `content/awards.json`, умови, видача один раз, заднім числом, скидання; екрани — `src/features/awards/` (сегмент «Грамоти» музею, `award-detail`, тости); у сторі — `src/features/conveyor/awards.ts` |
 | `src/dub/` | Дублі (013 етап 2b): чистий домен - стан, пропозиція, модифікатор із зерна, `dubConfig` (масштаб `dup.*`, як `dubParams` у `sim.js`), рекорд; у сторі - `src/features/conveyor/dub.ts` (прийняття, закриття); екрани (`endless-intro`, «Дубль N закрито») і тексти - `src/features/dub/` |
+| `src/analytics/` | Аналітика (етап 5): `plan.generated.ts` з `tracking-plan.yaml` (`node tools/gen_analytics.mjs`, руками не правити), `track.ts` (обгортка з перевіркою плану, вимикачем і вибіркою), `mapping.ts` (доменна подія -> подія плану), `service.ts` (інтерфейс PostHog, заглушка), `state.ts` (лічильники сесій); підключення до стору - `src/features/conveyor/analytics.ts` |
 | `src/stack/` | Стос до наради Р4 (012): чистий домен - ріст за частку «Звітів про звіти», нова сесія, «Метр звітів» раз на цикл; екран - `src/features/stack/` |
 | `src/economy/` | Модуль економіки: `core` (спільний із симулятором), `game` (стан і дії гри), `format.ts`; вбудований конфіг `econ-v7.2` |
 | `analytics/tracking-plan.yaml` | 60 подій аналітики; `docs/analytics.md` — пояснення |
@@ -69,6 +70,7 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 - Перевірка контенту: `python3 tools/check_content.py` (усе) або `python3 tools/gen_tg.py --check` (пули телеграм за `content/schema/telegram.schema.json`); див. `content/README.md`.
 - Застосунок: `npm start` (Expo), `npm run check` (типи, лінтер, тести, тема, контент — перед кожним PR).
 - Економіка: формули й параметри — у `src/economy/core`; `npm run build:economy` збирає `balance/economy.js` для `sim.js` і пісочниці; `node tools/golden.mjs --check` — відбитки симулятора (27) не змінились.
+- Аналітика: `node tools/gen_analytics.mjs` (план -> типи), `--check` у CI.
 - Тема: `python3 tools/gen_theme.py` (`design/system/tokens.json` → `src/theme/tokens.ts`, руками не правити).
 
 ## Код

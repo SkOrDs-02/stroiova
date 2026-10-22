@@ -7,7 +7,7 @@ import type { Fact } from './types';
 /** Ідентифікатори рівнів у tracking-plan і awards.json за номером рівня */
 export const LEVEL_IDS = ['batalion', 'bryhada', 'komanduvannia', 'henshtab', 'bez_paperu'] as const;
 
-export function levelId(level: number): string {
+export function levelId(level: number): (typeof LEVEL_IDS)[number] {
   return LEVEL_IDS[Math.min(Math.max(level, 1), LEVEL_IDS.length) - 1]!;
 }
 

@@ -34,6 +34,9 @@ import { unavailableLinks } from '@/services/links';
 import { newStats, statsFromEvents, type Stats } from '@/profile/stats';
 import { newStory } from '@/story/engine';
 import type { SessionBudget, StoryState } from '@/story/types';
+import { attachAnalytics, DEFAULT_ENV, type Analytics, type AnalyticsEnv } from './analytics';
+import { newAnalytics, type AnalyticsState } from '@/analytics/state';
+import { unavailableAnalytics, type AnalyticsService } from '@/analytics/service';
 import { ackClosed as ackDubClosed, dubConfig, newDub, shiftDub, type DubState } from '@/dub/dub';
 import { acceptDub, closeDubIfDue } from './dub';
 import { dupT } from '@/features/dub/texts';
@@ -106,7 +109,9 @@ interface Store {
   museum: MuseumState;
   /** Реклама й покупки (008) */
   monetization: MonetizationState;
-  services: { ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService };
+  services: { ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService };
+  /** Лічильники аналітики: номер сесії, кінець попередньої, чи був перший запуск */
+  analytics: AnalyticsState;
   /** Налаштування (010) */
   settings: Settings;
   /** Заплановані сповіщення й лічильник доби (010) */
@@ -325,9 +330,12 @@ export interface Initial {
   story?: StoryState;
   finale?: FinaleState;
   dub?: DubState;
+  analytics?: AnalyticsState;
+  /** Збірка: версія контенту, канал, мова пристрою (аналітика) */
+  env?: AnalyticsEnv;
   awards?: AwardsState;
   installId?: string;
-  services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService }>;
+  services?: Partial<{ ads: AdService; purchases: PurchaseService; notifications: NotificationService; links: LinkService; analytics: AnalyticsService }>;
 }
 
 export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledConfig, init?: Initial) {
@@ -629,7 +637,11 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     digit: init?.digit ?? newDigitization(nowMs),
     museum: interrupted.ms,
     monetization: init?.monetization ?? newMonetization(),
-    services: { ads: init?.services?.ads ?? unavailableAds, purchases: init?.services?.purchases ?? unavailablePurchases, notifications: init?.services?.notifications ?? unavailableNotifications, links: init?.services?.links ?? unavailableLinks },
+    services: { ads: init?.services?.ads ?? unavailableAds, purchases: init?.services?.purchases ?? unavailablePurchases, notifications: init?.services?.notifications ?? unavailableNotifications, links: init?.services?.links ?? unavailableLinks, analytics: init?.services?.analytics ?? unavailableAnalytics },
+    analytics: (() => {
+      const a = init?.analytics ?? newAnalytics();
+      return { ...a, sessionNumber: a.sessionNumber + 1 };
+    })(),
     settings: init?.settings ?? newSettings(),
     notifications: init?.notifications ?? newNotifications(),
     stats: init?.stats ?? newStats(),
@@ -1316,6 +1328,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     const patch = applyEvents(s, newEvents(prev.events, s.events));
     if (patch) store.setState(patch);
   });
+  // аналітика: події гри -> `track()`, глобальні властивості, вимикач (docs/analytics.md)
+  ANALYTICS.set(store, attachAnalytics(store, store.getState().services.analytics, init?.env ?? DEFAULT_ENV));
   // 016 FR-19: грамоти слухають доменні події з журналу стору й раз на хвилину перевіряють станові умови (діловоди, частка ЗпЗ, курйози)
   store.subscribe((s, prev) => {
     const evs = newAwardEvents(prev.events, s.events);
@@ -1330,6 +1344,13 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
 }
 
 export type ConveyorStore = ReturnType<typeof createConveyorStore>;
+
+const ANALYTICS = new WeakMap<object, Analytics>();
+
+/** Аналітика цього стору: екрани звідси беруть `track()` для подій інтерфейсу */
+export function analyticsOf(store: ConveyorStore): Analytics {
+  return ANALYTICS.get(store)!;
+}
 
 /** Ігрова частина запису (009 GameSave): прострочені ефекти не зберігаємо. */
 export function gameSave(store: ConveyorStore): {
@@ -1351,7 +1372,8 @@ export function gameSave(store: ConveyorStore): {
   awards: AwardsState;
   finale: FinaleState;
   dub: DubState;
+  analytics: AnalyticsState;
 } {
-  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats, story, awards, finale, dub } = store.getState();
-  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats, story, awards, finale, dub };
+  const { state, effects, lastMs, pinned, playtimeMs, onboarding, telegrams, inspections, race, digit, museum, monetization, settings, notifications, stats, story, awards, finale, dub, analytics } = store.getState();
+  return { economy: state, effects: effects.filter((e) => e.endMs > lastMs), pinned, playtimeMs, onboarding, telegrams, inspections, race, digitization: digit, museum, monetization, settings, notifications, stats, story, awards, finale, dub, analytics };
 }

@@ -1,12 +1,14 @@
 // Запуск (009 FR-28…FR-30): читання й перевірка запису, маршрут, автозапис, знімок на початку сесії.
 import Constants from 'expo-constants';
 import * as Crypto from 'expo-crypto';
+import { getLocales } from 'expo-localization';
 import { useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 
 import { bundledConfig, withBundled } from '@/economy/config';
 import { isNewSession } from '@/economy/game/time';
 import type { EconomyConfig, EconomyState } from '@/economy/game/types';
+import type { AnalyticsEnv } from '@/features/conveyor/analytics';
 import { createConveyorStore, gameSave, type ConveyorStore, type StoredEffect } from '@/features/conveyor/store';
 import type { OnboardingState } from '@/features/onboarding/steps';
 import type { InspectionState } from '@/inspections/types';
@@ -33,6 +35,19 @@ import { createAutosave } from './autosave';
 
 /** Версія пакета контенту. До завантажувача контенту (003) — дата контенту в репо. */
 export const CONTENT_VERSION = 'content-2026.10.10';
+
+/** Збірка для аналітики: версія контенту, канал EAS, мова й регіон пристрою */
+function analyticsEnv(): AnalyticsEnv {
+  const loc = getLocales()[0];
+  const channel = process.env.EXPO_PUBLIC_BUILD_CHANNEL;
+  return {
+    contentVersion: CONTENT_VERSION,
+    buildChannel: channel === 'production' || channel === 'preview' ? channel : __DEV__ ? 'development' : 'production',
+    appVersion: APP_VERSION,
+    deviceRegion: loc?.regionCode ?? 'XX',
+    deviceLocale: loc?.languageTag ?? 'und',
+  };
+}
 const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
 
 export type Route =
@@ -67,7 +82,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story, awards: g.awards, finale: g.finale, dub: g.dub },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story, awards: g.awards, finale: g.finale, dub: g.dub, analytics: g.analytics },
   };
 }
 
@@ -81,7 +96,7 @@ function applySettingsToDevice(st: Settings): void {
 export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts: { snapshotted?: boolean } = {}): ConveyorStore {
   const id = installId(kv, Crypto.randomUUID).id;
   if (!save) {
-    const store = createConveyorStore(now, bundledConfig, { installId: id });
+    const store = createConveyorStore(now, bundledConfig, { installId: id, env: analyticsEnv() });
     const d = draftOf(store);
     if (d) writeSave(kv, d);
     return store;
@@ -107,6 +122,8 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     awards: save.game.awards as AwardsState,
     finale: save.game.finale as FinaleState,
     dub: save.game.dub as DubState,
+    analytics: save.game.analytics,
+    env: analyticsEnv(),
     story: save.game.story as StoryState,
     installId: id,
   });

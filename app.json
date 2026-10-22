@@ -34,7 +34,8 @@
           "organization": "dima-dk",
           "project": "stroiova"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
