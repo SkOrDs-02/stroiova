@@ -364,6 +364,11 @@ function simulate(p, scenario) {
   function maybePrestige(t) {
     if (unlockedStreams() < SR.length) return;
     var pts = points(st.life);
+    if (dubN > 0) { // a rational player digitizes in a Дубль only to leave the level: not past the exit while the final inspection is due, and on Р5 only to open the next conversion
+      var nL0 = 0; out.prestiges.forEach(function (x) { if (x.level === level && x.dub === dubN) nL0++; });
+      var allowed = B.convert ? nDigital >= 1 + nL0 : (nL0 < B.exitDigitizations || bossPassed);
+      if (!allowed) return;
+    }
     // Дубль (013): P_total already carries a huge multiplier, so the player digitizes as soon as the game allows (prestigeMinPoints) - only to leave the level
     var need = dubN > 0 ? p.prestigeMinPoints : Math.max(p.prestigeMinPoints, p.prestigeGrowth * prestigeTotal);
     var share = p.prestigeStallShare == null ? 0.5 : p.prestigeStallShare;
