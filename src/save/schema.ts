@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 17;
+export const CURRENT_SCHEMA = 18;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -378,6 +378,19 @@ export const finaleSchema = z.object({
   scriptNs: z.number().int().nonnegative(),
 });
 
+/** Дублі (013 FR-23…FR-30); схема 18. Модифікатори - з `MODIFIERS`. */
+const dubModifier = z.enum(['two_copies', 'wet_seal', 'no_did']);
+export const dubSchema = z.object({
+  seed: z.number(),
+  n: z.number().int().nonnegative(),
+  modifier: dubModifier.nullable(),
+  startMs: z.number().nullable(),
+  offer: z.object({ n: z.number().int().min(1), modifier: dubModifier, atMs: z.number() }).nullable(),
+  closed: z.object({ n: z.number().int().min(1), atMs: z.number(), cycleMs: nonNeg, seen: z.boolean() }).nullable(),
+  earned: nonNeg,
+  record: z.object({ dub: z.number().int().nonnegative(), lifetimeLog10: nonNeg }),
+});
+
 export const gameSaveSchema = z.object({
   economy: economyStateSchema,
   effects: z.array(effectSchema),
@@ -406,6 +419,8 @@ export const gameSaveSchema = z.object({
   awards: awardsSchema,
   /** Фінал (013) */
   finale: finaleSchema,
+  /** Дублі (013) */
+  dub: dubSchema,
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();

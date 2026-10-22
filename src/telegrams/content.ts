@@ -48,6 +48,11 @@ export function allTelegrams(): readonly Telegram[] {
   return ALL;
 }
 
+/** Пул Дублів (013 FR-28): № 278-287, лише в нескінченному режимі; умови `requires.dubMin`/`dubModifier` перевіряє мішок */
+export function endlessPool(): Telegram[] {
+  return ALL.filter((t) => t.schedule?.endless === true && (t.kind ?? 'standard') === 'standard');
+}
+
 /**
  * Звичайний мішок рівня: записи до цього рівня включно (Р2 бере й Р1), без сценарних, поза квотою, шаблонів і notice (FR-5, FR-7).
  * Телеграми пачок у мішок не входять; на Р3 і Р4 окрема телеграма дня - лише з телеграм свого рівня (011 FR-18, рішення 99; 012 FR-25).

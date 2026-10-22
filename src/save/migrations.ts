@@ -11,6 +11,7 @@ import { newNotifications, newSettings } from '@/notifications/planner';
 import { newStats } from '@/profile/stats';
 import { newMuseum } from '@/museum/museum';
 import { newAwards } from '@/awards/awards';
+import { newDub } from '@/dub/dub';
 import { newFinale } from '@/finale/finale';
 import { newRace } from '@/race/race';
 import { overrideStartNo } from '@/telegrams/schedule';
@@ -126,6 +127,11 @@ export const MIGRATIONS: Record<number, Migration> = {
   15: (game) => ({ ...(game as object), awards: (game as { awards?: object }).awards ?? newAwards() }),
   // 16 → 17 (013 етап 2): фінал; не почато. Гравець, що вже має 6 цифрових ланок, стартує фінал при запуску (AC-22)
   16: (game) => ({ ...(game as object), finale: (game as { finale?: object }).finale ?? newFinale() }),
+  // 17 → 18 (013 етап 2b): Дублі; Дублів не було, зерно модифікаторів - з генератора телеграм запису (різне в різних гравців)
+  17: (game) => {
+    const g = game as { dub?: object; telegrams?: { rng?: number } };
+    return { ...(game as object), dub: g.dub ?? newDub(`dub-${g.telegrams?.rng ?? 0}`) };
+  },
 };
 
 /** Налаштування й сповіщення схеми 9. */

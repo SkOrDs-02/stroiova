@@ -3,6 +3,7 @@ import { digitizationV6, inspectionsV4, MIGRATIONS, monetizationV8, museumV7, on
 import { KEY_BAK1, KEY_SAVE, loadSave, serialize, type SaveDraft } from '../repository';
 import { memoryStorage } from '../storage';
 import { newAwards } from '@/awards/awards';
+import { newDub } from '@/dub/dub';
 import { newFinale } from '@/finale/finale';
 import { newStory } from '@/story/engine';
 import { draft } from '../test-saves';
@@ -17,7 +18,7 @@ function v1(): SaveDraft {
 
 const migrations = {
   1: (g: unknown) => { const x = g as { economy: object; sigs: number }; return { economy: { ...x.economy, signatures: x.sigs } }; },
-  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards(), finale: newFinale() }),
+  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards(), finale: newFinale(), dub: newDub('dub-test') }),
 };
 
 describe('міграції', () => {
@@ -398,6 +399,38 @@ describe('справжні міграції', () => {
     expect(r.kind).toBe('ok');
     if (r.kind !== 'ok') return;
     expect(r.save.game.finale).toEqual(finale);
+  });
+
+  test('17 → 18 (013 етап 2b): Дублів не було, зерно з генератора телеграм, решта запису на місці (AC-22)', () => {
+    const d = draft({ schemaVersion: 17, savedAt: 5000 });
+    const { dub: _d, ...gameV17 } = d.game;
+    const finale = { startMs: 100, done: { order: 110 }, yMs: null, scriptNs: 1 };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV17, finale } as never }) });
+    const r = loadSave(kv, { current: 18, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 17 });
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.dub).toEqual(newDub(`dub-${d.game.telegrams.rng}`));
+    expect(r.save.game.dub).toMatchObject({ n: 0, modifier: null, offer: null, closed: null, earned: 0, record: { dub: 0, lifetimeLog10: 0 } });
+    expect(r.save.game.finale).toEqual(finale);
+  });
+
+  test('схема 18: стан Дубля проходить збереження без втрат', () => {
+    const d = draft({ schemaVersion: 18, savedAt: 5000 });
+    const dub = {
+      seed: 7,
+      n: 2,
+      modifier: 'wet_seal' as const,
+      startMs: 900,
+      offer: { n: 3, modifier: 'no_did' as const, atMs: 1200 },
+      closed: { n: 2, atMs: 1200, cycleMs: 300, seen: true },
+      earned: 3.5e40,
+      record: { dub: 2, lifetimeLog10: 40.54 },
+    };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, dub } as never }) });
+    const r = loadSave(kv, { current: 18, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.dub).toEqual(dub);
   });
 
   test('схема 16: грамоти, лічильники й номер наказу проходять збереження без втрат', () => {

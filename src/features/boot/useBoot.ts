@@ -16,6 +16,7 @@ import type { MuseumState } from '@/museum/types';
 import type { NotificationsState, Settings } from '@/notifications/types';
 import { bonuses as museumBonuses } from '@/museum/museum';
 import type { AwardsState } from '@/awards/types';
+import type { DubState } from '@/dub/dub';
 import type { FinaleState } from '@/finale/finale';
 import type { Stats } from '@/profile/stats';
 import type { StoryState } from '@/story/types';
@@ -66,7 +67,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story, awards: g.awards, finale: g.finale },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story, awards: g.awards, finale: g.finale, dub: g.dub },
   };
 }
 
@@ -105,6 +106,7 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     stats: save.game.stats as Stats,
     awards: save.game.awards as AwardsState,
     finale: save.game.finale as FinaleState,
+    dub: save.game.dub as DubState,
     story: save.game.story as StoryState,
     installId: id,
   });
@@ -135,6 +137,8 @@ export function needsSaveNow(st: ReturnType<ConveyorStore['getState']>, prev: Re
     st.telegrams.sedo !== prev.telegrams.sedo ||
     // 013 FR-15: після кожного кроку фіналу стан зберігається одразу
     st.finale !== prev.finale ||
+    // 013 FR-23, FR-26: пропозиція й закриття Дубля, прийняття (скидання рівня) - одразу
+    st.dub !== prev.dub ||
     // 016 FR-21: грамота записується в мить видачі, до тосту
     st.awards.got !== prev.awards.got ||
     // 014: крок сюжету і рядок щоденника зберігаються в мить доставки

@@ -53,20 +53,33 @@ function hasClerk(eco: EconomyState, cfg: EconomyConfig, ref: UnitRef): boolean 
   return !!eco.streamClerks[it.streams.findIndex((u) => u.id === ref.id)];
 }
 
-/** Папір варіанта з урахуванням прапорця (`ifFlag`), без кидків. */
-export function paperCost(e: Effects, flags: Record<string, true>): number {
+/** «У двох примірниках» (013 FR-27): папір і репутація-нагорода телеграм удвічі більші */
+export const COPIES_MULT = 2;
+
+/** Множник паперу й нагороди репутації телеграм у поточному Дублі (1 поза модифікатором) */
+export function copiesK(cfg: EconomyConfig): number {
+  return cfg.dub?.modifier === 'two_copies' ? COPIES_MULT : 1;
+}
+
+/** Зміна репутації з модифікатором: подвоюється лише нагорода, штраф лишається (FR-27 «дають удвічі більше репутації») */
+export function scaledRep(rep: number, k: number): number {
+  return rep > 0 ? rep * k : rep;
+}
+
+/** Папір варіанта з урахуванням прапорця (`ifFlag`) і модифікатора `k`, без кидків. */
+export function paperCost(e: Effects, flags: Record<string, true>, k = 1): number {
   let n = e.paper ?? 0;
   if (e.ifFlag && flags[e.ifFlag.flag]) n += e.ifFlag.effects.paper ?? 0;
-  return n;
+  return n * k;
 }
 
 export type Availability = { ok: true } | { ok: false; reason: 'paper'; n: number } | { ok: false; reason: 'digital' } | { ok: false; reason: 'drawer' };
 
 /** Чи можна обрати варіант (FR-18, FR-25): папір не стає від'ємним, «на цифру» — лише з P_total ≥ 1. */
-export function canChoose(tg: TelegramState, eco: EconomyState, c: Choice, fromDrawer = false): Availability {
+export function canChoose(tg: TelegramState, eco: EconomyState, c: Choice, fromDrawer = false, k = 1): Availability {
   if (fromDrawer && c.kind === 'drawer') return { ok: false, reason: 'drawer' };
   if (c.requires?.digitalPoints && eco.prestigePoints < c.requires.digitalPoints) return { ok: false, reason: 'digital' };
-  const need = paperCost(c.effects, tg.flags);
+  const need = paperCost(c.effects, tg.flags, k);
   const have = Math.floor(eco.paper);
   return need > have ? { ok: false, reason: 'paper', n: need - have } : { ok: true };
 }
@@ -83,7 +96,8 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
   const choice = tel?.choices.find((c) => c.id === choiceId);
   if (!tel || !choice) return { error: 'choice' };
   const fromDrawer = item0.status === 'drawer';
-  const av = canChoose(tg0, eco0, choice, fromDrawer);
+  const k = copiesK(ctx.cfg);
+  const av = canChoose(tg0, eco0, choice, fromDrawer, k);
   // зведена відповідь перевіряє папір одним числом на всю пачку (`packs.ts`)
   if (!av.ok && !(ctx.merge && av.reason === 'paper')) return { error: av.reason };
 
@@ -118,13 +132,13 @@ export function answer(tg0: TelegramState, eco0: EconomyState, uid: string, choi
 
   const apply = (e: Effects, nested: boolean, merged = !!ctx.merge) => {
     if (e.paper && !merged) {
-      eco = { ...eco, paper: Math.max(0, eco.paper - e.paper) };
-      res.paper += e.paper;
+      eco = { ...eco, paper: Math.max(0, eco.paper - e.paper * k) };
+      res.paper += e.paper * k;
     }
     if (!merged) for (const s of e.slow ?? []) slowEffect(s);
     if (e.rep && !merged) {
       // цифровий щит: без зниження репутації (FR-16)
-      const d = e.rep < 0 && shield ? 0 : e.rep;
+      const d = e.rep < 0 && shield ? 0 : scaledRep(e.rep, k);
       if (d) {
         tg = applyRep(tg, d, nowMs, uid);
         res.rep += d;
@@ -232,6 +246,13 @@ export function openNotice(tg: TelegramState, uid: string, nowMs: number): { tg:
   const item = tg.inbox[idx];
   if (!item || item.kind !== 'notice' || item.status !== 'new') return { tg, events: [] };
   const tel = telegram(item.id);
+  // № 112 (013 FR-23): відкриття лише позначає прочитаною; в архів іде на `dub_start`
+  if (tel?.schedule?.keepInNewUntil) {
+    if (item.read) return { tg, events: [] };
+    const kept = tg.inbox.slice();
+    kept[idx] = { ...item, read: true };
+    return { tg: { ...tg, inbox: kept }, events: [{ type: 'curio', telegramId: item.id, uid, text: null }] };
+  }
   const events: DomainEvent[] = [{ type: 'curio', telegramId: item.id, uid, text: null }];
   let timers = tg.timers;
   const e = tel?.effects ?? {};

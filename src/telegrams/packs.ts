@@ -2,7 +2,7 @@
 import type { DomainEvent, EconomyConfig, EconomyState, StoredEffect } from '@/economy/game/types';
 
 import { allPacks, type PackDef } from './content';
-import { answer, cutHours, paperCost, telegramOf, unitRef, type AnswerCtx } from './effects';
+import { answer, copiesK, cutHours, paperCost, scaledRep, telegramOf, unitRef, type AnswerCtx } from './effects';
 import { applyRep, replyChance, repTier } from './reputation';
 import { roller } from './rng';
 import type { Choice, ChoiceKind, Effects, InboxItem, ItemResult, TelegramState } from './types';
@@ -136,9 +136,9 @@ export function deliverPack(tg0: TelegramState, atMs: number, rand: () => number
 // ---------- зведена відповідь ----------
 
 /** Плоскі ефекти варіанта для суми: папір, репутація, кидок (з урахуванням прапорця `ifFlag`) */
-function flat(e: Effects, flags: Record<string, true>): { paper: number; rep: number; pct: number; extra: string | null } {
+function flat(e: Effects, flags: Record<string, true>, k = 1): { paper: number; rep: number; pct: number; extra: string | null } {
   const f = e.ifFlag && flags[e.ifFlag.flag] ? e.ifFlag.effects : null;
-  return { paper: paperCost(e, flags), rep: (e.rep ?? 0) + (f?.rep ?? 0), pct: Math.max(e.inspPct ?? 0, f?.inspPct ?? 0), extra: e.inspExtraItem ?? f?.inspExtraItem ?? null };
+  return { paper: paperCost(e, flags, k), rep: scaledRep(e.rep ?? 0, k) + scaledRep(f?.rep ?? 0, k), pct: Math.max(e.inspPct ?? 0, f?.inspPct ?? 0), extra: e.inspExtraItem ?? f?.inspExtraItem ?? null };
 }
 
 /** Зведені числа (FR-21): папір - сума мінус `saving` = `pack.size − 1` (≥ 0, як у sim.js); репутація - половина суми з відкиданням дробу до нуля; кидок - max(pᵢ) + 10 п. п. (≤ 100), 0 без жодного pᵢ */
@@ -177,7 +177,7 @@ export function packForecast(tg: TelegramState, eco: EconomyState, cfg: EconomyC
     const sep = { paper: 0, rep: 0, slows: 0, chances: [] as number[] };
     const base: KindForecast = { kind, available: false, paper: 0, rep: 0, chancePct: 0, slow: null, separate: sep };
     if (choices.some((c) => !c)) return { ...base, reason: 'kind' as const };
-    const fl = choices.map((c) => flat(c!.effects, tg.flags));
+    const fl = choices.map((c) => flat(c!.effects, tg.flags, copiesK(cfg)));
     for (let i = 0; i < choices.length; i++) {
       sep.paper += fl[i]!.paper;
       // цифровий щит окремої відповіді гасить мінус репутації (як в `answer`); зведена відповідь щит не використовує (рішення 100)
@@ -220,7 +220,7 @@ export function answerPack(tg0: TelegramState, eco0: EconomyState, no: number, k
   const effects: StoredEffect[] = [];
   const events: DomainEvent[] = [];
   const tierBefore = repTier(tg.reputation.value, p);
-  const fl = g.items.map((i) => flat(choiceOfKind(i, kind)!.effects, tg0.flags));
+  const fl = g.items.map((i) => flat(choiceOfKind(i, kind)!.effects, tg0.flags, copiesK(cfg)));
   for (const i of g.items) {
     const r = answer(tg, eco, i.uid, choiceOfKind(i, kind)!.id, { ...ctx, merge: true });
     if ('error' in r) return { error: r.error === 'paper' ? 'paper' : 'state' };

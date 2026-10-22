@@ -63,6 +63,9 @@ export function factsOf(evs: readonly DomainEvent[], opts: FactOpts = {}): Fact[
       case 'finaleStepComplete':
         out.push({ event: 'finale_step_complete', props: { step_id: e.step } });
         break;
+      case 'dubStart':
+        out.push({ event: 'dub_start', props: { dub_number: e.dubNumber, modifier_id: e.modifier } });
+        break;
       case 'stackReach':
         out.push({ event: 'stack_meter_reach', props: { cm: e.cm } });
         break;

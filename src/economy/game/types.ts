@@ -1,4 +1,5 @@
 // Типи гри поверх ядра (001 data-model.md). Числа балансу — лише в EconomyConfig.params (принцип I).
+import type { DubModifier } from '@/dub/dub';
 import type { FinaleStep } from '@/finale/finale';
 import type { Big, EconomyParams } from '../core';
 
@@ -9,6 +10,8 @@ export interface EconomyConfig {
   version: string;
   source: 'bundled' | 'remote' | 'cached';
   params: EconomyParams;
+  /** Дубль (013), на який масштабовано `params` (`dubConfig`): телеграми читають модифікатор. Немає - Дублів не було */
+  dub?: { n: number; modifier: DubModifier | null };
 }
 
 export interface UnitRef {
@@ -232,6 +235,10 @@ export type DomainEvent =
   // 013: фінал; аналітика етапу 5 (finale_step_complete). `finaleStepStart` - лише для тригерів сюжету (014 `finale_step`)
   | { type: 'finaleStepStart'; step: FinaleStep }
   | { type: 'finaleStepComplete'; step: FinaleStep; stepIndex: number; secSinceFinaleStart: number; isResumed: boolean; declinedCount: number }
+  // 013: Дублі; аналітика етапу 5 (dub_start, personal_record_update). `dubClosed` - лише для журналу подій (акт «Дубль N закрито»)
+  | { type: 'dubStart'; dubNumber: number; modifier: DubModifier; pointsTotal: number; secSinceFinale: number; secSinceOffer: number }
+  | { type: 'dubClosed'; dubNumber: number; cycleSec: number }
+  | { type: 'personalRecordUpdate'; recordType: 'dub' | 'lifetime_signatures'; value: number; previous: number }
   // 016: грамоти; аналітика етапу 5 (award_unlock, awards_wall_open)
   | { type: 'awardUnlock'; awardId: string; category: string; awardType: 'gramota' | 'podyaka' | 'nakaz'; isHidden: boolean; awardsOwnedAfter: number; isRetroactive: boolean; isResolvedOffline: boolean; isMirrored: boolean }
   | { type: 'awardsWallOpen'; source: 'segment' | 'award_toast' | 'profile'; awardsOwned: number; awardsUnseen: number };
