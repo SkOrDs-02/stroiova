@@ -29,6 +29,7 @@ export function fakePurchases(init: { status?: StoreStatus; prices?: Partial<Rec
     set: (p) => Object.assign(st, p),
     status: () => st.status,
     prices: () => st.prices,
+    priceInfo: (id) => ({ amount: { no_ads: 199, starter_pack: 79, storage_24h: 99 }[id], currency: 'UAH' }),
     purchase: async (id) => {
       bought.push(id);
       return st.result;

@@ -20,10 +20,20 @@ export interface Memory {
   raceSpeedups: Map<string, number>;
   /** Гонки, де було прискорення рекламою */
   raceAd: Set<string>;
+  /** Ланцюжок реклами `ad_flow_id` за місцем: offer -> start -> complete -> reward (або fail) */
+  adFlows: Map<string, string>;
+  /** Чим закінчилась остання нагорода: на скільки секунд прискорено гонку, скільки пунктів перевірки закрито рекламою, скільки додано підписів */
+  lastSpeedupSec: number;
+  adItems: number;
+  lastExtraClaimed: number;
+  /** Звідки почато покупку товару */
+  purchaseSource: Map<string, string>;
+  /** На скільки секунд подовжив буст остання нагорода `income_boost` */
+  boostSec: number;
 }
 
 export function newMemory(): Memory {
-  return { inspAd: new Set(), raceSpeedups: new Map(), raceAd: new Set() };
+  return { inspAd: new Set(), raceSpeedups: new Map(), raceAd: new Set(), adFlows: new Map(), lastSpeedupSec: 0, adItems: 0, lastExtraClaimed: 0, purchaseSource: new Map(), boostSec: 0 };
 }
 
 export interface MapCtx {
@@ -44,6 +54,12 @@ export interface MapCtx {
   digitalStages: number | null;
   prevCycleMs: number | null;
   memory: Memory;
+  /** Новий `ad_flow_id` (UUID-подібний) */
+  newFlowId: () => string;
+  /** Ціна товару числом і валюта (`PurchaseService.priceInfo`); немає - `0` і `XXX` (ISO 4217: без валюти) */
+  priceOf: (id: string) => { amount: number; currency: string };
+  /** Магазин застосунку (`purchase_complete.store`) */
+  store: 'app_store' | 'play_store';
 }
 
 const sec = (ms: number): number => Math.max(0, Math.round(ms / 1000));
@@ -150,6 +166,7 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
       ];
     case 'inspectionItemComplete':
       if (e.method === 'ad') c.memory.inspAd.add(e.id);
+      if (e.method === 'ad' || e.method === 'no_ads_pass') c.memory.adItems++;
       return [{ name: 'inspection_item_complete', props: { inspection_id: e.id, item_id: e.itemId as EventProps['inspection_item_complete']['item_id'], method: e.method, ...(e.method === 'signatures' ? { cost_log10: log10(e.cost) } : {}), sec_to_deadline: e.secToDeadline } }];
     case 'inspectionFinish':
       return [
@@ -174,6 +191,7 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
     case 'raceStart':
       return [{ name: 'race_start', props: { race_id: e.id, gift_type: e.giftType, doc_sec_required: e.docSec, resource_sec_left: e.resourceSec, is_winnable_without_speedup: e.winnable } }];
     case 'raceSpeedup': {
+      c.memory.lastSpeedupSec = e.secSaved;
       const n = (c.memory.raceSpeedups.get(e.id) ?? 0) + 1;
       c.memory.raceSpeedups.set(e.id, n);
       if (e.method === 'ad') c.memory.raceAd.add(e.id);
@@ -216,9 +234,58 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
           props: { journal_id: e.journalId, rarity: e.rarity, source: e.source, journals_owned_after: e.ownedAfter, is_series_complete: e.isSeriesComplete, series_id: e.seriesId as EventProps['museum_journal_unlock']['series_id'], series_owned_after: e.seriesOwnedAfter, series_complete_count: e.seriesCompleteCount },
         },
       ];
+    case 'adStart': {
+      // нова спроба - новий ланцюжок, якщо попередній закрито (нагородою чи збоєм)
+      const id = c.memory.adFlows.get(e.placement) ?? c.newFlowId();
+      c.memory.adFlows.set(e.placement, id);
+      return [{ name: 'ad_start', props: { placement: e.placement, ad_flow_id: id, load_wait_ms: e.loadWaitMs } }];
+    }
+    case 'adComplete':
+      return [{ name: 'ad_complete', props: { placement: e.placement, ad_flow_id: c.memory.adFlows.get(e.placement) ?? c.newFlowId(), watch_ms: e.watchMs } }];
+    case 'adFail': {
+      const id = c.memory.adFlows.get(e.placement) ?? c.newFlowId();
+      c.memory.adFlows.delete(e.placement);
+      return [{ name: 'ad_fail', props: { placement: e.placement, ad_flow_id: id, stage: e.stage, ...(e.code ? { error_code: e.code } : {}) } }];
+    }
+    case 'adRewardGrant': {
+      const id = c.memory.adFlows.get(e.placement) ?? c.newFlowId();
+      c.memory.adFlows.delete(e.placement);
+      const m = c.memory;
+      const reward =
+        e.placement === 'income_boost'
+          ? { reward_unit: 'boost_sec' as const, reward_amount: m.boostSec }
+          : e.placement === 'offline_double'
+            ? { reward_unit: 'signatures_log10' as const, reward_amount: log10(m.lastExtraClaimed) }
+            : e.placement === 'race_speedup'
+              ? { reward_unit: 'race_sec' as const, reward_amount: m.lastSpeedupSec }
+              : { reward_unit: 'checklist_items' as const, reward_amount: m.adItems };
+      if (e.placement === 'inspection_checklist') m.adItems = 0;
+      return [{ name: 'ad_reward_grant', props: { placement: e.placement, ad_flow_id: id, is_no_ads_claim: e.isNoAdsClaim, ...reward } }];
+    }
+    case 'purchaseStart': {
+      c.memory.purchaseSource.set(e.productId, e.source);
+      const p = c.priceOf(e.productId);
+      return [{ name: 'purchase_start', props: { product_id: e.productId, price: p.amount, currency: p.currency, source: e.source } }];
+    }
+    case 'purchaseComplete': {
+      const p = c.priceOf(e.productId);
+      return [
+        {
+          name: 'purchase_complete',
+          props: { product_id: e.productId, price: p.amount, currency: p.currency, source: (c.memory.purchaseSource.get(e.productId) ?? 'tab') as EventProps['purchase_complete']['source'], is_first_purchase: e.isFirstPurchase, purchase_number: e.purchaseNumber, sec_since_install: sec(c.nowMs - c.installMs), store: c.store },
+        },
+      ];
+    }
+    case 'purchaseFail': {
+      const p = c.priceOf(e.productId);
+      return [{ name: 'purchase_fail', props: { product_id: e.productId, price: p.amount, currency: p.currency, reason: e.reason, ...(e.code ? { error_code: e.code } : {}) } }];
+    }
+    case 'purchaseRestore':
+      return [{ name: 'purchase_restore', props: { trigger: e.trigger, is_success: e.isSuccess, restored_product_ids: [...e.restoredProductIds] } }];
     case 'generatorRefuel':
       return [{ name: 'generator_refuel', props: { tank_pct_before: e.tankPctBefore, tank_capacity_sec: e.tankCapacitySec, bonus_off_sec: e.bonusOffSec } }];
     case 'offlineIncomeClaim':
+      c.memory.lastExtraClaimed = Math.max(0, e.claimed - e.earned);
       return [
         {
           name: 'offline_income_claim',
@@ -238,6 +305,7 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
         },
       ];
     case 'boostActivate':
+      if (e.source === 'ad' || e.source === 'no_ads_pass') c.memory.boostSec = Math.round(e.durationSec);
       return [
         {
           name: 'boost_activate',

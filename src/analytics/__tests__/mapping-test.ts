@@ -22,6 +22,12 @@ function ctx(patch: Partial<MapCtx> = {}): MapCtx {
     digitalStages: null,
     prevCycleMs: null,
     memory: newMemory(),
+    newFlowId: (() => {
+      let n = 0;
+      return () => `flow-${++n}`;
+    })(),
+    priceOf: () => ({ amount: 99, currency: 'UAH' }),
+    store: 'play_store',
     ...patch,
   };
 }

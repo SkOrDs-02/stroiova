@@ -37,7 +37,7 @@ export function ShopScreen({ store, insetTop }: { store: ConveyorStore; insetTop
         ) : null}
         <View style={styles.card} testID="shop-boost">
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title}>{`×2 ${shopT.boostTitle}`}</Text>
-          <AdButton store={store} placement="income_boost" view={view} label={shopT.watch} takeLabel={shopT.take} note={shopT.boostMeta} takeNote={shopT.boostMetaTake} testID="shop-boost-ad" />
+          <AdButton store={store} placement="income_boost" entryPoint="shop" view={view} label={shopT.watch} takeLabel={shopT.take} note={shopT.boostMeta} takeNote={shopT.boostMetaTake} testID="shop-boost-ad" />
         </View>
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.h4}>{shopT.purchases}</Text>
         {ORDER.map((id) => {

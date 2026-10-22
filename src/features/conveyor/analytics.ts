@@ -6,6 +6,7 @@ import { count as countAwards } from '@/awards/awards';
 import { log10, mapEvent, newMemory, type MapCtx, type Memory } from '@/analytics/mapping';
 import type { AnalyticsService } from '@/analytics/service';
 import { createTracker, type Tracker } from '@/analytics/track';
+import type { Placement } from '@/monetization/types';
 import type { EventProps, GlobalProps, UserProps } from '@/analytics/plan.generated';
 import { status as digitStatus } from '@/digitization/digitization';
 import { prestigeMult } from '@/economy/core/formulas';
@@ -33,11 +34,16 @@ export interface AnalyticsEnv {
   appVersion: string;
   deviceRegion: string;
   deviceLocale: string;
+  /** Магазин застосунку (`purchase_complete.store`) */
+  store: 'app_store' | 'play_store';
   /** Помилка плану кидається, а не лише повідомляється (тести) */
   strict?: boolean;
 }
 
-export const DEFAULT_ENV: AnalyticsEnv = { contentVersion: 'content-dev', buildChannel: 'development', appVersion: '0.0.0', deviceRegion: 'UA', deviceLocale: 'uk-UA' };
+/** Подія аналітики, що сталася до створення стору: збій завантаження збереження на запуску (`app_error_log`) */
+export type BootEvent = { name: 'app_error_log'; props: EventProps['app_error_log'] };
+
+export const DEFAULT_ENV: AnalyticsEnv = { contentVersion: 'content-dev', buildChannel: 'development', appVersion: '0.0.0', deviceRegion: 'UA', deviceLocale: 'uk-UA', store: 'play_store' };
 
 /** Ідентифікатор ігрової сесії: UUID-подібний рядок, не потребує нативного модуля */
 export function newSessionId(nowMs: number, rand: () => number = Math.random): string {
@@ -179,16 +185,22 @@ export interface Analytics {
   memory: Memory;
   /** Мить відкриття телеграми гравцем (для `sec_since_open`); true, якщо це перше відкриття цього запису */
   noteOpened: (uid: string, atMs: number) => boolean;
+  /**
+   * `ad_offer_show`: кнопка за рекламу з'явилась, а ліміт не вичерпано. Раз на сесію для кожного місця, крім `offline_double`
+   * (на кожному екрані повернення). Відкриває ланцюжок `ad_flow_id`.
+   */
+  adOffer: (placement: Placement, o: { isNoAdsClaim: boolean; isReady: boolean; usesToday: number; dailyLimit: number; entryPoint?: 'boosts_sheet' | 'shop' | 'ad_offer_first' }) => void;
 }
 
 /**
  * Підключити аналітику до стору: перший запуск і початок сесії, потім усе, що відбувається. Вимикач «Аналітика» (010 FR-14):
  * подію вимкнення ще шлемо, робимо `flush()`, і лише потім `optOut`.
  */
-export function attachAnalytics(store: ConveyorStore, service: AnalyticsService, env: AnalyticsEnv = DEFAULT_ENV): Analytics {
+export function attachAnalytics(store: ConveyorStore, service: AnalyticsService, env: AnalyticsEnv = DEFAULT_ENV, bootEvents: readonly BootEvent[] = []): Analytics {
   const memory = newMemory();
   const opened = new Map<string, number>();
   const available = new Map<number, number>();
+  const offered = new Set<string>();
   let sessionId = newSessionId(store.getState().lastMs);
   // сесія: початок ігрового часу, відрізки, лічильники; `bgAt` - коли пішли у фон
   const sess = { startPlayMs: store.getState().playtimeMs, segments: 1, agg: zeroAgg(), bgAt: null as number | null };
@@ -222,6 +234,9 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
     digitalStages: s.state.level >= 5 ? s.state.digital.length : null,
     prevCycleMs: s.digit.ceremony?.prevCycleMs ?? null,
     memory,
+    newFlowId: () => newSessionId(s.lastMs),
+    priceOf: (id) => s.services.purchases.priceInfo?.(id as 'no_ads') ?? { amount: 0, currency: 'XXX' },
+    store: env.store,
   });
 
   const syncUser = (s: Snap) => {
@@ -259,6 +274,7 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
       is_clock_skew_detected: false,
     });
     syncUser(store.getState());
+    for (const b of bootEvents) tracker.track(b.name, b.props);
   }
 
   store.subscribe((s, prev) => {
@@ -310,6 +326,7 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
           sess.segments = 1;
           sess.startPlayMs = s.playtimeMs;
           sess.agg = zeroAgg();
+          offered.clear();
           store.setState({ analytics: { ...store.getState().analytics, sessionNumber: store.getState().analytics.sessionNumber + 1 } });
           tracker.track('session_start', { is_cold_start: false, sec_since_last_session: Math.round(gap / 1000), local_hour: new Date(e.atMs + tzOffsetAt(e.atMs) * 60_000).getUTCHours(), entry_point: 'other', is_clock_skew_detected: false });
         } else sess.segments++;
@@ -334,6 +351,13 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
   return {
     tracker,
     memory,
+    adOffer: (placement, o) => {
+      if (placement !== 'offline_double' && offered.has(placement)) return;
+      offered.add(placement);
+      const id = memory.adFlows.get(placement) ?? newSessionId(store.getState().lastMs);
+      memory.adFlows.set(placement, id);
+      tracker.track('ad_offer_show', { placement, ad_flow_id: id, is_no_ads_claim: o.isNoAdsClaim, is_ad_ready: o.isReady, uses_today: o.usesToday, daily_limit: o.dailyLimit, ...(o.entryPoint ? { entry_point: o.entryPoint } : {}) });
+    },
     noteOpened: (uid, atMs) => {
       if (opened.has(uid)) return false;
       opened.set(uid, atMs);

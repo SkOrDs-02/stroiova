@@ -48,6 +48,7 @@ export function BoostsSheet({ store, onClose, onShop }: { store: ConveyorStore; 
           <AdButton
             store={store}
             placement="income_boost"
+            entryPoint="boosts_sheet"
             view={view}
             label={view.left === s.cfg.params.adsPerDay ? adT.boostFirst(s.cfg.params.adHours) : adT.boostAdd(s.cfg.params.adHours)}
             takeLabel={adT.takeBoost(s.cfg.params.adHours)}
