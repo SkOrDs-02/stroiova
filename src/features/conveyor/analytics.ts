@@ -165,6 +165,7 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
   });
 
   const syncUser = (s: Snap) => {
+    if (!allowed) return;
     const props = userPropsOf(s);
     const key = JSON.stringify(props);
     if (key === lastUser) return;
@@ -176,7 +177,7 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
   {
     const s = store.getState();
     const tz = tzOffsetAt(s.lastMs);
-    if (s.installId && !s.analytics.firstOpenSent) {
+    if (allowed && s.installId && !s.analytics.firstOpenSent) {
       service.identify(s.installId, {
         install_date: dateOf(s.inspections.installMs, tz),
         install_week: isoWeek(s.inspections.installMs, tz),
@@ -218,12 +219,18 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
     let turnedOff = false;
     for (const e of evs) {
       if (e.type === 'settingChange' && e.settingName === 'analytics' && e.newValue === false) turnedOff = true;
-      for (const c of mapEvent(e, ctxOf(s, e))) tracker.track(c.name, c.props as never);
+      for (const c of mapEvent(e, ctxOf(s, e))) tracker.track(c.name, c.props as never, c.globals);
     }
     if (pendingOff && turnedOff) {
-      void service.flush().then(() => service.optOut(true));
       allowed = false;
       pendingOff = false;
+      // приватність: вимикаємо SDK, навіть якщо flush не вдався; а якщо гравець уже встиг увімкнути знову - не вимикаємо
+      void service
+        .flush()
+        .catch(() => {})
+        .then(() => {
+          if (!allowed) service.optOut(true);
+        });
     }
     if (evs.length || s.lastMs - prev.lastMs > 59_000) syncUser(s);
   });

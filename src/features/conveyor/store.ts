@@ -1211,6 +1211,8 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (p !== cur && !(p === 'not_asked' && cur !== 'not_asked')) set({ settings: { ...get().settings, pushPermission: p } });
     },
     goBackground: async (nowMs) => {
+      // docs/analytics.md, принцип 6: черга подій відправляється при переході у фон
+      void get().services.analytics.flush();
       const g = get();
       await g.services.notifications.cancelAll();
       const tz = tzOffsetAt(nowMs);

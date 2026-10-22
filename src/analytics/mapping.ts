@@ -6,9 +6,10 @@ import type { DomainEvent } from '@/economy/game/types';
 import type { InboxItem } from '@/telegrams/types';
 import { FIRST_TELEGRAM_ID } from '@/telegrams/content';
 
-import type { EventName, EventProps } from './plan.generated';
+import type { EventName, EventProps, GlobalProps } from './plan.generated';
 
-export type Call = { [N in EventName]: { name: N; props: EventProps[N] } }[EventName];
+/** `globals` - глобальні властивості, що замінюють зібрані зі стану (подія про те, чого вже немає в стані: скидання прогресу) */
+export type Call = { [N in EventName]: { name: N; props: EventProps[N]; globals?: Partial<GlobalProps> } }[EventName];
 
 /** Лічильники, що живуть довше за одну подію (порядок подій зберігається, тож мапер їх оновлює сам) */
 export interface Memory {
@@ -104,7 +105,7 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
             slowdown_mult: slow?.mult ?? 1,
             slowdown_sec: slow ? sec(slow.hours * 3_600_000) : 0,
             reputation_delta: e.repDelta,
-            reputation_after: c.reputation,
+            reputation_after: item?.result?.repAfter ?? c.reputation,
             inspection_chance_pct: e.chancePct,
             paper_spent: e.paper,
             sec_since_open: sec(c.nowMs - opened),
@@ -148,7 +149,7 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
       ];
     case 'inspectionItemComplete':
       if (e.method === 'ad') c.memory.inspAd.add(e.id);
-      return [{ name: 'inspection_item_complete', props: { inspection_id: e.id, item_id: e.itemId as EventProps['inspection_item_complete']['item_id'], method: e.method, cost_log10: log10(e.cost), sec_to_deadline: e.secToDeadline } }];
+      return [{ name: 'inspection_item_complete', props: { inspection_id: e.id, item_id: e.itemId as EventProps['inspection_item_complete']['item_id'], method: e.method, ...(e.method === 'signatures' ? { cost_log10: log10(e.cost) } : {}), sec_to_deadline: e.secToDeadline } }];
     case 'inspectionFinish':
       return [
         {
@@ -215,7 +216,14 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
         },
       ];
     case 'settingChange':
-      return [{ name: 'setting_change', props: { setting_name: e.settingName, new_value: e.newValue === null ? 'done' : e.newValue ? 'on' : 'off' } }];
+      return [
+        {
+          name: 'setting_change',
+          props: { setting_name: e.settingName, new_value: e.newValue === null ? 'done' : e.newValue ? 'on' : 'off' },
+          // скидання: лічильники «до стирання» (глобальні властивості зі стану вже нульові)
+          ...(e.settingName === 'progress_reset' && e.digitizationCount != null ? { globals: { digitization_count: e.digitizationCount, playtime_sec: e.playtimeSec ?? 0 } } : {}),
+        },
+      ];
     case 'museumOpen':
       return [{ name: 'museum_open', props: { source: e.source, journals_owned: e.journalsOwned, journals_unseen: e.journalsUnseen, segment: 'journals' } }];
     case 'pushPermissionRequest':

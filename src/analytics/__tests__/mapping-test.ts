@@ -150,3 +150,21 @@ describe('мапінг доменних подій у події плану', ()
     expect(mapEvent(S('finaleStepComplete', 1), ctx())[0]!.props).not.toHaveProperty('declined_count');
   });
 });
+
+describe('значення, які типи не ловлять', () => {
+  test('reputation_after - з результату запису, а не з поточної репутації стору', () => {
+    const inbox = [item({ result: { rep: 5, repAfter: 33, paper: 2, slow: [], chancePct: 10, inspHit: false, shield: false } })];
+    expect(mapEvent(S('telegramAnswer'), ctx({ inbox, reputation: 99 }))[0]).toMatchObject({ props: { reputation_after: 33 } });
+  });
+
+  test('inspection_item_complete: cost_log10 лише для методу signatures', () => {
+    const e = { type: 'inspectionItemComplete', id: 'i', itemId: 'paint_borders', method: 'no_ads_pass', cost: 0, secToDeadline: 5 } as DomainEvent;
+    expect(mapEvent(e, ctx())[0]!.props).not.toHaveProperty('cost_log10');
+    expect(mapEvent({ ...e, method: 'signatures', cost: 100 } as DomainEvent, ctx())[0]!.props).toHaveProperty('cost_log10', 2);
+  });
+
+  test('progress_reset: лічильники «до стирання» замінюють глобальні', () => {
+    const e = { type: 'settingChange', settingName: 'progress_reset', newValue: null, digitizationCount: 7, playtimeSec: 5000 } as DomainEvent;
+    expect(mapEvent(e, ctx())[0]).toMatchObject({ props: { setting_name: 'progress_reset', new_value: 'done' }, globals: { digitization_count: 7, playtime_sec: 5000 } });
+  });
+});

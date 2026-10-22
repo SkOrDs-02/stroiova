@@ -19,7 +19,7 @@ export interface TrackerCtx {
 }
 
 export interface Tracker {
-  track<N extends EventName>(name: N, props: EventProps[N]): boolean;
+  track<N extends EventName>(name: N, props: EventProps[N], globals?: Partial<GlobalProps>): boolean;
   /** Кількість відкинутих через помилки плану подій (для тестів і `app_error_log`) */
   readonly dropped: () => number;
 }
@@ -33,7 +33,7 @@ export function createTracker(ctx: TrackerCtx): Tracker {
   };
   return {
     dropped: () => dropped,
-    track(name, props) {
+    track(name, props, override) {
       if (!ctx.enabled()) return false;
       const def = EVENTS[name];
       // невідому подію відкидає `before_send`; типи цього не допустять, але JS-виклик чи застарілий мапінг - можуть
@@ -47,7 +47,7 @@ export function createTracker(ctx: TrackerCtx): Tracker {
         fail(name, errors);
         return false;
       }
-      const globals = { ...ctx.globals(), analytics_plan_version: PLAN_VERSION };
+      const globals = { ...ctx.globals(), ...override, analytics_plan_version: PLAN_VERSION };
       const gErrors = validateGlobals(globals);
       if (gErrors.length) {
         fail(name, gErrors);

@@ -91,6 +91,39 @@ describe('події гри через track()', () => {
   });
 });
 
+describe('скидання прогресу, фон, відкриття телеграми', () => {
+  test('setting_change progress_reset несе digitization_count і playtime_sec до стирання', () => {
+    const m = game({ analytics: { sessionNumber: 0, lastSessionEndMs: null, firstOpenSent: true }, playtimeMs: 3_600_000 });
+    m.store.setState({ digit: { ...m.store.getState().digit, total: 5 } });
+    m.events.length = 0;
+    m.store.getState().resetProgress();
+    const e = m.events.find((x) => x.name === 'setting_change')!;
+    expect(e.props).toMatchObject({ setting_name: 'progress_reset', new_value: 'done', digitization_count: 5, playtime_sec: 3600 });
+  });
+
+  test('перехід у фон викликає flush', async () => {
+    const m = game();
+    await m.store.getState().goBackground(T0 + 1000);
+    expect(m.calls.flush).toBeGreaterThanOrEqual(1);
+  });
+
+  test('flush, що не вдався, не лишає SDK увімкненим після вимкнення', async () => {
+    const m = game({ analytics: { sessionNumber: 0, lastSessionEndMs: null, firstOpenSent: true } });
+    m.service.flush = () => Promise.reject(new Error('мережі немає'));
+    m.store.getState().setSetting('analytics', false);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(m.calls.optOut).toEqual([false, true]);
+  });
+
+  test('вимкнена аналітика: identify і властивості користувача не йдуть, прапорець першого запуску лишається', () => {
+    const base = game();
+    const m = game({ settings: { ...base.store.getState().settings, analytics: false } });
+    expect(m.calls.identify).toHaveLength(0);
+    expect(m.calls.user).toHaveLength(0);
+    expect(m.store.getState().analytics.firstOpenSent).toBe(false);
+  });
+});
+
 describe('вимикач «Аналітика» (010 FR-14)', () => {
   test('вимкнення: setting_change ще йде, потім flush і optOut; далі тиша; увімкнення повертає', async () => {
     const m = game({ analytics: { sessionNumber: 0, lastSessionEndMs: null, firstOpenSent: true } });
