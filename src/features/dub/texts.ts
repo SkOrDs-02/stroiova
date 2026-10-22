@@ -45,6 +45,11 @@ export function recordLine(dub: number, log10: number): string {
   return dupT.recLine(dub, log10.toFixed(2).replace('.', ','));
 }
 
+/** Для скрінрідера: «10^x» читається як «10 у степені x» */
+export function recordLabel(dub: number, log10: number): string {
+  return dupT.recLine(dub, log10.toFixed(2).replace('.', ',')).replace('10^', '10 у степені ');
+}
+
 /** Текст модифікатора: у `no_did` підставляється `dup.noDid.fuelMult` (a не число з коду) */
 export function modifierText(m: DubModifier, fuelMult: string): string {
   const t = dupT.mod[m].text;

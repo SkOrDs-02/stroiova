@@ -5,7 +5,7 @@ import { useStore } from 'zustand';
 
 import { count } from '@/awards/awards';
 import { recordNow } from '@/dub/dub';
-import { dupT, recordLine } from '@/features/dub/texts';
+import { dupT, recordLabel, recordLine } from '@/features/dub/texts';
 import { AWARDS_TOTAL } from '@/awards/content';
 import { awT } from '@/features/awards/texts';
 import type { ConveyorStore } from '@/features/conveyor/store';
@@ -72,7 +72,7 @@ export function ProfileScreen({ store, insetTop, onBack, onDiary, onAwards }: { 
       {rec.dub >= 1 ? (
         <View style={styles.report} testID="pf-record">
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.reportTitle}>{dupT.recTitle}</Text>
-          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tileNote} testID="pf-record-line">{recordLine(rec.dub, rec.lifetimeLog10)}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tileNote} accessibilityLabel={recordLabel(rec.dub, rec.lifetimeLog10)} testID="pf-record-line">{recordLine(rec.dub, rec.lifetimeLog10)}</Text>
         </View>
       ) : null}
 
