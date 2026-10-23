@@ -7,6 +7,7 @@ import type { FinaleState } from '@/finale/finale';
 import { curioFromStory } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
 import { BEATS, DIARY } from '@/story/content';
+import type { MoveState } from '@/move/move';
 import { grantSheets } from '@/story/archive';
 import { diaryOnSessionStart } from '@/story/diary';
 import { confirmTelegram, onEvent, pull, setCharacter, sync } from '@/story/engine';
@@ -35,6 +36,8 @@ export interface StoryHost {
   inspections: InspectionState;
   /** Фінал: від Y до кінця тижня тиші щоденник веде пул `quiet` (013 FR-22) */
   finale: FinaleState;
+  /** Переїзд (017): аркуш слота «Переїзд» */
+  move: MoveState;
   story: StoryState;
   storySession: SessionBudget;
   storyCall: string | null;
@@ -45,7 +48,7 @@ export interface StoryHost {
 }
 
 export function ctxOf(g: StoryHost): StoryCtx {
-  return { level: g.state.level, counts: g.digit.counts, conversions: g.state.digital.length, packs: g.telegrams.packs.seq, levelStartMs: g.digit.levelStartMs, exitAllowed: g.digit.levelExitAllowed, tzOffsetMin: -new Date(g.lastMs).getTimezoneOffset() };
+  return { level: g.state.level, counts: g.digit.counts, conversions: g.state.digital.length, packs: g.telegrams.packs.seq, levelStartMs: g.digit.levelStartMs, exitAllowed: g.digit.levelExitAllowed, tzOffsetMin: -new Date(g.lastMs).getTimezoneOffset(), moves: g.move.done };
 }
 
 type Patch = Partial<Omit<StoryHost, 'showToast'>>;

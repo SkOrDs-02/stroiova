@@ -6,6 +6,7 @@ import { newAwards } from '@/awards/awards';
 import { newAnalytics } from '@/analytics/state';
 import { newDub } from '@/dub/dub';
 import { newFinale } from '@/finale/finale';
+import { newMove } from '@/move/move';
 import { newStory } from '@/story/engine';
 import { draft } from '../test-saves';
 
@@ -19,7 +20,7 @@ function v1(): SaveDraft {
 
 const migrations = {
   1: (g: unknown) => { const x = g as { economy: object; sigs: number }; return { economy: { ...x.economy, signatures: x.sigs } }; },
-  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards(), finale: newFinale(), dub: newDub('dub-test'), analytics: newAnalytics() }),
+  2: (g: unknown) => ({ ...(g as object), effects: [], playtimeMs: 0, onboarding: onboardingDone(), telegrams: telegramsV3(), inspections: inspectionsV4(0), race: raceV5(), digitization: digitizationV6(0), museum: museumV7(), monetization: monetizationV8(), ...settingsV9(), story: newStory(), awards: newAwards(), finale: newFinale(), dub: newDub('dub-test'), analytics: newAnalytics(), move: newMove() }),
 };
 
 describe('міграції', () => {
@@ -425,6 +426,28 @@ describe('справжні міграції', () => {
     if (r.kind !== 'ok') return;
     expect(r.save.game.analytics).toEqual({ sessionNumber: 0, lastSessionEndMs: null, firstOpenSent: true });
     expect(r.save.game.dub).toEqual(dub);
+  });
+
+  test('19 → 20 (017, AC-6): переїздів ще не було, гравець на Р4 отримає переїзд свого рівня, решта запису на місці', () => {
+    const d = draft({ schemaVersion: 19, savedAt: 5000 });
+    const { move: _m, ...gameV19 } = d.game;
+    const analytics = { sessionNumber: 9, lastSessionEndMs: 4000, firstOpenSent: true };
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...gameV19, economy: { ...d.game.economy, level: 4 }, analytics } as never }) });
+    const r = loadSave(kv, { current: 20, migrations: MIGRATIONS });
+    expect(r).toMatchObject({ kind: 'ok', migratedFrom: 19 });
+    if (r.kind !== 'ok') return;
+    const { move, ...rest } = r.save.game;
+    expect(move).toEqual({ done: [] });
+    expect(rest).toEqual({ ...gameV19, economy: { ...d.game.economy, level: 4 }, analytics });
+  });
+
+  test('схема 20: переїзди проходять збереження без втрат', () => {
+    const d = draft({ schemaVersion: 20, savedAt: 5000 });
+    const kv = memoryStorage({ [KEY_SAVE]: serialize({ ...d, game: { ...d.game, move: { done: [3, 4] } } as never }) });
+    const r = loadSave(kv, { current: 20, migrations: MIGRATIONS });
+    expect(r.kind).toBe('ok');
+    if (r.kind !== 'ok') return;
+    expect(r.save.game.move).toEqual({ done: [3, 4] });
   });
 
   test('схема 19: лічильники аналітики проходять збереження без втрат', () => {

@@ -46,9 +46,10 @@ Spec-driven development (GitHub Spec Kit). Правила — `.specify/memory/c
 | `src/dub/` | Дублі (013 етап 2b): чистий домен - стан, пропозиція, модифікатор із зерна, `dubConfig` (масштаб `dup.*`, як `dubParams` у `sim.js`), рекорд; у сторі - `src/features/conveyor/dub.ts` (прийняття, закриття); екрани (`endless-intro`, «Дубль N закрито») і тексти - `src/features/dub/` |
 | `src/analytics/` | Аналітика (етап 5): `plan.generated.ts` з `tracking-plan.yaml` (`node tools/gen_analytics.mjs`, руками не правити), `track.ts` (обгортка з перевіркою плану, вимикачем і вибіркою), `mapping.ts` (доменна подія -> подія плану), `service.ts` (інтерфейс PostHog, заглушка), `state.ts` (лічильники сесій); підключення до стору - `src/features/conveyor/analytics.ts` |
 | `src/share/`, `src/features/share/` | Поширення (007 етап 2, рішення 116): підгін тексту (`fit.ts`), розмір 1080 × 1350, `ShareService` (на пристрої - `src/services/share.ts`: знімок, системне меню, видалення файлу); моделі карток без позивного (`cards.ts`), картинка `ShareImage`, прев'ю й кнопка `ShareAction` |
+| `src/move/` | «Переїзд» (017): чистий домен - коли настає, вікна ящиків, втрата паперу; у сторі - `moveFinish`; екрани (`move-intro`, `move-game`, `move-result`) і тексти - `src/features/move/` |
 | `src/stack/` | Стос до наради Р4 (012): чистий домен - ріст за частку «Звітів про звіти», нова сесія, «Метр звітів» раз на цикл; екран - `src/features/stack/` |
 | `src/economy/` | Модуль економіки: `core` (спільний із симулятором), `game` (стан і дії гри), `format.ts`; вбудований конфіг `econ-v7.2.1` |
-| `analytics/tracking-plan.yaml` | 60 подій аналітики; `docs/analytics.md` — пояснення |
+| `analytics/tracking-plan.yaml` | 61 подія аналітики; `docs/analytics.md` — пояснення |
 | `docs/art-and-sound.md`, `docs/stores.md`, `docs/playtest-and-launch.md` | Арт і звук, сторінки сторів, тестування й запуск |
 | `docs/research/` | Рев'ю й дослідження |
 

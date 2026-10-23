@@ -35,8 +35,8 @@ function tracker(patch: { enabled?: boolean; sampled?: boolean; strict?: boolean
 
 describe('план: генерований файл', () => {
   // відповідність YAML перевіряє `node tools/gen_analytics.mjs --check` (CI)
-  test('60 подій, версія плану 3, 19 глобальних властивостей', () => {
-    expect(Object.keys(EVENTS)).toHaveLength(60);
+  test('61 подія, версія плану 3, 19 глобальних властивостей', () => {
+    expect(Object.keys(EVENTS)).toHaveLength(61);
     expect(PLAN_VERSION).toBe(3);
     expect(Object.keys(GLOBAL_PROPS)).toHaveLength(19);
   });

@@ -33,6 +33,8 @@ function game(level: number) {
   store.setState({
     onboarding: onboardingDone(),
     lastMs: T0,
+    // «Переїзд» (017) на Р3-Р4 уже позаду: він тримав би чергу модалок
+    move: { done: [3, 4] },
     inspections: { ...store.getState().inspections, installMs: T0 - 9 * 24 * HOUR },
     telegrams: { ...store.getState().telegrams, startMs: T0 - 9 * 24 * HOUR },
     digit: { ...store.getState().digit, cycleStartMs: T0 - 5 * HOUR, levelStartMs: T0 - 40 * HOUR },
@@ -87,13 +89,16 @@ describe('аркуші Археолога в грі (AC-11)', () => {
     expect(Object.keys(store.getState().story.sheets)).toEqual(['ar_01']);
   });
 
-  test('перший запуск на Р3: аркуші Р2 одним тостом з множиною', async () => {
+  test('перший запуск на Р3: спершу «Переїзд» (017), потім аркуші Р2 і аркуш переїзду одним тостом з множиною', async () => {
     const store = game(3);
-    store.setState({ story: storyForLevel(BEATS, 3) });
+    store.setState({ story: storyForLevel(BEATS, 3), move: { done: [] } });
     await render(<MainScreen store={store} />);
+    expect(Object.keys(store.getState().story.sheets)).toEqual([]);
+    await fireEvent.press(screen.getByTestId('mi-skip'));
+    await fireEvent.press(screen.getByTestId('mr-close'));
     const texts = [store.getState().toast, ...store.getState().toastQueue].map((t) => JSON.stringify(t));
-    expect(texts.some((t) => t.includes('Знайдено 3 аркуші Археолога'))).toBe(true);
-    expect(Object.keys(store.getState().story.sheets)).toEqual(['ar_01', 'ar_02', 'ar_03']);
+    expect(texts.some((t) => t.includes('Знайдено 4 аркуші Археолога'))).toBe(true);
+    expect(Object.keys(store.getState().story.sheets)).toEqual(['ar_01', 'ar_02', 'ar_03', 'ar_04']);
   });
 });
 

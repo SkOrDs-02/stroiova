@@ -27,6 +27,13 @@ describe('джерела аркушів', () => {
     ]);
   });
 
+  test('017 FR-9: з переїздом аркуш слота видає сам переїзд, а не подарунок', () => {
+    const withR2 = { ...newStory(), sheets: { ar_01: 1, ar_02: 1, ar_03: 1 } };
+    const s = onEvent(withR2, BEATS, { type: 'gift_arrived', level: 3 }, T0, false);
+    expect(grantSheets(s, ctx({ level: 3, moves: [] }), T0).grants.map((x) => [x.sheet.id, x.source])).toEqual([['ar_05', 'gift']]);
+    expect(grantSheets(withR2, ctx({ level: 3, moves: [3] }), T0).grants.map((x) => [x.sheet.id, x.source])).toEqual([['ar_04', 'move']]);
+  });
+
   test('підсумкова рівня видає аркуш boss; `exitAllowed` без події теж (оновлення посеред рівня)', () => {
     const viaEvent = onEvent(newStory(), BEATS, { type: 'boss_passed', level: 2 }, T0, false);
     expect(grantSheets(viaEvent, ctx(), T0).grants.map((x) => x.sheet.id)).toEqual(['ar_03']);

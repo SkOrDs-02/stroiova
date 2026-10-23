@@ -95,6 +95,8 @@ export interface StoryCtx {
   exitAllowed: boolean;
   /** Зсув місцевого часу, хв: для `afterHours: next_day` (перша мить наступної календарної доби); 0 - UTC */
   tzOffsetMin?: number;
+  /** Рівні, на яких переїзд (017) уже відбувся; немає - збірка без 017 */
+  moves?: number[];
 }
 
 export type StoryEvent =

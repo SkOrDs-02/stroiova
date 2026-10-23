@@ -483,6 +483,12 @@ export interface EventProps {
     sec_since_session_start: number;
     offline_share_pct: number;
   };
+  move_finish: {
+    boxes_stacked: number;
+    boxes_total: number;
+    paper_lost: number;
+    is_skipped: boolean;
+  };
   stage_convert: {
     stage_id: "kombat" | "stroy" | "fin" | "kazna" | "narada" | "dopovid";
     convert_index: number;
@@ -1094,6 +1100,15 @@ export const EVENTS: Readonly<Record<EventName, EventDef>> = {
       zpz_level: { type: "integer", required: true },
       sec_since_session_start: { type: "integer", required: true },
       offline_share_pct: { type: "number", required: true },
+    },
+  },
+  move_finish: {
+    sampling: "all",
+    props: {
+      boxes_stacked: { type: "integer", required: true },
+      boxes_total: { type: "integer", required: true },
+      paper_lost: { type: "integer", required: true },
+      is_skipped: { type: "boolean", required: true },
     },
   },
   stage_convert: {

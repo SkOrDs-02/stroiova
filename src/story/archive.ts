@@ -14,7 +14,7 @@ export interface Grant {
 
 /**
  * Аркуші, які мають бути в гравця на мить `nowMs`. Джерела (таблиця «Аркуші й джерела»): подарунок Ліни (nth на рівні), підсумкова рівня,
- * конвертація Р5; «Переїзд» (017) ще немає, тож його аркуш видається з першим подарунком рівня (AC-12). Аркуші пройдених рівнів,
+ * конвертація Р5, «Переїзд» (017: `ctx.moves`; без нього - перший подарунок рівня, AC-12). Аркуші пройдених рівнів,
  * яких не видано, видаються разом (наздоганяння, `catch_up`, FR-29).
  */
 export function grantSheets(st: StoryState, ctx: StoryCtx, nowMs: number, sheets: readonly Sheet[] = SHEETS): { st: StoryState; grants: Grant[] } {
@@ -27,7 +27,8 @@ export function grantSheets(st: StoryState, ctx: StoryCtx, nowMs: number, sheets
     else if (sh.level === ctx.level) {
       const gifts = st.counters.gifts[String(sh.level)] ?? 0;
       if (src.kind === 'gift' && gifts >= src.nth) source = 'gift';
-      else if (src.kind === 'move' && gifts >= 1) source = 'move';
+      // з 017 аркуш слота «Переїзд» дає сам переїзд; без нього (контекст без `moves`) - перший подарунок рівня (014 AC-12)
+      else if (src.kind === 'move' && (ctx.moves ? ctx.moves.includes(sh.level) : gifts >= 1)) source = 'move';
       else if (src.kind === 'boss' && (st.bosses.includes(src.level) || ctx.exitAllowed)) source = 'boss';
     }
     if (src.kind === 'conversion' && ctx.conversions >= src.k) source = 'conversion';

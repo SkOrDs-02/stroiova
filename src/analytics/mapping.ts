@@ -375,6 +375,8 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
     case 'shareError':
       // гравець може спробувати ще раз: картинку не відновлено автоматично
       return [{ name: 'app_error_log', props: { source: 'share_render', error_code: e.code, is_recovered: false, recovery: 'none' } }];
+    case 'moveFinish':
+      return [{ name: 'move_finish', props: { boxes_stacked: e.stacked, boxes_total: e.total, paper_lost: e.paperLost, is_skipped: e.skipped } }];
     case 'awardsWallOpen':
       return [{ name: 'awards_wall_open', props: { source: e.source, awards_owned: e.awardsOwned, awards_unseen: e.awardsUnseen } }];
     default:
