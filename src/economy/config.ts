@@ -1,4 +1,4 @@
-// Вбудований конфіг економіки (рішення 52): preset-v7 rev 7.3. Закріплення й віддалений конфіг — 009.
+// Вбудований конфіг економіки (рішення 52): preset-v7 rev 7.2.1. Закріплення й віддалений конфіг — 009.
 import preset from '../../balance/preset-v7.json';
 import { withDefaults } from './core';
 import type { EconomyConfig } from './game/types';
