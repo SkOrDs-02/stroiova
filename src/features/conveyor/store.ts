@@ -2,10 +2,10 @@
 import { create } from 'zustand';
 
 import { bundledConfig } from '@/economy/config';
-import { formatDuration, formatMult } from '@/economy/format';
+import { formatBig, formatDuration, formatMult } from '@/economy/format';
 import { advance, claimOffline, creditedAwayMs, offline, type OfflineResult } from '@/economy/game/advance';
 import { baseIncomePerMin } from '@/economy/game/income';
-import { catTap, refuel, tap } from '@/economy/game/actions';
+import { catAvailable, catLeftMin, catTap, refuel, tap } from '@/economy/game/actions';
 import { count as countAwards, markSeen as markAwardsSeen, newAwards, pendingToasts, resetProgress as resetAwards, retroactive, toastsShown, unseen as unseenAwards } from '@/awards/awards';
 import type { AwardsState, Fact, Grant } from '@/awards/types';
 import { awardCtx, factsFrom, newEvents as newAwardEvents, run as awardsRun, toastsOf, unlockEvents, type AwardToast } from './awards';
@@ -60,6 +60,7 @@ import { grow as growStack, growOffline as growStackOffline, startSession as sta
 import { deliverFirst, newTelegrams, tick as tickTg } from '@/telegrams/schedule';
 import type { TelegramState } from '@/telegrams/types';
 import { lineAt, poolSize } from '@/features/telegrams/lines';
+import { t as eco } from './texts';
 import { pickLine } from '@/telegrams/lines';
 export type { StoredEffect } from '@/economy/game/types';
 
@@ -754,10 +755,20 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       pushEvent({ type: 'generatorRefuel', tankPctBefore: r.info.tankPctBefore, tankCapacitySec: r.info.tankCapacitySec, bonusOffSec: r.info.bonusOffSec });
     },
     cat: (now) => {
+      if (!catAvailable(get().cfg, get().playtimeMs)) return;
       const before = get().state;
       const r = catTap(before, get().cfg, now);
       set({ state: r.state });
-      get().awardsUi('cat_tap', { is_bonus: r.state.catBonusAtMs !== before.catBonusAtMs });
+      const bonus = r.state.catBonusAtMs !== before.catBonusAtMs;
+      get().awardsUi('cat_tap', { is_bonus: bonus });
+      // підписи до кадру кота - поза лімітом 2 реплік за сесію (рішення 47); рядок з мішка пулу, як інші тости
+      const key = bonus ? 'cat.tap' : 'cat.sleep';
+      const pick = pickLine(get().telegrams, key, poolSize(key));
+      if (pick.index == null) return;
+      set({ telegrams: pick.tg });
+      const left = Math.max(1, catLeftMin(before, get().cfg, now));
+      const line = lineAt(key, pick.index).replace('{хв}', String(left));
+      get().showToast({ kind: 'text', text: bonus ? `${line}\n${eco.catBonus(formatBig(r.gain))}` : line });
     },
     awardsUi: (event, props) => {
       const g = get();
