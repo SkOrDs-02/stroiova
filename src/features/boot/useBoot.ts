@@ -34,6 +34,7 @@ import type { KeyValue } from '@/save/storage';
 
 import { createAutosave } from './autosave';
 import { deviceLinks, deviceNotifications, deviceReview } from '@/services/device';
+import { posthogAnalytics } from '@/services/posthog';
 import { clearShareCache, deviceShare } from '@/services/share';
 
 /** Версія пакета контенту. До завантажувача контенту (003) — дата контенту в репо. */
@@ -101,7 +102,8 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
   const id = installId(kv, Crypto.randomUUID).id;
   // 007: картинки, що лишились після вбивства гри під час меню «Поділитися»
   clearShareCache();
-  const services = { share: deviceShare, notifications: deviceNotifications, links: deviceLinks, review: deviceReview };
+  // аналітика - PostHog, якщо задано `EXPO_PUBLIC_POSTHOG_KEY`; інакше заглушка
+  const services = { share: deviceShare, notifications: deviceNotifications, links: deviceLinks, review: deviceReview, analytics: posthogAnalytics() };
   // 010 FR-8: гру запущено тапом по сповіщенню - session_start з entry_point = push, push_open і ціль переходу
   const opened = deviceNotifications.initialOpen();
   const env: AnalyticsEnv = { ...analyticsEnv(), entryPoint: opened ? 'push' : 'icon' };
