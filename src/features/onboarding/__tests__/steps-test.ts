@@ -50,8 +50,10 @@ describe('кроки онбордингу', () => {
     expect(ready(at(9), { ...ctx, playMs: 420_000 })).toBe('call');
   });
 
-  test('кроки 10 і далі в етапі 1 нічого не показують (08, 10)', () => {
-    expect(ready(at(10), { ...ctx, playMs: 10_000_000, signatures: 1e9 })).toBeNull();
+  test('крок 10 - коуч буста не раніше 540 с ігрового часу; крок 11 - шторка дозволу; після онбордингу нічого (FR-21, FR-26, FR-29)', () => {
+    expect(ready(at(10), { ...ctx, playMs: 539_999 })).toBeNull();
+    expect(ready(at(10), { ...ctx, playMs: 540_000 })).toBe('coachBoost');
+    expect(ready(at(11), { ...ctx, playMs: 0 })).toBe('pushPrompt');
     expect(ready(at('done'), { ...ctx, signatures: 1e9 })).toBeNull();
   });
 });

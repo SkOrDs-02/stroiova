@@ -25,6 +25,8 @@ import { LevelUp } from '@/features/digitization/LevelUp';
 import { byLevel } from '@/features/digitization/present';
 import { digitT } from '@/features/digitization/texts';
 import { BoostsSheet } from '@/features/monetization/BoostsSheet';
+import { AdOfferFirst } from '@/features/onboarding/AdOfferFirst';
+import { PushPreprompt } from '@/features/settings/PushPreprompt';
 import { IapSuccess } from '@/features/monetization/IapSuccess';
 import { ShopScreen } from '@/features/monetization/ShopScreen';
 import { StarterOffer } from '@/features/monetization/StarterOffer';
@@ -116,6 +118,8 @@ type View3 =
   | { kind: 'menu' }
   | { kind: 'shop' }
   | { kind: 'boosts' }
+  /** Крок 10 онбордингу (002 FR-21) */
+  | { kind: 'adFirst' }
   | { kind: 'digit-confirm' };
 
 function toastText(toast: Toast): string {
@@ -161,6 +165,8 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const [view, setView] = useState<View3>({ kind: 'main' });
   // дзвінок лишається на екрані й після бонусу (крок 9 уже закрито), доки гравець не натисне «До стройової»
   const [callHeld, setCallHeld] = useState(false);
+  // крок 11: шторка дозволу стоїть у черзі модалок, як і інші (002 FR-27)
+  const [pushPromptOpen, setPushPromptOpen] = useState(false);
   const onboarding = o.step !== 'done';
 
   const stroy = it.stages.find((u) => u.id === 'stroy');
@@ -218,19 +224,19 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const kombatOn = kombat != null && kombat.endMs > now;
   // подію, яку гравець уже бачив, шторка не відкриває вдруге
   const [kombatSeen, setKombatSeen] = useState<number | null>(null);
-  const kombatAuto = kombatOn && kombat!.startMs !== kombatSeen && view.kind === 'main' && s.offline == null;
+  const kombatAuto = kombatOn && kombat!.startMs !== kombatSeen && view.kind === 'main' && s.offline == null && !pushPromptOpen;
   // «Нарада затягнулась» (011 FR-25): так само, на Р3+
   const meeting = s.telegrams.meeting.active;
   const meetingOn = meeting != null && meeting.endMs > now;
   const [meetingSeen, setMeetingSeen] = useState<number | null>(null);
-  const meetingAuto = meetingOn && meeting!.startMs !== meetingSeen && view.kind === 'main' && s.offline == null && !kombatAuto;
+  const meetingAuto = meetingOn && meeting!.startMs !== meetingSeen && view.kind === 'main' && s.offline == null && !kombatAuto && !pushPromptOpen;
 
   const conv = convertInfo(s.state, s.cfg, s.digit.counts[String(s.state.level)] ?? 0);
   // 013 FR-12: «Збій СЕДО» - той самий шаблон, шторка відкривається сама на початку
   const sedo = s.telegrams.sedo.active;
   const sedoOn = sedo != null && sedo.endMs > now;
   const [sedoSeen, setSedoSeen] = useState<number | null>(null);
-  const sedoAuto = sedoOn && sedo!.startMs !== sedoSeen && view.kind === 'main' && s.offline == null && !kombatAuto && !meetingAuto;
+  const sedoAuto = sedoOn && sedo!.startMs !== sedoSeen && view.kind === 'main' && s.offline == null && !kombatAuto && !meetingAuto && !pushPromptOpen;
   const inbox = s.telegrams.inbox;
   // пачка Р3 займає в «Нових» один рядок (011 FR-18)
   const badge = newRows(s.telegrams) + inbox.filter((x) => x.kind === 'note' && !x.read).length;
@@ -238,9 +244,11 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // 006 FR-22: церемонія цифровізації (акт, наказ про переведення) показується, поки гравець її не закрив, і при запуску
   const ceremony = s.digit.ceremony;
   const storyCallOpen = s.storyCall != null || s.storyScene != null;
-  const overlay = s.offline != null || s.clerkFirstOpen || storyCallOpen || view.kind !== 'main' || kombatAuto || meetingAuto || sedoAuto;
+  const overlay = s.offline != null || s.clerkFirstOpen || storyCallOpen || view.kind !== 'main' || kombatAuto || meetingAuto || sedoAuto || pushPromptOpen;
   const coachRow = !overlay && (rd === 'coachUpgrade' || rd === 'coachHire');
   const coachTab = !overlay && rd === 'coachTelegram';
+  // крок 10 (FR-21): коуч на чипі множників; тап по чипу відкриває ad-offer-first замість boosts-sheet
+  const coachBoost = !overlay && rd === 'coachBoost';
   const coachOn = coachRow || coachTab;
   const showCall = callHeld || (!overlay && rd === 'call');
 
@@ -270,7 +278,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // `last-book`: журнал № 24 розкривається всередині цього кроку (013 FR-20)
   const viewFree = view.kind === 'main' || view.kind === 'list' || view.kind === 'last-book';
   const revealOpen =
-    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !storyCallOpen && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
+    viewFree && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !storyCallOpen && !pushPromptOpen && !(ceremonyOpen && ceremony!.step === 'result') && nextReveal(s.museum) != null;
 
   // 008: iap-success і starter-offer - після інших модалок і розкриття журналів (порядок «оцінка → журнал → оферта», 09)
   const calm =
@@ -295,6 +303,25 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const dubActOpen = s.dub.closed != null && !s.dub.closed.seen && !onboarding && s.offline == null && view.kind === 'main' && !ceremonyOpen;
   // 013 FR-23: пропозиція Дубля чекає - банер на `main`
   const dubBanner = s.dub.offer != null && !dubActOpen && view.kind === 'main' && !onboarding;
+
+  // крок 11 (FR-26, FR-27): шторка дозволу, щойно на `main` немає модалок - одразу після ad-offer-first або в наступній сесії.
+  // Дозвіл, що вже є без запиту (Android 12 і нижче, 010 FR-11), закриває крок без шторки
+  const pushDue = rd === 'pushPrompt' && calm && view.kind === 'main';
+  useEffect(() => {
+    if (!pushDue || pushPromptOpen) return;
+    let live = true;
+    void store
+      .getState()
+      .refreshPermission()
+      .then(() => {
+        if (!live) return;
+        if (store.getState().settings.pushPermission === 'granted') store.getState().onbComplete(11);
+        else setPushPromptOpen(true);
+      });
+    return () => {
+      live = false;
+    };
+  }, [pushDue, pushPromptOpen, store]);
 
   // 016 FR-32: тости грамот чекають онбординг, церемонії й модалки; решта тостів іде перед ними у спільній черзі
   const awardsFree = calm && !iapOpen && !starterOpen && o.step === 'done';
@@ -378,9 +405,12 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           </Pressable>
         ) : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.balance} testID="balance">{formatBig(s.state.signatures, 'counter')}</Text>
-        <Pressable testID="income-open" accessibilityRole="button" accessibilityLabel={boostsT.title} onPress={() => setView({ kind: 'boosts' })} disabled={coachOn} style={styles.incomeHit}>
+        <Pressable testID="income-open" accessibilityRole="button" accessibilityLabel={boostsT.title} onPress={() => setView({ kind: coachBoost ? 'adFirst' : 'boosts' })} disabled={coachOn} style={[styles.incomeHit, coachBoost && styles.coachHit]}>
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.income} testID="income">{`${formatRate(inc.perMin)} · ${formatMult(M)}`}</Text>
         </Pressable>
+        {coachBoost ? (
+          <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.coachTab} testID="coach-boost">{onb.b10Coach(s.cfg.params.adHours)}</Text>
+        ) : null}
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.flow} testID="flow-line">
           {neck === 'streams' ? t.flowStreams : t.flow(formatBig(inc.flow.sum), formatBig(inc.flow.pipe), neckName ?? '')}
         </Text>
@@ -681,6 +711,17 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
         />
       ) : null}
       {view.kind === 'menu' ? <MenuHost store={store} insetTop={insets.top + space[8]} onClose={() => setView({ kind: 'main' })} onCurios={() => setView({ kind: 'museum', seg: 'curios' })} onAwards={() => setView({ kind: 'museum', seg: 'awards', source: 'profile' })} /> : null}
+      {view.kind === 'adFirst' ? <AdOfferFirst store={store} onClose={() => setView({ kind: 'main' })} /> : null}
+      {pushPromptOpen && s.offline == null ? (
+        <PushPreprompt
+          store={store}
+          trigger="onboarding_session_end"
+          onClose={() => {
+            setPushPromptOpen(false);
+            store.getState().onbComplete(11);
+          }}
+        />
+      ) : null}
       {view.kind === 'boosts' ? <BoostsSheet store={store} onClose={() => setView({ kind: 'main' })} onShop={() => openShop('boost_card')} /> : null}
       {iapOpen ? <IapSuccess store={store} /> : null}
       {starterOpen ? <StarterOffer store={store} /> : null}
@@ -695,6 +736,8 @@ const styles = StyleSheet.create({
   balance: { ...type('displayM'), color: color.text },
   income: { ...type('numL'), color: color.accent },
   incomeHit: { minHeight: size.touchMin, justifyContent: 'center' },
+  // крок 10: чип множників підсвічено рамкою акценту
+  coachHit: { borderWidth: 2, borderColor: color.accent, borderRadius: radius[6], paddingHorizontal: space[6] },
   flow: { ...type('caption'), color: color.muted },
   tiles: { flexDirection: 'row', gap: space[8], marginTop: space[8] },
   tile: { minHeight: size.touchMin, flex: 1, borderRadius: radius[6], backgroundColor: color.surface, justifyContent: 'center', paddingHorizontal: space[8] },

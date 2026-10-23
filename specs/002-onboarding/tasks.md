@@ -80,6 +80,14 @@ description: "Задачі: 002 Онбординг і перша сесія — 
 - [ ] T030 Агенти `content-reviewer` (тексти онбордингу) і `spec-guardian`; виправлення
 - [ ] T031 Документація: CLAUDE.md (`src/features/onboarding`), `npm run check`
 
+## Етап 2: кроки 10 і 11 (рішення 117)
+
+- [X] T032 `steps.ts`: `BOOST_COACH_AT_MS`, `ready` для кроків 10 (`coachBoost`) і 11 (`pushPrompt`); тест
+- [X] T033 `AdOfferFirst.tsx`: показ закриває крок 10, стани «готовий», «недоступний», «Без реклами», «Не зараз»; коуч на чипі в `MainScreen`
+- [X] T034 крок 11 у `MainScreen`: `push-preprompt` (trigger onboarding_session_end) у спокійний момент, відповідь закриває онбординг; дозвіл без запиту - без шторки
+- [X] T035 `src/features/main/__tests__/onboarding-ad-push-test.tsx`: AC-14, AC-16, AC-17, AC-18, AC-19 (друга частина), 010 AC-7, AC-8 (на підставних сервісах)
+- [ ] T036 UMP перед першим роликом (FR-23, AC-15) - з 08 етапом 2 (AdMob)
+
 ## Поза етапом 1
 
 FR-21…FR-27, AC-14…AC-18 (08, 10); події PostHog (етап 5); звуки (етап 8); `rep`, `inspPct`, `durationMin` телеграми № 1 (03, 04).
