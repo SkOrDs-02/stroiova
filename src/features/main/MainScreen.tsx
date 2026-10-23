@@ -61,7 +61,6 @@ import { LastBook } from '@/features/finale/LastBook';
 import { finT } from '@/features/finale/texts';
 import { pendingAction } from '@/finale/finale';
 import { moveDue } from '@/move/move';
-import { SHEETS } from '@/story/archive';
 import { telegramOf } from '@/telegrams/effects';
 import { cvT, sedoT } from '@/features/convert/texts';
 import { convertInfo } from '@/economy/game/convert';
@@ -290,15 +289,17 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   // 008: iap-success і starter-offer - після інших модалок і розкриття журналів (порядок «оцінка → журнал → оферта», 09)
   const calm =
     (view.kind === 'main' || view.kind === 'list' || view.kind === 'shop') && s.offline == null && !s.clerkFirstOpen && !kombatAuto && !meetingAuto && !sedoAuto && !showCall && !inspCall && !inspWarn && !inspResult && !s.inspPrepOpen && !raceResult && !giftOpen && !raceSheet && !ceremonyOpen && !storyCallOpen && nextReveal(s.museum) == null;
-  const iapOpen = calm && s.busy == null && !onboarding && s.monetization.success.length > 0;
-  // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
-  const starterOpen = calm && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
-  // 017 FR-1: «Переїзд» - у першу спокійну мить на `main` після level-up; гра й акт тримаються до закриття (FR-5, FR-7)
+  // 017 рішення 122(в): гра й акт переїзду тримають чергу; оферти чекають під ними
   const [movePlaying, setMovePlaying] = useState(false);
   const [moveOut, setMoveOut] = useState<MoveOutcome | null>(null);
+  const moveHeld = movePlaying || moveOut != null;
+  const iapOpen = calm && !moveHeld && s.busy == null && !onboarding && s.monetization.success.length > 0;
+  // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
+  const starterOpen = calm && !moveHeld && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
+  // 017 FR-1: «Переїзд» - у першу спокійну мить на `main` після level-up; гра й акт тримаються до закриття (FR-5, FR-7)
   const moveOn = moveDue(s.move, s.cfg.params, { level: s.state.level, dubN: s.dub.n, onboardingDone: o.step === 'done', finaleStarted: s.finale.startMs != null });
-  const moveIntro = moveOn && !movePlaying && moveOut == null && calm && !iapOpen && !starterOpen && view.kind === 'main' && !pushPromptOpen;
-  const moveBusy = moveIntro || movePlaying || moveOut != null;
+  const moveIntro = moveOn && !moveHeld && calm && !iapOpen && !starterOpen && view.kind === 'main' && !pushPromptOpen;
+  const moveBusy = moveIntro || moveHeld;
   const onMoveDone = (r: MoveOutcome) => {
     setMovePlaying(false);
     setMoveOut(r);
@@ -755,7 +756,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       {revealOpen ? <JournalNew store={store} /> : null}
       {moveIntro ? <MoveIntro store={store} onStart={() => setMovePlaying(true)} onDone={onMoveDone} /> : null}
       {movePlaying ? <MoveGame store={store} onDone={onMoveDone} /> : null}
-      {moveOut ? <MoveResult r={moveOut} sheet={SHEETS.some((sh) => sh.source.kind === 'move' && sh.level === moveOut.level)} onClose={() => setMoveOut(null)} /> : null}
+      {moveOut ? <MoveResult r={moveOut} onClose={() => setMoveOut(null)} /> : null}
       {finAutoOpen && finStep === 'order' ? (
         <FinaleOrder
           store={store}

@@ -436,9 +436,9 @@ describe('справжні міграції', () => {
     const r = loadSave(kv, { current: 20, migrations: MIGRATIONS });
     expect(r).toMatchObject({ kind: 'ok', migratedFrom: 19 });
     if (r.kind !== 'ok') return;
-    expect(r.save.game.move).toEqual({ done: [] });
-    expect(r.save.game.economy.level).toBe(4);
-    expect(r.save.game.analytics).toEqual(analytics);
+    const { move, ...rest } = r.save.game;
+    expect(move).toEqual({ done: [] });
+    expect(rest).toEqual({ ...gameV19, economy: { ...d.game.economy, level: 4 }, analytics });
   });
 
   test('схема 20: переїзди проходять збереження без втрат', () => {

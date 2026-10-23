@@ -54,6 +54,17 @@ describe('move-intro', () => {
     expect(store.getState().move.done).toEqual([3]);
   });
 
+  test('AC-1: move-intro чекає, поки гравець закриє level-up', async () => {
+    const { store } = game();
+    const d = store.getState().digit;
+    store.setState({ digit: { ...d, ceremony: { no: 3, level: 2, levelCount: 3, atMs: T0, lifetime: 1e9, points: 10, pointsTotal: 10, multBefore: 1, multAfter: 1.1, journals: [], levelUp: true, cycleMs: 1000, prevCycleMs: null, step: 'levelUp' } } });
+    await render(<MainScreen store={store} />);
+    expect(screen.getByTestId('level-up')).toBeTruthy();
+    expect(screen.queryByTestId('move-intro')).toBeNull();
+    await fireEvent.press(screen.getByTestId('level-up-ok'));
+    expect(screen.getByTestId('move-intro')).toBeTruthy();
+  });
+
   test('FR-1: на Р2 переїзду немає', async () => {
     const { store } = game(2);
     await render(<MainScreen store={store} />);
@@ -72,6 +83,8 @@ describe('move-intro', () => {
     });
     store.getState().claim();
     expect(store.getState().move.done).toEqual([]);
+    // відсутність лише додає папір; переїзд нічого не списав
+    expect(store.getState().state.paper).toBeGreaterThanOrEqual(1000);
     expect(store.getState().events.some((e) => e.type === 'moveFinish')).toBe(false);
     await render(<MainScreen store={store} />);
     expect(screen.getByTestId('move-intro')).toBeTruthy();
@@ -101,6 +114,27 @@ describe('пропуск і результат', () => {
 });
 
 describe('move-game', () => {
+  test('AC-5: зіграна міні-гра теж дає аркуш «Переїзд» з source = move', async () => {
+    const { store, m } = game(3, 1000);
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('mi-start'));
+    await fireEvent.press(screen.getByTestId('mg-box'));
+    await advance(MOVE_MS + 500);
+    expect(screen.getByTestId('mr-sheet')).toBeTruthy();
+    expect(m.events.find((e) => e.name === 'move_finish')!.props).toMatchObject({ boxes_stacked: 1, is_skipped: false });
+    await fireEvent.press(screen.getByTestId('mr-close'));
+    expect(store.getState().story.sheets[MOVE_SHEET.id]).toBeDefined();
+    expect(m.events.find((e) => e.name === 'archive_sheet_unlock' && e.props.sheet_id === MOVE_SHEET.id)!.props.source).toBe('move');
+  });
+
+  test('FR-7: аркуш слота вже видано до оновлення (першим подарунком) - в акті рядка про аркуш немає', async () => {
+    const { store } = game(3, 1000);
+    store.setState({ story: { ...store.getState().story, sheets: { [MOVE_SHEET.id]: T0 - 1000 } } });
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('mi-skip'));
+    expect(screen.queryByTestId('mr-sheet')).toBeNull();
+  });
+
   test('FR-4: склав усі ящики - паперу не втрачено, акт «Усе доїхало»', async () => {
     const { store } = game(3, 1000);
     await render(<MainScreen store={store} />);
@@ -138,6 +172,28 @@ describe('move-game', () => {
     await advance(200);
     expect(screen.getByTestId('mg-left')).toHaveTextContent('Лишилось 15 с');
     expect(store.getState().move.done).toEqual([]);
+  });
+
+  test('AC-3: 5 хв у фоні - офлайн-довідка над грою, таймер стоїть, поки її не закрито', async () => {
+    const { store } = game();
+    await render(<MainScreen store={store} />);
+    await fireEvent.press(screen.getByTestId('mi-start'));
+    await advance(5000);
+    await act(async () => {
+      await store.getState().goBackground(T0 + 5000);
+    });
+    await advance(5 * 60_000);
+    await act(async () => {
+      store.getState().away(T0 + 5000, T0 + 5000 + 5 * 60_000);
+    });
+    await act(async () => {
+      await store.getState().comeForeground(T0 + 5000 + 5 * 60_000);
+    });
+    expect(store.getState().offline).not.toBeNull();
+    await advance(10_000);
+    await fireEvent.press(screen.getByTestId('offline-claim'));
+    await advance(200);
+    expect(screen.getByTestId('mg-left')).toHaveTextContent('Лишилось 15 с');
   });
 
   test('AC-3: вбивство посеред гри - у новій сесії міні-гра знову з початку', async () => {

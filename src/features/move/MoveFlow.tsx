@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useStore } from 'zustand';
 
 import type { ConveyorStore } from '@/features/conveyor/store';
 import { MOVE_MS, boxAt } from '@/move/move';
+import { SHEETS } from '@/story/archive';
 import { color, radius, size, space } from '@/theme';
 import { Button, MAX_FONT_SCALE } from '@/ui/Button';
 import { type } from '@/ui/type';
@@ -22,6 +24,8 @@ export interface MoveOutcome {
   total: number;
   lost: number;
   skipped: boolean;
+  /** Аркуш слота «Переїзд» видає саме цей переїзд (його ще не було в записі) */
+  sheet: boolean;
 }
 
 export function MoveIntro({ store, onStart, onDone }: { store: ConveyorStore; onStart: () => void; onDone: (r: MoveOutcome) => void }) {
@@ -45,6 +49,8 @@ export function MoveIntro({ store, onStart, onDone }: { store: ConveyorStore; on
 export function MoveGame({ store, onDone }: { store: ConveyorStore; onDone: (r: MoveOutcome) => void }) {
   const insets = useSafeAreaInsets();
   const total = store.getState().cfg.params.moveBoxes;
+  // офлайн-довідка над грою: гра стоїть і не тримає фокус скрінрідера
+  const covered = useStore(store, (g) => g.offline != null);
   const [elapsed, setElapsed] = useState(0);
   const [stacked, setStacked] = useState<number[]>([]);
   const st = useRef({ stacked: 0, ended: false });
@@ -60,7 +66,9 @@ export function MoveGame({ store, onDone }: { store: ConveyorStore; onDone: (r: 
       const now = Date.now();
       const step = Math.min(MAX_STEP_MS, Math.max(0, now - prev));
       prev = now;
-      if (store.getState().background || st.current.ended) return;
+      // офлайн-довідка поверх гри - теж пауза (FR-5)
+      const g = store.getState();
+      if (g.background || g.offline != null || st.current.ended) return;
       acc += step;
       if (acc >= MOVE_MS) {
         st.current.ended = true;
@@ -88,7 +96,7 @@ export function MoveGame({ store, onDone }: { store: ConveyorStore; onDone: (r: 
   };
   const left = Math.max(0, Math.ceil((MOVE_MS - elapsed) / 1000));
   return (
-    <View style={[styles.root, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[16] }]} testID="move-game" accessibilityViewIsModal>
+    <View style={[styles.root, { paddingTop: insets.top + space[16], paddingBottom: insets.bottom + space[16] }]} testID="move-game" accessibilityViewIsModal={!covered} importantForAccessibility={covered ? 'no-hide-descendants' : 'auto'}>
       <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.title} accessibilityRole="header">
         {moveT.gameTitle}
       </Text>
@@ -109,7 +117,7 @@ export function MoveGame({ store, onDone }: { store: ConveyorStore; onDone: (r: 
   );
 }
 
-export function MoveResult({ r, sheet, onClose }: { r: MoveOutcome; sheet: boolean; onClose: () => void }) {
+export function MoveResult({ r, onClose }: { r: MoveOutcome; onClose: () => void }) {
   return (
     <View style={styles.scrim} testID="move-result">
       <View style={styles.paper} accessibilityViewIsModal>
@@ -125,7 +133,7 @@ export function MoveResult({ r, sheet, onClose }: { r: MoveOutcome; sheet: boole
         <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.docBody} testID="mr-lost">
           {r.stacked >= r.total ? moveT.perfect : moveT.resultLost(Math.round(r.lost))}
         </Text>
-        {sheet ? (
+        {r.sheet ? (
           <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.docBody} testID="mr-sheet">
             {moveT.sheet}
           </Text>
@@ -139,8 +147,9 @@ export function MoveResult({ r, sheet, onClose }: { r: MoveOutcome; sheet: boole
 function finish(store: ConveyorStore, stacked: number, skipped: boolean): MoveOutcome {
   const g = store.getState();
   const level = g.state.level;
+  const sheet = SHEETS.some((sh) => sh.source.kind === 'move' && sh.level === level && g.story.sheets[sh.id] == null);
   const lost = g.moveFinish(stacked, skipped);
-  return { level, stacked: skipped ? 0 : stacked, total: g.cfg.params.moveBoxes, lost, skipped };
+  return { level, stacked: skipped ? 0 : stacked, total: g.cfg.params.moveBoxes, lost, skipped, sheet };
 }
 
 const styles = StyleSheet.create({
