@@ -27,6 +27,10 @@ export const t = {
   refuel: 'Заправити',
   fuel: (pct: number, bonus: string | null) => (bonus ? `Бак ${pct}% · ${bonus}` : `Бак ${pct}%`),
   paper: (n: number) => `Папір ${n}`,
+  // Кіт Сейф на `main` (001 FR-32): плитка й тост; рядки кота - з пулів cat.tap, cat.sleep (рішення 120, нові - на вичитку)
+  cat: 'Кіт Сейф',
+  catSleep: (min: number) => `Кіт спить · ${min} хв`,
+  catBonus: (n: string) => `+${n} підписів`,
   offTitle: 'Стройова працювала без тебе',
   offStorage: (capacity: string, rest: string) => `Сховище тримає ${capacity}: за решту ${rest} підписи не зараховано.`,
   offCredited: (credited: string, away: string) => `Зараховано ${credited} з ${away}`,
