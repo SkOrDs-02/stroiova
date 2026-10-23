@@ -363,9 +363,12 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
     tracker,
     memory,
     adOffer: (placement, o) => {
-      if (placement !== 'offline_double' && offered.has(placement)) return;
-      offered.add(placement);
-      const id = memory.adFlows.get(placement) ?? newSessionId(store.getState().lastMs);
+      // раз на сесію для кожного місця й точки входу: ad-offer-first (002 AC-14) шле свою подію, навіть якщо boosts-sheet уже відкривали
+      const key = `${placement}:${o.entryPoint ?? ''}`;
+      if (placement !== 'offline_double' && offered.has(key)) return;
+      offered.add(key);
+      const fresh = o.entryPoint === 'ad_offer_first';
+      const id = (!fresh && memory.adFlows.get(placement)) || newSessionId(store.getState().lastMs);
       memory.adFlows.set(placement, id);
       tracker.track('ad_offer_show', { placement, ad_flow_id: id, is_no_ads_claim: o.isNoAdsClaim, is_ad_ready: o.isReady, uses_today: o.usesToday, daily_limit: o.dailyLimit, ...(o.entryPoint ? { entry_point: o.entryPoint } : {}) });
     },
