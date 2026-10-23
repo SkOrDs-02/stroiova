@@ -145,6 +145,10 @@ export interface EconomyParams {
   sedoFailMult: number;
   sedoFailMin: number;
   sedoPrintPaper: number;
+  /** «Переїзд» (017): ящиків у міні-грі, частка запасу паперу за нескладений ящик, рівні з переїздом */
+  moveBoxes: number;
+  moveLossPerBox: number;
+  moveLevels: number[];
   /** Телеграм на добу після конвертації № 4 (013 FR-14) */
   slowPerDayLateMin: number;
   slowPerDayLateMax: number;
