@@ -281,7 +281,9 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
       return [{ name: 'purchase_fail', props: { product_id: e.productId, price: p.amount, currency: p.currency, reason: e.reason, ...(e.code ? { error_code: e.code } : {}) } }];
     }
     case 'purchaseRestore':
-      return [{ name: 'purchase_restore', props: { trigger: e.trigger, is_success: e.isSuccess, restored_product_ids: [...e.restoredProductIds] } }];
+      return [{ name: 'purchase_restore', props: { trigger: e.trigger, is_success: e.isSuccess, restored_product_ids: [...e.restoredProductIds], ...(e.code ? { error_code: e.code } : {}) } }];
+    case 'adsConsentUpdate':
+      return [{ name: 'ads_consent_update', props: { trigger: e.trigger, consent_status: e.status, is_form_shown: e.formShown, is_ads_request_allowed: e.canRequestAds, is_privacy_options_required: e.privacyOptionsRequired } }];
     case 'generatorRefuel':
       return [{ name: 'generator_refuel', props: { tank_pct_before: e.tankPctBefore, tank_capacity_sec: e.tankCapacitySec, bonus_off_sec: e.bonusOffSec } }];
     case 'offlineIncomeClaim':

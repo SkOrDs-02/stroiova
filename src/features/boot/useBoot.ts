@@ -34,7 +34,9 @@ import type { KeyValue } from '@/save/storage';
 
 import { createAutosave } from './autosave';
 import { deviceLinks, deviceNotifications, deviceReview } from '@/services/device';
+import { deviceAds } from '@/services/admob';
 import { posthogAnalytics } from '@/services/posthog';
+import { devicePurchases } from '@/services/revenuecat';
 import { clearShareCache, deviceShare } from '@/services/share';
 
 /** Версія пакета контенту. До завантажувача контенту (003) — дата контенту в репо. */
@@ -102,13 +104,21 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
   const id = installId(kv, Crypto.randomUUID).id;
   // 007: картинки, що лишились після вбивства гри під час меню «Поділитися»
   clearShareCache();
-  // аналітика - PostHog, якщо задано `EXPO_PUBLIC_POSTHOG_KEY`; інакше заглушка
-  const services = { share: deviceShare, notifications: deviceNotifications, links: deviceLinks, review: deviceReview, analytics: posthogAnalytics() };
+  // аналітика - PostHog, якщо задано `EXPO_PUBLIC_POSTHOG_KEY`; реклама й покупки - AdMob і RevenueCat за своїми ключами (008 етап 2); інакше заглушки
+  const services = { share: deviceShare, notifications: deviceNotifications, links: deviceLinks, review: deviceReview, analytics: posthogAnalytics(), ads: deviceAds(), purchases: devicePurchases() };
   // 010 FR-8: гру запущено тапом по сповіщенню - session_start з entry_point = push, push_open і ціль переходу
   const opened = deviceNotifications.initialOpen();
   const env: AnalyticsEnv = { ...analyticsEnv(), entryPoint: opened ? 'push' : 'icon' };
   const started = (store: ConveyorStore) => {
     if (opened) store.getState().pushOpened(opened, now);
+    // 008: права зі стору й ціни; реклама - лише без «Без реклами» (FR-14), згода UMP на кожному запуску (FR-13)
+    services.purchases.start?.(id);
+    // оновлення CustomerInfo посеред власної покупки чи відновлення обробляє сама дія, а не тихе звіряння з тостом «Відновлено»
+    services.purchases.onChange?.(() => {
+      if (store.getState().busy !== 'purchase') void store.getState().syncPurchases();
+    });
+    services.ads.onConsent?.((c) => store.getState().adsConsent(c));
+    services.ads.start?.({ noAds: store.getState().state.hasNoAds });
     return store;
   };
   if (!save) {

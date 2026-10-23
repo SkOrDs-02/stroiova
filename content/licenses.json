@@ -1,16 +1,28 @@
 {
   "schema": 1,
   "fonts": [
-    { "name": "Unbounded", "copyright": "© The Unbounded Project Authors" },
-    { "name": "IBM Plex Sans, IBM Plex Mono", "copyright": "© IBM Corp." },
-    { "name": "Caveat", "copyright": "© The Caveat Project Authors" },
-    { "name": "{typewriter}", "copyright": "Змінена версія TT2020 Style E, © Fredrick R. Brennan. Обрізана до потрібних знаків, тож за умовами OFL має власну назву." }
+    {
+      "name": "Unbounded",
+      "copyright": "© The Unbounded Project Authors"
+    },
+    {
+      "name": "IBM Plex Sans, IBM Plex Mono",
+      "copyright": "© IBM Corp."
+    },
+    {
+      "name": "Caveat",
+      "copyright": "© The Caveat Project Authors"
+    },
+    {
+      "name": "{typewriter}",
+      "copyright": "Змінена версія TT2020 Style E, © Fredrick R. Brennan. Обрізана до потрібних знаків, тож за умовами OFL має власну назву."
+    }
   ],
   "libraries": {
     "@sentry/react-native": "MIT",
     "expo": "MIT",
-    "expo-clipboard": "MIT",
     "expo-application": "MIT",
+    "expo-clipboard": "MIT",
     "expo-constants": "MIT",
     "expo-crypto": "MIT",
     "expo-device": "MIT",
@@ -27,8 +39,10 @@
     "react": "MIT",
     "react-dom": "MIT",
     "react-native": "MIT",
+    "react-native-google-mobile-ads": "Apache-2.0",
     "react-native-mmkv": "MIT",
     "react-native-nitro-modules": "MIT",
+    "react-native-purchases": "MIT",
     "react-native-safe-area-context": "MIT",
     "react-native-screens": "MIT",
     "react-native-view-shot": "MIT",

@@ -30,7 +30,17 @@ export interface MonetizationState {
 
 export type AdAvailability = 'ready' | 'loading' | 'no_fill' | 'no_net' | 'no_consent';
 
-export type AdResult = { kind: 'earned' } | { kind: 'closed_early' } | { kind: 'fail'; stage: 'not_ready' | 'load' | 'show' | 'consent_blocked'; code?: string };
+/** `waitMs` - від тапу до відкриття ролика (`ad_start.load_wait_ms`); `ad_start` іде лише для ролика, що відкрився */
+export type AdResult = { kind: 'earned'; waitMs?: number } | { kind: 'closed_early'; waitMs?: number } | { kind: 'fail'; stage: 'not_ready' | 'load' | 'show' | 'consent_blocked'; code?: string };
+
+/** Стан згоди UMP для `ads_consent_update` (008 FR-13, 010 FR-17) */
+export interface ConsentUpdate {
+  trigger: 'first_ad_watch' | 'app_launch' | 'privacy_settings';
+  status: 'obtained' | 'required' | 'not_required' | 'unknown';
+  formShown: boolean;
+  canRequestAds: boolean;
+  privacyOptionsRequired: boolean;
+}
 
 /**
  * Реклама за винагороду (AdMob, етап 2). `show` викликається лише з обробника тапу кнопки з нагородою (FR-1).
@@ -40,6 +50,13 @@ export type AdResult = { kind: 'earned' } | { kind: 'closed_early' } | { kind: '
 export interface AdService {
   availability(): AdAvailability;
   show(placement: Placement): Promise<AdResult>;
+  /** Запуск гри: UMP `requestInfoUpdate` і перший ролик напоготові; з «Без реклами» SDK не чіпаємо (FR-13, FR-14) */
+  start?(o: { noAds: boolean }): void;
+  /** Форма UMP показана чи статус згоди змінився (`ads_consent_update`) */
+  onConsent?(cb: (c: ConsentUpdate) => void): () => void;
+  /** 010 FR-17: UMP вимагає рядок «Налаштування реклами» */
+  privacyOptionsRequired?(): boolean;
+  showPrivacyOptions?(): Promise<void>;
 }
 
 export type StoreStatus = 'ready' | 'loading' | 'no_net' | 'no_billing';
@@ -58,7 +75,11 @@ export interface PurchaseService {
   /** Ціна числом і валюта ISO 4217 для аналітики (`purchase_*`); немає - подія піде з `0` і `XXX` */
   priceInfo?(id: ProductId): { amount: number; currency: string } | null;
   purchase(id: ProductId): Promise<PurchaseResult>;
-  restore(): Promise<{ kind: 'ok'; owned: ProductId[] } | { kind: 'error' }>;
+  restore(): Promise<{ kind: 'ok'; owned: ProductId[] } | { kind: 'error'; code?: string }>;
   /** Актуальні права; null - стор недосяжний (права лишаються за кешем) */
   rights(): Promise<Rights | null>;
+  /** Запуск гри: анонімний користувач з атрибутом `$posthogUserId` = `install_id`, ціни з offering */
+  start?(installId: string): void;
+  /** Права змінились поза покупкою (Ask to Buy підтверджено, повернення коштів): гра звіряє їх ще раз (FR-24, FR-26) */
+  onChange?(cb: () => void): () => void;
 }

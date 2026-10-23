@@ -271,6 +271,51 @@ describe('налаштування', () => {
   });
 });
 
+describe('налаштування реклами (FR-17, AC-12)', () => {
+  const withAds = (required: boolean, noAds = false) => {
+    const g = game();
+    const shown: number[] = [];
+    const ads = {
+      ...g.store.getState().services.ads,
+      privacyOptionsRequired: () => required,
+      showPrivacyOptions: async () => {
+        shown.push(1);
+        g.store.getState().adsConsent({ trigger: 'privacy_settings', status: 'obtained', formShown: true, canRequestAds: true, privacyOptionsRequired: true });
+      },
+    };
+    g.store.setState({ services: { ...g.store.getState().services, ads }, state: { ...g.store.getState().state, hasNoAds: noAds } });
+    return { ...g, shown };
+  };
+
+  test('UMP вимагає точку входу - рядок є, тап відкриває форму й шле ads_consent_update privacy_settings', async () => {
+    const { store, shown } = withAds(true);
+    await openMenu(store);
+    await fireEvent.press(screen.getByTestId('menu-settings'));
+    await act(async () => {});
+    expect(screen.getByTestId('set-ad-privacy')).toHaveTextContent(/Налаштування реклами/);
+    await fireEvent.press(screen.getByTestId('set-ad-privacy'));
+    await act(async () => {});
+    expect(shown).toHaveLength(1);
+    expect(store.getState().events.at(-1)).toMatchObject({ type: 'adsConsentUpdate', trigger: 'privacy_settings' });
+  });
+
+  test('UMP не вимагає (Україна) чи куплено «Без реклами» - рядка немає', async () => {
+    const ua = withAds(false);
+    await openMenu(ua.store);
+    await fireEvent.press(screen.getByTestId('menu-settings'));
+    await act(async () => {});
+    expect(screen.queryByTestId('set-ad-privacy')).toBeNull();
+  });
+
+  test('з «Без реклами» рядка немає навіть у ЄЕЗ (FR-14)', async () => {
+    const paid = withAds(true, true);
+    await openMenu(paid.store);
+    await fireEvent.press(screen.getByTestId('menu-settings'));
+    await act(async () => {});
+    expect(screen.queryByTestId('set-ad-privacy')).toBeNull();
+  });
+});
+
 describe('скидання прогресу', () => {
   const sign = async (store: ReturnType<typeof game>['store']) => {
     await openMenu(store);
