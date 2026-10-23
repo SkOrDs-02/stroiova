@@ -566,7 +566,13 @@
     "fuelMult": 1.15
    }
   },
-  "dubs": 0
+  "dubs": 0,
+  "moveBoxes": 0,
+  "moveLossPerBox": 0,
+  "moveLevels": [
+   3,
+   4
+  ]
  },
  "SCENARIOS": [
   {
@@ -1074,7 +1080,13 @@
      "fuelMult": 1.15
     }
    },
-   "dubs": 0
+   "dubs": 0,
+   "moveBoxes": 0,
+   "moveLossPerBox": 0,
+   "moveLevels": [
+    3,
+    4
+   ]
   },
   "preset-v6": {
    "rev": "7.2",
@@ -1565,7 +1577,13 @@
      "fuelMult": 1.15
     }
    },
-   "dubs": 0
+   "dubs": 0,
+   "moveBoxes": 0,
+   "moveLossPerBox": 0,
+   "moveLevels": [
+    3,
+    4
+   ]
   },
   "preset-v7": {
    "rev": "7.2",
@@ -2134,7 +2152,13 @@
      "fuelMult": 1.15
     }
    },
-   "dubs": 0
+   "dubs": 0,
+   "moveBoxes": 10,
+   "moveLossPerBox": 0.05,
+   "moveLevels": [
+    3,
+    4
+   ]
   }
  },
  "levelItems": {

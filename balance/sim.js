@@ -366,6 +366,11 @@ function simulate(p, scenario) {
     B = p.levels[level - 1];
     items = levelItems(p, level); SR = items.streams; ST = items.stages;
     boss = null; bossPassed = false; bossPending = false;
+    // «Переїзд» (017, рішення 121): бот пропускає міні-гру - найгірший випадок, втрачено moveBoxes × moveLossPerBox запасу
+    if (dubN === 0 && p.moveBoxes > 0 && p.moveLossPerBox > 0 && (p.moveLevels || []).indexOf(level) >= 0) {
+      var lost = paper * Math.min(1, p.moveBoxes * p.moveLossPerBox);
+      paper -= lost; out.moveLost = (out.moveLost || 0) + lost; (out.moves = out.moves || []).push({ level: level, t: t, before: paper + lost, lost: lost });
+    }
   }
   function maybePrestige(t) {
     if (unlockedStreams() < SR.length) return;

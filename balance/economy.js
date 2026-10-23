@@ -183,6 +183,11 @@ var StroiovaEconomy = (() => {
     sedoFailMult: 0.5,
     sedoFailMin: 30,
     sedoPrintPaper: 5,
+    // «Переїзд» (017, рішення 121): на початку рівнів moveLevels - moveBoxes ящиків; кожен нескладений забирає moveLossPerBox запасу паперу.
+    // 0 - переїзду немає (старі пресети незмінні); бот іде найгіршим шляхом (пропуск, жодного ящика)
+    moveBoxes: 0,
+    moveLossPerBox: 0,
+    moveLevels: [3, 4],
     slowPerDayLateMin: 1,
     // 013 FR-14: after the 4th conversion the script «weakens», 1–2 telegrams a day
     slowPerDayLateMax: 2,
