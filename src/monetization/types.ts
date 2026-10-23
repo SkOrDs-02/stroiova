@@ -40,6 +40,8 @@ export type AdResult = { kind: 'earned' } | { kind: 'closed_early' } | { kind: '
 export interface AdService {
   availability(): AdAvailability;
   show(placement: Placement): Promise<AdResult>;
+  /** Запуск гри: UMP `requestInfoUpdate` і перший ролик напоготові; з «Без реклами» SDK не чіпаємо (FR-13, FR-14) */
+  start?(o: { noAds: boolean }): void;
 }
 
 export type StoreStatus = 'ready' | 'loading' | 'no_net' | 'no_billing';
@@ -61,4 +63,8 @@ export interface PurchaseService {
   restore(): Promise<{ kind: 'ok'; owned: ProductId[] } | { kind: 'error' }>;
   /** Актуальні права; null - стор недосяжний (права лишаються за кешем) */
   rights(): Promise<Rights | null>;
+  /** Запуск гри: анонімний користувач з атрибутом `$posthogUserId` = `install_id`, ціни з offering */
+  start?(installId: string): void;
+  /** Права змінились поза покупкою (Ask to Buy підтверджено, повернення коштів): гра звіряє їх ще раз (FR-24, FR-26) */
+  onChange?(cb: () => void): () => void;
 }
