@@ -24,7 +24,7 @@ import type { DigitizationState } from '@/digitization/types';
 import { closeInspReveal, closeReveal as closeRevealMuseum, curioFromPack, curioFromRace, curioFromStack, curioFromTelegram, fromEvents as museumFromEvents, interrupted as museumInterrupted, count as countMuseum, newMuseum, openTab as openMuseumTab, markCuriosSeen, raceJournals, unseen as unseenMuseum } from '@/museum/museum';
 import type { MuseumState } from '@/museum/types';
 import { addBoost, addPending, boostLeftMs, boostView, bump, closeSuccess, grantProduct, inspAdView, newMonetization, offerDue, applyRights, offerShown, offlineView, raceAdView, syncRights } from '@/monetization/monetization';
-import type { AdResult, AdService, MonetizationState, Placement, ProductId, PurchaseResult, PurchaseService } from '@/monetization/types';
+import type { AdResult, AdService, ConsentUpdate, MonetizationState, Placement, ProductId, PurchaseResult, PurchaseService } from '@/monetization/types';
 import { adT, iapT, shopT } from '@/features/monetization/texts';
 import { newNotifications, newSettings, plan as planPushes, settle } from '@/notifications/planner';
 import type { LinkService, NotificationService, NotificationsState, PushCategory, PushOpen, PushPermission, PushTarget, ReviewService, Settings } from '@/notifications/types';
@@ -265,6 +265,8 @@ interface Store {
   restore: (trigger: 'shop_button' | 'settings_button' | 'auto_check') => Promise<void>;
   /** Тихо звірити права зі стором на запуску (FR-26, FR-27) */
   syncPurchases: () => Promise<void>;
+  /** UMP: форма показана чи статус згоди змінився (`ads_consent_update`) */
+  adsConsent: (c: ConsentUpdate) => void;
   /** iap-success закрито */
   closeIapSuccess: () => void;
   /** starter-offer закрито (FR-19) */
@@ -443,11 +445,52 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
     const g = get();
     const r = grantProduct(g.monetization, g.state, g.cfg, id, g.lastMs, { silent });
     if (r.ms === g.monetization) return;
+    // FR-14: з «Без реклами» ролики більше не вантажимо
+    if (id === 'no_ads') g.services.ads.start?.({ noAds: true });
     set({
       monetization: r.ms,
       state: r.eco,
       events: [...g.events, ...(silent ? [] : [{ type: 'purchaseComplete' as const, productId: id, isFirstPurchase: g.monetization.purchases === 0, purchaseNumber: r.ms.purchases }])].slice(-40),
     });
+  };
+  /** Покупка в сторі й видача (008 FR-23…FR-25); викликається під `busy: 'purchase'` */
+  const finishPurchase = async (id: ProductId, svc: PurchaseService) => {
+    let r: PurchaseResult;
+    try {
+      r = await svc.purchase(id);
+    } catch (e) {
+      r = { kind: 'error', reason: 'unknown', code: e instanceof Error ? e.message : undefined };
+    }
+    if (r.kind === 'cancelled') {
+      pushEvent({ type: 'purchaseFail', productId: id, reason: 'user_cancelled' });
+      return;
+    }
+    if (r.kind === 'pending') {
+      set({ monetization: addPending(get().monetization, id) });
+      pushEvent({ type: 'purchaseFail', productId: id, reason: 'payment_pending' });
+      get().showToast({ kind: 'text', text: iapT.pending });
+      return;
+    }
+    if (r.kind === 'error' && r.reason !== 'already_owned') {
+      pushEvent({ type: 'purchaseFail', productId: id, reason: r.reason, ...(r.code ? { code: r.code } : {}) });
+      get().showToast({ kind: 'text', text: iapT.fail });
+      return;
+    }
+    // ефект вмикає лише активний entitlement (FR-25): і для success, і для «уже куплено»
+    const rights = await svc.rights().catch(() => null);
+    if (r.kind === 'error') {
+      pushEvent({ type: 'purchaseFail', productId: id, reason: 'already_owned', ...(r.code ? { code: r.code } : {}) });
+      // «уже куплено» з активним entitlement - це відновлення (тост rs.ok); без нього - звичайна помилка
+      if (rights?.[id]) {
+        grantNow(id, true);
+        get().showToast({ kind: 'text', text: id === 'no_ads' ? iapT.restoreNoAds : iapT.restoreDone(`«${shopT.products[id].name}»`) });
+      } else get().showToast({ kind: 'text', text: iapT.fail });
+      return;
+    }
+    if (rights && !rights[id]) {
+      pushEvent({ type: 'purchaseFail', productId: id, reason: 'product_unavailable' });
+      get().showToast({ kind: 'text', text: iapT.fail });
+    } else grantNow(id, false);
   };
   /** Нагорода за ролик чи «Забрати» (008 FR-2…FR-6, FR-12): записується в мить нагороди */
   const rewardAd = (placement: Placement, method: 'ad' | 'no_ads_pass'): boolean => {
@@ -1162,7 +1205,6 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       }
       set({ busy: 'ad' });
       const tappedAt = Date.now();
-      pushEvent({ type: 'adStart', placement, loadWaitMs: 0 });
       // збій SDK не повинен лишити busy назавжди: виняток - це збій показу
       let res: AdResult;
       try {
@@ -1172,8 +1214,10 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       } finally {
         set({ busy: null });
       }
+      // ad_start - лише для ролика, що відкрився (AdMob), з часом від тапу до відкриття
+      if (res.kind === 'earned' || res.kind === 'closed_early') pushEvent({ type: 'adStart', placement, loadWaitMs: Math.max(0, Math.round(res.waitMs ?? 0)) });
       if (res.kind === 'earned') {
-        pushEvent({ type: 'adComplete', placement, watchMs: Math.max(0, Date.now() - tappedAt) });
+        pushEvent({ type: 'adComplete', placement, watchMs: Math.max(0, Date.now() - tappedAt - (res.waitMs ?? 0)) });
         return rewardAd(placement, 'ad') ? 'granted' : 'blocked';
       }
       if (res.kind === 'closed_early') {
@@ -1192,37 +1236,14 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
       if (svc.status() !== 'ready' || g.monetization.rights[id]) return;
       set({ busy: 'purchase' });
       pushEvent({ type: 'purchaseStart', productId: id, source });
-      let r: PurchaseResult;
+      // busy тримається до видачі: оновлення CustomerInfo посеред покупки не стає тихим «Відновлено» (useBoot, onChange)
       try {
-        r = await svc.purchase(id);
-      } catch (e) {
-        r = { kind: 'error', reason: 'unknown', code: e instanceof Error ? e.message : undefined };
+        await finishPurchase(id, svc);
       } finally {
         set({ busy: null });
       }
-      if (r.kind === 'cancelled') {
-        pushEvent({ type: 'purchaseFail', productId: id, reason: 'user_cancelled' });
-      } else if (r.kind === 'pending') {
-        set({ monetization: addPending(get().monetization, id) });
-        pushEvent({ type: 'purchaseFail', productId: id, reason: 'payment_pending' });
-        get().showToast({ kind: 'text', text: iapT.pending });
-      } else if (r.kind === 'error' && r.reason === 'already_owned') {
-        // «уже куплено» - це відновлення: ефект вмикається, тост rs.ok
-        pushEvent({ type: 'purchaseFail', productId: id, reason: 'already_owned' });
-        grantNow(id, true);
-        get().showToast({ kind: 'text', text: id === 'no_ads' ? iapT.restoreNoAds : iapT.restoreDone(`«${shopT.products[id].name}»`) });
-      } else if (r.kind === 'error') {
-        pushEvent({ type: 'purchaseFail', productId: id, reason: r.reason, ...(r.code ? { code: r.code } : {}) });
-        get().showToast({ kind: 'text', text: iapT.fail });
-      } else {
-        // ефект вмикає лише активний entitlement (FR-25): success без нього - не покупка
-        const rights = await svc.rights().catch(() => null);
-        if (rights && !rights[id]) {
-          pushEvent({ type: 'purchaseFail', productId: id, reason: 'product_unavailable' });
-          get().showToast({ kind: 'text', text: iapT.fail });
-        } else grantNow(id, false);
-      }
     },
+    adsConsent: (c) => pushEvent({ type: 'adsConsentUpdate', ...c }),
     share: async (card, target) => {
       if (get().busy) return 'busy';
       set({ busy: 'share' });
@@ -1255,7 +1276,7 @@ export function createConveyorStore(nowMs: number, cfg: EconomyConfig = bundledC
         set({ busy: null });
       }
       if (r.kind === 'error') {
-        pushEvent({ type: 'purchaseRestore', trigger, isSuccess: false, restoredProductIds: [] });
+        pushEvent({ type: 'purchaseRestore', trigger, isSuccess: false, restoredProductIds: [], ...(r.code ? { code: r.code } : {}) });
         if (trigger !== 'auto_check') get().showToast({ kind: 'text', text: iapT.restoreErr });
         return;
       }

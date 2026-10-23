@@ -61,6 +61,22 @@ describe('реклама', () => {
     expect(fail.props.ad_flow_id).toBe(g.events.find((e) => e.name === 'ad_offer_show')!.props.ad_flow_id);
   });
 
+  test('ролик не відкрився (немає за 10 с): ad_fail stage load без ad_start; load_wait_ms - з адаптера', async () => {
+    const g = game({ ads: fakeAds({ result: { kind: 'fail', stage: 'load' } }) });
+    await g.store.getState().watchAd('race_speedup');
+    expect(names(g)).not.toContain('ad_start');
+    expect(g.events.at(-1)).toMatchObject({ name: 'ad_fail', props: { stage: 'load' } });
+    const h = game({ ads: fakeAds({ result: { kind: 'earned', waitMs: 640 } }) });
+    await h.store.getState().watchAd('race_speedup');
+    expect(h.events.find((e) => e.name === 'ad_start')!.props.load_wait_ms).toBe(640);
+  });
+
+  test('AC-11: згода UMP -> ads_consent_update', () => {
+    const g = game();
+    g.store.getState().adsConsent({ trigger: 'first_ad_watch', status: 'obtained', formShown: true, canRequestAds: true, privacyOptionsRequired: true });
+    expect(g.events.at(-1)).toEqual({ name: 'ads_consent_update', props: expect.objectContaining({ trigger: 'first_ad_watch', consent_status: 'obtained', is_form_shown: true, is_ads_request_allowed: true, is_privacy_options_required: true }) });
+  });
+
   test('«Забрати» (куплено «Без реклами»): offer із is_no_ads_claim, без ad_start і ad_complete, reward із no_ads_pass', async () => {
     const g = game({ noAds: true });
     await render(<MainScreen store={g.store} />);
@@ -99,6 +115,39 @@ describe('покупки', () => {
     const g = game({ shop: fakePurchases({ result: { kind: 'cancelled' } }) });
     await g.store.getState().purchase('no_ads');
     expect(g.events.at(-1)).toMatchObject({ name: 'purchase_fail', props: { reason: 'user_cancelled' } });
+  });
+
+  test('FR-23: оновлення CustomerInfo посеред покупки не стає тихим «Відновлено»: busy до видачі, iap-success і purchase_complete', async () => {
+    const shop = fakePurchases({ rights: { no_ads: true, starter_pack: false, storage_24h: false } });
+    const g = game({ shop });
+    const busyAtRights: (string | null)[] = [];
+    const rights = shop.rights;
+    shop.rights = async () => {
+      busyAtRights.push(g.store.getState().busy);
+      return rights();
+    };
+    await g.store.getState().purchase('no_ads');
+    expect(busyAtRights).toEqual(['purchase']);
+    expect(g.store.getState().busy).toBeNull();
+    expect(g.store.getState().monetization.success).toEqual(['no_ads']);
+    expect(names(g)).toContain('purchase_complete');
+    expect(names(g)).not.toContain('purchase_restore');
+  });
+
+  test('FR-25: «уже куплено» вмикає ефект лише з активним entitlement', async () => {
+    const owned = game({ shop: fakePurchases({ result: { kind: 'error', reason: 'already_owned' }, rights: { no_ads: false, starter_pack: false, storage_24h: true } }) });
+    await owned.store.getState().purchase('storage_24h');
+    expect(owned.store.getState().monetization.rights.storage_24h).toBe(true);
+    const foreign = game({ shop: fakePurchases({ result: { kind: 'error', reason: 'already_owned' }, rights: { no_ads: false, starter_pack: false, storage_24h: false } }) });
+    await foreign.store.getState().purchase('storage_24h');
+    expect(foreign.store.getState().monetization.rights.storage_24h).toBe(false);
+    expect(foreign.events.at(-1)).toMatchObject({ name: 'purchase_fail', props: { reason: 'already_owned' } });
+  });
+
+  test('відновлення не вдалось: purchase_restore з кодом помилки', async () => {
+    const g = game({ shop: fakePurchases({ restore: { kind: 'error', code: 'NETWORK_ERROR' } }) });
+    await g.store.getState().restore('settings_button');
+    expect(g.events.find((e) => e.name === 'purchase_restore')!.props).toMatchObject({ is_success: false, error_code: 'NETWORK_ERROR' });
   });
 
   test('відновлення: purchase_restore зі списком товарів', async () => {

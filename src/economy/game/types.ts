@@ -238,7 +238,8 @@ export type DomainEvent =
   | { type: 'adFail'; placement: 'income_boost' | 'offline_double' | 'race_speedup' | 'inspection_checklist'; stage: 'not_ready' | 'load' | 'show' | 'closed_early' | 'consent_blocked'; code?: string }
   | { type: 'purchaseComplete'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; isFirstPurchase: boolean; purchaseNumber: number }
   | { type: 'purchaseFail'; productId: 'no_ads' | 'starter_pack' | 'storage_24h'; reason: 'user_cancelled' | 'payment_pending' | 'store_problem' | 'network' | 'product_unavailable' | 'already_owned' | 'not_allowed' | 'unknown'; code?: string }
-  | { type: 'purchaseRestore'; trigger: 'shop_button' | 'settings_button' | 'auto_check'; isSuccess: boolean; restoredProductIds: ('no_ads' | 'starter_pack' | 'storage_24h')[] }
+  | { type: 'purchaseRestore'; trigger: 'shop_button' | 'settings_button' | 'auto_check'; isSuccess: boolean; restoredProductIds: ('no_ads' | 'starter_pack' | 'storage_24h')[]; code?: string }
+  | { type: 'adsConsentUpdate'; trigger: 'first_ad_watch' | 'app_launch' | 'privacy_settings'; status: 'obtained' | 'required' | 'not_required' | 'unknown'; formShown: boolean; canRequestAds: boolean; privacyOptionsRequired: boolean }
   | {
       type: 'offlineIncomeClaim';
       isDoubled: boolean;

@@ -117,6 +117,7 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     services.purchases.onChange?.(() => {
       if (store.getState().busy !== 'purchase') void store.getState().syncPurchases();
     });
+    services.ads.onConsent?.((c) => store.getState().adsConsent(c));
     services.ads.start?.({ noAds: store.getState().state.hasNoAds });
     return store;
   };

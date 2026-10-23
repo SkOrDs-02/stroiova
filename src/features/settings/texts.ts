@@ -29,6 +29,8 @@ export const setT = {
   sectionPrivacy: 'Приватність',
   analytics: 'Анонімна статистика',
   analyticsNote: 'Без імені й IP. Показує, де гра заїдає.',
+  adPrivacy: 'Налаштування реклами',
+  adPrivacyNote: 'Згода на рекламу, форма Google',
   sectionPurchases: 'Покупки й прогрес',
   restore: 'Відновити покупки',
   restoreNote: 'Після перевстановлення гри чи на новому телефоні',

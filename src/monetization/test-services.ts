@@ -15,13 +15,13 @@ export function fakeAds(init: { availability?: AdAvailability; result?: AdResult
   };
 }
 
-export function fakePurchases(init: { status?: StoreStatus; prices?: Partial<Record<ProductId, string>>; result?: PurchaseResult; rights?: Rights | null; restore?: { kind: 'ok'; owned: ProductId[] } | { kind: 'error' } } = {}) {
+export function fakePurchases(init: { status?: StoreStatus; prices?: Partial<Record<ProductId, string>>; result?: PurchaseResult; rights?: Rights | null; restore?: { kind: 'ok'; owned: ProductId[] } | { kind: 'error'; code?: string } } = {}) {
   const st = {
     status: init.status ?? ('ready' as StoreStatus),
     prices: init.prices ?? { no_ads: '199 ₴', starter_pack: '79 ₴', storage_24h: '99 ₴' },
     result: init.result ?? ({ kind: 'success' } as PurchaseResult),
     rights: init.rights === undefined ? null : init.rights,
-    restore: init.restore ?? ({ kind: 'ok', owned: [] } as { kind: 'ok'; owned: ProductId[] } | { kind: 'error' }),
+    restore: init.restore ?? ({ kind: 'ok', owned: [] } as { kind: 'ok'; owned: ProductId[] } | { kind: 'error'; code?: string }),
   };
   const bought: ProductId[] = [];
   const svc: PurchaseService & { bought: ProductId[]; set: (p: Partial<typeof st>) => void } = {

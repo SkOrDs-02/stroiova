@@ -31,15 +31,27 @@ export interface PurchasesSdk {
   onChange(cb: () => void): () => void;
 }
 
+/**
+ * Помилка нативного SDK -> ім'я коду `PURCHASES_ERROR_CODE` (`PAYMENT_PENDING_ERROR`). SDK кладе в `code` числовий рядок ("20");
+ * `userInfo.readableErrorCode` на Android - назва Kotlin-enum (`PaymentPendingError`), тож звіряємо за числом.
+ */
+export function sdkError(e: unknown, codes: Record<string, string>): SdkError {
+  const u = (e ?? {}) as { code?: unknown; userCancelled?: boolean | null };
+  const num = u.code == null ? '' : String(u.code);
+  const name = Object.keys(codes).find((k) => codes[k] === num) ?? (num && Object.prototype.hasOwnProperty.call(codes, num) ? num : 'UNKNOWN_ERROR');
+  return { code: name, userCancelled: u.userCancelled === true };
+}
+
 const NET = new Set(['NETWORK_ERROR', 'OFFLINE_CONNECTION_ERROR', 'PRODUCT_REQUEST_TIMED_OUT_ERROR']);
 
 /** Код SDK -> причина `purchase_fail` */
 export function failReason(code: string): PurchaseFailReason {
   if (NET.has(code)) return 'network';
   if (code === 'PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR') return 'product_unavailable';
-  if (code === 'PRODUCT_ALREADY_PURCHASED_ERROR' || code === 'RECEIPT_ALREADY_IN_USE_ERROR') return 'already_owned';
+  // чек іншого App User ID (RECEIPT_ALREADY_IN_USE) - не «уже куплено»: entitlement у цього гравця неактивний
+  if (code === 'PRODUCT_ALREADY_PURCHASED_ERROR') return 'already_owned';
   if (code === 'PURCHASE_NOT_ALLOWED_ERROR' || code === 'INSUFFICIENT_PERMISSIONS_ERROR') return 'not_allowed';
-  if (code === 'STORE_PROBLEM_ERROR') return 'store_problem';
+  if (code === 'STORE_PROBLEM_ERROR' || code === 'RECEIPT_ALREADY_IN_USE_ERROR') return 'store_problem';
   return 'unknown';
 }
 
@@ -97,8 +109,8 @@ export function revenueCatPurchases(sdk: PurchasesSdk | null): PurchaseService {
       try {
         const active = await rc.restore();
         return { kind: 'ok', owned: PRODUCT_IDS.filter((id) => active.includes(id)) };
-      } catch {
-        return { kind: 'error' };
+      } catch (e) {
+        return { kind: 'error', code: codeOf(e) };
       }
     },
     rights: async () => {
@@ -122,9 +134,9 @@ export function nativePurchasesSdk(apiKey: string | undefined = Platform.OS === 
     const P = (require('react-native-purchases') as typeof import('react-native-purchases')).default;
     type Info = Awaited<ReturnType<typeof P.getCustomerInfo>>;
     const active = (info: Info) => Object.keys(info.entitlements.active);
+    const codes = P.PURCHASES_ERROR_CODE as unknown as Record<string, string>;
     const readable = (e: unknown): never => {
-      const u = e as { userInfo?: { readableErrorCode?: string }; userCancelled?: boolean | null };
-      throw { code: u.userInfo?.readableErrorCode ?? 'UNKNOWN_ERROR', userCancelled: u.userCancelled === true } satisfies SdkError;
+      throw sdkError(e, codes);
     };
     const packages = async () => (await P.getOfferings()).current?.availablePackages ?? [];
     const idOf = (identifier: string): ProductId | undefined => PRODUCT_IDS.find((id) => id === identifier);
@@ -146,7 +158,7 @@ export function nativePurchasesSdk(apiKey: string | undefined = Platform.OS === 
       buy: async (id) => {
         try {
           const pkg = (await packages()).find((p) => (idOf(p.product.identifier) ?? idOf(p.identifier)) === id);
-          if (!pkg) throw { userInfo: { readableErrorCode: 'PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR' } };
+          if (!pkg) throw { code: codes.PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR };
           return active((await P.purchasePackage(pkg)).customerInfo);
         } catch (e) {
           return readable(e);

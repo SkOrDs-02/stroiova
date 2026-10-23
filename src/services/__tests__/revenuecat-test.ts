@@ -2,7 +2,7 @@
 import type { ProductId } from '@/monetization/types';
 
 import { unavailablePurchases } from '../purchases';
-import { failReason, revenueCatPurchases, type PurchasesSdk, type StoreProduct } from '../revenuecat';
+import { failReason, revenueCatPurchases, sdkError, type PurchasesSdk, type StoreProduct } from '../revenuecat';
 
 const PRODUCTS: StoreProduct[] = [
   { id: 'no_ads', priceString: '199,00 ₴', price: 199, currency: 'UAH' },
@@ -96,6 +96,17 @@ describe('revenueCatPurchases', () => {
     expect(failReason('PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR')).toBe('product_unavailable');
     expect(failReason('OFFLINE_CONNECTION_ERROR')).toBe('network');
     expect(failReason('SOMETHING_NEW')).toBe('unknown');
+    // чек іншого App User ID - не «уже куплено» (FR-25)
+    expect(failReason('RECEIPT_ALREADY_IN_USE_ERROR')).toBe('store_problem');
+  });
+
+  test('sdkError: числовий code SDK -> ім\'я PURCHASES_ERROR_CODE; readableErrorCode Android не потрібен', () => {
+    const codes = { PURCHASE_CANCELLED_ERROR: '1', NETWORK_ERROR: '10', PAYMENT_PENDING_ERROR: '20' };
+    expect(sdkError({ code: '20', userInfo: { readableErrorCode: 'PaymentPendingError' } }, codes)).toEqual({ code: 'PAYMENT_PENDING_ERROR', userCancelled: false });
+    expect(sdkError({ code: '1', userCancelled: true }, codes)).toEqual({ code: 'PURCHASE_CANCELLED_ERROR', userCancelled: true });
+    expect(sdkError({ code: 'NETWORK_ERROR' }, codes).code).toBe('NETWORK_ERROR');
+    expect(sdkError({ code: '999' }, codes).code).toBe('UNKNOWN_ERROR');
+    expect(sdkError(new Error('x'), codes).code).toBe('UNKNOWN_ERROR');
   });
 
   test('FR-27: відновлення - лише наші товари; збій - error', async () => {
@@ -107,7 +118,7 @@ describe('revenueCatPurchases', () => {
         throw err('NETWORK_ERROR');
       },
     });
-    await expect(revenueCatPurchases(bad.sdk).restore()).resolves.toEqual({ kind: 'error' });
+    await expect(revenueCatPurchases(bad.sdk).restore()).resolves.toEqual({ kind: 'error', code: 'NETWORK_ERROR' });
   });
 
   test('FR-26, AC-13: права з entitlement; стор недосяжний - null (кеш лишається)', async () => {

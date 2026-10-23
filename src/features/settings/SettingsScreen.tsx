@@ -56,6 +56,8 @@ export function SettingsScreen({ store, insetTop, onBack, onReset, onAskPush }: 
 
       <Section title={setT.sectionPrivacy} />
       <ToggleRow id="set-analytics" label={setT.analytics} note={setT.analyticsNote} value={st.analytics} onChange={(v) => s.setSetting('analytics', v)} />
+      {/* FR-17: лише коли UMP вимагає точку входу до налаштувань приватності (ЄЕЗ, Британія, Швейцарія) */}
+      {!s.state.hasNoAds && s.services.ads.privacyOptionsRequired?.() ? <LinkRow id="set-ad-privacy" label={setT.adPrivacy} note={setT.adPrivacyNote} disabled={s.busy != null} onPress={() => void s.services.ads.showPrivacyOptions?.()} /> : null}
 
       <Section title={setT.sectionPurchases} />
       <LinkRow id="set-restore" label={setT.restore} note={setT.restoreNote} disabled={s.busy != null} onPress={() => void s.restore('settings_button')} />
