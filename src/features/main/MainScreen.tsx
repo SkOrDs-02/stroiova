@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from 'zustand';
 
 import { formatBig, formatCountdown, formatDuration, formatMult, formatRate } from '@/economy/format';
+import { catAvailable, catLeftMin } from '@/economy/game/actions';
 import { fuelMult, income, multStack, tankPct } from '@/economy/game/income';
 import { quote } from '@/economy/game/purchase';
 import { itemsFor } from '@/economy/game/state';
@@ -162,6 +163,9 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const neckName = neck === 'streams' ? null : (it.stages.find((u) => u.id === neck.id)?.name ?? '');
   const tank = tankPct(s.state, now);
   const fuelM = fuelMult(s.state, s.cfg, now, eff);
+  // Кіт Сейф (001 FR-32): з'являється після catFromSec ігрового часу; хвилин до наступного бонусу
+  const catOn = catAvailable(s.cfg, s.playtimeMs);
+  const catLeft = catLeftMin(s.state, s.cfg, now);
   const [view, setView] = useState<View3>({ kind: 'main' });
   // дзвінок лишається на екрані й після бонусу (крок 9 уже закрито), доки гравець не натисне «До стройової»
   const [callHeld, setCallHeld] = useState(false);
@@ -460,6 +464,12 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
           <View style={styles.tile}>
             <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tileText}>{t.paper(Math.floor(s.state.paper))}</Text>
           </View>
+          {/* 001 FR-32: Кіт Сейф - бонус раз на catCooldownMin; між бонусами тап лише показує, скільки спати */}
+          {catOn ? (
+            <Pressable testID="cat" accessibilityRole="button" disabled={coachOn} onPress={() => s.cat(Date.now())} style={styles.tile}>
+              <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tileText}>{catLeft > 0 ? t.catSleep(catLeft) : t.cat}</Text>
+            </Pressable>
+          ) : null}
           {s.telegrams.startMs != null ? (
             <Pressable testID="rep-tile" accessibilityRole="button" onPress={() => setView({ kind: 'rep', back: 'main' })} style={styles.tile}>
               <Text maxFontSizeMultiplier={MAX_FONT_SCALE} style={styles.tileText}>{tgT.repTile(tgT.tier[tier])}</Text>
