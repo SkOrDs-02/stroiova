@@ -44,7 +44,11 @@
 | Автозахоплення дотиків, `captureScreens`, session replay | вимкнено | Обсяг і приватність |
 | `persistence`, `maxQueueSize` | `'file'`, 1000 | Офлайн-черга |
 | `flushAt`, `flushInterval` | 20, 30 000 мс, плюс `flush()` при переході у фон | Менше запитів, нічого не губимо при вивантаженні |
-| `before_send` | Відкидає події, яких немає в `tracking-plan.yaml` | Схема не розповзається |
+| `before_send` | Відкидає події, яких немає в `tracking-plan.yaml` (пропускає лише `$identify` і `$set` для профілю) | Схема не розповзається |
+| `disableGeoip` | `true` | Країна з `device_region`, а не з IP (010 FR-23) |
+| `preloadFeatureFlags`, `disableRemoteFeatureFlags` | `false`, `true` | Флагів немає до віддаленого конфігу економіки (`economy-config`) |
+| `disableSurveys` | `true` | Опитувань у грі немає |
+| Створення клієнта | Лише коли «Аналітика» ввімкнена; ключ - `EXPO_PUBLIC_POSTHOG_KEY` | SDK на старті завжди тягне віддалений конфіг: із вимкненою статистикою клієнта й запитів немає (рішення 119) |
 | Проєкт: Discard client IP data | увімкнено | Без IP. На закритому тесті перевірити, чи лишається `$geoip_country_code`; якщо ні, достатньо `device_region` |
 
 Усі виклики йдуть через одну обгортку `track(name, props)`, згенеровану з YAML. Вона додає глобальні властивості, у dev-збірці перевіряє типи й enum і не відправляє подію не з плану.
