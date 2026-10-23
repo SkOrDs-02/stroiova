@@ -12,6 +12,7 @@ import { newStats } from '@/profile/stats';
 import { newMuseum } from '@/museum/museum';
 import { newAwards } from '@/awards/awards';
 import { newAnalytics } from '@/analytics/state';
+import { newMove } from '@/move/move';
 import { newDub } from '@/dub/dub';
 import { newFinale } from '@/finale/finale';
 import { newRace } from '@/race/race';
@@ -135,6 +136,8 @@ export const MIGRATIONS: Record<number, Migration> = {
   },
   // 18 → 19 (аналітика): лічильники сесій з нуля; гравець, що вже грав, уже «відкривав» застосунок - `app_first_open` йому не шлемо
   18: (game) => ({ ...(game as object), analytics: (game as { analytics?: object }).analytics ?? { ...newAnalytics(), firstOpenSent: true } }),
+  // 19 → 20 («Переїзд», 017): переїздів ще не було; гравець на Р3 чи Р4 отримає переїзд свого рівня в перший спокійний момент (FR-11)
+  19: (game) => ({ ...(game as object), move: (game as { move?: object }).move ?? newMove() }),
 };
 
 /** Налаштування й сповіщення схеми 9. */

@@ -34,6 +34,8 @@ function game(level: number, counts: Record<string, number>, patch: Partial<Econ
   store.setState({
     onboarding: onboardingDone(),
     lastMs: T0,
+    // «Переїзд» (017) на Р3-Р4 уже позаду: він тримав би чергу модалок
+    move: { done: [3, 4] },
     inspections: { ...store.getState().inspections, installMs: T0 - 9 * DAY },
     telegrams: { ...store.getState().telegrams, startMs: T0 - 9 * DAY },
     digit: { ...store.getState().digit, counts, total: Object.values(counts).reduce((a, b) => a + b, 0), cycleStartMs: T0 - 5 * HOUR, levelStartMs: T0 - 40 * HOUR },

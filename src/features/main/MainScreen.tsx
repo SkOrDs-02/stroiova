@@ -51,6 +51,7 @@ import { UnitRow } from '@/features/conveyor/UnitRow';
 import { SedoSheet } from '@/features/convert/SedoSheet';
 import { StageConvert } from '@/features/convert/StageConvert';
 import { DubClosed } from '@/features/dub/DubClosed';
+import { MoveGame, MoveIntro, MoveResult, type MoveOutcome } from '@/features/move/MoveFlow';
 import { EndlessIntro } from '@/features/dub/EndlessIntro';
 import { dupT } from '@/features/dub/texts';
 import { Credits } from '@/features/finale/Credits';
@@ -59,6 +60,8 @@ import { FinaleShutdown } from '@/features/finale/FinaleShutdown';
 import { LastBook } from '@/features/finale/LastBook';
 import { finT } from '@/features/finale/texts';
 import { pendingAction } from '@/finale/finale';
+import { moveDue } from '@/move/move';
+import { SHEETS } from '@/story/archive';
 import { telegramOf } from '@/telegrams/effects';
 import { cvT, sedoT } from '@/features/convert/texts';
 import { convertInfo } from '@/economy/game/convert';
@@ -290,8 +293,18 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   const iapOpen = calm && s.busy == null && !onboarding && s.monetization.success.length > 0;
   // оферта лишається на екрані й під час власної оплати (стан «Чекаємо оплату»), але не відкривається поверх чужої
   const starterOpen = calm && (s.busy == null || s.busy === 'purchase') && !iapOpen && s.monetization.offer === 'due' && s.services.purchases.status() === 'ready' && !!s.services.purchases.prices().starter_pack && !onboarding;
+  // 017 FR-1: «Переїзд» - у першу спокійну мить на `main` після level-up; гра й акт тримаються до закриття (FR-5, FR-7)
+  const [movePlaying, setMovePlaying] = useState(false);
+  const [moveOut, setMoveOut] = useState<MoveOutcome | null>(null);
+  const moveOn = moveDue(s.move, s.cfg.params, { level: s.state.level, dubN: s.dub.n, onboardingDone: o.step === 'done', finaleStarted: s.finale.startMs != null });
+  const moveIntro = moveOn && !movePlaying && moveOut == null && calm && !iapOpen && !starterOpen && view.kind === 'main' && !pushPromptOpen;
+  const moveBusy = moveIntro || movePlaying || moveOut != null;
+  const onMoveDone = (r: MoveOutcome) => {
+    setMovePlaying(false);
+    setMoveOut(r);
+  };
   // 014 FR-6: сюжет віддає кроки лише тоді, коли жодна модалка, церемонія чи результат не чекають черги
-  const storyFree = calm && !iapOpen && !starterOpen && o.step === 'done';
+  const storyFree = calm && !iapOpen && !starterOpen && o.step === 'done' && !moveBusy;
   const storyMinute = Math.floor(now / 60_000);
   useEffect(() => {
     if (storyFree) store.getState().storyRun();
@@ -367,7 +380,7 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
   }, [pushNav, s.offline, s.background, onboarding, store]);
 
   // 016 FR-32: тости грамот чекають онбординг, церемонії й модалки; решта тостів іде перед ними у спільній черзі
-  const awardsFree = calm && !iapOpen && !starterOpen && o.step === 'done';
+  const awardsFree = calm && !iapOpen && !starterOpen && o.step === 'done' && !moveBusy;
   const awardsPending = s.awardQueue.length;
   useEffect(() => {
     if (awardsFree && awardsPending > 0) store.getState().flushAwardToasts();
@@ -740,6 +753,9 @@ export function MainScreen({ store }: { store: ConveyorStore }) {
       ) : null}
       {raceResult ? <RaceResult store={store} /> : null}
       {revealOpen ? <JournalNew store={store} /> : null}
+      {moveIntro ? <MoveIntro store={store} onStart={() => setMovePlaying(true)} onDone={onMoveDone} /> : null}
+      {movePlaying ? <MoveGame store={store} onDone={onMoveDone} /> : null}
+      {moveOut ? <MoveResult r={moveOut} sheet={SHEETS.some((sh) => sh.source.kind === 'move' && sh.level === moveOut.level)} onClose={() => setMoveOut(null)} /> : null}
       {finAutoOpen && finStep === 'order' ? (
         <FinaleOrder
           store={store}

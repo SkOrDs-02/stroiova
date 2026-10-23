@@ -47,7 +47,7 @@ describe('перший запуск і сесія', () => {
 
   test('глобальні властивості відбивають стан гри', () => {
     const m = game({ analytics: { sessionNumber: 0, lastSessionEndMs: null, firstOpenSent: true }, state: { ...newGame(bundledConfig, T0), level: 5, hasNoAds: true, prestigePoints: 50 } });
-    expect(m.events[0]!.props).toMatchObject({ level_id: 'bez_paperu', has_no_ads: true, is_payer: false, is_finale_done: false, awards_owned: 0, is_test_user: false, economy_config_source: 'bundled', save_schema_version: 19 });
+    expect(m.events[0]!.props).toMatchObject({ level_id: 'bez_paperu', has_no_ads: true, is_payer: false, is_finale_done: false, awards_owned: 0, is_test_user: false, economy_config_source: 'bundled', save_schema_version: 20 });
     expect(m.calls.user[0]).toMatchObject({ current_level_id: 'bez_paperu', has_no_ads: true, digital_points_total: 50, is_onboarding_complete: true });
   });
 });

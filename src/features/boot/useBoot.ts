@@ -86,7 +86,7 @@ export function draftOf(store: ConveyorStore): SaveDraft | null {
     appVersion: APP_VERSION,
     contentVersion: CONTENT_VERSION,
     economyConfig: g.pinned as SaveFile['economyConfig'],
-    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story, awards: g.awards, finale: g.finale, dub: g.dub, analytics: g.analytics },
+    game: { economy: g.economy, effects: g.effects, playtimeMs: g.playtimeMs, onboarding: g.onboarding, telegrams: g.telegrams as SaveFile['game']['telegrams'], inspections: g.inspections, race: g.race, digitization: g.digitization, museum: g.museum, monetization: g.monetization, settings: g.settings, notifications: g.notifications, stats: g.stats, story: g.story, awards: g.awards, finale: g.finale, dub: g.dub, analytics: g.analytics, move: g.move },
   };
 }
 
@@ -137,6 +137,7 @@ export function startGame(kv: KeyValue, save: SaveFile | null, now: number, opts
     finale: save.game.finale as FinaleState,
     dub: save.game.dub as DubState,
     analytics: save.game.analytics,
+    move: save.game.move,
     services,
     env,
     bootEvents: opts.bootEvents,

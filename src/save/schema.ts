@@ -1,7 +1,7 @@
 // Схема збереження (009 FR-1, FR-3, FR-9). Нова форма — нова версія + міграція в migrations.ts.
 import { z } from 'zod';
 
-export const CURRENT_SCHEMA = 19;
+export const CURRENT_SCHEMA = 20;
 
 const unitRef = z.object({ type: z.enum(['stream', 'stage']), id: z.string() });
 
@@ -430,6 +430,8 @@ export const gameSaveSchema = z.object({
   dub: dubSchema,
   /** Аналітика (лічильники сесій) */
   analytics: analyticsStateSchema,
+  /** «Переїзд» (017): рівні, на яких переїзд уже відбувся; схема 20 */
+  move: z.object({ done: z.array(z.number().int().min(1).max(5)) }),
 });
 
 const unitDef = z.object({ id: z.string(), rate: z.number(), cost: z.number(), growth: z.number(), manager: z.number() }).loose();
