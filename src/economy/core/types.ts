@@ -245,6 +245,8 @@ export interface EconomyParams {
   paperGift: number;
   catBonusMin: number;
   catCooldownMin: number;
+  /** Кіт з'являється після стількох секунд ігрового часу (з другої сесії, не в онбордингу) */
+  catFromSec: number;
   [key: string]: unknown;
 }
 

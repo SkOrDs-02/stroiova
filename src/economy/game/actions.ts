@@ -58,6 +58,17 @@ export function catTap(state: EconomyState, cfg: EconomyConfig, t: number): { st
   return { gain, state: { ...state, signatures: state.signatures + gain, lifetimeCycle: state.lifetimeCycle + gain, catBonusAtMs: t } };
 }
 
+/** Хвилин до наступного бонусу кота (0 - можна гладити), FR-32 */
+export function catLeftMin(state: EconomyState, cfg: EconomyConfig, t: number): number {
+  if (state.catBonusAtMs == null) return 0;
+  return Math.max(0, Math.ceil((state.catBonusAtMs + cfg.params.catCooldownMin * MIN - t) / MIN));
+}
+
+/** Кіт - не частина онбордингу: з'являється після `catFromSec` ігрового часу, як у sim.js */
+export function catAvailable(cfg: EconomyConfig, playtimeMs: number): boolean {
+  return cfg.params.catBonusMin > 0 && playtimeMs >= cfg.params.catFromSec * 1000;
+}
+
 /** Аркушів за хвилину від Накладних (FR-22); поза грою — лише з діловодом на Накладних. */
 export function paperPerMin(state: EconomyState, cfg: EconomyConfig, idle: boolean): number {
   const i = cfg.params.streams.findIndex((u) => u.id === 'nakladni');
