@@ -2,6 +2,7 @@
 import type { DubModifier } from '@/dub/dub';
 import type { FinaleStep } from '@/finale/finale';
 import type { ShareEntryType } from '@/share/types';
+import type { PushType } from '@/notifications/types';
 import type { Big, EconomyParams } from '../core';
 
 export type { Big, EconomyParams, UnitDef } from '../core';
@@ -263,6 +264,8 @@ export type DomainEvent =
   // 010: налаштування; аналітика етапу 5 (setting_change, push_permission_request)
   // newValue: true/false -> on/off у tracking-plan; null (progress_reset) -> done; для progress_reset лічильники взято до стирання
   | { type: 'settingChange'; settingName: 'sound' | 'haptics' | 'notif_storage' | 'notif_telegrams' | 'notif_inspections' | 'notif_gifts' | 'notif_boosts' | 'analytics' | 'progress_reset'; newValue: boolean | null; digitizationCount?: number; playtimeSec?: number }
+  // 010 FR-8: тап по сповіщенню (push_open)
+  | { type: 'pushOpen'; pushType: PushType; delaySec: number }
   | { type: 'pushPermissionRequest'; trigger: 'onboarding_session_end' | 'settings'; prePromptResult: 'accepted' | 'declined'; osResult: 'granted' | 'denied' | 'provisional' | 'not_shown' }
   | { type: 'museumOpen'; source: 'tab' | 'unlock_toast'; journalsOwned: number; journalsUnseen: number }
   // 014: сюжет; аналітика етапу 5 (story_beat_deliver, diary_open)

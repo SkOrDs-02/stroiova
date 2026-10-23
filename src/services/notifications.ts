@@ -2,6 +2,8 @@
 import type { NotificationService } from '@/notifications/types';
 
 export const unavailableNotifications: NotificationService = {
+  initialOpen: () => null,
+  listen: () => () => {},
   permission: async () => 'not_asked',
   request: async () => 'denied',
   schedule: async () => {},

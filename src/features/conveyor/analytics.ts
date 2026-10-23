@@ -38,6 +38,8 @@ export interface AnalyticsEnv {
   store: 'app_store' | 'play_store';
   /** Помилка плану кидається, а не лише повідомляється (тести) */
   strict?: boolean;
+  /** Холодний старт тапом по сповіщенню (010 FR-8): `session_start.entry_point` = push */
+  entryPoint?: 'icon' | 'push';
 }
 
 /** Подія аналітики, що сталася до створення стору: збій завантаження збереження на запуску (`app_error_log`) */
@@ -203,7 +205,7 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
   const offered = new Set<string>();
   let sessionId = newSessionId(store.getState().lastMs);
   // сесія: початок ігрового часу, відрізки, лічильники; `bgAt` - коли пішли у фон
-  const sess = { startPlayMs: store.getState().playtimeMs, segments: 1, agg: zeroAgg(), bgAt: null as number | null };
+  const sess = { startPlayMs: store.getState().playtimeMs, segments: 1, agg: zeroAgg(), bgAt: null as number | null, pushEntry: false, deferred: [] as DomainEvent[] };
   let allowed = store.getState().settings.analytics;
   let pendingOff = false;
   let lastUser = '';
@@ -270,7 +272,7 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
       is_cold_start: true,
       ...(a.lastSessionEndMs != null ? { sec_since_last_session: Math.max(0, Math.round((s.lastMs - a.lastSessionEndMs) / 1000)) } : {}),
       local_hour: new Date(s.lastMs + tz2 * 60_000).getUTCHours(),
-      entry_point: 'icon',
+      entry_point: env.entryPoint ?? 'icon',
       is_clock_skew_detected: false,
     });
     syncUser(store.getState());
@@ -313,6 +315,13 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
         sess.agg.levelsBought += e.levelsBought;
       }
       if (e.type === 'clerkHire') sess.agg.clerks++;
+      // тап по сповіщенню, поки гра у фоні: наступна сесія почнеться з entry_point = push (FR-8)
+      // а сама push_open іде вже після session_start нової сесії
+      if (e.type === 'pushOpen' && sess.bgAt != null) {
+        sess.pushEntry = true;
+        sess.deferred.push(e);
+        continue;
+      }
       if (e.type === 'appBackground') {
         const dur = Math.max(0, Math.floor((s.playtimeMs - sess.startPlayMs) / 1000));
         tracker.track('session_end', sessionEndProps(s, sess.agg, dur, sess.segments, e.atMs));
@@ -328,9 +337,11 @@ export function attachAnalytics(store: ConveyorStore, service: AnalyticsService,
           sess.agg = zeroAgg();
           offered.clear();
           store.setState({ analytics: { ...store.getState().analytics, sessionNumber: store.getState().analytics.sessionNumber + 1 } });
-          tracker.track('session_start', { is_cold_start: false, sec_since_last_session: Math.round(gap / 1000), local_hour: new Date(e.atMs + tzOffsetAt(e.atMs) * 60_000).getUTCHours(), entry_point: 'other', is_clock_skew_detected: false });
+          tracker.track('session_start', { is_cold_start: false, sec_since_last_session: Math.round(gap / 1000), local_hour: new Date(e.atMs + tzOffsetAt(e.atMs) * 60_000).getUTCHours(), entry_point: sess.pushEntry ? 'push' : 'other', is_clock_skew_detected: false });
         } else sess.segments++;
         sess.bgAt = null;
+        sess.pushEntry = false;
+        for (const d of sess.deferred.splice(0)) for (const c of mapEvent(d, ctxOf(s, d))) tracker.track(c.name, c.props as never, c.globals);
       }
       for (const c of mapEvent(e, ctxOf(s, e))) tracker.track(c.name, c.props as never, c.globals);
     }

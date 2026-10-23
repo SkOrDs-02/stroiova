@@ -338,6 +338,8 @@ export function mapEvent(e: DomainEvent, c: MapCtx): Call[] {
       ];
     case 'museumOpen':
       return [{ name: 'museum_open', props: { source: e.source, journals_owned: e.journalsOwned, journals_unseen: e.journalsUnseen, segment: 'journals' } }];
+    case 'pushOpen':
+      return [{ name: 'push_open', props: { push_type: e.pushType, delay_sec: e.delaySec } }];
     case 'pushPermissionRequest':
       return [{ name: 'push_permission_request', props: { trigger: e.trigger, pre_prompt_result: e.prePromptResult, os_result: e.osResult } }];
     case 'stageConvert': {
